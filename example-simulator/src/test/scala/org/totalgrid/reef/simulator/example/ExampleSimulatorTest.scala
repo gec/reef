@@ -23,12 +23,12 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.{ Commands, SimMapping, Measurements }
+import org.totalgrid.reef.client.service.proto.{ Commands, SimMapping, Measurements }
 import org.totalgrid.reef.simulator.example.ExampleSimulatorFactory
-import org.totalgrid.reef.executor.mock.MockExecutor
+import net.agileautomata.executor4s.testing.MockExecutor
 import org.totalgrid.reef.protocol.api.Publisher
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.promise.FixedPromise
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
@@ -62,7 +62,7 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
     SimMapping.CommandSim.newBuilder.setName(name).setResponseStatus(Commands.CommandStatus.SUCCESS)
 
   def buildCommand(name: String) =
-    Commands.CommandRequest.newBuilder.setType(Commands.CommandRequest.ValType.NONE).setName(name).build()
+    Commands.CommandRequest.newBuilder.setType(Commands.CommandRequest.ValType.NONE).setCommand(Command.newBuilder.setName(name)).build()
 
   test("Correctly identifies endpoint") {
     ExampleSimulatorFactory.getSimLevel("test", simpleMapping("breaker.kW_a")) should equal(1)
@@ -76,18 +76,17 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
       val queue = new scala.collection.mutable.Queue[MeasurementBatch]
       def publish(batch: MeasurementBatch) = {
         queue.enqueue(batch)
-        new FixedPromise[Boolean](true)
       }
     }
 
     def validateState() = {
       pub.queue.size should equal(0)
-      exe.executeNext(1, 0)
+      exe.runNextPendingAction()
       pub.queue.size should equal(1)
       pub.queue.dequeue().getMeasCount() should equal(4)
     }
 
-    val sim = ExampleSimulatorFactory.createSimulator("test", exe, pub, simpleMapping())
+    val sim = ExampleSimulatorFactory.create("test", exe, pub, simpleMapping())
     validateState()
 
     sim.issue(buildCommand("breaker.Status.Trip")) should equal(Commands.CommandStatus.SUCCESS)
@@ -98,7 +97,7 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
 
     sim.issue(buildCommand("foobar")) should equal(Commands.CommandStatus.NOT_SUPPORTED)
     pub.queue.isEmpty should equal(true)
-    exe.numActionsPending should equal(0)
+    exe.isIdle should equal(true)
   }
 
 }

@@ -18,19 +18,27 @@
  */
 package org.totalgrid.reef.services.core.util
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.services.ProtoServiceCoordinator
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.measurementstore.MeasurementStore
+import com.weiglewilczek.slf4s.Logging
 
-class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long) extends ProtoServiceCoordinator with Logging {
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
-    if (ms.supportsTrim) reactor.repeat(period) {
-      val num = ms.trim(totalMeasurements)
-      if (num > 0) {
-        logger.debug("trimmed: " + num + " measurements")
-      }
+import org.totalgrid.reef.measurementstore.MeasurementStore
+import org.totalgrid.reef.services.framework.ServerSideProcess
+import net.agileautomata.executor4s._
+
+class HistoryTrimmer(ms: MeasurementStore, period: Long, totalMeasurements: Long) extends ServerSideProcess with Logging {
+
+  var repeater = Option.empty[Timer]
+
+  def startProcess(exe: Executor) {
+    if (ms.supportsTrim) repeater = Some(exe.scheduleWithFixedOffset(period.milliseconds)(doTrimOperation(exe)))
+  }
+  def stopProcess() {
+    repeater.foreach(_.cancel)
+  }
+
+  private def doTrimOperation(exe: Executor) {
+    val num = ms.trim(totalMeasurements)
+    if (num > 0) {
+      logger.debug("trimmed: " + num + " measurements")
     }
   }
 }

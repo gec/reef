@@ -18,124 +18,89 @@
  */
 package org.totalgrid.reef.broker.qpid
 
-import org.apache.qpid.transport.{ Connection }
-import org.apache.qpid.transport.{ ConnectionListener, ConnectionException }
-
-import org.totalgrid.reef.util.Logging
-
 import org.totalgrid.reef.broker._
-import scala.{ Some, Option => ScalaOption }
-import java.lang.IllegalArgumentException
+import org.apache.qpid.transport._
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.exception.ServiceIOException
 
-class QpidBrokerConnection(config: BrokerConnectionInfo) extends BrokerConnection with Logging {
+final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool with ConnectionListener with Logging {
 
-  case class ConnectionRecord(connection: Connection, listener: Listener)
+  private var disconnected = false
+  private var closed = false
+  private var sessions = Set.empty[Session]
 
-  private var connection: ScalaOption[ConnectionRecord] = None
+  conn.addConnectionListener(this)
 
-  class Listener(qpid: QpidBrokerConnection) extends ConnectionListener {
+  override def isConnected() = !disconnected
 
-    private var valid = true
+  override def newChannel() = new QpidWorkerChannel(getSession(), this)
 
-    def invalidate() = valid = false
+  override def disconnect(): Boolean = mutex.synchronized {
+    if (!disconnected) {
+      disconnected = true
+      closeSessions()
+      conn.close()
+    }
+    while (!closed) mutex.wait()
+    true
+  }
 
-    def closed(conn: Connection) = if (valid) qpid.onClosed()
+  def listen(): BrokerSubscription = {
+    val session = getSession()
+    val q = QpidChannelOperations.declareQueue(session, "*", true, true)
+    new QpidBrokerSubscription(session, q, this)
+  }
 
-    def opened(conn: Connection) = if (valid) qpid.onOpened(conn)
+  def listen(queue: String): BrokerSubscription = {
+    val session = getSession()
+    val q = QpidChannelOperations.declareQueue(session, queue, false, false)
+    if (queue != q) throw new ServiceIOException("Not given queue name we asked for. Got: " + q + " requested: " + queue)
+    new QpidBrokerSubscription(session, q, this)
+  }
 
-    def exception(conn: Connection, ex: ConnectionException) = if (valid) qpid.onException(conn, ex)
+  /* --- Implement ConnectionListener --- */
+
+  def closed(conn: Connection) = {
+
+    val expected = mutex.synchronized {
+      val temp = disconnected
+      // we want to make sure we have set the connection into a closed state
+      // before informing client applications they have been disconnected
+      // in case they try to use the connection. they should also marshall all
+      // calls to the
+      disconnected = true
+      temp
+    }
+
+    this.onDisconnect(expected)
+
+    mutex.synchronized {
+      closed = true
+      mutex.notifyAll()
+    }
 
   }
 
-  override def toString() = config.toString
-
-  final override def connect(): Boolean = connection match {
-    case Some(c) => true
-    case None =>
-      val conn = new Connection
-      val listener = new Listener(this)
-      conn.addConnectionListener(listener)
-
-      logger.info("Connecting to " + config)
-
-      if (config.ssl) {
-        if (config.trustStore == null || config.trustStore == "") {
-          throw new IllegalArgumentException("ssl is enabled, trustStore must be not null and not empty: " + config.trustStore)
-        }
-        if (config.trustStorePassword == null || config.trustStorePassword == "") {
-          throw new IllegalArgumentException("ssl is enabled, trustStorePassword must be not null and not empty")
-        }
-
-        System.setProperty("javax.net.ssl.trustStore", config.trustStore)
-        System.setProperty("javax.net.ssl.trustStorePassword", config.trustStorePassword)
-
-        System.setProperty("javax.net.ssl.keyStore", if (config.keyStore == "") config.trustStore else config.keyStore)
-        System.setProperty("javax.net.ssl.keyStorePassword", if (config.keyStore == "") config.trustStorePassword else config.keyStorePassword)
-      }
-
-      try {
-        conn.connect(config.host, config.port, config.virtualHost, config.user, config.password, config.ssl)
-        connection = Some(ConnectionRecord(conn, listener))
-        this.setOpen()
-        true
-      } catch {
-        case ex: Exception =>
-          logger.error(ex.getMessage, ex)
-          false
-      }
+  private def getSession() = mutex.synchronized {
+    if (disconnected) throw new ServiceIOException("Connection closed")
+    val session = conn.createSession(0)
+    sessions += session
+    session
+  }
+  private def closeSessions() = {
+    mutex.synchronized(sessions.toList).foreach { session =>
+      QpidChannelOperations.close(session)
+    }
+  }
+  // child subscriptions and workers call back to remove themselves from the list of sessions
+  // if they have been closed manually by the user
+  def detachSession(session: Session) = mutex.synchronized {
+    sessions -= session
   }
 
-  final override def disconnect(): Boolean = connection match {
-    case Some(ConnectionRecord(c, l)) =>
-      l.invalidate()
-      c.close()
-      cleanupAfterClose(true)
-      true
-    case None =>
-      true
-  }
+  def opened(conn: Connection) = {}
 
-  private def unlinkChannels() = {
-    channels.foreach(channel =>
-      try {
-        channel.stop()
-      } catch {
-        case e: Exception => logger.warn("Qpid unlink error: " + e.getMessage)
-      })
-    channels = Nil
-  }
-
-  def onClosed() {
-    logger.info("Qpid connection unexpectedly closed")
-    cleanupAfterClose(false)
-  }
-
-  private def cleanupAfterClose(expected: Boolean) = {
-    connection = None
-    this.setClosed(expected)
-    unlinkChannels()
-  }
-
-  def onOpened(conn: Connection) {
-    logger.info("Qpid connection opened")
-  }
-
-  def onException(conn: Connection, ex: ConnectionException) {
-    logger.error("Connection exception: ", ex)
-  }
+  def exception(conn: Connection, ex: ConnectionException) = logger.error("Exception on qpid connection", ex)
 
   /* -- End Qpid Connection Listener -- */
-
-  // TODO - Looks like this list of channels never shrinks as sessions die? - JAC
-  private var channels = List.empty[QpidBrokerChannel]
-
-  final override def newChannel(): BrokerChannel = connection match {
-    case Some(ConnectionRecord(c, _)) =>
-      val channel = new QpidBrokerChannel(c.createSession(0))
-      channels = channel :: channels
-      channel
-    case None =>
-      throw new Exception("Connection is closed, cannot create channel")
-  }
-
 }

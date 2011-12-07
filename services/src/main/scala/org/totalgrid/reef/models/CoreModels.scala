@@ -26,10 +26,18 @@ import org.squeryl.PrimitiveTypeMode._
 import java.util.UUID
 import org.squeryl.Query
 
+import org.totalgrid.reef.client.service.proto.Model
+
 object Point {
-  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Int, unit: String, uuid: Option[UUID]) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Point", uuid)
-    val p = new Point(ent.id, _type, unit, abnormal)
+  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Model.PointType, unit: String, uuid: Option[UUID]) = {
+    val baseType = _type match {
+      case Model.PointType.ANALOG => "Analog"
+      case Model.PointType.STATUS => "Status"
+      case Model.PointType.COUNTER => "Counter"
+    }
+    val types = "Point" :: baseType :: Nil
+    val ent = EntityQueryManager.findOrCreateEntity(name, types, uuid)
+    val p = new Point(ent.id, _type.getNumber, unit, abnormal)
     dataSource.foreach(ln => { EntityQueryManager.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
     p.entity.value = ent
     p
@@ -49,8 +57,6 @@ case class Point(
 
   val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
 
-  val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
-
   /**
    * updated when the abnormal state is changed so we can "tunnel" this update through
    * to the service event.
@@ -67,9 +73,13 @@ case class Point(
 }
 
 object Command {
-  def newInstance(name: String, displayName: String, _type: Int, uuid: Option[UUID]) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Command", uuid)
-    val c = new Command(ent.id, displayName, _type, false, None, None)
+  def newInstance(name: String, displayName: String, _type: Model.CommandType, uuid: Option[UUID]) = {
+    val baseType = _type match {
+      case Model.CommandType.CONTROL => "Control"
+      case Model.CommandType.SETPOINT_DOUBLE | Model.CommandType.SETPOINT_INT => "Setpoint"
+    }
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Command" :: baseType :: Nil, uuid)
+    val c = new Command(ent.id, displayName, _type.getNumber, false, None, None)
     c.entity.value = ent
     c
   }
@@ -94,20 +104,18 @@ case class Command(
 
   val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
 
-  val sourceEdge = LazyVar(ApplicationSchema.edges.where(e => e.distance === 1 and e.childId === entityId and e.relationship === "source").headOption)
-
   val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
 
-  val currentActiveSelect = LazyVar(CommandAccessModel.activeSelect(lastSelectId))
+  val currentActiveSelect = LazyVar(CommandLockModel.activeSelect(lastSelectId))
 
-  val selectHistory = LazyVar(CommandAccessModel.selectsForCommands(id :: Nil))
+  val selectHistory = LazyVar(CommandLockModel.selectsForCommands(id :: Nil))
 
   val commandHistory = LazyVar(ApplicationSchema.userRequests.where(u => u.commandId === id).toList)
 }
 
 object FrontEndPort {
   def newInstance(name: String, network: Option[String], location: Option[String], state: Int, proto: Array[Byte], uuid: Option[UUID]) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Channel", uuid)
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Channel" :: Nil, uuid)
     val c = new FrontEndPort(ent.id, network, location, state, proto)
     c.entity.value = ent
     c
@@ -141,10 +149,11 @@ case class ConfigFile(
 case class CommunicationEndpoint(
     _entityId: UUID,
     val protocol: String,
-    var frontEndPortId: Option[UUID]) extends EntityBasedModel(_entityId) {
+    var frontEndPortId: Option[UUID],
+    val dataSource: Boolean) extends EntityBasedModel(_entityId) {
 
-  def this() = this(new UUID(0, 0), "", Some(new UUID(0, 0)))
-  def this(entityId: UUID, protocol: String) = this(entityId, protocol, Some(new UUID(0, 0)))
+  def this() = this(new UUID(0, 0), "", Some(new UUID(0, 0)), false)
+  def this(entityId: UUID, protocol: String, dataSource: Boolean) = this(entityId, protocol, Some(new UUID(0, 0)), dataSource)
 
   val port = LazyVar(mayHaveOneByEntityUuid(ApplicationSchema.frontEndPorts, frontEndPortId))
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
@@ -154,8 +163,10 @@ case class CommunicationEndpoint(
     .asType(ApplicationSchema.configFiles, EntityQueryManager.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList,
       Some("ConfigurationFile")))
 
+  def relationship = if (dataSource) "source" else "sink"
+
   val points = LazyVar(
-    Entity.asType(ApplicationSchema.points, EntityQueryManager.getChildrenOfType(entity.value.id, "source", "Point").toList, Some("Point")))
+    Entity.asType(ApplicationSchema.points, EntityQueryManager.getChildrenOfType(entity.value.id, relationship, "Point").toList, Some("Point")))
   val commands = LazyVar(
-    Entity.asType(ApplicationSchema.commands, EntityQueryManager.getChildrenOfType(entity.value.id, "source", "Command").toList, Some("Command")))
+    Entity.asType(ApplicationSchema.commands, EntityQueryManager.getChildrenOfType(entity.value.id, relationship, "Command").toList, Some("Command")))
 }

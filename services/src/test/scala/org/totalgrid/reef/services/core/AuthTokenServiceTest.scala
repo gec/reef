@@ -18,9 +18,8 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.japi.Envelope._
-import org.totalgrid.reef.sapi.service.NoOpService
+import org.totalgrid.reef.client.service.proto.Auth._
+import org.totalgrid.reef.client.proto.Envelope._
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -28,17 +27,16 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.service.ServiceResponseCallback
-
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.services.{ ServiceDependencies, RestAuthzWrapper, RestAuthzMetrics, SqlAuthzService }
+import org.totalgrid.reef.services.authz.SqlAuthzService
+import org.totalgrid.reef.services.NullRequestContext
+import org.totalgrid.reef.services.framework.AuthorizesEverything
+import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
+import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
@@ -48,7 +46,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
   }
 
   class Fixture {
-    val modelFac = new ModelFactories(new ServiceDependencies)
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
     val authService = new AuthTokenService(modelFac.authTokens)
 
     val agentService = new AgentService(modelFac.agents)
@@ -179,46 +177,49 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 
 @RunWith(classOf[JUnitRunner])
 class AuthTokenVerifierTest extends AuthSystemTestBase {
-  class AuthFixture extends Fixture {
-    val wrappedService = new RestAuthzWrapper(new NoOpService, new RestAuthzMetrics, SqlAuthzService)
 
-    /// make a request with the set verb and auth_tokens
-    def makeRequest(verb: Verb, authTokens: List[String]) = {
-      val req = ServiceRequest.newBuilder.setId("magic")
-      req.setVerb(verb)
-      // simple proto we can build for the payload; not used for anything
-      req.setPayload(ServiceResponse.newBuilder.setId("").setStatus(Status.BUS_UNAVAILABLE).build.toByteString)
-      req.build
-    }
+  class AuthTester extends ServiceTypeIs[Verb] with AuthorizesEverything {
 
-    def testRequest(status: Status, verb: Verb, authTokens: List[String]) = {
-      val env = new RequestEnv
-      env.setAuthTokens(authTokens)
-      val callback = new ServiceResponseCallback {
-        var response: Option[ServiceResponse] = None
-        def onResponse(rsp: ServiceResponse) = response = Some(rsp)
+    val componentId = "auth_tester"
+
+    authService = SqlAuthzService
+    def request(verb: Verb, authTokens: List[String]) = {
+      val context = new NullRequestContext
+      context.modifyHeaders { _.setAuthTokens(authTokens) }
+      verb match {
+        case Verb.GET => authorizeRead(context, verb)
+        case Verb.PUT => authorizeUpdate(context, verb)
+        case Verb.POST => authorizeCreate(context, verb)
+        case Verb.DELETE => authorizeDelete(context, verb)
       }
-      wrappedService.respond(makeRequest(verb, authTokens), env, callback)
-      callback.response.get.getStatus should equal(status)
     }
+  }
+
+  class AuthFixture extends Fixture {
+    val test = new AuthTester
+
   }
 
   test("No AuthToken Attached => BadRequest") {
     val fix = new AuthFixture
 
-    fix.testRequest(Status.BAD_REQUEST, Verb.GET, Nil)
+    intercept[UnauthorizedException] {
+      fix.test.request(Verb.GET, Nil)
+    }
   }
 
   test("Faked AuthToken Attached => Unauthorized") {
     val fix = new AuthFixture
 
-    fix.testRequest(Status.UNAUTHORIZED, Verb.GET, List("fake-token"))
+    intercept[UnauthorizedException] {
+      fix.test.request(Verb.GET, List("fake-token"))
+    }
   }
 
   test("Get w/ AuthToken => OK") {
     val fix = new AuthFixture
     val authToken = fix.login("guest", "guest")
-    fix.testRequest(Status.OK, Verb.GET, List(authToken.getToken))
+    fix.test.request(Verb.GET, List(authToken.getToken))
   }
 
   test("Get w/ Revoked AuthToken => Unauthorized") {
@@ -227,7 +228,9 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     val authToken = fix.login("guest", "guest")
     fix.authService.delete(authToken).expectOne()
 
-    fix.testRequest(Status.UNAUTHORIZED, Verb.GET, List(authToken.getToken))
+    intercept[UnauthorizedException] {
+      fix.test.request(Verb.GET, List(authToken.getToken))
+    }
   }
 
   test("Put w/o Access => Unauthorized") {
@@ -235,7 +238,9 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
 
     val authToken = fix.login("guest", "guest")
 
-    fix.testRequest(Status.UNAUTHORIZED, Verb.PUT, List(authToken.getToken))
+    intercept[UnauthorizedException] {
+      fix.test.request(Verb.PUT, List(authToken.getToken))
+    }
   }
 
   test("Put w/ Access => OK") {
@@ -244,7 +249,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     val authToken1 = fix.login("guest", "guest")
     val authToken2 = fix.login("core", "core")
 
-    fix.testRequest(Status.OK, Verb.PUT, List(authToken1.getToken, authToken2.getToken))
+    fix.test.request(Verb.PUT, List(authToken1.getToken, authToken2.getToken))
   }
 
 }

@@ -24,7 +24,7 @@ package org.totalgrid.reef.util
  * manually and "weakly" read the value ("weakly" means that we wont force it
  * to evaluate if it hasn't already been read).
  *
- * Lossley based on code from:
+ * Loosely based on code from:
  * http://scala-programming-language.1934581.n4.nabble.com/lazy-var-td1943810.html
  */
 class LazyVar[A](init: => A) {
@@ -56,7 +56,7 @@ class LazyVar[A](init: => A) {
   }
 
   /**
-   * Gets an option representing whether the value has been filled out or not. usefull
+   * Gets an option representing whether the value has been filled out or not. useful
    * for code that wants to iterate over fields without forcing the values to be loaded:
    * Ex:
    * entity.attribute.asOption.map{value => println(value)}

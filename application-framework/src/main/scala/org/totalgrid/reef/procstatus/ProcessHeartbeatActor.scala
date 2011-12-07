@@ -18,17 +18,19 @@
  */
 package org.totalgrid.reef.procstatus
 
-import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 
-import org.totalgrid.reef.executor.{ Executor, Lifecycle }
+import org.totalgrid.reef.client.service.proto.Application.HeartbeatConfig
+import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.proto.Application.HeartbeatConfig
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.util.{ Timer, Logging }
-import org.totalgrid.reef.japi.request.ApplicationService
+import org.totalgrid.reef.client.sapi.rpc.ApplicationService
+import org.totalgrid.reef.client.exception.ReefServiceException
 
-abstract class ProcessHeartbeatActor(services: ApplicationService, configuration: HeartbeatConfig)
-    extends Executor with Lifecycle with Logging {
+import net.agileautomata.executor4s._
+import org.totalgrid.reef.util.Lifecycle
+
+class ProcessHeartbeatActor(services: ApplicationService, configuration: HeartbeatConfig, exe: Executor)
+    extends Lifecycle with Logging {
 
   private def makeProto(online: Boolean): StatusSnapshot = {
     StatusSnapshot.newBuilder
@@ -41,12 +43,11 @@ abstract class ProcessHeartbeatActor(services: ApplicationService, configuration
   private var repeater: Option[Timer] = None
 
   override def afterStart() = {
-    repeater = Some(this.repeat(configuration.getPeriodMs)(heartbeat))
+    repeater = Some(exe.scheduleWithFixedOffset(configuration.getPeriodMs.milliseconds)(heartbeat()))
   }
 
   override def beforeStop() = {
     repeater.foreach(_.cancel)
-    // beforeStop is called on the executor thread
     publish(makeProto(false))
   }
 
@@ -54,7 +55,7 @@ abstract class ProcessHeartbeatActor(services: ApplicationService, configuration
 
   private def publish(ss: StatusSnapshot) {
     try {
-      services.sendHeartbeat(ss)
+      services.sendHeartbeat(ss).await
     } catch {
       case rse: ReefServiceException =>
         logger.warn("Problem sending heartbeat: " + rse.getMessage)

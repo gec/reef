@@ -24,13 +24,16 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.FEP
+import org.totalgrid.reef.client.service.proto.FEP
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.mockito.Mockito
 
 @RunWith(classOf[JUnitRunner])
 class AddRemoveValidationTest extends FunSuite with ShouldMatchers {
 
   import RecordingProtocol._
 
+  val client = Mockito.mock(classOf[Client])
   val channel = FEP.CommChannel.newBuilder.setName("port1").build()
 
   // ordering here is important as there are stacking traits.
@@ -48,22 +51,22 @@ class AddRemoveValidationTest extends FunSuite with ShouldMatchers {
   test("AddEndpointWithoutPort") {
     val m = getProtocol
 
-    intercept[IllegalArgumentException](m.addEndpoint("ep", "unknown", Nil, NullBatchPublisher, NullEndpointPublisher))
+    intercept[IllegalArgumentException](m.addEndpoint("ep", "unknown", Nil, NullBatchPublisher, NullEndpointPublisher, client))
   }
 
   test("EndpointAlreadyExists") {
     val m = getProtocol
-    m.addChannel(channel, NullChannelPublisher)
-    m.addEndpoint("ep", "port1", Nil, NullBatchPublisher, NullEndpointPublisher)
-    intercept[IllegalArgumentException](m.addEndpoint("ep", "port1", Nil, NullBatchPublisher, NullEndpointPublisher))
+    m.addChannel(channel, NullChannelPublisher, client)
+    m.addEndpoint("ep", "port1", Nil, NullBatchPublisher, NullEndpointPublisher, client)
+    intercept[IllegalArgumentException](m.addEndpoint("ep", "port1", Nil, NullBatchPublisher, NullEndpointPublisher, client))
   }
 
   def addPortAndTwoEndpoints(m: RecordingProtocol) {
-    m.addChannel(channel, NullChannelPublisher)
+    m.addChannel(channel, NullChannelPublisher, client)
     m.next() should equal(Some(AddChannel(channel.getName)))
-    m.addEndpoint("ep1", "port1", Nil, NullBatchPublisher, NullEndpointPublisher)
+    m.addEndpoint("ep1", "port1", Nil, NullBatchPublisher, NullEndpointPublisher, client)
     m.next() should equal(Some(AddEndpoint("ep1", "port1", Nil)))
-    m.addEndpoint("ep2", "port1", Nil, NullBatchPublisher, NullEndpointPublisher)
+    m.addEndpoint("ep2", "port1", Nil, NullBatchPublisher, NullEndpointPublisher, client)
     m.next() should equal(Some(AddEndpoint("ep2", "port1", Nil)))
     m.next() should equal(None)
   }

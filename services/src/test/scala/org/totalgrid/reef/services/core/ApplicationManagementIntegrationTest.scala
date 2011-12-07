@@ -22,20 +22,19 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.proto.ProcessStatus._
+import org.totalgrid.reef.client.service.proto.ProcessStatus._
 
-import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.proto.Application.{ ApplicationConfig, HeartbeatConfig }
+import org.totalgrid.reef.client.service.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.client.Event
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.Event
 
-import org.totalgrid.reef.proto.ReefServicesList
 import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
-import org.totalgrid.reef.services.{ DependenciesSource, ServiceDependencies, ServiceBootstrap }
-import org.totalgrid.reef.services.framework.ServiceMiddleware
+import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.service.proto.Descriptors
+
+import org.totalgrid.reef.services.{ ConnectionFixture, ServiceBootstrap }
+import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransaction {
@@ -44,27 +43,24 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     ServiceBootstrap.resetDb
   }
 
-  class Fixture(amqp: AMQPProtoFactory) {
+  class Fixture(amqp: Connection) {
 
     val start = System.currentTimeMillis
 
-    val deps = ServiceDependencies(new ServiceEventPublisherRegistry(amqp, ReefServicesList))
-    val headers = new RequestEnv()
-    headers.setUserName("user1")
+    val deps = new ServiceDependenciesDefaults(amqp, amqp)
+    val headers = BasicRequestHeaders.empty.setUserName("user1")
+
     val contextSource = new MockRequestContextSource(deps, headers)
 
     val modelFac = new ModelFactories(deps)
 
-    val processStatusService = new ServiceMiddleware(contextSource, new ProcessStatusService(modelFac.procStatus))
+    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
 
-    val applicationConfigService = new ServiceMiddleware(contextSource, new ApplicationConfigService(modelFac.appConfig))
+    val applicationConfigService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
 
     val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
-    amqp.bindService(applicationConfigService.descriptor.id, applicationConfigService.respond)
-    amqp.bindService(processStatusService.descriptor.id, processStatusService.respond)
-
-    val client = amqp.getProtoClientSession(ReefServicesList, 5000)
+    val client = amqp.login("")
 
     /// current state of the StatusSnapshot
     var lastSnapShot = new SyncVar[Option[StatusSnapshot]](None: Option[StatusSnapshot])
@@ -73,7 +69,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     val appConfig = registerInstance()
 
     /// use the appConfig information to setup the heartbeat publisher
-    val hbeatSink = { hbeat: StatusSnapshot => client.put(hbeat).await.expectOne }
+    val hbeatSink = { hbeat: StatusSnapshot => processStatusService.put(hbeat).expectOne }
 
     /// setup the subscription to the Snapshot service so we track the current status of the application
     subscribeSnapshotStatus()
@@ -82,19 +78,14 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
       val b = ApplicationConfig.newBuilder()
       b.setUserName("proc").setInstanceName("proc01").setNetwork("any").setLocation("farm1").addCapabilites("Processing")
       b.setHeartbeatCfg(HeartbeatConfig.newBuilder.setPeriodMs(100)) // override the default period
-      client.put(b.build).await().expectOne()
+      applicationConfigService.put(b.build).expectOne
     }
 
     private def subscribeSnapshotStatus() {
-      val eventQueueName = new SyncVar("")
-      val hbeatSource = amqp.getEventQueue(StatusSnapshot.parseFrom, { evt: Event[StatusSnapshot] => lastSnapShot.update(Some(evt.value)) }, { q => eventQueueName.update(q) })
 
-      // wait for the queue name to get populated (actor srtup delay)
-      eventQueueName.waitWhile("")
+      val env = getSubscriptionQueue(client, Descriptors.statusSnapshot, { evt: Event[StatusSnapshot] => lastSnapShot.update(Some(evt.value)) })
 
-      val env = new RequestEnv
-      env.setSubscribeQueue(eventQueueName.current)
-      val config = client.get(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env).await().expectOne()
+      val config = processStatusService.get(StatusSnapshot.newBuilder.setInstanceName(appConfig.getInstanceName).build, env).expectOne()
       // do some basic checks to make sure we got the correct initial state
       config.getInstanceName should equal(appConfig.getInstanceName)
       config.getOnline should equal(true)
@@ -124,7 +115,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
   }
 
   test("Application Timesout") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new Fixture(amqp)
 
       fix.checkTimeouts(fix.start + 1000000)
@@ -134,7 +125,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
   }
 
   test("Application Stays Online w/ Heartbeats") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new Fixture(amqp)
 
       fix.checkTimeouts(fix.start + 1)
@@ -151,7 +142,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
   }
 
   test("Application can go offline cleanly") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new Fixture(amqp)
 
       fix.doHeartBeat(false, fix.start + 200)
@@ -160,7 +151,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
   }
 
   test("Application can go online/offline") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new Fixture(amqp)
 
       fix.doHeartBeat(false, fix.start + 200)

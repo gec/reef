@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Table

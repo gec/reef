@@ -1,5 +1,3 @@
-package org.totalgrid.reef.measurementstore.squeryl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,86 +16,50 @@ package org.totalgrid.reef.measurementstore.squeryl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas }
+package org.totalgrid.reef.measurementstore.squeryl
+
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 
 import org.totalgrid.reef.measurementstore.MeasurementStore
 
 import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.persistence.ConnectionOperations
+import org.totalgrid.reef.client.exception.InternalServiceException
 
 /**
  * implementation of measurement store that uses SqlMeasurementStoreOperations functions,
  * handles sync/async, opening/closing database transaction and error message generation
  */
-class SqlMeasurementStore(connection: ConnectionOperations[Boolean]) extends MeasurementStore {
+object SqlMeasurementStore extends MeasurementStore {
 
   override val supportsTrim = true
 
-  override def reset(): Boolean = {
-    connection.doSync[Boolean] { r =>
-      Some(transaction {
-        SqlMeasurementStoreOperations.reset
-      })
-    }.getOrElse(throw new Exception("Couldn't reset database"))
-  }
+  override def reset(): Boolean = attempt("Couldn't reset database")(SqlMeasurementStoreOperations.reset)
 
-  override def trim(numPoints: Long): Long = {
-    connection.doSync[Long] { r =>
-      Some(transaction {
-        SqlMeasurementStoreOperations.trim(numPoints)
-      })
-    }.getOrElse(throw new Exception("Couldn't trim database"))
-  }
+  override def trim(numPoints: Long): Long =
+    attempt("Couldn't trim database")(SqlMeasurementStoreOperations.trim(numPoints))
 
-  override def points(): List[String] = {
-    connection.doSync[List[String]] { r =>
-      Some(transaction {
-        SqlMeasurementStoreOperations.points
-      })
-    }.getOrElse(throw new Exception("Couldn't get list of points"))
-  }
+  override def points(): List[String] = attempt("Couldn't get list of points")(SqlMeasurementStoreOperations.points)
 
-  def set(meas: Seq[Meas]) {
-    if (!meas.nonEmpty) return
-    connection.doSync { r =>
-      Some(transaction {
-        SqlMeasurementStoreOperations.set(meas)
-      })
-    }.getOrElse(throw new Exception("Couldn't store measurements in measurement store."))
-  }
+  def set(meas: Seq[Meas]) =
+    if (meas.nonEmpty) attempt("Couldn't store measurements in measurement store")(SqlMeasurementStoreOperations.set(meas))
 
   def get(names: Seq[String]): Map[String, Meas] = {
-    if (names.size == 0) return Map.empty[String, Meas]
-
-    connection.doSync[Map[String, Meas]] { r =>
-      Some(transaction {
-        SqlMeasurementStoreOperations.get(names)
-      })
-    }.getOrElse(throw new Exception("Error getting current value for measurements"))
+    if (names.size == 0) Map.empty[String, Meas]
+    else attempt("Error getting current value for measurements")(SqlMeasurementStoreOperations.get(names))
   }
 
-  def numValues(meas_name: String): Int = {
-    connection.doSync[Int] { r =>
-      Some(transaction {
-        SqlMeasurementStoreOperations.numValues(meas_name)
-      })
-    }.get
+  def numValues(meas_name: String): Int =
+    attempt("Error retrieving number of values")(SqlMeasurementStoreOperations.numValues(meas_name))
+
+  def remove(names: Seq[String]): Unit =
+    attempt("Couldn't remove points: " + names)(SqlMeasurementStoreOperations.remove(names))
+
+  def getInRange(meas_name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] =
+    attempt("Error retrieving history")(SqlMeasurementStoreOperations.getInRange(meas_name, begin, end, max, ascending))
+
+  private def attempt[A](msg: String)(f: => A): A = {
+    try { inTransaction(f) }
+    catch { case ex: Exception => throw new InternalServiceException(msg, ex) }
   }
 
-  def remove(names: Seq[String]): Unit = {
-    connection.doAsync { r =>
-      transaction {
-        SqlMeasurementStoreOperations.remove(names)
-      }
-    }
-  }
-
-  def getInRange(meas_name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
-    connection.doSync[Seq[Meas]] { r =>
-      Some(transaction {
-        SqlMeasurementStoreOperations.getInRange(meas_name, begin, end, max, ascending)
-      })
-    }.get
-  }
 }

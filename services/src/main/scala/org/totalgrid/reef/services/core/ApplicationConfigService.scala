@@ -19,20 +19,18 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema, ApplicationCapability }
-import org.totalgrid.reef.proto.Application._
+import org.totalgrid.reef.client.service.proto.Application._
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
-//import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 import scala.collection.JavaConversions._
 
@@ -49,7 +47,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     with ApplicationConfigConversion {
 
   override def createFromProto(context: RequestContext, req: ApplicationConfig): ApplicationInstance = {
-    val sql = create(context, createModelEntry(req, context.headers.userName.get))
+    val sql = create(context, createModelEntry(req, context.getHeaders.userName.get))
 
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })
@@ -62,7 +60,9 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   }
 
   override def updateFromProto(context: RequestContext, req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
-    val (sql, updated) = update(context, createModelEntry(req, context.headers.userName.get), existing)
+
+    val username = context.getHeaders.userName.getOrElse(throw new BadRequestException("No username in headers"))
+    val (sql, updated) = update(context, createModelEntry(req, username), existing)
 
     val newCaps: List[String] = req.getCapabilitesList.toList
     val oldCaps: List[String] = sql.capabilities.value.toList.map { _.capability }
@@ -82,6 +82,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
 
   override def postDelete(context: RequestContext, sql: ApplicationInstance) {
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id)
+    ApplicationSchema.heartbeats.deleteWhere(c => c.applicationId === sql.id)
   }
 }
 
@@ -91,7 +92,7 @@ trait ApplicationConfigConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(proto: ApplicationConfig) = ProtoRoutingKeys.generateRoutingKey {
-    proto.uuid.uuid :: proto.instanceName :: Nil
+    proto.uuid.value :: proto.instanceName :: Nil
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
@@ -101,7 +102,7 @@ trait ApplicationConfigConversion
   }
 
   def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.instanceName, proto.instanceName.map(x => List("Application")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.instanceName, proto.instanceName.map(x => List("Application")))
     List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
 
@@ -119,11 +120,11 @@ trait ApplicationConfigConversion
 
   def convertToProto(entry: ApplicationInstance): ApplicationConfig = {
 
-    val hbeat = entry.heartbeat
+    val hbeat = entry.heartbeat.value
 
     val h = HeartbeatConfig.newBuilder
-      .setPeriodMs(hbeat.value.periodMS)
-      .setProcessId(hbeat.value.processId)
+      .setPeriodMs(hbeat.periodMS)
+      .setProcessId(hbeat.processId)
       .setInstanceName(entry.instanceName)
 
     val b = ApplicationConfig.newBuilder
@@ -133,6 +134,8 @@ trait ApplicationConfigConversion
       .setNetwork(entry.network)
       .setLocation(entry.location)
       .setHeartbeatCfg(h)
+      .setOnline(hbeat.isOnline)
+      .setTimesOutAt(hbeat.timeoutAt)
 
     entry.capabilities.value.foreach(x => b.addCapabilites(x.capability))
     b.build

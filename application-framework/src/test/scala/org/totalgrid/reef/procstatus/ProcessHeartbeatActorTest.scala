@@ -23,12 +23,14 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.ProcessStatus.StatusSnapshot
-import org.totalgrid.reef.proto.Application.HeartbeatConfig
+import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.client.service.proto.Application.HeartbeatConfig
 
-import org.totalgrid.reef.executor.mock.{ MockExecutorTrait }
-import org.totalgrid.reef.japi.request.{ ApplicationService }
 import org.mockito.{ ArgumentCaptor, Mockito }
+import org.totalgrid.reef.client.sapi.rpc.ApplicationService
+import net.agileautomata.executor4s.testing.MockExecutor
+import net.agileautomata.executor4s._
+import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 
 @RunWith(classOf[JUnitRunner])
 class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
@@ -45,19 +47,22 @@ class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
   test("Heartbeats are sent") {
     val services = Mockito.mock(classOf[ApplicationService])
     val argument = ArgumentCaptor.forClass(classOf[StatusSnapshot])
-    Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(null)
+    val promise = new FixedPromise(Success(StatusSnapshot.getDefaultInstance))
+    Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(promise)
 
-    val actor = new ProcessHeartbeatActor(services, makeConfig) with MockExecutorTrait
+    val mockExecutor = new MockExecutor
+
+    val actor = new ProcessHeartbeatActor(services, makeConfig, mockExecutor)
 
     actor.start()
 
-    actor.numActionsPending should equal(1)
-    actor.repeatNext(1, 1) should equal(REPEAT_TIME)
+    mockExecutor.numQueuedTimers should equal(1)
+    mockExecutor.tick(20.milliseconds)
     argument.getValue.getOnline should equal(true)
 
     actor.stop()
 
-    actor.numActionsPending should equal(0)
+    mockExecutor.numQueuedTimers should equal(0)
     argument.getValue.getOnline should equal(false)
   }
 }

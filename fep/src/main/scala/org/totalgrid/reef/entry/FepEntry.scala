@@ -20,85 +20,98 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-
-import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleWrapper, Lifecycle, LifecycleManager }
-
-import org.totalgrid.reef.frontend.FrontEndManager
-import org.totalgrid.reef.app.{ ApplicationEnroller, CoreApplicationComponents }
 import org.totalgrid.reef.protocol.api.Protocol
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.osgi.OsgiConfigReader
-
 import com.weiglewilczek.scalamodules._
 
-import org.totalgrid.reef.broker.BrokerProperties
-import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.app._
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import net.agileautomata.executor4s.Cancelable
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.frontend._
+import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 
-class FepActivator extends BundleActivator with Logging {
+final class FepActivator extends ExecutorBundleActivator with Logging {
 
-  private var map = Map.empty[Protocol, Lifecycle]
-  private var amqp: Option[AMQPProtoFactory] = None
-  private val manager = new LifecycleManager
+  private var map = Map.empty[Protocol, ConnectionConsumer]
 
-  def start(context: BundleContext) {
+  private var manager = Option.empty[ConnectionCloseManagerEx]
 
-    org.totalgrid.reef.executor.Executor.setupThreadPools
+  def start(context: BundleContext, exe: Executor) {
 
-    val brokerOptions = BrokerProperties.get(new OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
+    logger.info("Starting FEP bundle..")
+
+    val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    amqp = Some(new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(brokerOptions)
-    })
-
-    manager.add(amqp.get)
+    manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 
     context watchServices withInterface[Protocol] andHandle {
       case AddingService(p, _) => addProtocol(p, userSettings, nodeSettings)
       case ServiceRemoved(p, _) => removeProtocol(p)
     }
 
-    manager.start
+    manager.foreach { _.start }
   }
 
-  def stop(context: BundleContext) = manager.stop()
+  def stop(context: BundleContext, exe: Executor) = {
+    manager.foreach { _.stop }
+    logger.info("Stopped FEP bundle..")
+  }
 
   private def addProtocol(p: Protocol, userSettings: UserSettings, nodeSettings: NodeSettings) = map.synchronized {
     map.get(p) match {
       case Some(x) => logger.info("Protocol already added: " + p.name)
       case None =>
-        val enroller = new ApplicationEnroller(amqp.get, userSettings, nodeSettings, "FEP-" + p.name, List("FEP"), create(List(p), _)) with ReactActorExecutor
-        map = map + (p -> enroller)
-        manager.add(enroller)
+        val appConfigConsumer = new AppEnrollerConsumer {
+          // Downside of using classes not functions, we can't partially evalute
+          def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
+            create(client, services, appConfig, List(p))
+          }
+        }
+        val appEnroller = new ApplicationEnrollerEx(nodeSettings, "FEP-" + p.name, List("FEP"), appConfigConsumer)
+        val userLogin = new UserLogin(userSettings, appEnroller)
+
+        map = map + (p -> userLogin)
+        manager.foreach { _.addConsumer(userLogin) }
     }
   }
 
   private def removeProtocol(p: Protocol) = map.synchronized {
     map.get(p) match {
-      case Some(lifecycle) =>
+      case Some(enroller) =>
         map = map - p
-        manager.remove(lifecycle)
+        manager.foreach { _.removeConsumer(enroller) }
       case None => logger.warn("Protocol not found: " + p.name)
     }
   }
 
-  private def create(protocols: Seq[Protocol], components: CoreApplicationComponents): Lifecycle = {
+  private def create(client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
+    val services = new FrontEndProviderServicesImpl(client)
 
-    val exe = new ReactActorExecutor {}
+    val frontEndConnections = new FrontEndConnections(protocols, services, client)
+    val populator = new EndpointConnectionPopulatorAction(services)
+    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client)
 
     // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events
     val fem = new FrontEndManager(
-      components.registry,
-      exe,
-      protocols,
-      components.appConfig,
+      services,
+      services,
+      connectionContext,
+      appConfig,
+      protocols.map { _.name }.toList,
       5000)
 
-    new LifecycleWrapper(components.heartbeatActor :: exe :: fem :: Nil)
+    fem.start
+    new Cancelable {
+      def cancel() {
+        fem.stop
+      }
+    }
   }
-
 }

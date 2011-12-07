@@ -20,16 +20,11 @@ package org.totalgrid.reef.measproc.processing
 
 import org.totalgrid.reef.measproc.MeasProcServiceContext
 import org.totalgrid.reef.persistence.ObjectCache
-import org.totalgrid.reef.proto.{ Measurements, Processing }
-import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.proto.Model.Entity
-import Measurements._
-import Processing._
-import org.totalgrid.reef.app.SubscriptionProvider
 
-import org.totalgrid.reef.util.Optional._
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.metrics.{ MetricsHooks }
+import org.totalgrid.reef.client.service.proto.Processing.MeasOverride
+import org.totalgrid.reef.client.service.proto.Measurements.{ DetailQual, Quality, Measurement }
 
 object OverrideProcessor {
   def transformSubstituted(meas: Measurement): Measurement = {
@@ -68,7 +63,7 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
   def add(over: MeasOverride) {
     val name = over.getPoint.getName
     val currentlyNIS = map.contains(name)
-    val replaceMeas = over.hasMeas thenGet over.getMeas
+    val replaceMeas = if (over.hasMeas) Some(over.getMeas) else None
 
     logger.info("Adding measurement override on: " + name)
 
@@ -120,19 +115,8 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
   }
 
   def clear() {
-    // TODO: compare maps, delete/publish any cached values not in the new map!
     map = scala.collection.immutable.Map[String, Option[Measurement]]()
     updateMetrics
-  }
-
-  def subscribe(provider: SubscriptionProvider, subscribeProto: Point, ready: () => Unit) = {
-    provider.subscribe(
-      MeasOverride.parseFrom,
-      MeasOverride.newBuilder.setPoint(subscribeProto).build,
-      this.handleResponse,
-      this.handleEvent)
-
-    register(ready)
   }
 
   private def updateMetrics = {

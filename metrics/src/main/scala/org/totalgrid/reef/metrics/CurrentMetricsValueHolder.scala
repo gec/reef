@@ -19,7 +19,7 @@
 package org.totalgrid.reef.metrics
 
 import java.util.concurrent.atomic.AtomicInteger
-import org.totalgrid.reef.util.{ Logging }
+import com.weiglewilczek.slf4s.Logging
 
 trait MetricValueHolder {
   def update(i: Int)

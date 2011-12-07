@@ -1,5 +1,3 @@
-package org.totalgrid.reef.loader.helpers
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,11 +16,12 @@ package org.totalgrid.reef.loader.helpers
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.loader.helpers
 
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 import org.scalatest.{ Assertions, FunSuite }
 import org.totalgrid.reef.loader.LoadingException
 

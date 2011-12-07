@@ -18,18 +18,18 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.Alarms._
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.services.ServiceDependencies
 
-import org.totalgrid.reef.proto.Alarms.EventConfig.Designation
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.client.service.proto.Alarms.EventConfig.Designation
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.client.proto.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class EventConfigServiceTest extends DatabaseUsingTestBase {
@@ -112,9 +112,15 @@ class EventConfigServiceTest extends DatabaseUsingTestBase {
 
     val gotten = service.get(makeEc(builtIn = Some(true))).expectMany().head
 
-    intercept[BadRequestException] {
-      service.delete(gotten)
-    }
+    val defaultText = gotten.getResource
+
+    val altered = service.put(gotten.toBuilder.setResource("Test Value").build).expectOne
+
+    altered.getResource should not equal (defaultText)
+
+    service.delete(gotten).expectOne(Envelope.Status.DELETED)
+
+    service.get(gotten).expectOne.getResource should equal(defaultText)
   }
 
   ////////////////////////////////////////////////////////

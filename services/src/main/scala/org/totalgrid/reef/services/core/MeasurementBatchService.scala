@@ -18,69 +18,80 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.sapi.client._
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
-import org.totalgrid.reef.japi.{ Envelope, BadRequestException }
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
 
-class MeasurementBatchService(pool: SessionPool)
+import net.agileautomata.executor4s.Futures
+import org.totalgrid.reef.client.AddressableDestination
+
+import org.totalgrid.reef.client.sapi.client._
+
+class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] with AuthorizesCreate {
 
   override val descriptor = Descriptors.measurementBatch
 
   override def putAsync(contextSource: RequestContextSource, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) = {
 
-    val requests = contextSource.transaction { context =>
+    val future = contextSource.transaction { context =>
       authorizeCreate(context, req)
 
       // TODO: load all endpoints efficiently
-      val names = req.getMeasList().toList.map(_.getName)
+      val names = req.getMeasList().toList.map(_.getName).distinct
       val points = Point.findByNames(names).toList
 
-      if (!points.forall(_.endpoint.value.isDefined))
-        throw new BadRequestException("Not all points have endpoints set.")
+      if (names.size != points.size) {
+        val missingPoints = names.diff(points.map { _.entityName })
+        throw new BadRequestException("Trying to publish on unknown points: " + missingPoints.mkString(","))
+      }
+
+      val pointsWithoutEndpoints = points.filter(_.endpoint.value.isEmpty)
+
+      if (!pointsWithoutEndpoints.isEmpty) {
+        throw new BadRequestException("No endpoint set for points: " + pointsWithoutEndpoints.map { _.entityName })
+      }
 
       val commEndpoints = points.groupBy(_.endpoint.value.get)
 
-      commEndpoints.size match {
+      val headers = BasicRequestHeaders.empty
+      val commonHeaders = context.getHeaders.getTimeout.map { headers.setTimeout(_) }.getOrElse(headers)
+
+      val requests = commEndpoints.size match {
         //fails with exception if any batch can't be routed
         case 0 => throw new BadRequestException("No Logical Nodes on points: ")
-        case 1 => Request(Envelope.Verb.PUT, req, destination = convertEndpointToDestination(commEndpoints.head._1)) :: Nil
-        case _ => getRequests(req, commEndpoints)
+        case 1 =>
+          val addressedHeaders = commonHeaders.setDestination(convertEndpointToDestination(commEndpoints.head._1))
+          Request(Envelope.Verb.PUT, req, addressedHeaders) :: Nil
+        case _ => getRequests(req, commonHeaders, commEndpoints)
       }
+      val futures = requests.map(req => context.client.request(req.verb, req.payload, Some(req.env)))
+      Futures.gather(context.client, futures)
     }
 
-    val promises = pool.borrow { client =>
-      requests.map { req =>
-        client.request(req.verb, req.payload, req.env, req.destination)
-      }
-    }
-
-    ScatterGather.collect(promises) { results =>
+    future.listen { results =>
       val failures = results.filterNot(_.success)
-      val response = if (failures.size == 0) Success(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
-      else {
-        val msg = failures.mkString(",")
-        Failure(Envelope.Status.INTERNAL_ERROR, msg)
-      }
+      val response: Response[MeasurementBatch] =
+        if (failures.size == 0) SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
+        else FailureResponse(Envelope.Status.INTERNAL_ERROR, failures.mkString(","))
       callback(response)
     }
 
   }
 
-  private def convertEndpointToDestination(ce: CommunicationEndpoint): Destination = ce.frontEndAssignment.value.serviceRoutingKey match {
-    case Some(key) => AddressableDestination(key)
+  private def convertEndpointToDestination(ce: CommunicationEndpoint) = ce.frontEndAssignment.value.serviceRoutingKey match {
+    case Some(key) => new AddressableDestination(key)
     case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.entityName)
   }
 
-  private def getRequests(req: MeasurementBatch, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {
+  private def getRequests(req: MeasurementBatch, commonHeaders: BasicRequestHeaders, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {
     val measList = req.getMeasList().toList
 
     // TODO: more efficient creation of measurement batches
@@ -92,7 +103,8 @@ class MeasurementBatchService(pool: SessionPool)
         points.foreach { p =>
           batch.addMeas(measList.find(_.getName == p.entityName).get)
         }
-        Request(Envelope.Verb.PUT, batch.build, destination = convertEndpointToDestination(ce)) :: sum
+        val headers = commonHeaders.setDestination(convertEndpointToDestination(ce))
+        Request(Envelope.Verb.PUT, batch.build, headers) :: sum
     }
 
   }

@@ -19,14 +19,14 @@
 package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.models._
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
 import org.squeryl.Query
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.measurementstore.{ MeasurementStore }
 
-import org.totalgrid.reef.proto.Measurements
+import org.totalgrid.reef.client.service.proto.Measurements
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 
 trait CommunicationEndpointOfflineBehaviors extends Logging {
@@ -84,7 +84,7 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
   }
 
   private def markCommandsOnline(commands: List[Command]) {
-    // TODO: mark all the commands online in one SQL query reef_techdebt-11
+    // TODO: remove commands.connected
     commands.foreach { c =>
       c.connected = true
       ApplicationSchema.commands.update(c)

@@ -233,7 +233,7 @@
                 </cm:equipment>
 
                 <cm:equipment name="G1">
-                    <cm:analog name="Mwh" index="7" unit="MWh"/>
+                    <cm:analog name="Mwh" index="7" unit="Mwh"/>
                 </cm:equipment>
 
             </cm:equipment>

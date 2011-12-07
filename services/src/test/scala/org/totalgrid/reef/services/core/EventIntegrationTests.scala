@@ -21,35 +21,29 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.messaging.mock.AMQPFixture
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
-import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
-import org.totalgrid.reef.messaging.serviceprovider.ServiceEventPublisherRegistry
-import org.totalgrid.reef.proto.ReefServicesList
+import org.totalgrid.reef.services.ConnectionFixture
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
+import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto, EventList => EventListProto }
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
+import org.totalgrid.reef.client.service.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
 
-import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
+import org.totalgrid.reef.client.service.proto.Utils.{ AttributeList, Attribute }
 
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-  class AlarmTestFixture(amqp: AMQPProtoFactory) {
-    val publishers = new ServiceEventPublisherRegistry(amqp, ReefServicesList)
-    val summaries = new SilentSummaryPoints
-    val deps = ServiceDependencies(publishers, summaries)
-    val env = new RequestEnv()
-    env.setUserName("user")
+  class AlarmTestFixture(amqp: Connection) {
+    val deps = new ServiceDependenciesDefaults(amqp, amqp)
+    val env = BasicRequestHeaders.empty.setUserName("user")
     val contextSource = new MockRequestContextSource(deps, env)
 
-    val factories = new ModelFactories(deps, contextSource)
+    val factories = new ModelFactories(deps)
 
     val alarms = new SyncService(new AlarmService(factories.alarms), contextSource)
     val events = new SyncService(new EventService(factories.events), contextSource)
@@ -63,10 +57,6 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     }
 
     seed()
-
-    val alarmInitializer = new AlarmSummaryInitializer(factories.alarms, summaries)
-    alarmInitializer.addAMQPConsumers(amqp, new InstantExecutor {})
-
     def seed() {
       seed("SubA")
       seed("SubB")
@@ -89,21 +79,23 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
       val toDevId = EntityQueryManager.addEdge(devId, pointId, rel)
     }
 
+    val client = amqp.login("")
+
     def subscribeEvents(expected: Int, req: EventProto) = {
-      val (updates, env) = getEventQueue[EventProto](amqp, EventProto.parseFrom)
+      val (updates, env) = getEventQueue(client, Descriptors.event)
       val result = events.get(req, env).expectMany(expected)
       updates.size should equal(0)
       (result, updates)
     }
 
     def subscribeAlarms(expected: Int, req: AlarmProto) = {
-      val (updates, env) = getEventQueue[AlarmProto](amqp, AlarmProto.parseFrom)
+      val (updates, env) = getEventQueue(client, Descriptors.alarm)
       val result = alarms.get(req, env).expectMany(expected)
       (result, updates)
     }
 
     def subscribeEvents(expected: Int, req: EventListProto) = {
-      val (updates, env) = getEventQueue[EventProto](amqp, EventProto.parseFrom)
+      val (updates, env) = getEventQueue(client, Descriptors.event)
       val result = eventQuery.get(req, env).expectOne()
       updates.size should equal(0)
       result.getEventsCount should equal(expected)
@@ -111,33 +103,10 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     }
 
     def subscribeAlarms(expected: Int, req: AlarmListProto) = {
-      val (updates, env) = getEventQueue[AlarmProto](amqp, AlarmProto.parseFrom)
+      val (updates, env) = getEventQueue(client, Descriptors.alarm)
       val result = alarmQuery.get(req, env).expectOne()
       result.getAlarmsCount should equal(expected)
       (result.getAlarmsList.toList, updates)
-    }
-
-    def checkSummaries(expectedValues: Map[String, Int]) = {
-      // check that the "live" counted summaries match our expectations
-      summaries.getMap should equal(expectedValues)
-
-      // check that a restart at this point would come up with the same numbers
-      val integrityPoll = new SilentSummaryPoints
-      AlarmSummaryCalculations.initializeSummaries(integrityPoll)
-      integrityPoll.getMap should equal(expectedValues)
-
-      expectedValues
-    }
-
-    def checkAllSummariesZero(size: Int) {
-      val m = summaries.getMap
-      m.size should equal(size)
-      m.values.forall { _ == 0 }
-      val integrityPoll = new SilentSummaryPoints
-      AlarmSummaryCalculations.initializeSummaries(integrityPoll)
-      val m2 = integrityPoll.getMap
-      m2.size should equal(size)
-      m2.values.forall { _ == 0 }
     }
   }
 
@@ -198,7 +167,7 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
   val waitTime = 5000
 
   test("Event Subscribe at multiple levels") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new AlarmTestFixture(amqp)
       fix.eventConfigs.put(makeEC("Test.Event", 1, EventConfigProto.Designation.EVENT))
 
@@ -260,7 +229,7 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
   }
 
   test("Alarm Subscribe at mutlipe levels") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new AlarmTestFixture(amqp)
       fix.eventConfigs.put(makeEC("Test.Alarm", 1, EventConfigProto.Designation.ALARM))
       fix.eventConfigs.put(makeEC("Test.Event", 1, EventConfigProto.Designation.EVENT))
@@ -292,7 +261,7 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
   }
 
   test("Alarm Lifecycle updates cause events") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       val fix = new AlarmTestFixture(amqp)
       fix.eventConfigs.put(makeEC("Test.Alarm", 1, EventConfigProto.Designation.ALARM))
       val allAlarmRequest = AlarmProto.newBuilder.setEvent(makeAllEvent).build
@@ -334,62 +303,4 @@ class EventIntegrationTests extends EventIntegrationTestsBase {
       fix.alarms.get(AlarmProto.newBuilder.setState(AlarmProto.State.REMOVED).setEvent(makeAllEvent).build).expectOne()
     }
   }
-
-  test("Alarm Summaries are accurate") {
-    AMQPFixture.mock(true) { amqp =>
-      val fix = new AlarmTestFixture(amqp)
-      fix.eventConfigs.put(makeEC("Test.Alarm1", 1, EventConfigProto.Designation.ALARM))
-      fix.eventConfigs.put(makeEC("Test.Alarm2", 2, EventConfigProto.Designation.ALARM))
-      fix.eventConfigs.put(makeEC("Test.Alarm3", 3, EventConfigProto.Designation.ALARM))
-
-      //fix.checkAllSummariesZero(7)
-
-      val event1 = fix.publishEvent(makeEvent("Test.Alarm1", "FEP", entityName = Some("SubA-DeviceA-PointA")))
-      val event2 = fix.publishEvent(makeEvent("Test.Alarm2", "FEP", entityName = Some("SubA-DeviceA-PointA")))
-      val event3 = fix.publishEvent(makeEvent("Test.Alarm2", "Processing", entityName = Some("SubA-DeviceA-PointA")))
-      val event4 = fix.publishEvent(makeEvent("Test.Alarm3", "FEP", entityName = Some("SubB-DeviceA-PointA")))
-
-      val expectedValues = fix.checkSummaries(Map(
-        "summary.unacked_alarms_severity_1" -> 1,
-        "summary.unacked_alarms_severity_2" -> 2,
-        "summary.unacked_alarms_severity_3" -> 1,
-        "summary.unacked_alarms_subsystem_FEP" -> 3,
-        "summary.unacked_alarms_subsystem_Processing" -> 1,
-        "summary.unacked_alarms_equipment_group_SubA" -> 3,
-        "summary.unacked_alarms_equipment_group_SubB" -> 1))
-
-      // grab alarms so we can acknowledge them
-      val alarm1 = fix.alarms.get(AlarmProto.newBuilder.setEvent(event1).build).expectOne()
-      val alarm2 = fix.alarms.get(AlarmProto.newBuilder.setEvent(event2).build).expectOne()
-      val alarm3 = fix.alarms.get(AlarmProto.newBuilder.setEvent(event3).build).expectOne()
-      val alarm4 = fix.alarms.get(AlarmProto.newBuilder.setEvent(event4).build).expectOne()
-      alarm1.getState should equal(AlarmProto.State.UNACK_AUDIBLE)
-      alarm3.getState should equal(AlarmProto.State.UNACK_AUDIBLE)
-
-      // mark an alarm as silent (this is not the same as acknlowdeged)
-      fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.UNACK_SILENT).build).expectOne()
-      // since the unacked state didnt change neigther should the counts
-      fix.checkSummaries(expectedValues)
-
-      // acknowledge 2 of the alarms
-      fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
-      fix.alarms.put(alarm3.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
-
-      fix.checkSummaries(Map(
-        "summary.unacked_alarms_severity_1" -> 0,
-        "summary.unacked_alarms_severity_2" -> 1,
-        "summary.unacked_alarms_severity_3" -> 1,
-        "summary.unacked_alarms_subsystem_FEP" -> 2,
-        "summary.unacked_alarms_subsystem_Processing" -> 0,
-        "summary.unacked_alarms_equipment_group_SubA" -> 1,
-        "summary.unacked_alarms_equipment_group_SubB" -> 1))
-
-      // acknowledge other alarms
-      fix.alarms.put(alarm1.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
-      fix.alarms.put(alarm3.toBuilder.setState(AlarmProto.State.ACKNOWLEDGED).build).expectOne()
-
-      fix.checkAllSummariesZero(7)
-    }
-  }
-
 }

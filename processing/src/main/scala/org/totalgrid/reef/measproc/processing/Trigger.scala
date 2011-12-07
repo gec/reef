@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.measproc.processing
 
-import org.totalgrid.reef.proto.Measurements._
+import org.totalgrid.reef.client.service.proto.Measurements._
 import org.totalgrid.reef.persistence.ObjectCache
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 object Trigger extends Logging {
-  import org.totalgrid.reef.util.Optional._
 
   /**
    * Super-type for condition logic.

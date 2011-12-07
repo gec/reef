@@ -62,6 +62,8 @@ class AsyncValue[A] {
 
 }
 
+// TODO: remove all uses of SyncVar
+
 // New implementation of sync var uses standard synchronization and a mutable queue
 class SyncVar[A](initialValue: Option[A] = None) {
 
@@ -89,10 +91,18 @@ class SyncVar[A](initialValue: Option[A] = None) {
     current
   }
 
+  def waitUntil(value: A): Boolean = {
+    waitUntil(value, defaultTimeout, true, None)
+  }
+
   def waitUntil(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Option[A] => Exception] = None): Boolean = {
     def getException(x: Option[A]) = new Exception("Condition not met, final value was: " + x + " not: " + value)
     val exception = customException.orElse(Some(getException(_)))
     waitFor(current => current == value, msec, throwOnFailure, exception)
+  }
+
+  def waitWhile(value: A): Boolean = {
+    waitUntil(value, defaultTimeout, true, None)
   }
 
   def waitWhile(value: A, msec: Long = defaultTimeout, throwOnFailure: Boolean = true, customException: => Option[Option[A] => Exception] = None): Boolean = {

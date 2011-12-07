@@ -19,18 +19,14 @@
 package org.totalgrid.reef.osgi
 
 import org.osgi.framework._
-import org.osgi.service.cm.{ ConfigurationAdmin, Configuration }
+import org.osgi.service.cm.ConfigurationAdmin
 
 import com.weiglewilczek.scalamodules._
 
-import scala.collection.immutable.Map
-import scala.collection.JavaConversions._
-
-import org.totalgrid.reef.util.{ ConfigReader, Logging }
-
 import java.util.{ Dictionary, Hashtable }
+import com.weiglewilczek.slf4s.Logging
 
-class OsgiConfigReader(context: BundleContext, pid: String) extends ConfigReader with Logging {
+class OsgiConfigReader(context: BundleContext, pid: String) extends Logging {
 
   private val config = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
     service.getConfiguration(pid)
@@ -39,12 +35,11 @@ class OsgiConfigReader(context: BundleContext, pid: String) extends ConfigReader
     case None => throw new Exception("Unable to find ConfigurationAdmin service")
   }
 
-  private val props: Dictionary[String, String] = config.getProperties match {
-    case null => new Hashtable[String, String]
-    case x: Dictionary[_, _] => x.asInstanceOf[Dictionary[String, String]]
+  private val props: Dictionary[AnyRef, AnyRef] = Option(config.getProperties) match {
+    case None => new Hashtable[AnyRef, AnyRef]
+    case Some(x: Dictionary[AnyRef, AnyRef]) => x
   }
 
-  def getProp(key: String): Option[String] = Option(props.get(key))
   def getProperties = props
 }
 

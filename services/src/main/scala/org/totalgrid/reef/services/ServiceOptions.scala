@@ -18,45 +18,38 @@
  */
 package org.totalgrid.reef.services
 
-import scala.collection.immutable._
-
-import org.totalgrid.reef.util.{ ConfigReader, BuildEnv }
+import java.util.Dictionary
+import org.totalgrid.reef.client.settings.util.{ PropertyReader, PropertyLoading }
 
 object ServiceOptions {
 
-  def loadInfo(env: String): ServiceOptions = get(BuildEnv.cfgFileReader("services", env))
-
-  def loadInfo(): ServiceOptions = loadInfo(BuildEnv.environment)
-
-  def get(cr: ConfigReader): ServiceOptions = {
-    val metrics = cr.getBoolean("org.totalgrid.reef.services.metrics", true)
-    val metricsSplitByVerb = cr.getBoolean("org.totalgrid.reef.services.metricsSplitByVerb", false)
-    val metricsSplitByService = cr.getBoolean("org.totalgrid.reef.services.metricsSplitByService", false)
-    val useAuth = cr.getBoolean("org.totalgrid.reef.services.useAuth", true)
-    val slowQueryThresholdMs = cr.getInt("org.totalgrid.reef.services.slowQueryThresholdMs", 500)
-    val maxMeas = cr.getLong("org.totalgrid.reef.services.maxMeasurements", 2 * 1024 * 1024)
-    val trimPeriod = cr.getInt("org.totalgrid.reef.services.trimPeriodMinutes", 15)
-
-    ServiceOptions(metrics, metricsSplitByVerb, metricsSplitByService /*, useAuth*/ , slowQueryThresholdMs, maxMeas, trimPeriod)
-  }
-
+  def fromFile(fileName: String) = new ServiceOptions(PropertyReader.readFromFile(fileName))
 }
 
 case class ServiceOptions(
-  /// whether to instrument service requests at all
-  metrics: Boolean,
-  /// track verbs separately(false => 3 pts/service; true => 15 pts/service)
-  metricsSplitByVerb: Boolean,
-  /// track services separately (true => N verbs * M service; or N verbs * 1)  
-  metricsSplitByService: Boolean,
+    /// whether to instrument service requests at all
+    metrics: Boolean,
+    /// track verbs separately(false => 3 pts/service; true => 15 pts/service)
+    metricsSplitByVerb: Boolean,
+    /// track services separately (true => N verbs * M service; or N verbs * 1)  
+    metricsSplitByService: Boolean,
 
-  /// whether we are turning on "auth checking" for all services, only optional during transitory phase
-  // val auth: Boolean,
+    /// whether we are turning on "auth checking" for all services, only optional during transitory phase
+    // val auth: Boolean,
 
-  /// threshold for when a request took too long and should be logged
-  slowQueryThreshold: Long,
-  /// maximum # of measurements to allow in the history table
-  maxMeasurements: Long,
-  /// how often to clean excess measurements from history table
-  trimPeriodMinutes: Long)
+    /// threshold for when a request took too long and should be logged
+    slowQueryThreshold: Long,
+    /// maximum # of measurements to allow in the history table
+    maxMeasurements: Long,
+    /// how often to clean excess measurements from history table
+    trimPeriodMinutes: Long) {
+
+  def this(props: Dictionary[Object, Object]) = this(
+    PropertyLoading.getBoolean("org.totalgrid.reef.services.metrics", props),
+    PropertyLoading.getBoolean("org.totalgrid.reef.services.metricsSplitByVerb", props),
+    PropertyLoading.getBoolean("org.totalgrid.reef.services.metricsSplitByService", props),
+    PropertyLoading.getInt("org.totalgrid.reef.services.slowQueryThresholdMs", props),
+    PropertyLoading.getLong("org.totalgrid.reef.services.maxMeasurements", props),
+    PropertyLoading.getInt("org.totalgrid.reef.services.trimPeriodMinutes", props))
+}
 

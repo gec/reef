@@ -18,23 +18,21 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 //implicits
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.client.service.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class OverrideConfigService(protected val model: OverrideConfigServiceModel)
     extends SyncModeledServiceBase[MeasOverride, OverrideConfig, OverrideConfigServiceModel]
@@ -82,7 +80,7 @@ trait OverrideConfigConversion
   val table = ApplicationSchema.overrides
 
   def getRoutingKey(req: MeasOverride) = ProtoRoutingKeys.generateRoutingKey(
-    req.point.logicalNode.uuid.uuid :: req.point.name :: Nil)
+    req.point.endpoint.uuid.value :: req.point.name :: Nil)
 
   def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {
     List(

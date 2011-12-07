@@ -18,55 +18,68 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
-import org.totalgrid.reef.services.core.{ SilentSummaryPoints, SummaryPoints }
-import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceSubscriptionHandler, SilentEventPublishers, ServiceEventPublishers }
-import org.totalgrid.reef.japi.Envelope.Event
-import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.measurementstore.MeasurementStore
+import org.totalgrid.reef.event.SystemEventSink
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.client.sapi.client.rest.{ Connection, SubscriptionHandler }
+import org.totalgrid.reef.models.AuthPermission
 
-case class ServiceDependencies(pubs: ServiceEventPublishers = new SilentEventPublishers,
-  summaries: SummaryPoints = new SilentSummaryPoints,
-  cm: MeasurementStore = new InMemoryMeasurementStore,
-  eventSink: SystemEventSink = new SilentEventSink,
-  coordinatorExecutor: Executor = new InstantExecutor)
+class ServiceDependencies(
+  connection: Connection,
+  pubs: SubscriptionHandler,
+  val measurementStore: MeasurementStore,
+  eventSink: SystemEventSink,
+  authToken: String) extends RequestContextDependencies(connection, pubs, authToken, eventSink)
 
-class HeadersRequestContext(
-  extraHeaders: RequestEnv = new RequestEnv,
-  dependencies: ServiceDependencies = new ServiceDependencies)
-    extends DependenciesRequestContext(dependencies) {
-  headers.merge(extraHeaders)
+class RequestContextDependencies(
+  val connection: Connection,
+  val pubs: SubscriptionHandler,
+  val authToken: String,
+  val eventSink: SystemEventSink)
+
+trait HeadersContext {
+  protected var headers = BasicRequestHeaders.empty
+
+  def getHeaders = headers
+
+  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders = {
+    val newHeaders = modify(headers)
+    headers = newHeaders
+    newHeaders
+  }
 }
 
-class AllTypeServiceSubscriptionHandler(dependencies: ServiceDependencies) extends ServiceSubscriptionHandler {
-  def publish(event: Event, resp: GeneratedMessage, key: String) = {
-    dependencies.pubs.getEventSink(resp.getClass).publish(event, resp, key)
-  }
+trait PermissionsContext {
+  protected var permissions = Option.empty[List[AuthPermission]]
 
-  def bind(subQueue: String, key: String, request: AnyRef) = {
-    dependencies.pubs.getEventSink(request.getClass).bind(subQueue, key, request)
-  }
+  def getPermissions = permissions
+  def setPermissions(p: List[AuthPermission]) = permissions = Some(p)
 }
 
-class DependenciesRequestContext(dependencies: ServiceDependencies) extends RequestContext {
-
-  val headers = new RequestEnv
+class DependenciesRequestContext(dependencies: RequestContextDependencies) extends RequestContext with HeadersContext with PermissionsContext {
 
   val operationBuffer = new BasicOperationBuffer
 
-  val subHandler = new AllTypeServiceSubscriptionHandler(dependencies)
+  val subHandler = dependencies.pubs
 
   val eventSink = dependencies.eventSink
+
+  def client = dependencies.connection.login(dependencies.authToken)
 }
 
-class DependenciesSource(dependencies: ServiceDependencies) extends RequestContextSource {
+class DependenciesSource(dependencies: RequestContextDependencies) extends RequestContextSource {
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
     ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
   }
 }
-class SimpleRequestContextSource extends DependenciesSource(new ServiceDependencies)
+
+// TODO: get rid of all uses of NullRequestContext
+class NullRequestContext extends RequestContext with HeadersContext with PermissionsContext {
+
+  def client = throw new Exception
+  def eventSink = throw new Exception
+  def operationBuffer = throw new Exception
+  def subHandler = throw new Exception
+}

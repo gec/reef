@@ -19,8 +19,7 @@
 package org.totalgrid.reef.util
 
 /**
- *  Function for timing operations
- *
+ * methods for determining elapsed time for a supplied function.
  */
 object Timing {
 
@@ -28,9 +27,9 @@ object Timing {
    * Runs a block of code and returns how long it took in milliseconds (not the return value of the block)
    */
   def benchmark[A](fun: => A): Long = {
-    val start = System.currentTimeMillis
+    val start = System.nanoTime
     fun
-    System.currentTimeMillis - start
+    convertNanoToMilli(System.nanoTime - start)
   }
 
   /**
@@ -43,10 +42,12 @@ object Timing {
    * Runs a block of code and passes the length of time it took to another function
    */
   def time[A](timingFun: Long => Unit)(fun: => A): A = {
-    val start = System.currentTimeMillis
+    val start = System.nanoTime
     val ret = fun
-    timingFun(System.currentTimeMillis - start)
+    timingFun(convertNanoToMilli(System.nanoTime() - start))
     ret
   }
+
+  def convertNanoToMilli[A](value: Long): Long = scala.math.floor(value / 1000000d).toLong
 
 }

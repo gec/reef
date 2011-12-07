@@ -25,26 +25,23 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.loader.sx.communications._
 
-import org.totalgrid.reef.loader.helpers.CachingModelLoader
-import org.totalgrid.reef.util.{ Logging, BuildEnv }
+import com.weiglewilczek.slf4s.Logging
 import org.scalatest.{ Assertions, BeforeAndAfterAll }
 import collection.mutable.{ HashMap }
 
-import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
-import org.totalgrid.reef.japi.Envelope
 import collection.Seq
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommChannel }
-import org.totalgrid.reef.proto.Model.ConfigFile
+import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint => EndpointProto, CommChannel }
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile
+import org.totalgrid.reef.loader.helpers.CachingModelLoader
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers with Assertions with Logging {
 
   val samplesPath = "assemblies/assembly-common/filtered-resources/samples/"
 
-  case class Fixture(client: MockSyncOperations, modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, loader: CommunicationsLoader,
+  case class Fixture(modelLoader: CachingModelLoader, exceptionCollector: ExceptionCollector, loader: CommunicationsLoader,
       model: CommunicationsModel) {
     def reset {
-      client.reset // reset putQueue, etc.
       loader.reset // Clear profiles, etc.
       modelLoader.reset()
       exceptionCollector.reset()
@@ -59,14 +56,13 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
   def withFixture(test: OneArgTest) = {
 
     // For now, pass in a get function that always returns an empty list.
-    val client = new MockSyncOperations((AnyRef) => Success(Envelope.Status.OK, List[AnyRef]()))
-    val modelLoader = new CachingModelLoader(Some(client))
+    val modelLoader = new CachingModelLoader(None)
     val model = new CommunicationsModel
     val exceptionCollector = new LoadingExceptionCollector
-    val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File(BuildEnv.configPath + samplesPath + "two_substations"))
+    val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File("../" + samplesPath + "two_substations"))
     val loader = new CommunicationsLoader(modelLoader, new LoadCache().loadCacheCommunication, exceptionCollector, commonLoader)
 
-    test(Fixture(client, modelLoader, exceptionCollector, loader, model))
+    test(Fixture(modelLoader, exceptionCollector, loader, model))
   }
 
   def testInterfaces(fixture: Fixture) {
@@ -80,13 +76,9 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
       new Endpoint(endpointName, Some("dnp3"), Some(endpointXmlFileName))
         .set(new Interface("i1", "192.168.100.30", 8003)))
     loader.load(model, equipmentPointUnits, true)
-    logProtos(client.getPutQueue.clone().toList)
-    logger.info("config file count: " + loader.getModelLoader.getModelContainer.getConfigFiles().size)
-    logger.info("entity count: " + loader.getModelLoader.getModelContainer.getEntities().size)
-    logProtos(loader.getModelLoader.getModelContainer.getConfigFiles().keysIterator.toSeq)
     verifyNoLoadExceptions(loader)
-    val protos = client.getPutQueue.clone()
-    protos.length should equal(3)
+    val protos = modelLoader.allProtos
+    protos.length should equal(4)
 
     reset
 
@@ -95,8 +87,8 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
       new Endpoint(endpointName, Some("dnp3"), Some(endpointXmlFileName))
         .set(new Interface("i1")))
     loader.load(model, equipmentPointUnits, true)
-    logProtos(client.getPutQueue.clone().toList)
-    protos should equal(client.getPutQueue)
+
+    protos should equal(modelLoader.allProtos)
 
     reset
 
@@ -105,8 +97,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
       new Endpoint(endpointName, Some("dnp3"), Some(endpointXmlFileName))
         .set(new Interface("i1", 8003)))
     loader.load(model, equipmentPointUnits, true)
-    logProtos(client.getPutQueue.clone().toList)
-    protos should equal(client.getPutQueue)
+    protos should equal(modelLoader.allProtos)
 
     reset
 
@@ -115,8 +106,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
       new Endpoint(endpointName, Some("dnp3"), Some(endpointXmlFileName))
         .set(new Interface("i1", "192.168.100.30", 8003)))
     loader.load(model, equipmentPointUnits, true)
-    logProtos(client.getPutQueue.clone().toList)
-    protos should equal(client.getPutQueue)
+    protos should equal(modelLoader.allProtos)
 
     verifyNoLoadExceptions(loader)
   }
@@ -139,9 +129,8 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
             .add(new Analog("Mw", Some(3))
               .set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))))))
     loader.load(model, equipmentPointUnits, true)
-    logProtos(client.getPutQueue.clone().toList)
-    val protos = client.getPutQueue.clone()
-    protos.length should equal(3)
+    val protos = modelLoader.allProtos
+    protos.length should equal(4)
 
     //  With PointProfile and ControlProfile
     //
@@ -160,8 +149,8 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
             .add(new Control("trip", Some(1), controlProfile))
             .add(new Analog("Mw", Some(3), linePowerProfile)))))
     loader.load(model, equipmentPointUnits, true) // T: benchmark
-    logProtos(client.getPutQueue.clone().toList)
-    protos should equal(client.getPutQueue)
+
+    protos should equal(modelLoader.allProtos)
 
     verifyNoLoadExceptions(loader)
   }
@@ -184,9 +173,9 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
             .add(new Analog("Mw", Some(3))
               .set(new Scale(-50.0, 100.0, 100.0, 200.0, "Mw"))))))
     loader.load(model, equipmentPointUnits, true) // T: benchmark
-    logProtos(client.getPutQueue.clone().toList)
-    val protos = client.getPutQueue.clone()
-    protos.length should equal(3)
+
+    val protos = modelLoader.allProtos
+    protos.length should equal(4)
 
     //  With EndpointProfile, PointProfile, and ControlProfile
     //
@@ -207,8 +196,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
       new Endpoint("Endpoint1")
         .add(new EndpointProfile("EndpointProfile1")))
     loader.load(model, equipmentPointUnits, true) // T: benchmark
-    logProtos(client.getPutQueue.clone().toList)
-    protos should equal(client.getPutQueue)
+    protos should equal(modelLoader.allProtos)
 
     //  With control in EndpointProfile, analog not.
     //
@@ -229,8 +217,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
           .add(new Equipment("BigBkr")
             .add(new Analog("Mw", Some(3), linePowerProfile)))))
     loader.load(model, equipmentPointUnits, true) // T: benchmark
-    logProtos(client.getPutQueue.clone().toList)
-    protos should equal(client.getPutQueue)
+    protos should equal(modelLoader.allProtos)
 
     verifyNoLoadExceptions(loader)
   }
@@ -249,10 +236,9 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
           .add(new Equipment("BigBkr")
             .add(new Analog("Mw")))))
     loader.load(model, equipmentPointUnits, true)
-    logProtos(client.getPutQueue.clone().toList)
     verifyNoLoadExceptions(loader)
 
-    client.getPutQueue.clone().length should equal(2)
+    modelLoader.size should equal(2)
   }
 
   def testCommunicationsDnp3WithoutIndexesFails(fixture: Fixture) {
@@ -265,7 +251,7 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     model.add(endpoint)
 
     loader.load(model, equipmentPointUnits)
-    logProtos(client.getPutQueue.clone().toList)
+
     logCollectedExceptions(loader)
 
     expect(2)(loader.getExceptionCollector.getErrors.length)
@@ -286,19 +272,18 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     model.add(endpoint)
 
     loader.load(model, equipmentPointUnits)
-    logProtos(client.getPutQueue.clone().toList)
 
     verifyNoLoadExceptions(loader)
-    val protos: Seq[AnyRef] = client.getPutQueue.clone().toSeq
+    val protos: Seq[AnyRef] = modelLoader.allProtos.toSeq
     protos.length should equal(3)
 
     val commChannelList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommChannel])
     commChannelList.length should equal(1)
     commChannelList.apply(0).asInstanceOf[CommChannel].getName should equal("tcp://127.0.0.1:7799@any")
 
-    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommEndpointConfig])
+    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[EndpointProto])
     endPointConfigList.length should equal(1)
-    endPointConfigList.apply(0).asInstanceOf[CommEndpointConfig].getName should equal(endpoint.getName)
+    endPointConfigList.apply(0).asInstanceOf[EndpointProto].getName should equal(endpoint.getName)
 
     val configFileList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[ConfigFile])
     configFileList.length should equal(1)
@@ -315,15 +300,14 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     model.add(endpoint)
 
     loader.load(model, equipmentPointUnits, true)
-    logProtos(client.getPutQueue.clone().toList)
 
     verifyNoLoadExceptions(loader)
-    val protos: Seq[AnyRef] = client.getPutQueue.clone().toSeq
-    protos.length should equal(2)
+    val protos: Seq[AnyRef] = modelLoader.allProtos.toSeq
+    protos.length should equal(3)
 
-    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[CommEndpointConfig])
+    val endPointConfigList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[EndpointProto])
     endPointConfigList.length should equal(1)
-    endPointConfigList.apply(0).asInstanceOf[CommEndpointConfig].getName should equal(endpoint.getName)
+    endPointConfigList.apply(0).asInstanceOf[EndpointProto].getName should equal(endpoint.getName)
 
     val configFileList: Seq[AnyRef] = protos.filter(proto => proto.isInstanceOf[ConfigFile])
     configFileList.length should equal(1)
@@ -374,13 +358,6 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     }
 
     new Equipment(substationName).add(breaker)
-  }
-
-  private def logProtos(list: Seq[AnyRef]) {
-    logger.debug("")
-    logger.debug("protos: " + list.length)
-    list.foreach(proto => logger.debug("proto(" + proto.getClass.getSimpleName + "): " + proto))
-    logger.debug("")
   }
 
   private def logCollectedExceptions(loader: BaseConfigurationLoader) {

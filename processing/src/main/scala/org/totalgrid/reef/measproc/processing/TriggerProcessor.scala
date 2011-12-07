@@ -20,16 +20,14 @@ package org.totalgrid.reef.measproc.processing
 
 import collection.JavaConversions._
 import collection.immutable
+
 import org.totalgrid.reef.persistence.ObjectCache
-import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.Processing.{ TriggerSet, Trigger => TriggerProto }
-import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.proto.Model.{ Entity }
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.app.{ ServiceContext, SubscriptionProvider }
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.measproc.MeasProcServiceContext
 
 import org.totalgrid.reef.metrics.MetricsHooks
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 
 class TriggerProcessor(protected val next: Measurement => Unit,
   protected val factory: TriggerFactory,
@@ -68,16 +66,6 @@ class TriggerProcessor(protected val next: Measurement => Unit,
     logger.debug("TriggerSet removed: " + set)
     map -= set.getPoint.getName
     updateMetrics
-  }
-
-  def subscribe(provider: SubscriptionProvider, subscribeProto: Point, ready: () => Unit) = {
-    provider.subscribe(
-      TriggerSet.parseFrom,
-      TriggerSet.newBuilder.setPoint(subscribeProto).build,
-      this.handleResponse,
-      this.handleEvent)
-
-    register(ready)
   }
 
   def clear() = {

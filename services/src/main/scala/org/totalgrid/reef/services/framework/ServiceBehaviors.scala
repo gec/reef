@@ -19,9 +19,10 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.services.framework.SquerylModel.NoSearchTermsException
-import org.totalgrid.reef.sapi.client.Response
+import org.totalgrid.reef.client.sapi.client.Response
 
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 /**
  * implementations for common behaviors for the services that use a "model" object.
@@ -40,7 +41,7 @@ object ServiceBehaviors {
     def get(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
         val results = read(context, model, req)
-        context.headers.subQueue.foreach(subscribe(context, model, req, _))
+        context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
         Response(Envelope.Status.OK, results)
       }
     }
@@ -67,7 +68,7 @@ object ServiceBehaviors {
     def put(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
         val (value, status) = create(context, model, req)
-        context.headers.subQueue.foreach(subscribe(context, model, value, _))
+        context.getHeaders.subQueue.foreach(subscribe(context, model, value, _))
         Response(status, value :: Nil)
       }
     }
@@ -84,7 +85,7 @@ object ServiceBehaviors {
           case Some(x) => update(context, model, req, x)
           case None => throw new BadRequestException("Record not found: " + req)
         }
-        context.headers.subQueue.foreach(subscribe(context, model, value, _))
+        context.getHeaders.subQueue.foreach(subscribe(context, model, value, _))
         Response(status, value :: Nil)
       }
     }
@@ -120,7 +121,7 @@ object ServiceBehaviors {
           // TODO: evaluate replacing NoSearchTermsException with flags
           case e: NoSearchTermsException => create(context, model, req)
         }
-        context.headers.subQueue.foreach(subscribe(context, model, proto, _))
+        context.getHeaders.subQueue.foreach(subscribe(context, model, proto, _))
         Response(status, proto :: Nil)
       }
     }
@@ -146,7 +147,7 @@ object ServiceBehaviors {
 
     def delete(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
-        context.headers.subQueue.foreach(subscribe(context, model, req, _))
+        context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
         val deleted = doDelete(context, model, req)
         val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
         Response(status, deleted)

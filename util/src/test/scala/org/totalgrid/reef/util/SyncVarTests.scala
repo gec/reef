@@ -23,8 +23,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import scala.actors.Actor.actor
-import org.totalgrid.reef.util.Conversion._
+import net.agileautomata.commons.testing._
 
 @RunWith(classOf[JUnitRunner])
 class SyncVarTests extends FunSuite with ShouldMatchers {
@@ -47,11 +46,11 @@ class SyncVarTests extends FunSuite with ShouldMatchers {
     val sv = new SyncVar(0)
     val num = 1000
 
-    actor {
+    onAnotherThread {
       num.foreach(i => sv.update(i))
     }
 
-    num.count { i =>
+    num.foreach { i =>
       sv.waitFor(_ == i)
     }
 
@@ -65,7 +64,7 @@ class SyncVarTests extends FunSuite with ShouldMatchers {
     val num = 100 //100 actors w/ 100 increments
 
     num.times {
-      actor {
+      onAnotherThread {
         num.times(sv.atomic(_ + 1))
       }
     }
@@ -77,7 +76,7 @@ class SyncVarTests extends FunSuite with ShouldMatchers {
     val sv = new SyncVar(0)
     val num = 1000
 
-    actor {
+    onAnotherThread {
       num.foreach(i => sv.update(i))
     }
 

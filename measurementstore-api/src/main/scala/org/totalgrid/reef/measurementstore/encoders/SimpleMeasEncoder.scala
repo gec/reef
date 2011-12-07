@@ -21,7 +21,7 @@ package org.totalgrid.reef.measurementstore.encoders
 import java.lang.{ Double => JDouble }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas, Quality, MeasArchive, MeasArchiveUnit }
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas, Quality, MeasArchive, MeasArchiveUnit }
 
 object SimpleMeasEncoder {
 

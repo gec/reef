@@ -19,19 +19,20 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
+
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
-import org.totalgrid.reef.proto.Commands.CommandRequest.ValType
+import org.totalgrid.reef.client.service.proto.Commands.CommandRequest.ValType
+import org.totalgrid.reef.client.service.proto.Model.CommandType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
 class UserCommandRequestServiceModel(
-  accessModel: CommandAccessServiceModel)
+  accessModel: CommandLockServiceModel)
     extends SquerylServiceModel[UserCommandRequest, UserCommandModel]
     with EventedServiceModel[UserCommandRequest, UserCommandModel]
     with UserCommandRequestConversion
@@ -79,13 +80,23 @@ class UserCommandRequestServiceModel(
   def issueRequest(context: RequestContext, cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
     if (accessModel.userHasSelect(cmd, user, atTime)) {
 
-      // TODO: move command SystemEvent publishing into async issuer
-      val (code, valueArg) = cmdRequest._type match {
-        case Some(ValType.NONE) | None => (EventType.Scada.ControlExe, "value" -> "")
-        case Some(ValType.INT) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.intVal.get)
-        case Some(ValType.DOUBLE) => (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
+      def checkCommandType(modelType: Int, requestType: CommandType) {
+        if (modelType != requestType.getNumber)
+          throw new BadRequestException("Cannot execute command with type: " + CommandType.valueOf(modelType) + " with request of type: " + requestType)
       }
-      postSystemEvent(context, code, args = "command" -> cmd.entityName :: valueArg :: Nil)
+
+      val (code, valueArg) = cmdRequest._type match {
+        case Some(ValType.NONE) | None =>
+          checkCommandType(cmd.commandType, CommandType.CONTROL)
+          (EventType.Scada.ControlExe, "value" -> "")
+        case Some(ValType.INT) =>
+          checkCommandType(cmd.commandType, CommandType.SETPOINT_INT)
+          (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.intVal.get)
+        case Some(ValType.DOUBLE) =>
+          checkCommandType(cmd.commandType, CommandType.SETPOINT_DOUBLE)
+          (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
+      }
+      postSystemEvent(context, code, Some(cmd.entity.value), "command" -> cmd.entityName :: valueArg :: Nil)
 
       val expireTime = atTime + timeout
       val status = CommandStatus.EXECUTING.getNumber
@@ -98,7 +109,7 @@ class UserCommandRequestServiceModel(
 
   override def createFromProto(context: RequestContext, req: UserCommandRequest): UserCommandModel = {
 
-    val user = context.headers.userName getOrElse { throw new BadRequestException("User must be in header.") }
+    val user = context.getHeaders.userName getOrElse { throw new BadRequestException("User must be in header.") }
 
     val (id, cmdProto) = if (req.commandRequest.correlationId.isEmpty) {
       val cid = System.currentTimeMillis + "-" + user
@@ -108,7 +119,7 @@ class UserCommandRequestServiceModel(
     }
 
     issueRequest(context,
-      findCommand(req.getCommandRequest.getName),
+      findCommand(req.getCommandRequest.getCommand.getName),
       id,
       user,
       req.getTimeoutMs,
@@ -117,7 +128,7 @@ class UserCommandRequestServiceModel(
 
   override def updateFromProto(context: RequestContext, req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
     if (existing.status != CommandStatus.EXECUTING.getNumber)
-      throw new BadRequestException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
+      throw new BadRequestException("Current status was not executing on update, already: " + CommandStatus.valueOf(existing.status), Envelope.Status.NOT_ALLOWED)
 
     update(context, existing.copy(status = req.getStatus.getNumber), existing)
   }
@@ -129,16 +140,16 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
   def getRoutingKey(req: UserCommandRequest) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid ::
+    req.id.value ::
       req.user ::
-      req.commandRequest.name ::
+      req.commandRequest.command.name ::
       req.commandRequest.correlationId :: Nil
   }
 
   // Relies on implicit to combine LogicalBooleans
   def uniqueQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
-      proto.uid.asParam(sql.id === _.toLong),
+      proto.id.value.asParam(sql.id === _.toLong),
       proto.commandRequest.correlationId.asParam(sql.corrolationId === _))
   }
 
@@ -146,7 +157,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
     List(
       proto.user.map(sql.agent === _),
       proto.status.map(st => sql.status === st.getNumber),
-      proto.commandRequest.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
+      proto.commandRequest.command.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
   }
 
   def isModified(existing: UserCommandModel, updated: UserCommandModel): Boolean = {
@@ -155,7 +166,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
 
   def convertToProto(entry: UserCommandModel): UserCommandRequest = {
     UserCommandRequest.newBuilder
-      .setUid(makeUid(entry))
+      .setId(makeId(entry))
       .setUser(entry.agent)
       .setStatus(CommandStatus.valueOf(entry.status))
       .setCommandRequest(CommandRequest.parseFrom(entry.commandProto))

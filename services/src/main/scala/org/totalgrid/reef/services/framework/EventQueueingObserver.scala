@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.framework
 
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 trait SubscribeFunctions[ServiceType <: GeneratedMessage] {
 
@@ -56,16 +56,16 @@ trait SubscribeEventCreation[ServiceType <: GeneratedMessage, A]
 trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
     extends ModelObserver[A] with SubscribeEventCreation[ServiceType, A] {
 
-  protected def publishEvent(context: RequestContext, event: Envelope.Event, resp: ServiceType, key: String): Unit
+  protected def publishEvent(context: RequestContext, event: SubscriptionEventType, resp: ServiceType, key: String): Unit
 
   protected def onCreated(context: RequestContext, entry: A): Unit = {
-    queueEvent(context, Envelope.Event.ADDED, entry, false)
+    queueEvent(context, SubscriptionEventType.ADDED, entry, false)
   }
   protected def onUpdated(context: RequestContext, entry: A): Unit = {
-    queueEvent(context, Envelope.Event.MODIFIED, entry, false)
+    queueEvent(context, SubscriptionEventType.MODIFIED, entry, false)
   }
   protected def onDeleted(context: RequestContext, entry: A): Unit = {
-    queueEvent(context, Envelope.Event.REMOVED, entry, true)
+    queueEvent(context, SubscriptionEventType.REMOVED, entry, true)
   }
 
   /**
@@ -77,7 +77,7 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
    *      sql object will been deleted and lost access to all linked resources at end of
    *      transaction, if adding, child objects are not generally ready till end of transaction
    */
-  def queueEvent(context: RequestContext, event: Envelope.Event, entry: A, currentSnapshot: Boolean) = {
+  def queueEvent(context: RequestContext, event: SubscriptionEventType, entry: A, currentSnapshot: Boolean) = {
     if (currentSnapshot) {
       val (proto, keys) = getEventProtoAndKey(entry)
       context.operationBuffer.queueInTransaction { keys.foreach(queuePublishEvent(context, event, proto, _)) }
@@ -93,7 +93,7 @@ trait EventQueueingObserver[ServiceType <: GeneratedMessage, A]
    * that way if the reciever of a subscription update immediatley asks for the object he should find it.
    * (It might still be missing if some other process has deleted the object but that is a seperate issue)
    */
-  private def queuePublishEvent(context: RequestContext, event: Envelope.Event, resp: ServiceType, key: String): Unit = {
+  private def queuePublishEvent(context: RequestContext, event: SubscriptionEventType, resp: ServiceType, key: String): Unit = {
     context.operationBuffer.queuePostTransaction { publishEvent(context, event, resp, key) }
   }
 

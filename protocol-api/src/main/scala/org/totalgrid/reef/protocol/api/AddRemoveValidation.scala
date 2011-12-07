@@ -18,10 +18,11 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.{ FEP, Model }
+import org.totalgrid.reef.client.service.proto.{ FEP, Model }
 import scala.collection.immutable
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 trait AddRemoveValidation extends Protocol with Logging {
 
@@ -34,17 +35,17 @@ trait AddRemoveValidation extends Protocol with Logging {
   private var endpoints = immutable.Map.empty[String, Endpoint] /// maps uids to a Endpoint
   private var channels = immutable.Map.empty[String, Channel] /// maps uids to a Port
 
-  abstract override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher): Unit = {
+  abstract override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher, client: Client): Unit = {
     channels.get(p.getName) match {
       case None =>
         channels = channels + (p.getName -> Channel(p, publisher))
-        super.addChannel(p, publisher)
+        super.addChannel(p, publisher, client)
       case Some(x) =>
         logger.info("Ignoring duplicate channel " + p)
     }
   }
 
-  abstract override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher, endpointPublisher: EndpointPublisher): CommandHandler = {
+  abstract override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher, endpointPublisher: EndpointPublisher, client: Client): CommandHandler = {
 
     endpoints.get(endpoint) match {
       case Some(x) => throw new IllegalArgumentException("Endpoint already exists: " + endpoint)
@@ -52,7 +53,7 @@ trait AddRemoveValidation extends Protocol with Logging {
         channels.get(channelName) match {
           case Some(p) =>
             endpoints += endpoint -> Endpoint(endpoint, Some(p.config), config, endpointPublisher)
-            super.addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher)
+            super.addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher, client)
           case None =>
             throw new IllegalArgumentException("Required channel not registered " + channelName)
         }

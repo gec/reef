@@ -11,3 +11,8 @@ Thumbs.db
 **/*.log
 *.ipr
 *.iws
+*.csv
+teamcity-info.xml
+*.cfg
+*.jks
+

@@ -18,28 +18,18 @@
  */
 package org.totalgrid.reef.broker
 
-import org.totalgrid.reef.japi.client.ConnectionListener
+object BrokerState extends Enumeration {
+  type BrokerState = Value
+  val Connected = Value("Connection is open")
+  val Closed = Value("Connection closed locally")
+  val Disconnected = Value("Connection disconnected unexpectedly")
+}
 
-trait BrokerConnection extends BrokerChannelPool {
+case class BrokerDestination(exchange: String, key: String)
 
-  private var connected = false
+case class BrokerMessage(bytes: Array[Byte], replyTo: Option[BrokerDestination])
 
-  /// Set of connection listeners, also used as a mutex
-  private val listeners = scala.collection.mutable.Set.empty[ConnectionListener]
-
-  /**
-   * query the state of the connection
-   *  @return True if connected, false otherwise
-   */
-
-  final def isConnected: Boolean = connected
-
-  /**
-   * Idempotent, blocking connect function
-   *
-   * @return True if the attempt was successful, false otherwise
-   */
-  def connect(): Boolean
+trait BrokerConnection {
 
   /**
    * Idempotent, blocking disconnect function. All created channels are invalidated and closed.
@@ -48,26 +38,34 @@ trait BrokerConnection extends BrokerChannelPool {
    */
   def disconnect(): Boolean
 
-  /// create a new single-thread only interface object that provides low level access to the amqp broker
-  def newChannel(): BrokerChannel
+  def isConnected(): Boolean
 
-  /// sets the connection listener
-  final def addListener(listener: ConnectionListener) = listeners.synchronized {
-    listeners += listener
-  }
+  def declareQueue(queue: String = "*", autoDelete: Boolean = true, exclusive: Boolean = true): String
 
-  final def removeListener(listener: ConnectionListener) = listeners.synchronized {
-    listeners -= listener
-  }
+  def declareExchange(exchange: String, exchangeType: String = "topic"): Unit
 
-  final protected def setOpen() = listeners.synchronized {
-    connected = true
-    listeners.foreach(_.onConnectionOpened())
-  }
+  def bindQueue(queue: String, exchange: String, key: String = "#", unbindFirst: Boolean = false): Unit
 
-  final protected def setClosed(expected: Boolean) = listeners.synchronized {
-    connected = false
-    listeners.foreach(_.onConnectionClosed(expected))
-  }
+  def unbindQueue(queue: String, exchange: String, key: String = "#"): Unit
 
+  def publish(exchange: String, key: String, bytes: Array[Byte], replyTo: Option[BrokerDestination] = None): Unit
+
+  /**
+   * Listen to a named, non-exclusive system queue (competing consumer)
+   */
+  def listen(queue: String): BrokerSubscription
+
+  /*
+    * Listen to a newly created queue exclusive, ephemeral queue
+    */
+  def listen(): BrokerSubscription
+
+  /// Set of connection listeners, also used as a mutex
+  protected val mutex = new Object
+  private var listeners = Set.empty[BrokerConnectionListener]
+
+  final protected def onDisconnect(expected: Boolean) = listeners.foreach(_.onDisconnect(expected))
+
+  final def addListener(listener: BrokerConnectionListener) = mutex.synchronized(listeners += listener)
+  final def removeListener(listener: BrokerConnectionListener) = mutex.synchronized(listeners -= listener)
 }

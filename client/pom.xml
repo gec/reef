@@ -1,0 +1,117 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.totalgrid.reef</groupId>
+        <artifactId>reef-scala-base</artifactId>
+        <version>0.4.1-SNAPSHOT</version>
+        <relativePath>../scala-base</relativePath>
+    </parent>
+
+    <artifactId>reef-client</artifactId>
+    <packaging>bundle</packaging>
+
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${mavenBundleVersion}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>Reef Client API</Bundle-Name>
+                        <Export-Package>
+                            org.totalgrid.reef.client,
+                            org.totalgrid.reef.client.factory,
+                            org.totalgrid.reef.client.javaimpl,
+                            org.totalgrid.reef.client.sapi.client.*,
+                            org.totalgrid.reef.client.sapi.service,
+                            org.totalgrid.reef.client.sapi.client.factory,
+                        </Export-Package>
+                        <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
+                        <_nouses>true</_nouses>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <excludes>
+						<exclude>**/js/jquery*</exclude>
+						<exclude>**/site/site.vm</exclude>
+					</excludes>
+                    <header>../APACHE_FILE_HEADER</header>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- https://github.com/gec/maven-protoc-plugin -->
+                <groupId>com.google.protobuf.tools</groupId>
+                <artifactId>maven-protoc-plugin</artifactId>
+                <version>0.1.9-GEC</version>
+                <configuration>
+                    <protoSourceRoot>src\main\proto</protoSourceRoot>
+                    <outputDirectory>target\generated-sources\java</outputDirectory>
+                </configuration>
+               <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-broker</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
+		<dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-client-common</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-memory-broker</artifactId>
+            <version>${reef.version}</version>
+			<scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.agile-automata.executor4s</groupId>
+            <artifactId>executor4s_2.9.0-1</artifactId>
+            <version>${executor4s.version}</version>
+        </dependency>
+		<dependency>
+            <groupId>net.agile-automata.nio4s</groupId>
+            <artifactId>commons_2.9.0-1</artifactId>
+            <version>${executor4s.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-test-util</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+
+</project>

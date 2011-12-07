@@ -18,45 +18,37 @@
  */
 package org.totalgrid.reef.loader
 
-import org.totalgrid.reef.messaging._
-import org.totalgrid.reef.broker._
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-import org.totalgrid.reef.executor.ReactActorExecutor
-
-import org.totalgrid.reef.sapi.RequestEnv
-
-import org.totalgrid.reef.util.FileConfigReader
-
-import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
+import net.agileautomata.executor4s.Cancelable
+import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
+import org.totalgrid.reef.client.service.list.ReefServices
+import org.totalgrid.reef.loader.commons.LoaderServicesImpl
+import org.totalgrid.reef.client.settings.util.PropertyReader
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 
 object StandaloneLoader {
-  def run(amqp: AMQPProtoFactory, filename: String, benchmark: Boolean, dryRun: Boolean, create: Boolean, username: String, password: String): Unit = {
+  def run(connectionInfo: AmqpSettings, userSettings: UserSettings, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean): Unit = {
+    var cancelable = Option.empty[Cancelable]
     try {
       // we only connect to amqp if we are not doing a dry run
       def client = {
-        amqp.connect(5000)
+        val factory = new ReefFactory(connectionInfo, new ReefServices)
+        val conn = factory.connect
 
-        // client that lets us talk to all the services through 1 interface
-        val client = new AmqpClientSession(amqp, ReefServicesList, 5000)
+        val session = conn.login(userSettings.getUserName, userSettings.getUserPassword).await
 
-        // get an auth token and attach it to the client for all future requests
+        cancelable = Some(new Cancelable {
+          def cancel() = {
+            factory.terminate()
+          }
+        })
 
-        val agent = Agent.newBuilder.setName(username).setPassword(password).build
-        val request = AuthToken.newBuilder.setAgent(agent).build
-
-        val authToken = client.put(request).await().expectOne
-        val env = new RequestEnv
-        env.addAuthToken(authToken.getToken)
-        client.setDefaultHeaders(env)
-
-        client
+        new LoaderServicesImpl(session)
       }
 
-      LoadManager.loadFile(client, filename, benchmark, dryRun, false, create)
+      LoadManager.loadFile(client, filename, benchmark, dryRun, ignoreWarnings)
 
     } finally {
-      amqp.disconnect(5000)
+      cancelable.foreach { _.cancel }
     }
   }
 
@@ -72,14 +64,9 @@ object StandaloneLoader {
     var filename: Option[String] = None
     var benchmark = false
     var dryRun = false
-    var create = true
-    var username = "system"
-    var password = "system"
-
-    println("main: " + args.mkString(","))
-
-    if (args.size < 2 || args.size > 4)
-      usage
+    var ignoreWarnings = false
+    var qpidFile = "org.totalgrid.reef.amqp.cfg"
+    var userFile = "org.totalgrid.reef.user.cfg"
 
     try {
 
@@ -91,16 +78,16 @@ object StandaloneLoader {
             filename = Some(args.head)
           case "-benchmark" =>
             benchmark = true
-          case "-d" =>
-            create = false
+          case "-ignoreWarnings" =>
+            ignoreWarnings = true
           case "-dryRun" =>
             dryRun = true
           case "-u" =>
             args = more(args)
-            username = args.head
-          case "-p" =>
+            userFile = args.head
+          case "-a" =>
             args = more(args)
-            password = args.head
+            qpidFile = args.head
         }
         args = args drop 1
       }
@@ -114,13 +101,10 @@ object StandaloneLoader {
     if (filename == None)
       usage
 
-    val dbInfo = Option(java.lang.System.getProperty("config")).map(f =>
-      BrokerProperties.get(new FileConfigReader(f))).getOrElse(BrokerConnectionInfo.loadInfo)
-    val amqp = new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(dbInfo)
-    }
+    val qpidConfig = new AmqpSettings(PropertyReader.readFromFile(qpidFile))
+    val userConfig = new UserSettings(PropertyReader.readFromFile(userFile))
 
-    run(amqp, filename.get, benchmark, dryRun, create, username, password)
+    run(qpidConfig, userConfig, filename.get, benchmark, dryRun, ignoreWarnings)
   }
 
   /**
@@ -148,9 +132,9 @@ object StandaloneLoader {
     println("  -benchmark         Override endpoint protocol to force all endpoints in")
     println("                     configuration file to be simulated.")
     println("  -dryRun            Only validate the file, dont upload to server")
-    println("  -d                 Delete represented model from server")
-    println("  -u <username>      Set the username to load as.")
-    println("  -p <password>      Set the password for username")
+    println("  -ignoreWarnings    Ignore warnings")
+    println("  -u <userfile>      Path to o.t.r.user.cfg file")
+    println("  -a <amqpFile>      Path to o.t.r.amqp.cfg file")
     println("")
     java.lang.System.exit(-1)
   }

@@ -6,32 +6,39 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.3.1-SNAPSHOT</version>
+	<version>0.4.1-SNAPSHOT</version>
 
 	<properties>
+		<reef.version>0.4.1-SNAPSHOT</reef.version>
 		<mavenBundleVersion>2.1.0</mavenBundleVersion>
 		<felixCoreVersion>1.4.0</felixCoreVersion>
+        <executor4s.version>0.1.9-RC3</executor4s.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<modules>
 		<module>scala-base</module>
-		<module>proto</module>
-		<module>scala-api</module>
-		<module>api-request</module>
-		<module>java-rest-api</module>
+		<module>api-enhancer</module>
+		<module>test-util</module>
+        <module>client-common</module>
+        <module>client</module>
+		<module>service-client</module>
+		<module>benchmarks</module>
+		<module>integration-testing</module>
+        <module>executor</module>
 		<module>util</module>
 		<module>util-osgi</module>
 		<module>metrics</module>
-		<module>amqp</module>
 		<module>broker</module>
 		<module>persistence-api</module>
 		<module>persistence-postgresql</module>
 		<module>measurementstore-api</module>
 		<module>measurementstore-squeryl</module>
+        <module>memory-broker</module>
 		<module>application-framework</module>
-		<module>integration</module>
-		<module>services</module>
+		<module>proto-shell</module>
+		<module>loader-common</module>
+		<module>loader-xml</module>
 		<module>processing</module>
 		<module>fep</module>
 		<module>protocol-api</module>
@@ -39,13 +46,13 @@
 		<module>default-simulator</module>
 		<module>example-simulator</module>
 		<module>protocol-dnp3</module>
-		<module>dependencies</module>
-		<module>proto-shell</module>
+		<module>services</module>
 		<module>admin-shell</module>
 		<module>branding</module>
-		<module>loader-xml</module>
+		<module>dependencies</module>
 		<module>assemblies</module>
-	</modules>
+
+    </modules>
 
 	<repositories>
 		<repository>
@@ -106,6 +113,7 @@
 			<id>scala-tools-releases</id>
 			<url>http://scala-tools.org/repo-releases</url>
 		</pluginRepository>
+
 	</pluginRepositories>
 
 	<reporting>
@@ -149,15 +157,15 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2</version>
-				<configuration>
-					<descriptors>
-						<descriptor>bundle-dist.xml</descriptor>
-					</descriptors>
-				</configuration>
-			</plugin>
+			<!--<plugin>-->
+				<!--<artifactId>maven-assembly-plugin</artifactId>-->
+				<!--<version>2.2</version>-->
+				<!--<configuration>-->
+					<!--<descriptors>-->
+						<!--<descriptor>bundle-dist.xml</descriptor>-->
+					<!--</descriptors>-->
+				<!--</configuration>-->
+			<!--</plugin>-->
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -178,6 +186,7 @@
 									<directory>cfg-templates</directory>
 								</resource>
 							</resources>
+							<overwrite>false</overwrite>
 						</configuration>
 					</execution>
 				</executions>
@@ -262,6 +271,41 @@
 					<version>1.6.1</version>
 				</dependency>
 			</dependencies>
+		</profile>
+
+		<profile>
+			<id>overwrite_defaults</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>2.3</version>
+
+						<executions>
+							<execution>
+								<id>copy-prod-resources</id>
+								<phase>generate-resources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>.</outputDirectory>
+									<resources>
+										<resource>
+											<directory>cfg-templates</directory>
+										</resource>
+									</resources>
+									<overwrite>true</overwrite>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 

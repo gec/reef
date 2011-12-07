@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.simulator.example
 
-import org.totalgrid.reef.executor.Executor
+import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.protocol.api.Publisher
 import org.totalgrid.reef.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
-import org.totalgrid.reef.proto.{ Commands, Measurements, SimMapping }
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.client.service.proto.{ Commands, Measurements, SimMapping }
+import com.weiglewilczek.slf4s.Logging
 import scala.collection.JavaConversions._
 
 object ExampleSimulatorFactory extends SimulatorPluginFactory with Logging {
@@ -57,13 +57,12 @@ object ExampleSimulatorFactory extends SimulatorPluginFactory with Logging {
     case None => -1
   }
 
-  def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
+  def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
     val names = getSimNames(config).get
     logger.info("Binding new ExampleSimulator with config: " + names.toString)
     new ExampleBreakerSimulator(executor, publisher, names)
   }
 
-  def destroySimulator(plugin: SimulatorPlugin): Unit = {}
 }
 
 class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], names: ExampleSimulatorFactory.SimNames) extends SimulatorPlugin with Logging {
@@ -71,7 +70,11 @@ class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measureme
   def factory: SimulatorPluginFactory = ExampleSimulatorFactory
   def simLevel: Int = 1
 
+  def name = "ExampleBreakerSimulator"
+
   executor.execute(publisher.publish(createBreakerBatch(false)))
+
+  def shutdown() = {}
 
   def createAnalog(name: String, unit: String, value: Double) = {
     Measurements.Measurement.newBuilder
@@ -103,7 +106,7 @@ class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measureme
       .addMeas(createStatus(names.status, "status", status)).build
   }
 
-  def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cr.getName match {
+  def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cr.getCommand.getName match {
     case names.trip =>
       executor.execute(publisher.publish(createBreakerBatch(true)))
       Commands.CommandStatus.SUCCESS

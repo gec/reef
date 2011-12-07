@@ -22,37 +22,37 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
-import org.totalgrid.reef.proto.Events.{ Event => EventProto }
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto }
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import org.totalgrid.reef.services.framework.SystemEventCreator
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.ReefServiceException
-
-import SyncServiceShims._
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.ServiceDependencies
+import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 
   class Fixture {
-    val factories = new ModelFactories(new ServiceDependencies)
-    val eventService = new EventService(factories.events)
-    val eventConfigService = new EventConfigService(factories.eventConfig)
-    val alarmService = new AlarmService(factories.alarms)
-    val headers = new RequestEnv
-    headers.setUserName("user")
+    val dependencies = new ServiceDependenciesDefaults()
+    val factories = new ModelFactories(dependencies)
+    val headers = BasicRequestHeaders.empty.setUserName("user")
+    val contextSource = new MockRequestContextSource(dependencies, headers)
+
+    val eventService = new SyncService(new EventService(factories.events), contextSource)
+    val eventConfigService = new SyncService(new EventConfigService(factories.eventConfig), contextSource)
+    val alarmService = new SyncService(new AlarmService(factories.alarms), contextSource)
 
     def publishEvent(evt: EventProto): EventProto = {
-      eventService.put(evt, headers).expectOne
+      eventService.put(evt).expectOne
     }
     def createConfig(evt: EventConfig): EventConfig = {
-      eventConfigService.put(evt, headers).expectOne
+      eventConfigService.put(evt).expectOne
     }
 
     def updateAlarm(alarm: Alarm): Alarm = {
-      val ret = alarmService.put(alarm, headers).expectOne
+      val ret = alarmService.put(alarm).expectOne
       ret.state should equal(alarm.state)
       ret
     }
@@ -104,11 +104,34 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
     event.alarm.get should be(true)
     event.severity.get should be(3)
     event.rendered.get should be("Test Alarm")
-    event.uid should not be (None)
+    event.id should not be (None)
 
     val alarm = fix.alarmService.get(makeAlarm(event)).expectOne
     alarm.state.get should be(Alarm.State.UNACK_AUDIBLE)
 
+  }
+
+  test("Create Alarm Directly") {
+    val fix = new Fixture
+
+    val eventWithoutRenderedFields = createSystemEvent("Test.Event", "FEP").build
+    val badAlarm: Alarm = makeAlarm(eventWithoutRenderedFields, Some(Alarm.State.UNACK_AUDIBLE))
+    intercept[BadRequestException] {
+      fix.alarmService.put(badAlarm).expectOne
+    }
+
+    fix.createConfig(makeEc(Some("Test.Event"), Some(7), Some(EventConfig.Designation.EVENT), Some("Test Event")))
+
+    // create a fully formed event by posting to event service
+    val event = fix.publishEvent(createSystemEvent("Test.Event", "FEP").build)
+    // create an alarm using that event as a template (we'll duplicate event)
+    val alarmRequest = makeAlarm(event, Some(Alarm.State.UNACK_AUDIBLE))
+
+    val alarm = fix.alarmService.put(alarmRequest).expectOne
+    // make sure we added a new event than the template
+    alarm.event.id.get should not equal (event.id.get)
+    alarm.event.rendered should equal(event.rendered)
+    alarm.state should equal(Some(Alarm.State.UNACK_AUDIBLE))
   }
 
   test("Update Alarm States") {
@@ -169,15 +192,18 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
    */
   def makeAlarm(alarm: Alarm, state: Alarm.State) =
     Alarm.newBuilder
-      .setUid(alarm.getUid)
+      .setId(alarm.getId)
       .setState(state)
       .build
 
   /**
    * Make an Event
    */
-  def makeAlarm(event: EventProto) =
-    Alarm.newBuilder.setEvent(event).build
+  def makeAlarm(event: EventProto, state: Option[Alarm.State] = None): Alarm = {
+    val b = Alarm.newBuilder.setEvent(event)
+    state.foreach(b.setState(_))
+    b.build
+  }
 
   def makeEc(event: Option[String],
     severity: Option[Int] = None,

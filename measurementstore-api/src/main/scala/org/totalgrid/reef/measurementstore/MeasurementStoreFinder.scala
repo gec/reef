@@ -1,5 +1,3 @@
-package org.totalgrid.reef.measurementstore
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,62 +16,25 @@ package org.totalgrid.reef.measurementstore
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.executor.Executor
-import scala.collection.JavaConversions._
-import org.osgi.framework.{ ServiceReference, BundleContext }
-import javax.management.remote.rmi._RMIConnection_Stub
+package org.totalgrid.reef.measurementstore
+
+import com.weiglewilczek.slf4s.Logging
+import org.osgi.framework.BundleContext
+import com.weiglewilczek.scalamodules._
 
 object MeasurementStoreFinder extends Logging {
 
-  import org.totalgrid.reef.executor.{ Lifecycle, ReactActorExecutor }
-  import org.totalgrid.reef.util.BuildEnv.ConnInfo
-  import org.totalgrid.reef.persistence.squeryl._
   /**
-   * Get a measurement store implementation depending on the system configuration
-   * @param lifecyleSink if the store generates any Lifecycle objects throw them here TODO: fix with with DI?
-   * @return measurement store
+   * Get a measurement store implementation from the service registry
+   *
+   * @return measurement store option
    */
 
-  def getInstance(config: ConnInfo, executor: Executor, context: BundleContext): MeasurementStore = {
-    config match {
-      case di: DbInfo =>
-        val services: List[ServiceReference] = Option(context.getServiceReferences(classOf[MeasurementStoreFactory].getName, "(org.totalgrid.reef.mstore=sql)")).map(_.toList).getOrElse(Nil)
-
-        services.headOption match {
-          case Some(srvRef) =>
-            val factory = context.getService(srvRef).asInstanceOf[MeasurementStoreFactory]
-            val connFun = () => DbConnector.connect(di, context)
-            val dbOps = new DbOperations(connFun, executor)(x => logger.info("connected to db: " + x))
-            factory.buildStore(dbOps)
-          case None => throw new Exception("SQL Measurement Store not found")
-        }
-      case _ => throw new Exception("Unknown measurementStore Implementation: " + config)
+  def getInstance(context: BundleContext): MeasurementStore = {
+    context findService withInterface[MeasurementStore] andApply { (service, properties) => service } match {
+      case Some(x) => x
+      case None => throw new IllegalArgumentException("No measurement store found in registry")
     }
   }
 
-  def getInstance(config: ConnInfo, lifecyleSink: Lifecycle => Unit): MeasurementStore = {
-    config match {
-      case di: DbInfo =>
-        null
-      /*val actor = new ReactActorExecutor {}
-        val connection = new SimpleDbConnection(di, actor)(x => logger.info("connected to db: " + x))
-        lifecyleSink(actor)
-        new SqlMeasurementStore(connection)*/
-      case _ => throw new Exception("Unknown measurementStore Implementation: " + config)
-    }
-  }
-
-  /**
-   * loads the default measurement store configuration information
-   */
-  def getConfig(): ConnInfo = {
-    val measurementStore = Option(System.getProperty("measurement_store")) getOrElse {
-      throw new Exception("Measurement store not specified")
-    }
-    measurementStore match {
-      case "sql" => DbInfo.loadInfo
-      case _ => throw new Exception("Unknown measurementStore Implementation: " + measurementStore)
-    }
-  }
 }

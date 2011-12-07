@@ -24,6 +24,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.totalgrid.reef.protocol.dnp3.common.LogAdapter
 
 @RunWith(classOf[JUnitRunner])
 class DNP3BindingTest extends FunSuite with ShouldMatchers {
@@ -123,7 +124,6 @@ class DNP3BindingTest extends FunSuite with ShouldMatchers {
       val slave = new SlaveStackConfig
 
       slave.setDevice(new DeviceTemplate(100, 100, 100))
-      adapter.logger.warn("Begining to log")
 
       val s = new PhysLayerSettings(lev, 1000)
       (port_start to port_end).foreach { port =>

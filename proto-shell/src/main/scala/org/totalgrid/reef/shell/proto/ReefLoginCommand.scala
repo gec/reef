@@ -20,18 +20,19 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
 import java.io.{ BufferedReader, InputStreamReader }
-import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.broker.BrokerProperties
+
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
-/**
- * base implementation for login commands, handles getting user name and password, implementors just need to
- * define setupReefSession and call the underlying setReefSession(session, "context")
- */
-abstract class ReefLoginCommandBase extends ReefCommandSupport {
+import org.totalgrid.reef.client.exception.ReefServiceException
+
+import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
+
+@Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
+class ReefLoginCommand extends ReefCommandSupport {
+
   override val requiresLogin = false
 
-  @Argument(index = 0, name = "userName", description = "user name", required = true, multiValued = false)
+  @Argument(index = 0, name = "userName", description = "User name, if not specified we try looking for user settings in etc directory.", required = false, multiValued = false)
   private var userName: String = null
 
   @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
@@ -40,71 +41,49 @@ abstract class ReefLoginCommandBase extends ReefCommandSupport {
   def doCommand() {
 
     if (isLoggedIn) {
-      System.out.println(getLoginString)
-      System.out.println("\nUse \"reef:logout\" first to logout")
+      println(getLoginString)
+      println("\nUse \"reef:logout\" first to logout")
     } else {
-      if (password == null) {
-        val stdIn = new BufferedReader(new InputStreamReader(System.in))
-
-        System.out.println("Enter Password: ")
-        password = stdIn.readLine.trim
+      val userSettings = if (userName == null) {
+        val user = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
+        println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file.")
+        user
       } else {
-        System.out.println("WARNING: Password will be visible in karaf command history!")
+        if (password == null) {
+          val stdIn = new BufferedReader(new InputStreamReader(System.in))
+
+          println("Enter Password: ")
+          password = stdIn.readLine.trim
+        } else {
+          println("WARNING: Password will be visible in karaf command history!")
+        }
+        new UserSettings(userName, password)
       }
 
-      val (client, context) = setupReefSession()
+      val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
 
-      try {
-        setReefSession(client, context)
-        this.login(userName, services.createNewAuthorizationToken(userName, password))
-      } catch {
-        case x: Exception =>
-          setReefSession(null, null)
-          println("Couldn't login to Reef: " + x.getMessage)
-          logger.error(x.getStackTraceString)
-      }
+      ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings, handleDisconnect)
     }
-  }
-
-  def setupReefSession(): (ClientSession, String)
-}
-
-@Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
-class ReefLoginCommand extends ReefLoginCommandBase {
-
-  def setupReefSession() = {
-
-    import org.totalgrid.reef.executor.ReactActorExecutor
-    import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-    import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
-    import org.totalgrid.reef.proto.ReefServicesList
-
-    val connectionInfo = BrokerProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp"))
-
-    val amqp = new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(connectionInfo)
-    }
-
-    amqp.connect(5000)
-    val client = new AmqpClientSession(amqp, ReefServicesList, 5000) {
-      override def close() {
-        super.close()
-        amqp.disconnect(5000)
-      }
-    }
-
-    (client, connectionInfo.toString)
   }
 }
 
 @Command(scope = "reef", name = "logout", description = "Logs out the current user")
 class ReefLogoutCommand extends ReefCommandSupport {
   def doCommand() = {
-    this.get("authToken") match {
-      case Some(token) => services.deleteAuthorizationToken(token)
-      case None =>
+    try {
+      this.get("authToken") match {
+        case Some(token) => //services.deleteAuthorizationToken(token) // TODO: reenable ability to actually delete it
+        case None =>
+      }
+    } catch {
+      case ex: ReefServiceException =>
+        val errorMsg = "Error logging out: " + ex.getMessage
+        println(errorMsg)
+        logger.warn(errorMsg, ex)
     }
     this.logout()
+
+    println("Logged out")
   }
 }
 

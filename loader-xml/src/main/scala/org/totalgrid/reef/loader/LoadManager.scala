@@ -22,53 +22,57 @@ import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.configuration._
 
-import org.totalgrid.reef.sapi.client.RestOperations
-
-import org.totalgrid.reef.util.{ Logging, XMLHelper }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.util.XMLHelper
 import java.io.File
-import org.totalgrid.reef.loader.helpers.{ CachingModelLoader, SymbolResponseProgressRenderer }
+import org.totalgrid.reef.loader.commons.LoaderServices
+import org.totalgrid.reef.loader.helpers.CachingModelLoader
 import org.totalgrid.reef.loader.common.ConfigFile
 
 object LoadManager extends Logging {
 
   /**
-   * TODO: Catch file not found exceptions and call usage.
+   * TODO: Catch file not found exception and call usage.
    */
-  def loadFile(client: => RestOperations, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false,
-    createConfiguration: Boolean = true) =
-    {
-      val file = new File(filename)
-      logger.info("processing model file: " + file)
+  def loadFile(client: => LoaderServices, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false, batchSize: Int = 25) = {
 
-      try {
-        validateXml(filename)
+    val (loader, valid) = prepareModelCache(filename, benchmark, batchSize)
 
-        val xml = XMLHelper.read(file, classOf[Configuration])
-
-        val loader = new CachingModelLoader(None, createConfiguration)
-        val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
-
-        logger.info("Finished analyzing configuration '" + filename + "'")
-
-        if (!valid && !ignoreWarnings) {
-          println("Configuration invalid, fix errors or add ignoreWarnings argument")
-          false
-        } else if (!dryRun) {
-          val progress = new SymbolResponseProgressRenderer(Console.out)
-          loader.flush(client, Some(progress))
-          println("Configuration loaded.")
-          true
-        } else {
-          println("DRYRUN: Skipping upload of " + loader.size + " objects.")
-          true
-        }
-
-      } catch {
-        case ex =>
-          println("Error loading configuration file '" + filename + "' " + ex.getMessage)
-          throw ex
-      }
+    if (!valid && !ignoreWarnings) {
+      println("Configuration invalid, fix errors or add ignoreWarnings argument")
+      false
+    } else if (!dryRun) {
+      loader.flush(client, Some(Console.out))
+      println("Configuration loaded.")
+      true
+    } else {
+      println("DRYRUN: Skipping upload of " + loader.size + " objects.")
+      true
     }
+
+  }
+
+  def prepareModelCache(filename: String, benchmark: Boolean, batchSize: Int) = {
+    val file = new File(filename)
+    logger.info("processing model file: " + file)
+
+    try {
+      validateXml(filename)
+
+      val xml = XMLHelper.read(file, classOf[Configuration])
+
+      val loader = new CachingModelLoader(None, batchSize)
+      val valid = loadConfiguration(loader, xml, benchmark, Some(file, filename), file.getParentFile)
+
+      logger.info("Finished analyzing configuration '" + filename + "'")
+
+      (loader, valid)
+    } catch {
+      case ex =>
+        println("Error loading configuration file '" + filename + "' " + ex.getMessage)
+        throw ex
+    }
+  }
 
   def loadConfiguration(client: ModelLoader, xml: Configuration, benchmark: Boolean, configurationFileTuple: Option[(File, String)] = None,
     path: File = new File(".")): Boolean =
@@ -154,13 +158,18 @@ object LoadManager extends Logging {
     // load the xml file
     val source = new StreamSource(filename)
 
-    val ex = new LoadingExceptionCollector
+    val collector = new LoadingExceptionCollector
+
+    def addError(header: String, ex: SAXParseException) = {
+      collector.addError(header + " - ( line: " + ex.getLineNumber + ", col: " + ex.getColumnNumber + ")", ex)
+    }
+
     val handler = new ErrorHandler {
-      def warning(exception: SAXParseException) = ex.addError("Validation Warning", exception)
-      def error(exception: SAXParseException) = ex.addError("Validation Error", exception)
-      def fatalError(exception: SAXParseException) {
-        ex.addError("Fatal Validation Error", exception)
-        throw exception
+      def warning(ex: SAXParseException) = addError("Validation Warning", ex)
+      def error(ex: SAXParseException) = addError("Validation Error", ex)
+      def fatalError(ex: SAXParseException) {
+        addError("Fatal Validation Error", ex)
+        throw ex
       }
     }
 
@@ -172,7 +181,7 @@ object LoadManager extends Logging {
         throw new LoadingException("error during validation: " + e.getMessage)
     }
 
-    val errors = ex.getErrors
+    val errors = collector.getErrors
     if (errors.size > 0) {
       println
       println("Validation errors found:")

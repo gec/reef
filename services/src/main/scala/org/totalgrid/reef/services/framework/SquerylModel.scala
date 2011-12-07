@@ -21,10 +21,11 @@ package org.totalgrid.reef.services.framework
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
 import com.google.protobuf.GeneratedMessage
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.{ EntityBasedModel, ModelWithUUID, ModelWithId }
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 
 /**
  * Supertype for Proto/Squeryl models
@@ -115,32 +116,32 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
 
     // Select for update
     val objList = table.where(c => c.id in ids).forUpdate.toList
-    val list = table.where(c => c.id in ids).toList // TODO: figure out scala cloning
+    val list = table.where(c => c.id in ids).toList
 
     // Fail if we have nothing
-    if (objList.size < 1) throw new ObjectMissingException
+    if (objList.size < ids.size) throw new ObjectMissingException("Cannot find objects with ids: " + ids)
 
     // Precondition on all objects
-    if (objList.exists(!acquireCondition(_))) throw new AcquireConditionNotMetException
+    if (objList.exists(!acquireCondition(_))) throw new AcquireConditionNotMetException("Not all objects have correct condition.")
 
     // Get results, do any work inside the lock
     val results = fun(objList)
 
-    if (results.length != objList.length) throw new Exception("Updated entries must be 1 to 1 map from input list")
+    if (results.length != objList.length) throw new InvalidUpdateException("Updated entries must be 1 to 1 map from input list")
 
     // Postcondition on all objects
-    if (results.exists(acquireCondition(_))) throw new AcquireConditionStillValidException
+    if (results.exists(acquireCondition(_))) throw new AcquireConditionStillValidException("Not all entries have updated the necessary fields")
 
     // Do the update, get the list of actual rows (after model hooks)
     val retList = results.zip(list).map {
       case (entry, previous) =>
         // Assert this is the same table row
         if (entry.id != previous.id)
-          throw new Exception("Updated entries must be 1 to 1 map from input list")
+          throw new InvalidUpdateException("Updated entries must be 1 to 1 map from input list")
 
         // Perform the update
         val (sql, updated) = update(context, entry, previous)
-        if (!updated) throw new Exception("Entry not updated!")
+        if (!updated) throw new InvalidUpdateException("Entry not updated!")
         sql
     }
 
@@ -155,31 +156,35 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
    * @param fun                 Update logic to be performed during lock, transforms acquired entry to updated entry
    * @return                    Entry that results from update
    */
-  def exclusiveUpdate(context: RequestContext, existing: SqlType, acquireCondition: SqlType => Boolean)(fun: SqlType => SqlType): SqlType = {
+  def exclusiveUpdate(context: RequestContext, existing: SqlType, acquireCondition: SqlType => Boolean)(fun: SqlType => SqlType): (SqlType, Boolean) = {
     // Wraps/unwraps in list for special case of a single update
     val result = exclusiveUpdate(context, List(existing), acquireCondition) { list =>
-      List(fun(list.head))
+      val result = fun(list.head)
+      // set the id of the updated entry to match original entry
+      result.id = list.head.id
+      List(result)
     }
-    result.head
+    // will have updated or else thrown exception
+    (result.head, true)
   }
 }
 
 object SquerylModel {
-  import org.totalgrid.reef.proto.Model.ReefUUID
-  def makeUid(entry: ModelWithId) = {
-    entry.id.toString
+  import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+  def makeId(entry: ModelWithId) = {
+    ReefID.newBuilder.setValue(entry.id.toString)
   }
   def makeUuid(entry: EntityBasedModel) = {
-    ReefUUID.newBuilder.setUuid(entry.entityId.toString)
+    ReefUUID.newBuilder.setValue(entry.entityId.toString)
   }
   def makeUuid(entry: ModelWithUUID) = {
-    ReefUUID.newBuilder.setUuid(entry.id.toString)
+    ReefUUID.newBuilder.setValue(entry.id.toString)
   }
   def makeUuid(id: Long) = {
-    ReefUUID.newBuilder.setUuid(id.toString)
+    ReefUUID.newBuilder.setValue(id.toString)
   }
   def makeUuid(id: java.util.UUID) = {
-    ReefUUID.newBuilder.setUuid(id.toString)
+    ReefUUID.newBuilder.setValue(id.toString)
   }
 
   import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }

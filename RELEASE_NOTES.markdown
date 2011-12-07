@@ -9,7 +9,133 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.3.1-SNAPSHOT
+Version 0.4.0
+==============
+
+Major refactoring of communication client and threading structure. See MIGRATION_STEPS.markdown
+for help in updating an application from 0.3.x.
+
+### Major Features:
+
+* Reef client API is much simpler and easier to use, no reaching into any implementation packages
+* Connecting to a reef broker is now by default a synchronous "single-shot" operation
+* Service Specific Java interfaces are now used to auto-generate wrappers around scala implementations
+* BatchServiceRequest is used by the loader-xml project to load models up to 70% faster than in 0.3.3. reef-175
+* BatchServiceRequest is used to unload model, up to 90% faster than in 0.3.3
+* Now setting qpid heartbeat timeout, requires new setting in config files: org.totalgrid.reef.amqp.heartbeatTimeSeconds=30. Fixes reef-183
+
+### Shell Commands:
+
+* Shell will attempt to auto-login using credentials in the org.totalgrid.reef.user.cfg file
+* reef:unload will automatically disable and wait for endpoints to go to COMMS_DOWN before deleting. reef-173
+* Better error handling when commands fail
+
+### Service/API Updates:
+
+* Entity service only returns BadRequestException about unknown types if no results are returned
+* Added getEntityRelations queries to EntityService to make complex queries simpler to execute.
+* Added SimpleAuthRequest proto and service to make logging in and out not dependent on complex reef types.
+* Command requests are checked to verify right command type is used (control vs. setpoint)
+
+### Reef Internals:
+
+* Protocol interface includes reef Client
+* Removed all usage of scala actors, replaced with Java Executors
+* Added many more integration tests for dnp3 and model loading and upload, fixed many endpoint related bugs.
+* Upgraded to karaf 2.2.4 from 2.2.2
+
+Version 0.3.3
+==============
+
+Minor bug fix and feature release.
+
+### Bug Fixes:
+
+* Consistent error handling and error messages for MeasurementBatchService REEF-178, REEF-179
+* loader-xml doesn't require indexes for protocols not explicitly an indexed protocol
+
+### Client Updates:
+
+* Added alterEndpointConnectionState calls to EndpointManagerService
+* Added bindCommandHandler() implementation to CommandService
+
+Version 0.3.2
+==============
+
+Minor bug fix release.
+
+### Bug Fixes:
+
+* Loader timeouts increased to handle removing points with large measurement counts
+* Measurement removal happens during point removal
+* reef:resetdb command asks for system password twice
+* Minor fixes to entity and entity attributes services
+
+
+Version 0.3.1
+==============
+
+### Major Features:
+
+* DNP3 Slave Protocol Implemented (updated dnp3 library to 1.0.0)
+* Support for AMQP over SSL
+* Separate CLI distribution for inspecting remote systems
+
+### Client Updates:
+
+* RequestSpy logging for client API calls
+* Client supports SSL connection broker using standard java trust-store files
+* Maximum number of returned objects is client configurable (was default of 100)
+
+### Service/API Updates:
+
+* Added more requests for entities and their children
+* Points and Commands can searched for by Endpoint
+* Entity service only fails requests with unknown types if nothing is found
+* Endpoints can be modeled as either data “sink” or “source”
+* Reef objects can be created with externally defined UUIDs
+* Added getCommandHistory for a single command
+* Fixed response codes for Entity and EntityAttribute services
+* When an Entity is deleted, all edges and events pointing to it are removed 
+
+### Shell Commands:
+
+* New configfile:download and configfile:upload commands to make adjusting configFiles easier
+* New entity:tree command to view relationships between objects
+* New command:hist to look at global and individual command history
+* New event:view and event:publish commands
+* Commands for managing event-configurations: event-config:list,view,delete,create
+* Added meas:override,block,unblock for managing overriding measurements
+
+### Xml Loader:
+
+* Enabled Xml validation, loaded files now must be well formed before attempt processing
+* Added support for attaching ConfigFiles and Attributes to any point/command/equipment
+* Progress output wraps every 50 characters
+* Config Files are loaded in a binary safe fashion
+* Numerous minor bug fixes and enhanced error reporting
+
+### Breaking Changes:
+
+* AMQPConnectionInfo has more parameters
+* Measurements subscriptions are no longer “raw” events and are not binary compatible with 0.3.0 client
+* Removed “core” user and changed system user password to be user defined
+
+### Reef Internals:
+
+* Added Mockito, JMock test dependencies
+* Created proto-shell entry-point to run outside of OSGi
+* Reef etc files split up by functional area (amqp, user, node, sql)
+* Refactored services to move all state into a RequestContext object and make services stateless.
+* Broke up ‘core’ project into ‘application-framework’, ‘fep’, ‘measproc’ and ‘services’
+* Scala library moved to 2.9.0-1
+
+### Bug Fixes:
+
+* Measproc/FEP correctly ignore connections received during shutdown
+* Event services gracefully handles missing attributes when rendering events
+
+Version 0.3.0
 ==============
 
 Primarily Service and API refinements and refactorings.

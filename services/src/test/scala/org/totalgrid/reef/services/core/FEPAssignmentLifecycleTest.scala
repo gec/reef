@@ -21,19 +21,17 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.services.ConnectionFixture
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.japi.Envelope.Event
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 @RunWith(classOf[JUnitRunner])
 class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
 
   test("One device, dead apps noticed, point taken offline") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val device = coord.addDevice("dev1")
@@ -60,7 +58,7 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
   }
 
   test("Switch FEP when protocol changes") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val meas = coord.addMeasProc("meas")
@@ -71,7 +69,7 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
 
       val device1 = coord.addDnp3Device("dev1")
 
-      dnpEvents.pop(5000).event should equal(Event.MODIFIED)
+      dnpEvents.pop(5000).event should equal(SubscriptionEventType.MODIFIED)
 
       coord.checkAssignments(1, Some(dnp), Some(meas))
       coord.checkPoints(1, 1)
@@ -80,8 +78,8 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
 
       val device2 = coord.addDevice("dev1")
 
-      dnpEvents.pop(5000).event should equal(Event.REMOVED)
-      benchmarkEvents.pop(5000).event should equal(Event.ADDED)
+      dnpEvents.pop(5000).event should equal(SubscriptionEventType.REMOVED)
+      benchmarkEvents.pop(5000).event should equal(SubscriptionEventType.ADDED)
 
       coord.checkAssignments(1, Some(benchmark), Some(meas))
       coord.checkPoints(1, 1)
@@ -91,7 +89,7 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
   }
 
   test("Reassign FEP when protocol changes") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val meas = coord.addMeasProc("meas")
@@ -99,7 +97,7 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
       val fepEvents = coord.subscribeFepAssignements(0, fep)
       val device1 = coord.addDnp3Device("dev1")
 
-      fepEvents.pop(5000).event should equal(Event.MODIFIED)
+      fepEvents.pop(5000).event should equal(SubscriptionEventType.MODIFIED)
 
       coord.checkAssignments(1, Some(fep), Some(meas))
       coord.checkPoints(1, 1)
@@ -108,8 +106,8 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
 
       val device2 = coord.addDevice("dev1")
 
-      fepEvents.pop(5000).event should equal(Event.REMOVED)
-      fepEvents.pop(5000).event should equal(Event.ADDED)
+      fepEvents.pop(5000).event should equal(SubscriptionEventType.REMOVED)
+      fepEvents.pop(5000).event should equal(SubscriptionEventType.ADDED)
 
       coord.checkAssignments(1, Some(fep), Some(meas))
       coord.checkPoints(1, 1)

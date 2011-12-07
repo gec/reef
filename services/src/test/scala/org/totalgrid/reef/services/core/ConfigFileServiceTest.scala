@@ -21,27 +21,26 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.japi.Envelope.Status
+import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, ConfigFile, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.services.framework.ProtoSerializer.convertStringToByteString
 
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
   def makeConfigFile(name: String, mime: String, data: String, owner: Option[Entity] = None) = {
-    import org.totalgrid.reef.messaging.ProtoSerializer.convertStringToByteString
     val cfb = ConfigFile.newBuilder.setName(name).setMimeType(mime).setFile(data)
     owner.foreach(cfb.addEntities(_))
     cfb.build
   }
 
   def makeConfigFile(mime: String, data: String, owner: Option[Entity]) = {
-    import org.totalgrid.reef.messaging.ProtoSerializer.convertStringToByteString
     val cfb = ConfigFile.newBuilder.setMimeType(mime).setFile(data)
     owner.foreach(cfb.addEntities(_))
     cfb.build
@@ -78,7 +77,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     s.put(configFile3).expectOne(Status.CREATED)
     s.put(configFile4).expectOne(Status.CREATED)
 
-    s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectMany(4)
+    s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).expectMany(4)
     s.get(ConfigFile.newBuilder.setMimeType("text").build).expectMany(2)
     s.get(ConfigFile.newBuilder.setMimeType("html").build).expectMany(2)
     s.get(ConfigFile.newBuilder.setMimeType("xml").build).expectNone()
@@ -112,7 +111,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
     val cf = s.put(makeConfigFile("text", "blah", Some(node1))).expectOne(Status.CREATED)
 
-    cf.getName should equal(cf.getUuid.getUuid)
+    cf.getName should equal(cf.getUuid.getValue)
 
     s.put(makeConfigFile("text", "blah", Some(node1))).expectOne(Status.CREATED)
 
@@ -151,23 +150,19 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     }
 
     val query = ConfigFile.newBuilder.setName("*").build
-    val env = new RequestEnv()
 
-    env.setResultLimit(1000)
-    s.get(query, env).expectMany(50)
+    val env = BasicRequestHeaders.empty
 
-    env.setResultLimit(0)
-    s.get(query, env).expectMany(0)
+    s.get(query, env.setResultLimit(1000)).expectMany(50)
 
-    env.setResultLimit(1)
-    s.get(query, env).expectMany(1)
+    s.get(query, env.setResultLimit(0)).expectMany(0)
 
-    env.setResultLimit(45)
-    s.get(query, env).expectMany(45)
+    s.get(query, env.setResultLimit(1)).expectMany(1)
+
+    s.get(query, env.setResultLimit(45)).expectMany(45)
 
     intercept[BadRequestException] {
-      env.setResultLimit(-1)
-      s.get(query, env)
+      s.get(query, env.setResultLimit(-1))
     }
   }
 

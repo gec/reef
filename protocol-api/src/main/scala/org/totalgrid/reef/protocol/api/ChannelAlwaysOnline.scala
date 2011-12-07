@@ -18,8 +18,9 @@
  */
 package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.FEP.CommChannel
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.client.service.proto.FEP.CommChannel
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 trait ChannelAlwaysOnline extends Protocol with Logging {
 
@@ -27,8 +28,8 @@ trait ChannelAlwaysOnline extends Protocol with Logging {
 
   private val channelMap = scala.collection.mutable.Map.empty[String, ChannelPublisher]
 
-  abstract override def addChannel(p: CommChannel, publisher: ChannelPublisher): Unit = {
-    super.addChannel(p, publisher)
+  abstract override def addChannel(p: CommChannel, publisher: ChannelPublisher, client: Client): Unit = {
+    super.addChannel(p, publisher, client)
     channelMap += p.getName -> publisher
     publisher.publish(CommChannel.State.OPENING)
     publisher.publish(CommChannel.State.OPEN)

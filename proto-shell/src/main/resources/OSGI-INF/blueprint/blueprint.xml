@@ -63,6 +63,9 @@
         <command name="entity/tree">
             <action class="org.totalgrid.reef.shell.proto.EntityTreeCommand"/>
         </command>
+		<command name="entity/relations">
+            <action class="org.totalgrid.reef.shell.proto.EntityRelationsCommand"/>
+        </command>
         <command name="meas/list">
             <action class="org.totalgrid.reef.shell.proto.MeasListCommand"/>
         </command>
@@ -161,6 +164,12 @@
         </command>
         <command name="configfile/view">
             <action class="org.totalgrid.reef.shell.proto.ConfigFileViewCommand"/>
+        </command>
+        <command name="configfile/download">
+            <action class="org.totalgrid.reef.shell.proto.ConfigFileDownloadCommand"/>
+        </command>
+        <command name="configfile/upload">
+            <action class="org.totalgrid.reef.shell.proto.ConfigFileUploadCommand"/>
         </command>
         <command name="agent/password">
             <action class="org.totalgrid.reef.shell.proto.AgentSetPasswordCommand"/>
