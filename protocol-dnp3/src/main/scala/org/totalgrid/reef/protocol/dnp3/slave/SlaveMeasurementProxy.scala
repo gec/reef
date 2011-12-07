@@ -20,36 +20,37 @@ package org.totalgrid.reef.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.japi.request.MeasurementService
-import org.totalgrid.reef.proto.Mapping.{ IndexMapping }
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Mapping.{ IndexMapping }
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.japi.client.{ SubscriptionEvent, SubscriptionEventAcceptor, Subscription }
-import org.totalgrid.reef.executor.Executor
+import com.weiglewilczek.slf4s.Logging
 
-class SlaveMeasurementProxy(service: MeasurementService, mapping: IndexMapping, dataObserver: IDataObserver, exe: Executor)
-    extends SubscriptionEventAcceptor[Measurement] with Logging {
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
+import org.totalgrid.reef.app.{ ServiceContext, SubscriptionDataHandler }
+import net.agileautomata.executor4s.Cancelable
+
+class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dataObserver: IDataObserver)
+    extends SubscriptionDataHandler[Measurement] with Logging {
 
   private val publisher = new DataObserverPublisher(mapping, dataObserver)
-  private val packTimer = new PackTimer(100, 400, publisher.publishMeasurements _, exe)
+  private val packTimer = new PackTimer(100, 400, publisher.publishMeasurements _, service)
 
-  private var subscription: Option[Subscription[_]] = None
+  private var subscription = Option.empty[Cancelable]
 
-  exe.execute {
-    val subscriptionResult = service.subscribeToMeasurementsByNames(mapping.getMeasmapList.toList.map { _.getPointName })
-    subscription = Some(subscriptionResult.getSubscription)
-    packTimer.addEntries(subscriptionResult.getResult.toList)
-    subscriptionResult.getSubscription.start(this)
+  service.execute {
+    service.subscribeToMeasurementsByNames(mapping.getMeasmapList.toList.map { _.getPointName }).listen { p =>
+      val subscriptionResult = p.await
+      subscription = Some(ServiceContext.attachToServiceContext(subscriptionResult, this))
+    }
   }
 
   def stop() {
-    subscription.foreach { _.cancel }
+    subscription.foreach { _.cancel() }
     packTimer.cancel()
   }
 
-  def onEvent(event: SubscriptionEvent[Measurement]) {
-    packTimer.addEntry { event.getValue }
-  }
+  def handleResponse(result: List[Measurement]) = packTimer.addEntries(result)
+  def handleEvent(event: SubscriptionEventType, result: Measurement) = packTimer.addEntry(result)
 
 }

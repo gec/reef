@@ -22,22 +22,22 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.japi.request.CommandService
 
 import org.mockito.{ Mockito, Matchers }
-import org.totalgrid.reef.proto.Model.Command
-import org.totalgrid.reef.proto.Mapping._
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus, CommandAccess }
+import org.totalgrid.reef.client.service.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Mapping._
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => ProtoCommandStatus, CommandLock }
+import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 import org.totalgrid.reef.protocol.dnp3._
-import org.mockito.stubbing.Answer
-import org.mockito.invocation.InvocationOnMock
-import org.totalgrid.reef.japi.BadRequestException
-import org.totalgrid.reef.executor.mock.InstantExecutor
+import org.totalgrid.reef.client.exception.BadRequestException
+
+import org.totalgrid.reef.test.MockitoStubbedOnly
+import org.totalgrid.reef.client.sapi.rpc.CommandService
+import net.agileautomata.executor4s.{ Failure, Success }
 
 @RunWith(classOf[JUnitRunner])
 class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
 
-  val executor = new InstantExecutor
   val commandName = "TestCommand"
 
   test("Only handles configured controls") {
@@ -49,7 +49,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
       makeMapping(commandName, 1, CommandType.PULSE_TRIP),
       makeMapping(commandName, 0, CommandType.SETPOINT),
       makeMapping(commandName, 2, CommandType.SETPOINT))
-    val proxy = new SlaveCommandProxy(commandService, mapping, executor)
+    val proxy = new SlaveCommandProxy(commandService, mapping)
 
     // check controls with valid indices
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_SUCCESS)
@@ -76,7 +76,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     val commandService = getMissingCommandService()
 
     val mapping = makeMappings(makeMapping(commandName, 0, CommandType.PULSE))
-    val proxy = new SlaveCommandProxy(commandService, mapping, executor)
+    val proxy = new SlaveCommandProxy(commandService, mapping)
 
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_NO_SELECT)
   }
@@ -85,7 +85,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     val commandService = getNoLockCommandService(commandName)
 
     val mapping = makeMappings(makeMapping(commandName, 0, CommandType.PULSE))
-    val proxy = new SlaveCommandProxy(commandService, mapping, executor)
+    val proxy = new SlaveCommandProxy(commandService, mapping)
 
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_NO_SELECT)
   }
@@ -94,7 +94,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     val commandService = getExecutionFailureService(commandName)
 
     val mapping = makeMappings(makeMapping(commandName, 0, CommandType.PULSE))
-    val proxy = new SlaveCommandProxy(commandService, mapping, executor)
+    val proxy = new SlaveCommandProxy(commandService, mapping)
 
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_HARDWARE_ERROR)
   }
@@ -131,46 +131,43 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     ret
   }
 
-  /**
-   * makes our mocked class fail any mocked call we didnt expect
-   */
-  class StubbedOnly[A] extends Answer[A] {
-    override def answer(p1: InvocationOnMock) = throw new RuntimeException("Un-Stubbed function: " + p1.toString)
-  }
-
-  def getWorkingCommandService(commandName: String, result: ProtoCommandStatus) = {
-    val commandService = Mockito.mock(classOf[CommandService], new StubbedOnly)
-    val resultantCommand = Command.newBuilder.setName(commandName).build
-    val lock = CommandAccess.newBuilder.build
+  def getWorkingCommandService(commandName: String, _result: ProtoCommandStatus) = {
+    val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
+    val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
+    val lock = new FixedPromise(Success(CommandLock.newBuilder.build))
+    val result = new FixedPromise(Success(_result))
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
-    Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand)
-    Mockito.doReturn(lock).when(commandService).deleteCommandLock(lock)
-    Mockito.doReturn(result).when(commandService).executeCommandAsControl(resultantCommand)
-    Mockito.doReturn(result).when(commandService).executeCommandAsSetpoint(Matchers.eq(resultantCommand), Matchers.anyInt)
-    Mockito.doReturn(result).when(commandService).executeCommandAsSetpoint(Matchers.eq(resultantCommand), Matchers.anyDouble)
+    Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand.await)
+    Mockito.doReturn(lock).when(commandService).deleteCommandLock(lock.await)
+    Mockito.doReturn(result).when(commandService).executeCommandAsControl(resultantCommand.await)
+    Mockito.doReturn(result).when(commandService).executeCommandAsSetpoint(Matchers.eq(resultantCommand.await), Matchers.anyInt)
+    Mockito.doReturn(result).when(commandService).executeCommandAsSetpoint(Matchers.eq(resultantCommand.await), Matchers.anyDouble)
     commandService
   }
   def getMissingCommandService() = {
-    val commandService = Mockito.mock(classOf[CommandService], new StubbedOnly)
-    Mockito.doThrow(new BadRequestException("Command not found")).when(commandService).getCommandByName(Matchers.anyString)
+    val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
+    val failure = new FixedPromise(Failure(new BadRequestException("Command not found")))
+    Mockito.doReturn(failure).when(commandService).getCommandByName(Matchers.anyString)
     commandService
   }
   def getNoLockCommandService(commandName: String) = {
-    val commandService = Mockito.mock(classOf[CommandService], new StubbedOnly)
-    val resultantCommand = Command.newBuilder.setName(commandName).build
+    val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
+    val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
+    val failure = new FixedPromise(Failure(new BadRequestException("Can't lock command")))
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
-    Mockito.doThrow(new BadRequestException("Can't lock command")).when(commandService).createCommandExecutionLock(resultantCommand)
+    Mockito.doReturn(failure).when(commandService).createCommandExecutionLock(resultantCommand.await)
     commandService
   }
 
   def getExecutionFailureService(commandName: String) = {
-    val commandService = Mockito.mock(classOf[CommandService], new StubbedOnly)
-    val resultantCommand = Command.newBuilder.setName(commandName).build
-    val lock = CommandAccess.newBuilder.build
+    val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
+    val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
+    val lock = new FixedPromise(Success(CommandLock.newBuilder.build))
+    val failure = new FixedPromise(Failure(new BadRequestException("Can't execute command")))
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
-    Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand)
-    Mockito.doReturn(lock).when(commandService).deleteCommandLock(lock)
-    Mockito.doThrow(new BadRequestException("Can't execute command")).when(commandService).executeCommandAsControl(resultantCommand)
+    Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand.await)
+    Mockito.doReturn(lock).when(commandService).deleteCommandLock(lock.await)
+    Mockito.doReturn(failure).when(commandService).executeCommandAsControl(resultantCommand.await)
     commandService
   }
 
@@ -179,7 +176,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
 
   def makeMappings(list: CommandMap*) = {
     val map = IndexMapping.newBuilder
-    map.setDeviceUid("test")
+    map.setDeviceId("test")
     list.foreach { map.addCommandmap(_) }
     map.build
   }

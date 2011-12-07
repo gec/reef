@@ -21,18 +21,16 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import SquerylModel._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
-import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
+import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile => ConfigProto }
 import java.util.UUID
 
 class ConfigFileService(protected val model: ConfigFileServiceModel)
@@ -80,9 +78,8 @@ class ConfigFileServiceModel
       uuid.get.toString
     }
 
-    logger.debug("creating config file from proto: " + configFileProto)
     // make the entity entry for the config file
-    val entity: Entity = EntityQueryManager.findOrCreateEntity(name, "ConfigurationFile", uuid)
+    val entity = EntityQueryManager.findOrCreateEntity(name, "ConfigurationFile" :: Nil, uuid)
 
     val sql = create(context, createModelEntry(configFileProto, entity))
     updateUsingEntities(context, configFileProto, sql, Nil) // add entity edges
@@ -107,7 +104,10 @@ class ConfigFileServiceModel
 
   private def updateUsingEntities(context: RequestContext, configFileProto: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
 
-    val updatedEntities = configFileProto.getEntitiesList.toList.map { e => EntityQueryManager.findEntity(e).get }
+    val updatedEntities = configFileProto.getEntitiesList.toList.map { e =>
+      EntityQueryManager.findEntity(e).getOrElse(
+        throw new BadRequestException("Cant find entity: " + e))
+    }
     val newEntitites = updatedEntities.diff(existingEntities)
 
     // TODO we don't delete edges this way, currently no way to delete configFile edges
@@ -124,7 +124,7 @@ class ConfigFileServiceModel
 trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigFile] {
 
   def getRoutingKey(configFileProto: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
-    configFileProto.uuid.uuid :: configFileProto.name :: configFileProto.mimeType :: Nil
+    configFileProto.uuid.value :: configFileProto.name :: configFileProto.mimeType :: Nil
   }
 
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
@@ -139,7 +139,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
   }
 
   def uniqueQuery(proto: ConfigProto, sql: ConfigFile) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("ConfigurationFile")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("ConfigurationFile")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
@@ -159,7 +159,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
     sql
   }
 
-  import org.totalgrid.reef.messaging.ProtoSerializer.convertBytesToByteString
+  import org.totalgrid.reef.services.framework.ProtoSerializer.convertBytesToByteString
   def convertToProto(entry: ConfigFile): ConfigProto = {
     val configProtoBuilder = ConfigProto.newBuilder
       .setUuid(makeUuid(entry))

@@ -18,31 +18,30 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
+import org.totalgrid.reef.client.service.proto.Events._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, EventConfigStore, Entity }
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Utils.{ AttributeList => AttributeListProto }
+import org.totalgrid.reef.client.service.proto.Utils.{ AttributeList => AttributeListProto }
 import org.squeryl.dsl.QueryYield
 import org.squeryl.dsl.ast.OrderByArg
 import org.squeryl.dsl.fsm.{ SelectState }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
-//import org.totalgrid.reef.messaging.ProtoSerializer._
+//import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.event.AttributeList
 import org.totalgrid.reef.services.core.util.MessageFormatter
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.japi.{ Envelope, BadRequestException }
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 import ServiceBehaviors._
 
 class EventService(protected val model: EventServiceModel)
@@ -74,7 +73,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
   // linking means the bus notifications generated in the alarm service will be
   // sent at the same time as the notifications from this service.
 
-  // TODO: figure out better way to get these functions in here without renaming
+  // functions are defined here to workaround traits with default values
   override def getEventProtoAndKey(event: EventStore) = makeEventProtoAndKey(event)
   override def getSubscribeKeys(req: Event): List[String] = makeSubscribeKeys(req)
 
@@ -123,7 +122,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
     // in the case of the "thunked events" or "server generated events" we are not creating the event
     // in a standard request/response cycle so we dont have access to the username via the headers
     val userId = if (!request.hasUserId) {
-      context.headers.userName.getOrElse(throw new BadRequestException("invalid event: " + request + ", UserName must be logged in user"))
+      context.getHeaders.userName.getOrElse(throw new BadRequestException("invalid event: " + request + ", UserName must be logged in user"))
     } else {
       request.getUserId
     }
@@ -163,7 +162,7 @@ trait EventConversion
       req.severity ::
       req.subsystem ::
       req.userId ::
-      req.entity.uuid.uuid ::
+      req.entity.uuid.value ::
       Nil
   }
 
@@ -209,7 +208,7 @@ trait EventConversion
   }
 
   def uniqueQuery(proto: Event, sql: EventStore) = {
-    proto.uid.asParam(sql.id === _.toLong) :: Nil // if exists, use it.
+    proto.id.value.asParam(sql.id === _.toLong) :: Nil // if exists, use it.
   }
 
   def isModified(entry: EventStore, existing: EventStore): Boolean = {
@@ -247,7 +246,7 @@ trait EventConversion
 
   def convertToProto(entry: EventStore): Event = {
     val b = Event.newBuilder
-      .setUid(entry.id.toString)
+      .setId(makeId(entry))
       .setAlarm(entry.alarm)
       .setEventType(entry.eventType)
       .setTime(entry.time)
@@ -262,7 +261,6 @@ trait EventConversion
     if (entry.args.length > 0) {
       b.setArgs(AttributeListProto.parseFrom(entry.args))
     }
-    //TODO: could set rendered here!
 
     b.build
   }

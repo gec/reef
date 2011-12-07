@@ -22,23 +22,27 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.FEP.IpPort
+import org.totalgrid.reef.client.service.proto.FEP.IpPort
 import org.totalgrid.reef.protocol.dnp3.xml.{ LinkLayer, AppLayer, Stack, Master }
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.proto.{ Model, FEP }
+import org.totalgrid.reef.client.service.proto.{ Model, FEP }
 
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
-import org.totalgrid.reef.util.{ Logging, EmptySyncVar, XMLHelper }
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.util.{ EmptySyncVar, XMLHelper }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
-import org.totalgrid.reef.promise.{ FixedPromise, Promise }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto, CommandResponse => CommandResponseProto }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => CommandStatusProto, CommandRequest => CommandRequestProto }
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.protocol.dnp3.mock.InstantCommandResponder
+import org.totalgrid.reef.client.service.proto.Model.Command
+import org.mockito.Mockito
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 @RunWith(classOf[JUnitRunner])
 class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
 
+  val client = Mockito.mock(classOf[Client])
   val slave = new StackManager
   val commandAcceptor = new InstantCommandResponder(CommandStatus.CS_SUCCESS)
   val numSlaves = 1
@@ -70,13 +74,13 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
     val listeners = (portStart to portEnd).map { port =>
       val channelName = "port" + port
 
-      val endpointListener = new LastValueListener[FEP.CommEndpointConnection.State]
+      val endpointListener = new LastValueListener[FEP.EndpointConnection.State]
       val measListener = new LastValueListener[MeasurementBatch](false)
       val portListener = new LastValueListener[FEP.CommChannel.State]
 
-      protocol.addChannel(getClient(port, channelName), portListener)
+      protocol.addChannel(getClient(port, channelName), portListener, client)
 
-      val commandAdapter = protocol.addEndpoint("endpoint" + port, channelName, configFiles, measListener, endpointListener)
+      val commandAdapter = protocol.addEndpoint("endpoint" + port, channelName, configFiles, measListener, endpointListener, client)
 
       (portListener, endpointListener, measListener, commandAdapter)
     }
@@ -85,7 +89,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
       case (portListener, endpointListener, measListener, commandAdapter) =>
 
         portListener.lastValue.waitUntil(FEP.CommChannel.State.OPEN)
-        endpointListener.lastValue.waitUntil(FEP.CommEndpointConnection.State.COMMS_UP)
+        endpointListener.lastValue.waitUntil(FEP.EndpointConnection.State.COMMS_UP)
         measListener.lastValue.waitFor(m => m.getMeasCount > 0)
 
         issueAndWaitForCommandResponse(commandAdapter, makeControl("control1", "00"))
@@ -100,7 +104,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
 
     listeners.foreach {
       case (portListener, endpointListener, measListener, commandAdapter) =>
-        endpointListener.lastValue.waitUntil(FEP.CommEndpointConnection.State.COMMS_DOWN)
+        endpointListener.lastValue.waitUntil(FEP.EndpointConnection.State.COMMS_DOWN)
         portListener.lastValue.waitUntil(FEP.CommChannel.State.CLOSED)
     }
 
@@ -108,19 +112,17 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
 
   class LastValueListener[A](verbose: Boolean = true) extends Publisher[A] {
     val lastValue = new EmptySyncVar[A]
-    def publish(proto: A): Promise[Boolean] = {
+    def publish(proto: A) {
       if (verbose) logger.info(proto.toString)
       lastValue.update(proto)
-      new FixedPromise(true)
     }
   }
 
   def issueAndWaitForCommandResponse(cmdAcceptor: CommandHandler, commandRequest: CommandRequestProto) {
     val response = new EmptySyncVar[CommandStatusProto]
-    val rspHandler = new Publisher[CommandResponseProto] {
-      def publish(proto: CommandResponseProto): Promise[Boolean] = {
-        response.update(proto.getStatus)
-        new FixedPromise(true)
+    val rspHandler = new Publisher[CommandStatusProto] {
+      def publish(status: CommandStatusProto) {
+        response.update(status)
       }
     }
     cmdAcceptor.issue(commandRequest, rspHandler)
@@ -128,7 +130,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
   }
 
   private def makeControl(name: String, id: String) = {
-    CommandRequestProto.newBuilder().setName(name).setType(CommandRequestProto.ValType.NONE).setCorrelationId(id).build
+    CommandRequestProto.newBuilder().setCommand(Command.newBuilder.setName(name)).setType(CommandRequestProto.ValType.NONE).setCorrelationId(id).build
   }
 
   private def getClient(port: Int, name: String) = {

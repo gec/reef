@@ -22,12 +22,14 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.proto.{ Model, SimMapping, Measurements, Commands }
-import org.totalgrid.reef.promise.FixedPromise
-import org.totalgrid.reef.protocol.api.{ Protocol, NullEndpointPublisher, Publisher }
-import org.totalgrid.reef.executor.mock.MockExecutor
-import org.totalgrid.reef.executor.Executor
+import org.totalgrid.reef.client.service.proto.{ Model, SimMapping, Measurements, Commands }
+import org.totalgrid.reef.protocol.api.{ NullEndpointPublisher, Publisher }
+import net.agileautomata.executor4s.testing.MockExecutor
+import net.agileautomata.executor4s.Executor
 import java.lang.Exception
+import org.totalgrid.reef.client.service.proto.Model.Command
+import org.mockito.Mockito
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 @RunWith(classOf[JUnitRunner])
 class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
@@ -61,19 +63,18 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
   }
 
   def getCmdRequest(name: String) = {
-    Commands.CommandRequest.newBuilder.setName(name).build
+    Commands.CommandRequest.newBuilder.setCommand(Command.newBuilder.setName(name)).build
   }
 
   class QueueingPublisher[A] extends Publisher[A] {
     val queue = new scala.collection.mutable.Queue[A]
     def publish(a: A) = {
       queue.enqueue(a)
-      new FixedPromise(true)
     }
   }
 
   class BatchPublisher extends QueueingPublisher[Measurements.MeasurementBatch]
-  class ResponsePublisher extends QueueingPublisher[Commands.CommandResponse]
+  class ResponsePublisher extends QueueingPublisher[Commands.CommandStatus]
 
   def fixture(test: (MockExecutor, SimulatedProtocol, BatchPublisher, ResponsePublisher) => Unit) = {
     val exe = new MockExecutor
@@ -88,33 +89,36 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
     var map = Map.empty[String, MockSimPlugin]
 
     def name: String = "MockSimulatorFactory"
+
     def getSimLevel(endpointName: String, config: SimMapping.SimulatorMapping): Int = simLevel
-    def createSimulator(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
+
+    def create(endpointName: String, executor: Executor, publisher: Publisher[Measurements.MeasurementBatch], config: SimMapping.SimulatorMapping): SimulatorPlugin = {
       val mock = new MockSimPlugin(this)
       map += endpointName -> mock
       mock
     }
 
-    def destroySimulator(plugin: SimulatorPlugin): Unit = map.find(x => x._2.equals(plugin)) match {
-      case Some((name, plugin)) =>
-        map -= name
-      case None => throw new Exception("Plugin not found")
-    }
-
     class MockSimPlugin(parent: MockSimulatorFactory) extends SimulatorPlugin {
       var response = Commands.CommandStatus.SUCCESS
 
+      def name = "mock"
       def factory: SimulatorPluginFactory = parent
       def simLevel: Int = simLevel
       def issue(cr: Commands.CommandRequest): Commands.CommandStatus = response
+      def shutdown() = map.find(x => x._2.equals(this)) match {
+        case Some((name, plugin)) =>
+          map -= name
+        case None => throw new Exception("Plugin not found")
+      }
     }
   }
 
+  val client = Mockito.mock(classOf[Client])
   val endpointName = "endpoint"
 
   test("add endpoint first") {
     fixture { (exe, protocol, batch, responses) =>
-      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher, client)
       val fac = new MockSimulatorFactory(0)
       protocol.addPluginFactory(fac)
       fac.map.size should equal(1)
@@ -128,7 +132,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
       val fac = new MockSimulatorFactory(0)
       protocol.addPluginFactory(fac)
       fac.map.size should equal(0)
-      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher, client)
       fac.map.size should equal(1)
       protocol.removeEndpoint(endpointName)
       fac.map.size should equal(0)
@@ -140,7 +144,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
       val fac = new MockSimulatorFactory(0)
       protocol.addPluginFactory(fac)
       fac.map.size should equal(0)
-      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher, client)
       fac.map.size should equal(1)
       protocol.removePluginFactory(fac)
       fac.map.size should equal(0)
@@ -156,7 +160,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
       protocol.addPluginFactory(fac2)
       protocol.addPluginFactory(fac3)
 
-      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher, client)
       fac1.map.size should equal(0)
       fac2.map.size should equal(0)
       fac3.map.size should equal(1)
@@ -169,7 +173,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
       val fac2 = new MockSimulatorFactory(2)
 
       protocol.addPluginFactory(fac1)
-      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher, client)
       fac1.map.size should equal(1)
       fac2.map.size should equal(0)
 
@@ -186,24 +190,24 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
   test("command responded to without plugin") {
     fixture { (exe, protocol, batch, responses) =>
 
-      val cmd = protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      val cmd = protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher, client)
 
       cmd.issue(getCmdRequest("success"), responses)
       responses.queue.size should equal(1)
-      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.NOT_SUPPORTED)
+      responses.queue.dequeue() should equal(Commands.CommandStatus.NOT_SUPPORTED)
 
       protocol.addPluginFactory(new MockSimulatorFactory(1))
       cmd.issue(getCmdRequest("success"), responses)
       responses.queue.size should equal(1)
-      responses.queue.dequeue().getStatus should equal(Commands.CommandStatus.SUCCESS)
+      responses.queue.dequeue() should equal(Commands.CommandStatus.SUCCESS)
     }
   }
 
   test("Adding twice causes exception") {
     fixture { (exe, protocol, batch, responses) =>
-      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+      protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher, client)
       intercept[IllegalStateException] {
-        protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher)
+        protocol.addEndpoint(endpointName, "", getConfigFiles(), batch, NullEndpointPublisher, client)
       }
     }
   }

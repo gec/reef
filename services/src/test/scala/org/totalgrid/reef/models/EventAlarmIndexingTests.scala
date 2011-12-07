@@ -30,15 +30,14 @@ import scala.collection.mutable.ListBuffer
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.core.AlarmQueryService
-import org.totalgrid.reef.messaging.serviceprovider.SilentServiceSubscriptionHandler
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.Events._
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.Events._
 
 @RunWith(classOf[JUnitRunner])
 class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
 
   override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
+    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
     ServiceBootstrap.resetDb
   }
 

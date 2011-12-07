@@ -16,20 +16,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.totalgrid.reef.loader.helpers
 
-import org.totalgrid.reef.proto.Alarms.EventConfig
-import org.totalgrid.reef.proto.Model.{ ConfigFile, Point, Command, EntityAttributes, EntityEdge, Entity }
-import org.totalgrid.reef.proto.FEP.{ CommChannel, CommEndpointConfig }
+import org.totalgrid.reef.client.service.proto.Alarms.EventConfig
+import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile, Point, Command, EntityAttributes, EntityEdge, Entity }
+import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, Endpoint }
 import collection.mutable.{ ArrayBuffer }
 import com.google.protobuf.GeneratedMessage
 import collection.Iterator
 import collection.mutable
 import java.lang.IllegalStateException
-import org.totalgrid.reef.proto.Model
-import org.totalgrid.reef.proto.Processing.TriggerSet
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.client.service.proto.Model
+import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.LoadingException
 
 class ModelContainer extends Logging {
@@ -91,7 +90,7 @@ class ModelContainer extends Logging {
     eventConfig
   }
 
-  def add(endpointConfig: CommEndpointConfig): CommEndpointConfig =
+  def add(endpointConfig: Endpoint): Endpoint =
     {
       addModel(endpointConfig)
       endpointConfig

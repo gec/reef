@@ -18,10 +18,7 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.persistence.AsyncBufferReactor
-import org.totalgrid.reef.persistence.ConnectionReactor.Observer
-import org.totalgrid.reef.executor.Executor
+import com.weiglewilczek.slf4s.Logging
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
 import java.lang.Exception
@@ -90,14 +87,3 @@ abstract class DbConnectorBase extends DbConnector with Logging {
   }
 }
 
-class DbOperations(connect: () => Option[Boolean], executor: Executor)(obs: Observer)
-    extends AsyncBufferReactor[Boolean](executor, obs) {
-
-  override def connectFun() = connect()
-}
-
-class SimpleDbConnection(connInfo: DbInfo, reactor: Executor)(obs: Observer)
-    extends AsyncBufferReactor[Boolean](reactor, obs) {
-
-  override def connectFun() = DbConnector.connect(connInfo)
-}

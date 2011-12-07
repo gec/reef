@@ -18,24 +18,24 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
+
 import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto, CommEndpointConfig => CommEndCfgProto, EndpointOwnership, CommChannel }
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, ConfigFile }
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection => ConnProto, Endpoint => CommEndCfgProto, EndpointOwnership, CommChannel }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.util.Optional._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.sapi.types.Optional._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
-import org.totalgrid.reef.services.ProtoRoutingKeys
 
 class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
     with DefaultSyncBehaviors {
 
-  override val descriptor = Descriptors.commEndpointConfig
+  override val descriptor = Descriptors.endpoint
 }
 
 class CommEndCfgServiceModel(
@@ -50,8 +50,7 @@ class CommEndCfgServiceModel(
 
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
     import org.totalgrid.reef.services.core.util.UUIDConversions._
-    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint", proto.uuid)
-    EntityQueryManager.addTypeToEntity(ent, "LogicalNode")
+    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint" :: "LogicalNode" :: Nil, proto.uuid)
     val sql = create(context, createModelEntry(context, proto, ent))
     setLinkedObjects(context, sql, proto, ent)
     coordinator.onEndpointCreated(context, sql)
@@ -61,7 +60,7 @@ class CommEndCfgServiceModel(
   override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
     val (sql, changed) = update(context, createModelEntry(context, proto, existing.entity.value), existing)
     setLinkedObjects(context, sql, proto, existing.entity.value)
-    coordinator.onEndpointUpdated(context, sql)
+    coordinator.onEndpointUpdated(context, sql, existing)
     (sql, changed)
   }
 
@@ -93,7 +92,7 @@ class CommEndCfgServiceModel(
     }
   }
 
-  import org.totalgrid.reef.proto.OptionalProtos._
+  import org.totalgrid.reef.client.service.proto.OptionalProtos._
   def setLinkedObjects(context: RequestContext, sql: CommunicationEndpoint, request: CommEndCfgProto, entity: Entity) {
 
     val pointEntities = findEntites(request.ownerships.points.getOrElse(Nil), "Point")
@@ -132,12 +131,12 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
   val table = ApplicationSchema.endpoints
 
   def getRoutingKey(proto: CommEndCfgProto) = ProtoRoutingKeys.generateRoutingKey {
-    proto.uuid.uuid :: proto.name :: Nil
+    proto.uuid.value :: proto.name :: Nil
   }
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     List(
-      proto.uuid.uuid.asParam(uid => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uid)).build, { _.id })),
+      proto.uuid.value.asParam(id => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setValue(id)).build, { _.id })),
       proto.name.asParam(name => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setName(name).build, { _.id })))
   }
 

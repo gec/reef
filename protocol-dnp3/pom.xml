@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.3</version>
+        <version>0.4.0</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-protocol-dnp3</artifactId>
@@ -91,6 +91,24 @@
                             <includes>
                                 <include>**/*.java</include>
                             </includes>
+							<excludes>
+                                <exclude>**/integrationtests/*.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+		<profile>
+            <id>test</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/integrationtests/*.java</include>
+                            </includes>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -101,20 +119,38 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-api</artifactId>
-            <version>0.3.3</version>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util-osgi</artifactId>
-            <version>0.3.3</version>
+            <version>${reef.version}</version>
             <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-test-util</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-api-request</artifactId>
-            <version>0.3.3</version>
+            <artifactId>reef-service-client</artifactId>
+            <version>${reef.version}</version>
             <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-application-framework</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-loader-xml</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef.protocol.dnp3</groupId>

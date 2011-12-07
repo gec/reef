@@ -18,16 +18,17 @@
  */
 package org.totalgrid.reef.protocol.dnp3.common
 
-import org.totalgrid.reef.util.{ SafeExecution, Logging, LoggerFactory }
+import org.totalgrid.reef.util.SafeExecution
 import org.totalgrid.reef.protocol.dnp3._
+import com.weiglewilczek.slf4s.{ Logging, Logger }
 
 /**
  * Shim layer to push log messages from the c++ dnp3 world
  */
-class LogAdapter extends ILogBase with Logging with SafeExecution {
+class LogAdapter extends ILogBase with SafeExecution with Logging {
 
   // DNPLOG is common logger name for all dnp log messages
-  val customLogger = LoggerFactory("DNPLOG")
+  val customLogger = Logger("DNPLOG")
 
   final override def SetVar(source: String, variable: String, value: Int) {}
 

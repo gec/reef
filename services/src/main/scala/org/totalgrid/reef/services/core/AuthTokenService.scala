@@ -19,20 +19,19 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.japi.Envelope.Status
-import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.client.service.proto.Auth._
+import org.totalgrid.reef.client.service.proto.Events._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope.Status
+import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.services.core.util._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import SquerylModel._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.models.{
   Agent,
@@ -176,7 +175,7 @@ class AuthTokenServiceModel
 
       val agentName: String = authToken.agent.name.getOrElse(postLoginException(context, Status.BAD_REQUEST, "Cannot login without setting agent name."))
       // set the user name for systemEvent publishing
-      context.headers.setUserName(agentName)
+      context.modifyHeaders(_.setUserName(agentName))
 
       // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
       val agentRecord: Option[Agent] = AgentConversions.findRecord(context, authToken.getAgent)
@@ -253,7 +252,7 @@ class AuthTokenServiceModel
     entry.expirationTime = -1
     table.update(entry)
 
-    context.headers.setUserName(entry.agent.value.entityName)
+    context.modifyHeaders(_.setUserName(entry.agent.value.entityName))
     postSystemEvent(context, EventType.System.UserLogout)
 
     onUpdated(context, entry)

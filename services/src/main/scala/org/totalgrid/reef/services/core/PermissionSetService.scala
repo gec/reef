@@ -21,16 +21,15 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.japi.BadRequestException
-import org.totalgrid.reef.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.client.exception.BadRequestException
+
+import org.totalgrid.reef.client.service.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 
 class PermissionSetService(protected val model: PermissionSetServiceModel)
     extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
@@ -106,7 +105,7 @@ trait PermissionSetConversions
   val table = ApplicationSchema.permissionSets
 
   def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("PermissionSet")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("PermissionSet")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
@@ -136,7 +135,7 @@ trait PermissionConversions
   val table = ApplicationSchema.permissions
 
   def convertToProto(entry: AuthPermission): Permission = {
-    val b = Permission.newBuilder.setUid(makeUid(entry))
+    val b = Permission.newBuilder.setId(makeId(entry))
     b.setAllow(entry.allow)
     b.setResource(entry.resource)
     b.setVerb(entry.verb)
@@ -144,9 +143,9 @@ trait PermissionConversions
   }
 
   def uniqueQuery(proto: Permission, sql: AuthPermission) = {
-    // should be uid
+    // should be id
     List(
-      proto.uid.asParam(sql.id === _.toInt))
+      proto.id.value.asParam(sql.id === _.toInt))
   }
 
   def searchQuery(proto: Permission, sql: AuthPermission) = {

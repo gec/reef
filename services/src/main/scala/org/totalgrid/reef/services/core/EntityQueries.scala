@@ -18,24 +18,24 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, Relationship }
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
 import org.squeryl.dsl.ast.LogicalBoolean
 
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import SquerylModel._
 import java.util.UUID
 import org.totalgrid.reef.models.{ EntityTypeMetaModel, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived, EntityToTypeJoins }
-import org.totalgrid.reef.services.HeadersRequestContext
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.services.NullRequestContext
+import com.weiglewilczek.slf4s.Logging
 
 // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 import scala.collection.JavaConversions._
 
 trait EntityTreeQueries { self: EntityQueries =>
@@ -113,25 +113,25 @@ trait EntityTreeQueries { self: EntityQueries =>
   def protoTreeQuery(proto: EntityProto): List[ResultNode] = {
 
     // For the moment not allowing a root set of everything
-    if (proto.uuid.uuid == None && proto.name == None && proto.getTypesCount == 0)
+    if (proto.uuid.value == None && proto.name == None && proto.getTypesCount == 0)
       throw new BadRequestException("Must specify root set")
 
     def expr(ent: Entity, typ: EntityToTypeJoins) = {
-      proto.uuid.uuid.map(ent.id === UUID.fromString(_)) ::
+      proto.uuid.value.map(ent.id === UUID.fromString(_)) ::
         proto.name.map(ent.name === _) ::
         ((proto.getTypesCount > 0) thenGet ((typ.entType in proto.getTypesList.toList)
           and (typ.entityId === ent.id))) ::
           Nil
     }
 
-    // If query specifies type, do a join, otherwise simpler query on uid/name
+    // If query specifies type, do a join, otherwise simpler query on id/name
     val rootQuery = if (proto.getTypesCount != 0) {
       from(entities, entityTypes)((ent, typ) =>
         where(expr(ent, typ).flatten)
           select (ent)).distinct
     } else {
       from(entities)(ent =>
-        where((proto.uuid.uuid.map(ent.id === UUID.fromString(_)) ::
+        where((proto.uuid.value.map(ent.id === UUID.fromString(_)) ::
           proto.name.map(ent.name === _) :: Nil).flatten)
           select (ent))
     }
@@ -154,7 +154,6 @@ trait EntityTreeQueries { self: EntityQueries =>
 
     val requestTypes = getTypes(proto).distinct.sorted
     if (!requestTypes.isEmpty) {
-      // TODO: check entityTypes from meta model, not whats in current system
       val inSystemTypes = from(entityTypeMetaModel)(et =>
         where(et.id in requestTypes)
           select (et.entType)).distinct.toList.sorted
@@ -324,6 +323,10 @@ trait EntityTreeQueries { self: EntityQueries =>
      * @param upperNodes Set of mutable result tree-nodes to be filled out
      */
     def fillChildren(upperQuery: Query[Entity], upperNodes: List[ResultNodeBuilder]): Unit = {
+
+      // short circuit the queries if we have no parent nodes
+      if (upperNodes.isEmpty) return
+
       val entEdges = lowerQuery(upperQuery)
       val entsOnlyQuery = from(entEdges)(entEdge => select(entEdge._1))
 
@@ -423,7 +426,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
   def findEntity(proto: EntityProto): Option[Entity] = {
     if (proto.hasUuid) {
-      returnSingleOption(entities.where(t => t.id === UUID.fromString(proto.getUuid.getUuid)).toList)
+      returnSingleOption(entities.where(t => t.id === UUID.fromString(proto.getUuid.getValue)).toList)
     } else if (proto.hasName) {
       returnSingleOption(entities.where(t => t.name === proto.getName).toList)
     } else {
@@ -437,7 +440,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
   // Main entry point for requests in the form of protos
   def fullQuery(proto: EntityProto): List[EntityProto] = {
-    if (proto.hasUuid && proto.getUuid.getUuid == "*") {
+    if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allQuery.map(entityToProto(_).build).toList
     } else {
       protoTreeQuery(proto).map(_.toProto)
@@ -445,7 +448,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def fullQueryAsModels(proto: EntityProto): List[Entity] = {
-    if (proto.hasUuid && proto.getUuid.getUuid == "*") {
+    if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allQuery
     } else {
       protoTreeQuery(proto).map { _.flatEntites }.flatten
@@ -527,15 +530,23 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def addTypesToEntity(ent: Entity, types: List[String]) = {
-    addEntityTypes(types)
-    entityTypes.insert(types.map { new EntityToTypeJoins(ent.id, _) })
-    entities.lookup(ent.id).get
+    if (types.isEmpty) {
+      ent
+    } else {
+      val distinctTypes = types.distinct.reverse
+      addEntityTypes(distinctTypes)
+      entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
+      entities.lookup(ent.id).get
+    }
   }
 
   def addEntityTypes(types: List[String]) {
-    val known = from(entityTypeMetaModel)(et => where(et.id in types) select (et.id)).toList
-    val newTypes = types.diff(known)
-    newTypes.foreach(t => entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
+    val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
+    if (!customTypes.isEmpty) {
+      val known = from(entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
+      val newTypes = customTypes.diff(known)
+      newTypes.foreach(t => entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
+    }
   }
 
   def findEdge(parent: Entity, child: Entity, relation: String): Option[Edge] = {
@@ -584,23 +595,20 @@ trait EntityQueries extends EntityTreeQueries with Logging {
     derivedEdge
   }
 
-  def findOrCreateEntity(name: String, entityType: String, uuid: Option[UUID]): Entity = {
+  def findOrCreateEntity(name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
     val list = nameTypeQuery(Some(name), None)
-    if (list.size > 1) throw new Exception("more than one entity matched: " + name + " type:" + entityType)
+    if (list.size > 1) throw new Exception("more than one entity matched: " + name)
     if (list.size == 1) {
-      val entity = if (list.head.types.value.find(_ == entityType).isEmpty) {
-        addTypeToEntity(list.head, entityType)
-      } else {
-        list.head
-      }
+      val entity = list.head
       uuid.foreach { u =>
         if (entity.id != u)
           throw new Exception("Entity with name: " + name + " already has uuid different than we requested.")
       }
-      entity
+      val newTypes = entityTypes.diff(entity.types.value)
+      addTypesToEntity(entity, newTypes)
     } else {
-      logger.debug("creating entity: name: " + name + ", type: " + entityType)
-      addEntity(name, entityType :: Nil, uuid)
+      logger.debug("creating entity: name: " + name + ", types: " + entityTypes)
+      addEntity(name, entityTypes, uuid)
     }
   }
 
@@ -642,11 +650,11 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def findIdsOfChildren(rootNode: EntityProto, relation: String, childType: String): Query[UUID] = {
-    if (rootNode.uuid.uuid == Some("*") || rootNode.name == Some("*")) {
+    if (rootNode.uuid.value == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
-      // TODO: get entitiy queries to use and respect requestContext
-      EntitySearches.findRecord(new HeadersRequestContext, rootNode).map { rootEnt =>
+      // TODO: get entitiy queries to use and respect requestContext - backlog-70
+      EntitySearches.findRecord(new NullRequestContext, rootNode).map { rootEnt =>
         from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))
     }
@@ -666,7 +674,7 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
     // TODO: evaluate if we should be deleting events when entities get deleted
     val events = ApplicationSchema.events.where(e => e.entityId in entityIds)
-    ApplicationSchema.alarms.deleteWhere(a => a.eventUid in events.map { _.id })
+    ApplicationSchema.alarms.deleteWhere(a => a.eventId in events.map { _.id })
     ApplicationSchema.events.deleteWhere(e => e.entityId in entityIds)
 
     ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId in entityIds)
@@ -679,7 +687,7 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
   val table = ApplicationSchema.entities
   def uniqueQuery(proto: EntityProto, sql: Entity) = {
     List(
-      proto.uuid.uuid.asParam(sql.id === UUID.fromString(_)),
+      proto.uuid.value.asParam(sql.id === UUID.fromString(_)),
       proto.name.asParam(sql.name === _),
       EntityQueryManager.noneIfEmpty(proto.types).asParam(sql.id in EntityQueryManager.entityIdsFromTypes(_)))
   }

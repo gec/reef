@@ -18,65 +18,69 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.promise.SynchronizedPromise
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.services.{ DependenciesRequestContext, ServiceDependencies }
+import org.totalgrid.reef.client.sapi.client.impl.SynchronizedPromise
+import org.totalgrid.reef.services.{ ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
+
+object SyncService {
+  def apply[A <: AnyRef](service: ServiceEntryPoint[A]) = new SyncService(service, SyncServiceShims.getRequestContextSource(SyncServiceShims.getRequestEnv))
+}
 
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 
-  def get(req: A): Response[A] = get(req, new RequestEnv)
-  def get(req: A, env: RequestEnv): Response[A] = {
+  def get(req: A): Response[A] = get(req, BasicRequestHeaders.empty)
+  def get(req: A, env: BasicRequestHeaders): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
-    service.getAsync(cm, req)(response.onResponse)
+    service.getAsync(cm, req)(response.set _)
     response.await
   }
 
-  def put(req: A): Response[A] = put(req, new RequestEnv)
-  def put(req: A, env: RequestEnv): Response[A] = {
+  def put(req: A): Response[A] = put(req, BasicRequestHeaders.empty)
+  def put(req: A, env: BasicRequestHeaders): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
-    service.putAsync(cm, req)(response.onResponse)
+    service.putAsync(cm, req)(response.set _)
     response.await
   }
 
-  def post(req: A): Response[A] = post(req, new RequestEnv)
-  def post(req: A, env: RequestEnv): Response[A] = {
+  def post(req: A): Response[A] = post(req, BasicRequestHeaders.empty)
+  def post(req: A, env: BasicRequestHeaders): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
-    service.postAsync(cm, req)(response.onResponse)
+    service.postAsync(cm, req)(response.set _)
     response.await
   }
 
-  def delete(req: A): Response[A] = delete(req, new RequestEnv)
-  def delete(req: A, env: RequestEnv): Response[A] = {
+  def delete(req: A): Response[A] = delete(req, BasicRequestHeaders.empty)
+  def delete(req: A, env: BasicRequestHeaders): Response[A] = {
     val response = new SynchronizedPromise[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
-    service.deleteAsync(cm, req)(response.onResponse)
+    service.deleteAsync(cm, req)(response.set _)
     response.await
   }
 }
 
-class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders: RequestEnv) extends RequestContextSource {
+class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders: BasicRequestHeaders) extends RequestContextSource {
+
+  // just define all of the event exchanges at the beginning of the test
+  ServiceBootstrap.defineEventExchanges(dependencies.connection)
+
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
-    context.headers.merge(commonHeaders)
+    context.modifyHeaders(_.merge(commonHeaders))
     ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
   }
 }
 
 object SyncServiceShims {
 
-  implicit def getRequestEnv: RequestEnv = {
-    val env = new RequestEnv
-    env.setUserName("user")
-    env
-  }
+  implicit def getRequestEnv: BasicRequestHeaders = BasicRequestHeaders.empty.setUserName("user")
 
-  implicit def getRequestContextSource(implicit headers: RequestEnv) = {
-    new MockRequestContextSource(new ServiceDependencies, headers)
+  implicit def getRequestContextSource(implicit headers: BasicRequestHeaders) = {
+    new MockRequestContextSource(new ServiceDependenciesDefaults, headers)
   }
 
   implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit contextSource: RequestContextSource) = new SyncService[A](service, contextSource)

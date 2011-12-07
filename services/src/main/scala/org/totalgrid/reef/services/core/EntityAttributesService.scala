@@ -18,33 +18,32 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, EntityAttributes => AttrProto }
-import org.totalgrid.reef.proto.Utils.Attribute
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, EntityAttributes => AttrProto }
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Descriptors
 
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.japi.BadRequestException
-import org.totalgrid.reef.japi.Envelope.Status
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.sapi.service.SyncServiceBase
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
 
 import scala.collection.JavaConversions._
 
-import org.squeryl.PrimitiveTypeMode.inTransaction
 import java.util.UUID
+import org.totalgrid.reef.services.framework._
 
-class EntityAttributesService extends SyncServiceBase[AttrProto] {
+class EntityAttributesService extends ServiceEntryPoint[AttrProto] with AuthorizesEverything {
   import EntityAttributesService._
 
   override val descriptor = Descriptors.entityAttributes
 
-  override def put(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
-    if (!req.hasEntity)
-      throw new BadRequestException("Must specify Entity in request.")
+  override def putAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
 
-    inTransaction {
+      if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
+
       val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
@@ -61,19 +60,26 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
         // since changed the entities we need to manually update the lazy var
         entEntry.attributes.value = newAtttributes
 
-        val status = if (existingAttrs.isEmpty) Status.CREATED else Status.UPDATED
+        val status = if (existingAttrs.isEmpty) {
+          authorizeCreate(context, req)
+          Status.CREATED
+        } else {
+          authorizeUpdate(context, req)
+          Status.UPDATED
+        }
         Response(status, protoFromEntity(entEntry) :: Nil)
       } else {
         Response(Status.NOT_MODIFIED, protoFromEntity(entEntry) :: Nil)
       }
-    }
+    })
   }
 
-  override def delete(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
-    if (!req.hasEntity)
-      throw new BadRequestException("Must specify Entity in request.")
+  override def deleteAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeDelete(context, req)
 
-    inTransaction {
+      if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
+
       val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
@@ -85,23 +91,24 @@ class EntityAttributesService extends SyncServiceBase[AttrProto] {
         Status.NOT_MODIFIED
       }
       Response(status, protoFromEntity(entEntry) :: Nil)
-    }
+    })
   }
 
-  override def get(req: AttrProto, env: RequestEnv): Response[AttrProto] = {
-    if (!req.hasEntity)
-      throw new BadRequestException("Must specify Entity in request.")
+  override def getAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
+    callback(source.transaction { context =>
+      authorizeRead(context, req)
 
-    inTransaction {
+      if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
+
       Response(Status.OK, queryEntities(req.getEntity))
-    }
+    })
   }
 
 }
 
 object EntityAttributesService {
   import org.squeryl.PrimitiveTypeMode._
-  import org.totalgrid.reef.proto.OptionalProtos._
+  import org.totalgrid.reef.client.service.proto.OptionalProtos._
   import com.google.protobuf.ByteString
 
   def deleteAllFromEntity(entityId: UUID) = {
@@ -109,14 +116,14 @@ object EntityAttributesService {
   }
 
   def queryEntities(proto: EntityProto): List[AttrProto] = {
-    val join = if (proto.hasUuid && proto.getUuid.getUuid == "*") {
+    val join = if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allJoin
     } else if (proto.hasUuid) {
-      uidJoin(proto.getUuid.getUuid)
+      uidJoin(proto.getUuid.getValue)
     } else if (proto.hasName) {
       nameJoin(proto.getName)
     } else {
-      throw new BadRequestException("Must search for entities by uid or name.")
+      throw new BadRequestException("Must search for entities by id or name.")
     }
 
     if (join.isEmpty)
@@ -131,9 +138,9 @@ object EntityAttributesService {
     }
   }
 
-  def uidJoin(uid: String): List[(Entity, Option[AttrModel])] = {
+  def uidJoin(id: String): List[(Entity, Option[AttrModel])] = {
     join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
-      where(ent.id === UUID.fromString(uid))
+      where(ent.id === UUID.fromString(id))
         select (ent, attr)
         on (Some(ent.id) === attr.map(_.entityId))).toList
   }

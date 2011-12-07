@@ -27,7 +27,7 @@ import presentation.ChannelView
 class ChannelListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    val results = services.getAllCommunicationChannels.toList
+    val results = services.getCommunicationChannels.toList
     ChannelView.printTable(results)
   }
 }

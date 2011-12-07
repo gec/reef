@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.3</version>
+        <version>0.4.0</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-loader-xml</artifactId>
@@ -72,14 +72,20 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-amqp</artifactId>
-            <version>0.3.3</version>
+            <artifactId>reef-util</artifactId>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
+		<dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-util</artifactId>
-            <version>0.3.3</version>
+            <artifactId>reef-loader-commons</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-service-client</artifactId>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

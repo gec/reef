@@ -20,11 +20,11 @@ package org.totalgrid.reef.shell.proto
 
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
 import java.io.{ InputStreamReader, BufferedReader }
-import org.totalgrid.reef.japi.request.AgentService
 import org.totalgrid.reef.shell.proto.presentation.AgentView
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Auth.Permission
+import org.totalgrid.reef.client.service.proto.Auth.Permission
+import org.totalgrid.reef.client.service.AgentService
 
 abstract class AgentCommandBase extends ReefCommandSupport {
   lazy val authService: AgentService = services
@@ -56,7 +56,7 @@ class AgentSetPasswordCommand extends SingleAgentCommandBase {
   def doCommand() = {
 
     val newPassword = getRepeatedPassword()
-    val agent = authService.getAgent(agentName)
+    val agent = authService.getAgentByName(agentName)
 
     authService.setAgentPassword(agent, newPassword)
     System.out.println("Updated password for agent: " + agentName)
@@ -162,7 +162,7 @@ class AgentDeleteCommand extends SingleAgentCommandBase {
 
   def doCommand() = {
 
-    val agent = authService.getAgent(agentName)
+    val agent = authService.getAgentByName(agentName)
     val deletedAgent = authService.deleteAgent(agent)
 
     AgentView.printAgents(deletedAgent :: Nil)

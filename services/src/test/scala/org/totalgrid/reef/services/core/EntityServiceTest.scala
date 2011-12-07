@@ -20,11 +20,11 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import java.util.UUID
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
 
 import SyncServiceShims._
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.japi.Envelope.Status
+import org.totalgrid.reef.client.exception.ReefServiceException
+import org.totalgrid.reef.client.proto.Envelope.Status
 
 class EntityServiceTest extends DatabaseUsingTestBase {
 
@@ -34,19 +34,19 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val uuid = UUID.randomUUID.toString
 
-    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uuid)).setName("MagicTestObject").addTypes("TestType").build
+    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uuid)).setName("MagicTestObject").addTypes("TestType").build
 
     val created = service.put(upload).expectOne
 
-    created.getUuid.getUuid.toString should equal(uuid)
+    created.getUuid.getValue.toString should equal(uuid)
   }
 
   test("Put two entities with same uuids") {
 
     val uuid = UUID.randomUUID.toString
 
-    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uuid)).setName("MagicTestObject").addTypes("TestType").build
-    val upload2 = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(uuid)).setName("MagicTestObject2").addTypes("TestType").build
+    val upload = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uuid)).setName("MagicTestObject").addTypes("TestType").build
+    val upload2 = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(uuid)).setName("MagicTestObject2").addTypes("TestType").build
 
     service.put(upload).expectOne
 

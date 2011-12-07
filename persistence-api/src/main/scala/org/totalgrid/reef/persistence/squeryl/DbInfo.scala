@@ -18,14 +18,24 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import org.totalgrid.reef.util.BuildEnv
+import java.util.Dictionary
+import org.totalgrid.reef.client.settings.util.{ PropertyReader, PropertyLoading }
 
 object DbInfo {
 
-  def loadInfo(env: String): DbInfo = SqlProperties.get(BuildEnv.cfgFileReader("sql", env))
+  def loadInfo(fileName: String): DbInfo = new DbInfo(PropertyReader.readFromFile(fileName))
 
-  def loadInfo(): DbInfo = loadInfo(BuildEnv.environment)
 }
 
 case class DbInfo(dbType: String, host: String, port: Int, database: String, user: String, password: String,
-  slowQueryTimeMilli: Long) extends BuildEnv.ConnInfo
+    slowQueryTimeMilli: Long) {
+
+  def this(props: Dictionary[Object, Object]) = this(
+    PropertyLoading.getString("org.totalgrid.reef.sql.type", props),
+    PropertyLoading.getString("org.totalgrid.reef.sql.host", props),
+    PropertyLoading.getInt("org.totalgrid.reef.sql.port", props),
+    PropertyLoading.getString("org.totalgrid.reef.sql.database", props),
+    PropertyLoading.getString("org.totalgrid.reef.sql.user", props),
+    PropertyLoading.getString("org.totalgrid.reef.sql.password", props),
+    PropertyLoading.getInt("org.totalgrid.reef.sql.slowquery", props))
+}

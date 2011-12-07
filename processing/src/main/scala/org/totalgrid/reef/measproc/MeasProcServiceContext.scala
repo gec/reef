@@ -18,12 +18,11 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.util.Logging
-
-import org.totalgrid.reef.app.ServiceContext
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext }
 
 // Tailored for some of the measproc classes
-trait MeasProcServiceContext[A] extends ServiceContext[A] with Logging {
+trait MeasProcServiceContext[A] extends ServiceContext[A] with SubscriptionHandlerBase[A] with Logging {
 
   // define add, remove, and clear    
   // clear out your object cache

@@ -22,7 +22,7 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 
 import org.totalgrid.reef.shell.proto.presentation.{ AlarmView }
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 
 @Command(scope = "alarm", name = "list", description = "List alarms.")
 class AlarmListCommand extends ReefCommandSupport {
@@ -50,7 +50,7 @@ class AlarmSilenceCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val alarm = services.getAlarm(id)
+    val alarm = services.getAlarmById(id)
 
     val edittedAlarm = services.silenceAlarm(alarm)
 
@@ -66,7 +66,7 @@ class AlarmAcknowledgeCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val alarm = services.getAlarm(id)
+    val alarm = services.getAlarmById(id)
 
     val edittedAlarm = services.acknowledgeAlarm(alarm)
 
@@ -82,7 +82,7 @@ class AlarmRemoveCommand extends ReefCommandSupport {
 
   def doCommand() = {
 
-    val alarm = services.getAlarm(id)
+    val alarm = services.getAlarmById(id)
 
     val edittedAlarm = services.removeAlarm(alarm)
 

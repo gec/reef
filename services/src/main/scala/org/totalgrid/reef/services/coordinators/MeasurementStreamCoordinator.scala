@@ -18,13 +18,7 @@
  */
 package org.totalgrid.reef.services.coordinators
 
-import org.totalgrid.reef.services.core.{ MeasurementProcessingConnectionServiceModel, CommunicationEndpointConnectionServiceModel }
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
 import org.totalgrid.reef.models._
-
-import org.totalgrid.reef.proto.Processing.MeasurementProcessingConnection
-import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.executor.mock.InstantExecutor
 import org.totalgrid.reef.services.framework._
 
 /**
@@ -44,7 +38,7 @@ trait MeasurementStreamCoordinator {
    * whenever the endpoint definition is updated we check the meas proc assignment and forcefully
    * reassign each fep
    */
-  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint)
+  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint, existing: CommunicationEndpoint)
 
   /**
    * endpoints should only be deleted when they are not enabled so we can simply delete the assignment protos

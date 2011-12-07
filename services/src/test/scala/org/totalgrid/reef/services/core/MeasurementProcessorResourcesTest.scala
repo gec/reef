@@ -20,15 +20,14 @@ package org.totalgrid.reef.services.core
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTestingHelpers }
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.proto.Model.{ PointType, Point, Entity }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 
@@ -38,11 +37,11 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   import ServiceResponseTestingHelpers._
 
   private def addPoint(pointName: String, devName: String): Entity = {
-    val modelFac = new ModelFactories(new ServiceDependencies)
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
     val service = new PointService(modelFac.points)
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build
-    val device = EntityQueryManager.findOrCreateEntity(devName, "LogicalNode", None)
+    val device = EntityQueryManager.findOrCreateEntity(devName, "LogicalNode" :: Nil, None)
     val pp = Point.newBuilder.setName(pointName).setUnit("raw").setType(PointType.ANALOG).build
 
     val point = service.put(pp).expectOne()
@@ -79,11 +78,11 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     none(s.get(Trigger.newBuilder.setTriggerName("trigname1").setPoint(makePoint("meas03")).build))
 
     many(3, s.get(Trigger.newBuilder.setPoint(makePoint("meas01")).build))
-    many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeUid(node.getUuid)).build))
+    many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeId(node.getUuid)).build))
     many(3, s.get(Trigger.newBuilder.setPoint(makePointByNodeName(node.getName)).build))
 
     many(4, s.get(Trigger.newBuilder.setPoint(makePoint("*")).build))
-    many(4, s.get(Trigger.newBuilder.setPoint(makePointByNodeUid("*")).build))
+    many(4, s.get(Trigger.newBuilder.setPoint(makePointByNodeId("*")).build))
     many(4, s.get(Trigger.newBuilder.setPoint(makePointByNodeName("*")).build))
   }*/
 
@@ -93,8 +92,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
 
     val s = new OverrideConfigService(new OverrideConfigServiceModel)
 
-    val headers = new RequestEnv
-    headers.setUserName("user")
+    val headers = BasicRequestHeaders.empty.setUserName("user")
 
     // first NIS the points
     s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build, headers).expectOne
@@ -112,11 +110,11 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     gotten.getMeas.getIntVal should equal(999)
 
     s.get(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build).expectOne()
-    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid(node.getUuid)).build).expectOne()
+    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeId(node.getUuid)).build).expectOne()
     s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName(node.getName)).build).expectOne()
 
     s.get(MeasOverride.newBuilder.setPoint(makePoint("*")).build).expectMany(2)
-    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeUid("*")).build).expectMany(2)
+    s.get(MeasOverride.newBuilder.setPoint(makePointByNodeId("*")).build).expectMany(2)
     s.get(MeasOverride.newBuilder.setPoint(makePointByNodeName("*")).build).expectMany(2)
   }
 }

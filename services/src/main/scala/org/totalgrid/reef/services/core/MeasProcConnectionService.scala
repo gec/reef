@@ -18,23 +18,21 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto, MeasurementProcessingRouting }
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessingConnection => ConnProto, MeasurementProcessingRouting }
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.japi.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.coordinators._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class MeasurementProcessingConnectionService(protected val model: MeasurementProcessingConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, MeasProcAssignment, MeasurementProcessingConnectionServiceModel]
@@ -79,7 +77,7 @@ trait MeasurementProcessingConnectionConversion
   val table = ApplicationSchema.measProcAssignments
 
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.measProc.uuid.uuid :: req.uid :: Nil
+    req.measProc.uuid.value :: req.id.value :: Nil
   }
 
   def searchQuery(proto: ConnProto, sql: MeasProcAssignment) = {
@@ -87,7 +85,7 @@ trait MeasurementProcessingConnectionConversion
   }
 
   def uniqueQuery(proto: ConnProto, sql: MeasProcAssignment) = {
-    proto.uid.asParam(sql.id === _.toLong) ::
+    proto.id.value.asParam(sql.id === _.toLong) ::
       proto.measProc.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })) ::
       Nil
   }
@@ -102,7 +100,7 @@ trait MeasurementProcessingConnectionConversion
 
   def convertToProto(entry: MeasProcAssignment): ConnProto = {
 
-    val b = ConnProto.newBuilder.setUid(makeUid(entry))
+    val b = ConnProto.newBuilder.setId(makeId(entry))
 
     entry.endpoint.value.foreach(endpoint => b.setLogicalNode(EntityQueryManager.entityToProto(endpoint.entity.value)))
     entry.application.value.map(app => b.setMeasProc(ApplicationConfig.newBuilder.setUuid(makeUuid(app))))

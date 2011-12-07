@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.Events._
+import org.totalgrid.reef.client.service.proto.Alarms._
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -35,9 +35,8 @@ import org.totalgrid.reef.event.EventType.eventTypeToString
 import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto }
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.services.{ HeadersRequestContext, ServiceDependencies }
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryServiceTest extends DatabaseUsingTestBase {
@@ -121,10 +120,10 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
         val entity1 = ApplicationSchema.entities.insert(new Entity(ENTITY1))
         val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
 
-        val factories = new ModelFactories(new ServiceDependencies)
+        val factories = new ModelFactories(new ServiceDependenciesDefaults())
 
         val eventService = factories.events
-        val context = new HeadersRequestContext
+        val context = new HeadersRequestContext()
 
         eventService.createFromProto(context, makeEvent(System.UserLogin, DAYS_AGO_2, USER1, None))
         eventService.createFromProto(context, makeEvent(Scada.ControlExe, DAYS_AGO_2 + 1000, USER1, Some(entity1.id.toString)))
@@ -267,10 +266,10 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
     var resp = one(service.get(makeAL(0, 0, None, USER_ANY, ENTITY_ANY)))
     resp.getAlarmsCount should equal(9)
-    var lastUid = resp.getAlarmList.head.getUuid // The latest UID in the database
+    var lastId = resp.getAlarmList.head.getUuid // The latest UID in the database
 
     val events = List[EventStore](
-      // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityUid, args
+      // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityId, args
 
       // Overlap the first event with the same time as the last event to make sure the don't get overlaps
       // and we don't miss one.
@@ -292,14 +291,14 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
       events.foreach(ApplicationSchema.events.insert(_))
     }
 
-    var resp2 = one(service.get(makeAL_UidAfter(STATE_ANY, lastUid, USER_ANY)))
+    var resp2 = one(service.get(makeAL_IdAfter(STATE_ANY, lastId, USER_ANY)))
     resp2.getAlarmsCount should equal(9)
     resp2.getAlarmList.toIterable.foreach(e => {
       e.getTime should be >= (NOW)
       e.getEntity.getUuid should equal(ENTITY42)
     })
 
-    resp2 = one(service.get(makeAL_UidAfter(STATE_ANY, lastUid, USER1)))
+    resp2 = one(service.get(makeAL_IdAfter(STATE_ANY, lastId, USER1)))
     resp2.getAlarmsCount should equal(3)
     resp2.getAlarmList.toIterable.foreach(e => {
       e.getTime should be >= (NOW)
@@ -327,7 +326,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
       .setSubsystem("FEP")
       .setUserId(userId)
       .setArgs(alist.toProto)
-    entityId.foreach(x => b.setEntity(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(x)).build))
+    entityId.foreach(x => b.setEntity(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setValue(x)).build))
     b.build
   }
 
@@ -380,10 +379,10 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
   /**
    * Make an AlarmList proto for selecting events after the specified UID.
    */
-  /*def makeAL_UidAfter(states: List[Alarm.State], uid: String, userId: String) = {
+  /*def makeAL_IdAfter(states: List[Alarm.State], id: String, userId: String) = {
 
     val es = EventSelect.newBuilder
-    es.setUuidAfter(uid)
+    es.setValueAfter(id)
     if (userId != "") es.addUserId(userId)
 
     val as = AlarmSelect.newBuilder

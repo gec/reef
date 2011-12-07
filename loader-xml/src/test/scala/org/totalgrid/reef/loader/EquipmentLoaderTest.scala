@@ -16,7 +16,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.totalgrid.reef.loader
 
 import helpers.{ ModelContainer, CachingModelLoader }
@@ -29,25 +28,25 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.loader.sx.equipment._
 import org.scalatest.mock.MockitoSugar
 import collection.mutable.{ Seq, Queue, HashMap }
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.junit.Assert
-import org.totalgrid.reef.proto.Model.{ Entity, ConfigFile }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, ConfigFile }
 import sx.communications.CommunicationsModel
 import sx.{ InfoXmlBean, ConfigFileXmlBean }
 import scala.None
 
-import org.totalgrid.reef.sapi.client.{ MockSyncOperations, Success }
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.proto.Model
+import org.totalgrid.reef.client.sapi.client.SuccessResponse
+import org.totalgrid.reef.client.service.proto.Model
 
 @RunWith(classOf[JUnitRunner])
 class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with ShouldMatchers with MockitoSugar with Logging {
 
   case class Fixture(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, loader: EquipmentLoader,
-      model: EquipmentModel) {
+      model: EquipmentModel, commonLoader: CommonLoader) {
     def reset {
       loader.reset
       modelLoader.reset()
+      commonLoader.reset()
       exceptionCollector.reset()
       model.reset
     }
@@ -66,7 +65,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       val commonLoader = new CommonLoader(modelLoader, exceptionCollector, new java.io.File("."))
       val loader = new EquipmentLoader(modelLoader, new LoadCache().loadCacheEquipment, exceptionCollector, commonLoader)
 
-      test(Fixture(modelLoader, exceptionCollector, loader, model))
+      test(Fixture(modelLoader, exceptionCollector, loader, model, commonLoader))
     }
 
   def testEquipmentModelProfiles(fixture: Fixture) =
@@ -125,7 +124,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       var container: ModelContainer = loader.getModelLoader.getModelContainer
       var protos = container.getModels
       protos.length should equal(12)
-      modelLoader.getModelContainer.getTriggerSets().length should equal(1)
+      commonLoader.triggerCache.size should equal(1)
 
       // TODO break into two tests
       reset
@@ -135,7 +134,7 @@ class EquipmentLoaderTest extends FixtureSuite with BeforeAndAfterAll with Shoul
       container = loader.getModelLoader.getModelContainer
       protos = container.getModels
       protos.length should equal(12)
-      modelLoader.getModelContainer.getTriggerSets().length should equal(1)
+      commonLoader.triggerCache.size should equal(1)
 
       loader.getExceptionCollector.hasErrors should equal(false)
     }

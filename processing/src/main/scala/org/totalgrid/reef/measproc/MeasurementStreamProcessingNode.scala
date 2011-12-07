@@ -18,22 +18,16 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.persistence.ObjectCache
-import org.totalgrid.reef.util.{ Logging }
-import org.totalgrid.reef.executor.{ Executor, Lifecycle }
+import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.app.{ ServiceHandlerProvider, ServiceHandler }
 import org.totalgrid.reef.metrics.MetricsHookContainer
-import org.totalgrid.reef.proto._
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.client.service.proto.Events.Event
+import org.totalgrid.reef.client.exception.ReefServiceException
 
-import Measurements._
-import Processing._
-
-import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.japi.Envelope
-import org.totalgrid.reef.messaging.{ OrderedServiceTransmitter, AMQPProtoFactory, AMQPProtoRegistry }
-import org.totalgrid.reef.japi.Envelope.Verb
-import org.totalgrid.reef.sapi.{ EventOperations, AddressableDestination }
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.measproc.pipeline.MeasProcessingPipeline
 
 /**
  * This class encapsulates all of the objects and functionality to process a stream of measurements from one endpoint.
@@ -41,64 +35,47 @@ import org.totalgrid.reef.sapi.{ EventOperations, AddressableDestination }
  * across some or all of those nodes.
  */
 class MeasurementStreamProcessingNode(
-  amqp: AMQPProtoFactory,
-  registry: AMQPProtoRegistry,
-  measCache: ObjectCache[Measurement],
-  overCache: ObjectCache[Measurement],
-  stateCache: ObjectCache[Boolean],
-  connection: MeasurementProcessingConnection,
-  executor: Executor with Lifecycle)
+  client: MeasurementProcessorServices,
+  caches: MeasProcObjectCaches,
+  connection: MeasurementProcessingConnection)
     extends Logging with MetricsHookContainer {
-  // the main actor
-  val provider = new ServiceHandlerProvider(registry, new ServiceHandler(executor))
-  val serviceTransmitter = new OrderedServiceTransmitter(registry.getSessionPool())
 
-  def publishEvent(event: Event): Unit = serviceTransmitter.publish(event, Verb.PUT) // TODO change event service to be POST
-
-  def serializeMeas(meas: Measurement) = EventOperations.getEvent(Envelope.Event.MODIFIED, meas).toByteArray()
-
-  val measSink = amqp.publish(EventOperations.getExchange(Descriptors.measurement), RoutingKeys.measurement, serializeMeas)
-
-  val processor = ProcessingNode(
-    measSink,
-    connection.getLogicalNode,
-    provider,
-    measCache,
-    overCache,
-    stateCache,
-    "streamproc-" + connection.getLogicalNode.getName,
-    publishEvent,
-    startProcessing)
-
-  // once all the components have the pieces they need to process, we subscribe to measurements
-  // we'll process them on the chainActor 
-  private def startProcessing() {
-    MeasurementStreamProcessingNode.attachNode(processor, connection, amqp, executor)
-    val client = registry.newSession()
-
-    val connectionBuilder = connection.toBuilder.setReadyTime(System.currentTimeMillis)
-
-    client.put(connectionBuilder.build).await().expectOne
+  def publishEvent(event: Event.Builder) = try {
+    event.setUserId("system")
+    event.setSubsystem("measproc")
+    client.publishEvent(event.build)
+  } catch {
+    case rse: ReefServiceException =>
+      logger.warn("Couldn't publish event: " + rse.getMessage, rse)
   }
 
-  def start() = executor.start
-  def stop() = executor.stop
+  def measSink(meas: Measurement) = try {
+    client.publishIndividualMeasurementAsEvent(meas)
+  } catch {
+    case rse: ReefServiceException =>
+      logger.warn("Couldn't publish measurement: " + meas.getName + " message: " + rse.getMessage, rse)
+  }
 
-  addHookedObject(processor)
-}
+  val endpoint = client.getEndpointByUuid(connection.getLogicalNode.getUuid).await
+  val expectedPoints = endpoint.getOwnerships.getPointsList.toList
 
-object MeasurementStreamProcessingNode extends Logging {
-  def attachNode(processor: ProcessingNode, connection: MeasurementProcessingConnection, amqp: AMQPProtoFactory, reactor: Executor) {
-    //    val queue = connection.getRouting.getMeasBatchQueue
-    //    info("Configured, listening to measurements on queue: " + queue)
-    //    amqp.listen(queue, MeasurementBatch.parseFrom, { batch: MeasurementBatch =>
-    //      reactor.execute(processor.process(batch))
-    //    })
-    val measBatchService = new AddressableMeasurementBatchService(processor)
-    val exchange = measBatchService.descriptor.id
-    logger.info("Attached " + exchange + " key: " + connection.getRouting.getServiceRoutingKey)
+  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, expectedPoints)
 
-    // TODO: need to detach processing node addressable service when removed
-    amqp.bindService(exchange, measBatchService.respond, AddressableDestination(connection.getRouting.getServiceRoutingKey), false, Some(reactor))
+  addHookedObject(processingPipeline)
+
+  val overrideResult = client.subscribeToOverridesForConnection(connection).await
+  val overrideSub = processingPipeline.overProc.setSubscription(overrideResult)
+
+  val triggerResult = client.subscribeToTriggerSetsForConnection(connection).await
+  val triggerSub = processingPipeline.triggerProc.setSubscription(triggerResult)
+
+  val binding = client.bindMeasurementProcessingNode(processingPipeline, connection)
+
+  client.setMeasurementProcessingConnectionReadyTime(connection, System.currentTimeMillis()).await
+
+  def cancel() = {
+    binding.cancel
+    triggerSub.cancel
+    overrideSub.cancel
   }
 }

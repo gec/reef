@@ -25,7 +25,7 @@ import org.totalgrid.reef.services.ServiceBootstrap
 
 abstract class DatabaseUsingTestBaseNoTransaction extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
   override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
+    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
     ServiceBootstrap.resetDb
   }
 }

@@ -26,10 +26,18 @@ import org.squeryl.PrimitiveTypeMode._
 import java.util.UUID
 import org.squeryl.Query
 
+import org.totalgrid.reef.client.service.proto.Model
+
 object Point {
-  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Int, unit: String, uuid: Option[UUID]) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Point", uuid)
-    val p = new Point(ent.id, _type, unit, abnormal)
+  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Model.PointType, unit: String, uuid: Option[UUID]) = {
+    val baseType = _type match {
+      case Model.PointType.ANALOG => "Analog"
+      case Model.PointType.STATUS => "Status"
+      case Model.PointType.COUNTER => "Counter"
+    }
+    val types = "Point" :: baseType :: Nil
+    val ent = EntityQueryManager.findOrCreateEntity(name, types, uuid)
+    val p = new Point(ent.id, _type.getNumber, unit, abnormal)
     dataSource.foreach(ln => { EntityQueryManager.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
     p.entity.value = ent
     p
@@ -65,9 +73,13 @@ case class Point(
 }
 
 object Command {
-  def newInstance(name: String, displayName: String, _type: Int, uuid: Option[UUID]) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Command", uuid)
-    val c = new Command(ent.id, displayName, _type, false, None, None)
+  def newInstance(name: String, displayName: String, _type: Model.CommandType, uuid: Option[UUID]) = {
+    val baseType = _type match {
+      case Model.CommandType.CONTROL => "Control"
+      case Model.CommandType.SETPOINT_DOUBLE | Model.CommandType.SETPOINT_INT => "Setpoint"
+    }
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Command" :: baseType :: Nil, uuid)
+    val c = new Command(ent.id, displayName, _type.getNumber, false, None, None)
     c.entity.value = ent
     c
   }
@@ -94,16 +106,16 @@ case class Command(
 
   val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
 
-  val currentActiveSelect = LazyVar(CommandAccessModel.activeSelect(lastSelectId))
+  val currentActiveSelect = LazyVar(CommandLockModel.activeSelect(lastSelectId))
 
-  val selectHistory = LazyVar(CommandAccessModel.selectsForCommands(id :: Nil))
+  val selectHistory = LazyVar(CommandLockModel.selectsForCommands(id :: Nil))
 
   val commandHistory = LazyVar(ApplicationSchema.userRequests.where(u => u.commandId === id).toList)
 }
 
 object FrontEndPort {
   def newInstance(name: String, network: Option[String], location: Option[String], state: Int, proto: Array[Byte], uuid: Option[UUID]) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Channel", uuid)
+    val ent = EntityQueryManager.findOrCreateEntity(name, "Channel" :: Nil, uuid)
     val c = new FrontEndPort(ent.id, network, location, state, proto)
     c.entity.value = ent
     c

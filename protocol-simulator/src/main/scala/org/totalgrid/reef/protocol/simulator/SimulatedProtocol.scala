@@ -18,24 +18,24 @@
  */
 package org.totalgrid.reef.protocol.simulator
 
-import org.totalgrid.reef.proto.{ SimMapping, Model, Commands }
-import org.totalgrid.reef.util.{ Logging }
+import org.totalgrid.reef.client.service.proto.{ SimMapping, Model, Commands }
 
 import org.totalgrid.reef.protocol.api._
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
-import org.totalgrid.reef.proto.FEP.CommChannel
+import net.agileautomata.executor4s._
+import org.totalgrid.reef.client.service.proto.SimMapping.SimulatorMapping
+import org.totalgrid.reef.client.service.proto.FEP.CommChannel
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior
  * under configurable load.
  */
-class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager with SimulatorManagement with Logging {
+class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logging {
 
   import Protocol._
 
   final override def name: String = "benchmark"
-  final override def requiresChannel = false
 
   case class PluginRecord(endpoint: String, mapping: SimulatorMapping, publisher: BatchPublisher, current: Option[SimulatorPlugin])
 
@@ -43,12 +43,13 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
   private var endpoints = Map.empty[String, PluginRecord]
   private var factories = Set.empty[SimulatorPluginFactory]
 
-  override def doAddEndpoint(
+  override def addEndpoint(
     endpoint: String,
     channel: String,
     files: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler = mutex.synchronized {
+    endpointPublisher: EndpointPublisher,
+    client: Client): CommandHandler = mutex.synchronized {
 
     endpoints.get(endpoint) match {
       case Some(x) =>
@@ -63,7 +64,7 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
     }
   }
 
-  override def doRemoveEndpoint(endpoint: String) = mutex.synchronized {
+  override def removeEndpoint(endpoint: String) = mutex.synchronized {
     endpoints.get(endpoint) match {
       case Some(record) =>
         record.current.foreach(_.shutdown()) // shutdown the current plugin
@@ -73,14 +74,7 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
     }
   }
 
-  def doAddChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher) = null
-
-  def doRemoveChannel(channel: String) = null
-
   class EndpointCommandHandler(endpoint: String) extends CommandHandler {
-
-    def buildResponse(cmd: Commands.CommandRequest, status: Commands.CommandStatus) =
-      Commands.CommandResponse.newBuilder.setCorrelationId(cmd.getCorrelationId).setStatus(status).build
 
     def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher): Unit = mutex.synchronized {
       endpoints.get(endpoint) match {
@@ -91,7 +85,7 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
               logger.error("Benchmark protocol received command for endpoint, but no plugin was loaded for endpoint: " + endpoint)
               Commands.CommandStatus.NOT_SUPPORTED
           }
-          publisher.publish(buildResponse(cmd, status))
+          publisher.publish(status)
         case None =>
           logger.error("Benchmark protocol received command for unregistered endpoint: " + endpoint)
       }
@@ -108,8 +102,9 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
       case None => Some(x)
       case Some(current) => if (current.level >= x.level) best else Some(x)
     }
+
     def add(endpoint: String, executor: Executor, publisher: BatchPublisher, mapping: SimulatorMapping, factory: SimulatorPluginFactory) = {
-      val simulator = factory.createSimulator(endpoint, executor, publisher, mapping)
+      val simulator = factory.create(endpoint, Strand(executor), publisher, mapping)
       logger.info("Adding simulator for endpoint " + endpoint + " of type " + simulator.getClass.getName)
       endpoints += endpoint -> PluginRecord(endpoint, mapping, publisher, Some(simulator))
     }
@@ -146,10 +141,6 @@ class SimulatedProtocol(exe: Executor) extends LoggingProtocolEndpointManager wi
         }
       }
     }
-  }
-
-  override def getSimulators() = {
-    endpoints.map { case (n, r) => n -> r.current }.toMap
   }
 
 }

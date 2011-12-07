@@ -18,15 +18,15 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.client.service.proto.Events._
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -84,7 +84,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
     val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
 
     val events = List[EventStore](
-      // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityUid, args
+      // EventStore: EventType, alarm, time, deviceTime, severity, subsystem, userId, entityId, args
 
       EventStore(System.UserLogin, false, DAYS_AGO_2, None, INFORM, SUB1, USER1, None, Array[Byte](), ""),
       EventStore(Scada.ControlExe, false, DAYS_AGO_2 + 1000, None, CRITICAL, SUB1, USER1, Some(entity1.id), Array[Byte](), ""),
@@ -268,11 +268,11 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
   /*/**
    * Make an EventList proto for selecting events after the specified UID.
    */
-  def makeEL_UidAfter(uid: String, userId: String) = {
+  def makeEL_IdAfter(id: String, userId: String) = {
 
     val q = EventSelect.newBuilder
 
-    q.setUuidAfter(uid)
+    q.setUuidAfter(id)
 
     if (userId != "") q.addUserId(userId)
 

@@ -24,57 +24,38 @@ import org.apache.felix.gogo.runtime.CommandProcessorImpl
 
 import jline.Terminal
 import java.io.{ PrintStream, InputStream }
-
-import org.totalgrid.reef.util.FileConfigReader
-import org.totalgrid.reef.sapi.client.ClientSession
-import org.totalgrid.reef.japi.request.impl.{ SingleSessionClientSource, AllScadaServiceImpl }
-import org.totalgrid.reef.japi.client.UserSettings
-import org.totalgrid.reef.broker.{ BrokerConnectionInfo, BrokerProperties }
+import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
+import org.totalgrid.reef.client.service.AllScadaService
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.settings.util.PropertyReader
+import net.agileautomata.executor4s.Cancelable
+import org.totalgrid.reef.client.service.list.ReefServices
 
 object ProtoShellApplication {
   def main(args: Array[String]) = {
-    //System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
+    System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
 
-    val userSettings = new UserSettings(new FileConfigReader("org.totalgrid.reef.user.cfg").props)
-    val connectionInfo = BrokerProperties.get(new FileConfigReader("org.totalgrid.reef.amqp.cfg"))
+    val userSettings = new UserSettings(PropertyReader.readFromFile("org.totalgrid.reef.user.cfg"))
+    val connectionInfo = new AmqpSettings(PropertyReader.readFromFile("org.totalgrid.reef.amqp.cfg"))
 
-    val client = connect(connectionInfo, userSettings)
+    val factory = new ReefFactory(connectionInfo, new ReefServices)
 
-    val app = new ProtoShellApplication(client, userSettings.getUserName, connectionInfo.toString)
+    val connection = factory.connect()
+
+    val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+    val services = client.getRpcInterface(classOf[AllScadaService])
+
+    val cancel = new Cancelable {
+      def cancel() = factory.terminate()
+    }
+
+    val app = new ProtoShellApplication(client, services, cancel, userSettings.getUserName, connectionInfo.toString, client.getHeaders.getAuthToken)
     app.run(Array[String]())
   }
-
-  def connect(connectionInfo: BrokerConnectionInfo, userSettings: UserSettings) = {
-    import org.totalgrid.reef.executor.ReactActorExecutor
-    import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
-    import org.totalgrid.reef.messaging.{ AmqpClientSession, AMQPProtoFactory }
-    import org.totalgrid.reef.proto.ReefServicesList
-
-    val amqp = new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(connectionInfo)
-    }
-
-    amqp.connect(5000)
-    val client = new AmqpClientSession(amqp, ReefServicesList, 5000) {
-      override def close() {
-        super.close()
-        amqp.disconnect(5000)
-      }
-    }
-
-    val services = new AllScadaServiceImpl with SingleSessionClientSource {
-      def session = client
-    }
-
-    val token = services.createNewAuthorizationToken(userSettings.getUserName, userSettings.getUserPassword)
-    client.getDefaultHeaders.setAuthToken(token)
-
-    client
-  }
-
 }
 
-class ProtoShellApplication(clientSession: ClientSession, userName: String, context: String) extends Main {
+class ProtoShellApplication(client: Client, services: AllScadaService, cancelable: Cancelable, userName: String, context: String, authToken: String) extends Main {
 
   setUser(userName)
   setApplication(context)
@@ -85,13 +66,10 @@ class ProtoShellApplication(clientSession: ClientSession, userName: String, cont
     new Console(commandProcessor, in, out, err, terminal, null) {
       protected override def isPrintStackTraces = false
       protected override def welcome = {
-        session.getConsole().println("hi")
+        session.getConsole().println(">")
       }
       protected override def setSessionProperties = {
-        session.put("reefSession", clientSession)
-        session.put("context", context)
-        session.put("user", userName)
-        session.put("authToken", userName)
+        ReefCommandSupport.setSessionVariables(this.session, client, services, context, cancelable, userName, authToken)
       }
     }
   }

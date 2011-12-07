@@ -9,6 +9,41 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.0
+==============
+
+Major refactoring of communication client and threading structure. See MIGRATION_STEPS.markdown
+for help in updating an application from 0.3.x.
+
+### Major Features:
+
+* Reef client API is much simpler and easier to use, no reaching into any implementation packages
+* Connecting to a reef broker is now by default a synchronous "single-shot" operation
+* Service Specific Java interfaces are now used to auto-generate wrappers around scala implementations
+* BatchServiceRequest is used by the loader-xml project to load models up to 70% faster than in 0.3.3. reef-175
+* BatchServiceRequest is used to unload model, up to 90% faster than in 0.3.3
+* Now setting qpid heartbeat timeout, requires new setting in config files: org.totalgrid.reef.amqp.heartbeatTimeSeconds=30. Fixes reef-183
+
+### Shell Commands:
+
+* Shell will attempt to auto-login using credentials in the org.totalgrid.reef.user.cfg file
+* reef:unload will automatically disable and wait for endpoints to go to COMMS_DOWN before deleting. reef-173
+* Better error handling when commands fail
+
+### Service/API Updates:
+
+* Entity service only returns BadRequestException about unknown types if no results are returned
+* Added getEntityRelations queries to EntityService to make complex queries simpler to execute.
+* Added SimpleAuthRequest proto and service to make logging in and out not dependent on complex reef types.
+* Command requests are checked to verify right command type is used (control vs. setpoint)
+
+### Reef Internals:
+
+* Protocol interface includes reef Client
+* Removed all usage of scala actors, replaced with Java Executors
+* Added many more integration tests for dnp3 and model loading and upload, fixed many endpoint related bugs.
+* Upgraded to karaf 2.2.4 from 2.2.2
+
 Version 0.3.3
 ==============
 

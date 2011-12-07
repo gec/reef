@@ -18,9 +18,10 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.messaging.serviceprovider.ServiceSubscriptionHandler
 import org.totalgrid.reef.event.SystemEventSink
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Client }
+import org.totalgrid.reef.models.AuthPermission
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models
@@ -41,7 +42,7 @@ trait RequestContext {
    * subscription handler that handles the publish and bind calls. Differs from the original subHandler since it will
    * accept any service event and lookup the exchange rather than needing a different publisher for each object type
    */
-  def subHandler: ServiceSubscriptionHandler
+  def subHandler: SubscriptionHandler
 
   /**
    * for publishing system messages (System.LogOn, Subsystem.Starting) etc, publishes these messages immediately and
@@ -49,10 +50,28 @@ trait RequestContext {
    */
   def eventSink: SystemEventSink
 
+  def client: Client
+
   /**
    * request headers as received from the client
    */
-  def headers: RequestEnv
+  def getHeaders: BasicRequestHeaders
+
+  /**
+   * Change the request headers and return the modified version
+   */
+  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders
+
+  /**
+   * permissions only need to be loaded once per request, they are stored in the context for future
+   * authorization or filtering work
+   */
+  def getPermissions: Option[List[AuthPermission]]
+
+  /**
+   * store the list of permissions on the context
+   */
+  def setPermissions(permissions: List[AuthPermission])
 }
 
 /**
@@ -67,11 +86,11 @@ trait RequestContextSource {
 /**
  * wrapper class that takes a source and merges in some extra RequestEnv headers before the transaction
  */
-class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: RequestEnv)
+class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: BasicRequestHeaders)
     extends RequestContextSource {
   def transaction[A](f: (RequestContext) => A) = {
     contextSource.transaction { context =>
-      context.headers.merge(headers)
+      context.modifyHeaders(_.merge(headers))
       f(context)
     }
   }

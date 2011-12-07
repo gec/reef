@@ -20,11 +20,11 @@ package org.totalgrid.reef.loader
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
-import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
+import org.totalgrid.reef.client.service.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
+import org.totalgrid.reef.client.service.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
 import org.totalgrid.reef.loader.equipment._
 
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
@@ -178,12 +178,11 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val name = getChildName(childPrefix, xmlCommand.getName)
     val displayName = Option(xmlCommand.getDisplayName) getOrElse xmlCommand.getName
 
-    val baseType = if (commandType == CommandTypeProto.CONTROL) "Control" else "Setpoint"
-    val types = baseType :: getTypeList(xmlCommand.getType)
+    val types = "Command" :: getTypeList(xmlCommand.getType)
 
     logger.trace("processControl: " + name)
     loadCache.addControl(name)
-    val commandEntity = toEntityType(name, "Command" :: types)
+    val commandEntity = toEntityType(name, types)
     val commandProto = toCommand(name, displayName, commandEntity, commandType)
     commandEntities += (name -> commandEntity)
     commands += (name -> commandProto)
@@ -208,20 +207,20 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
    * Put the point and pointEntity and setup the owns relationship.
    * Return the pointEntity
    *
-   * TODO: Handle exceptions from invalid name references (ex: control)
+   * TODO: Handle exception from invalid name references (ex: control)
    */
   def processPointType(pointType: PointType, equipmentEntity: Entity, childPrefix: Option[String], actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._
 
-    val (baseType, pointProtoType) = pointType match {
-      case c: equipment.Analog => ("Analog", PointTypeProto.ANALOG)
-      case c: equipment.Status => ("Status", PointTypeProto.STATUS)
-      case c: equipment.Counter => ("Counter", PointTypeProto.COUNTER)
+    val pointProtoType = pointType match {
+      case c: equipment.Analog => PointTypeProto.ANALOG
+      case c: equipment.Status => PointTypeProto.STATUS
+      case c: equipment.Counter => PointTypeProto.COUNTER
       case _ => throw new LoadingException("Bad point type")
     }
 
     val name = getChildName(childPrefix, pointType.getName)
-    val types = "Point" :: baseType :: getTypeList(pointType.getType)
+    val types = "Point" :: getTypeList(pointType.getType)
 
     val unit = getAttribute[String](name, pointType, _.isSetUnit, _.getUnit, "unit")
     equipmentPointUnits += (name -> unit)
@@ -258,7 +257,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val convertValues = getElements[Transform](name, pointType, _.getTransform.toList)
     triggers = triggers ::: convertValues.map { transform => toTrigger(name, transform, unit) }
 
-    if (!triggers.isEmpty) addTriggers(modelLoader, point, triggers)
+    if (!triggers.isEmpty) addTriggers(commonLoader.triggerCache, point, triggers)
 
     pointEntity
   }

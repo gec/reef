@@ -18,11 +18,10 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import org.squeryl.{ Schema, Table, KeyedEntity }
+import org.squeryl.{ Schema, KeyedEntity }
 import org.squeryl.PrimitiveTypeMode._
 
-import scala.actors.Actor._
-
+import net.agileautomata.commons.testing._
 import org.totalgrid.reef.util.{ Timing, SyncVar }
 import ExclusiveAccess._
 
@@ -83,7 +82,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
       AccessSchema.acs.insert(new AccessTable(0)).id
       AccessSchema.acs.insert(new AccessTable(0)).id
     }
-    val accessor = testFunMulti(List(0, 1, 2), _.value == 1)
+    val accessor = testFunMulti(List(1, 2, 3), _.value == 1)
 
     intercept[AcquireConditionNotMetException] {
       accessor(a => throw new Exception)
@@ -160,7 +159,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
     var blockedTime = -1: Long
 
     accessor(a => {
-      actor {
+      onAnotherThread {
         Timing.time(blockedAccessingTime.update _) {
           intercept[AcquireConditionNotMetException] {
             // this function should block while the main transaction is "procssing"
@@ -168,7 +167,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
             accessor(a => throw new Exception)
           }
         }
-      }.start
+      }
       Timing.time({ t: Long => { blockedTime = t } }) { Thread.sleep(100) } // fake a long running process
       a.value = 1
       AccessSchema.acs.update(a)
@@ -194,7 +193,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
     val firstEntry = -1
 
     testFun(id1, _.value == 0)(a => {
-      actor {
+      onAnotherThread {
         // sub actor gets a lock on a different row and then
         // unblocks the original transaction
         testFun(id2, _.value == 0)(a => {
@@ -202,7 +201,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
           a.value = 1
           a
         })
-      }.start
+      }
       unBlock.waitUntil(true)
       a.value = 1
       AccessSchema.acs.update(a)

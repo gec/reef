@@ -20,7 +20,8 @@ package org.totalgrid.reef.services.framework
 
 import com.google.protobuf.GeneratedMessage
 
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 /**
  * Interface for generic use of models by simple REST services
@@ -114,8 +115,8 @@ trait ServiceEventBuffering[MessageType <: GeneratedMessage, ModelType]
  */
 trait ServiceEventPublishing[MessageType <: GeneratedMessage] {
 
-  protected def publishEvent(context: RequestContext, event: Envelope.Event, resp: MessageType, key: String): Unit = {
-    context.subHandler.publish(event, resp, key)
+  protected def publishEvent(context: RequestContext, event: Envelope.SubscriptionEventType, resp: MessageType, key: String): Unit = {
+    context.subHandler.publishEvent(event, resp, key)
   }
 }
 
@@ -131,7 +132,7 @@ trait ServiceEventSubscribing[MessageType <: GeneratedMessage] extends Subscribe
    */
   def subscribe(context: RequestContext, req: MessageType, queue: String): Unit = {
     val keys = getSubscribeKeys(req)
-    keys.foreach(context.subHandler.bind(queue, _, req))
+    keys.foreach(context.subHandler.bindQueueByClass(queue, _, req.getClass))
   }
 }
 

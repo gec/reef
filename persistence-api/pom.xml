@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.3</version>
+        <version>0.4.0</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-persistence-api</artifactId>
@@ -70,31 +70,25 @@
             <version>2.2</version>
             <scope>compile</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.scala-lang</groupId>-->
-            <!--<artifactId>scalap</artifactId>-->
-            <!--<version>2.9.0-1</version>-->
-            <!--<scope>compile</scope>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.3.3</version>
+            <version>${reef.version}</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-metrics</artifactId>
-            <version>0.3.3</version>
+            <version>${reef.version}</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-proto</artifactId>
-            <version>0.3.3</version>
+            <artifactId>reef-service-client</artifactId>
+            <version>${reef.version}</version>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util-osgi</artifactId>
-            <version>0.3.3</version>
+            <version>${reef.version}</version>
         </dependency>
     </dependencies>
 </project>

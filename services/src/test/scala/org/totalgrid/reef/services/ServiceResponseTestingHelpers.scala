@@ -18,45 +18,44 @@
  */
 package org.totalgrid.reef.services
 
-import org.scalatest.matchers.ShouldMatchers
+import org.totalgrid.reef.test.BlockingQueue
 
-import org.totalgrid.reef.messaging.{ AMQPProtoFactory }
-import org.totalgrid.reef.util.BlockingQueue
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Event }
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 
-import org.totalgrid.reef.util.SyncVar
+object ServiceResponseTestingHelpers {
 
-import org.totalgrid.reef.sapi._
-import org.totalgrid.reef.sapi.client.Event
+  private def makeUuid(str: String) = ReefUUID.newBuilder.setValue(str).build
+  implicit def makeUuidFromString(str: String): ReefUUID = makeUuid(str)
 
-object ServiceResponseTestingHelpers extends ShouldMatchers {
+  private def makeId(str: String) = ReefID.newBuilder.setValue(str).build
+  implicit def makeIdFromString(str: String): ReefID = makeId(str)
 
-  def getEventQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[A], RequestEnv) = {
+  def getEventQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[A], BasicRequestHeaders) = {
 
-    val updates = new BlockingQueue[A]
-    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt.value) })
-
-    (updates, env)
-  }
-
-  def getEventQueueWithCode[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A): (BlockingQueue[Event[A]], RequestEnv) = {
-    val updates = new BlockingQueue[Event[A]]
-
-    val env = getSubscriptionQueue(amqp, convert, { (evt: Event[A]) => updates.push(evt) })
+    val updates = BlockingQueue.empty[A]
+    val env = getSubscriptionQueue(amqp, descriptor, { (evt: Event[A]) => updates.push(evt.value) })
 
     (updates, env)
   }
 
-  def getSubscriptionQueue[A <: Any](amqp: AMQPProtoFactory, convert: Array[Byte] => A, func: Event[A] => Unit) = {
+  def getEventQueueWithCode[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[Event[A]], BasicRequestHeaders) = {
+    val updates = BlockingQueue.empty[Event[A]]
 
-    val eventQueueName = new SyncVar("")
-    val pointSource = amqp.getEventQueue[A](convert, func, { q => eventQueueName.update(q) })
+    val env = getSubscriptionQueue(amqp, descriptor, { (evt: Event[A]) => updates.push(evt) })
 
-    // wait for the queue name to get populated (actor startup delay)
-    eventQueueName.waitWhile("")
+    (updates, env)
+  }
 
-    val env = new RequestEnv
-    env.setSubscribeQueue(eventQueueName.current)
+  def getSubscriptionQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
 
-    env
+    val sub = amqp.subscribe(descriptor).await.get
+
+    sub.start(func)
+
+    BasicRequestHeaders.empty.setSubscribeQueue(sub.id)
+
   }
 }

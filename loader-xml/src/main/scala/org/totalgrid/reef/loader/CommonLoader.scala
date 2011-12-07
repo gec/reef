@@ -18,17 +18,27 @@
  */
 package org.totalgrid.reef.loader
 
-import java.io.{ File, FileInputStream }
+import java.io.File
 import com.google.protobuf.ByteString
 
 import org.totalgrid.reef.loader.common.{ Info, Attribute, ConfigFile, ConfigFiles }
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.proto.Model.{ EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.service.proto.Model.{ EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
+import org.totalgrid.reef.util.IOHelpers
+import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
+
+import scala.collection.mutable
 
 class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, rootDir: File) extends Logging {
+
+  val triggerCache = mutable.Map.empty[String, TriggerSet]
+
+  def reset() {
+    triggerCache.clear()
+  }
 
   def getExceptionCollector: ExceptionCollector = {
     exceptionCollector
@@ -81,7 +91,7 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     val bytes = if (hasFilename) {
       val file = new File(rootDir, configFile.getFileName)
       if (!file.exists()) throw new LoadingException("External ConfigFile: " + file.getAbsolutePath + " doesn't exist.")
-      readFileToByteArray(file, mimeType)
+      IOHelpers.readBinary(file)
     } else {
       configFile.getValue.getBytes
     }
@@ -94,25 +104,7 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     configFileProto
   }
 
-  def readFileToByteArray(file: File, mimeType: String): Array[Byte] = {
-    if (mimeType.startsWith("image")) {
-      val fis = new FileInputStream(file);
-      val length = file.length()
-      if (length > Integer.MAX_VALUE) {
-        throw new LoadingException("External ConfigFile: " + file.getAbsolutePath + " is larger than " + Integer.MAX_VALUE + " bytes")
-      }
-      val buffer = new Array[Byte](length.toInt);
-      fis.read(buffer);
-      fis.close();
-      buffer
-    } else {
-      scala.io.Source.fromFile(file).mkString.getBytes
-    }
-  }
-
   def addInfo(entity: Entity, info: Info) {
-    logger.info("adding info for entity: " + entity + ", info: " + info)
-
     exceptionCollector.collect("Adding info for entity: " + entity.getName) {
 
       info.getConfigFile.map(configFile => loadConfigFile(configFile, Some(entity)))
@@ -123,8 +115,8 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
   }
 
   def toAttribute(entity: Entity, attrElements: List[Attribute]): Option[EntityAttributes] = {
-    import org.totalgrid.reef.proto.Utils.{ Attribute => AttributeProto }
-    import org.totalgrid.reef.proto.Utils.Attribute.Type
+    import org.totalgrid.reef.client.service.proto.Utils.{ Attribute => AttributeProto }
+    import org.totalgrid.reef.client.service.proto.Utils.Attribute.Type
 
     if (attrElements.isEmpty) return None
 

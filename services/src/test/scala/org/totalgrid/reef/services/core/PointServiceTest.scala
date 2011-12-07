@@ -21,12 +21,12 @@ package org.totalgrid.reef.services.core
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.proto.Model.{ Point, PointType }
-import org.totalgrid.reef.proto.Processing.{ MeasOverride, TriggerSet }
+import org.totalgrid.reef.client.service.proto.Model.{ Point, PointType }
+import org.totalgrid.reef.client.service.proto.Processing.{ MeasOverride, TriggerSet }
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.proto.Measurements.Quality.Validity
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 
@@ -36,7 +36,7 @@ class PointServiceTest extends DatabaseUsingTestBase {
   class Fixture {
     val fakeDatabase = new InMemoryMeasurementStore
 
-    val modelFactories = new ModelFactories(new ServiceDependencies(cm = fakeDatabase))
+    val modelFactories = new ModelFactories(new ServiceDependenciesDefaults(cm = fakeDatabase))
     val pointService = new PointService(modelFactories.points)
     val triggerService = new TriggerSetService(modelFactories.triggerSets)
     val overrideService = new OverrideConfigService(modelFactories.overrides)

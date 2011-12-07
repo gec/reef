@@ -21,9 +21,8 @@ package org.totalgrid.reef.shell.admin
 import org.totalgrid.reef.shell.proto.ReefCommandSupport
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, SqlProperties }
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
-import org.totalgrid.reef.executor.{ ReactActorExecutor, LifecycleManager }
 import org.totalgrid.reef.services.ServiceBootstrap
 import org.apache.felix.gogo.commands.{ Option => GogoOption, Command }
 import java.io.{ InputStreamReader, BufferedReader }
@@ -52,18 +51,15 @@ class ResetDatabaseCommand extends ReefCommandSupport {
         p2
     }
 
-    val sql = SqlProperties.get(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql"))
+    val sql = new DbInfo(OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql").getProperties)
     logout()
 
     val bundleContext = getBundleContext()
 
     DbConnector.connect(sql, bundleContext)
 
-    val exe = new ReactActorExecutor {}
+    val mstore = MeasurementStoreFinder.getInstance(bundleContext)
 
-    val mstore = MeasurementStoreFinder.getInstance(sql, exe, bundleContext)
-
-    exe.start()
     try {
       ServiceBootstrap.resetDb()
       ServiceBootstrap.seed(systemPassword)
@@ -76,9 +72,6 @@ class ResetDatabaseCommand extends ReefCommandSupport {
       }
     } catch {
       case ex => println("Reset failed: " + ex.toString)
-    }
-    finally {
-      exe.stop()
     }
   }
 

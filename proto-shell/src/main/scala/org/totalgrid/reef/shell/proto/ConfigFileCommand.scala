@@ -23,14 +23,13 @@ import org.apache.felix.gogo.commands.{ Option => GogoOption, Argument, Command 
 import scala.collection.JavaConversions._
 import java.io.File
 
-import org.totalgrid.reef.japi.BadRequestException
 import org.totalgrid.reef.util.IOHelpers
 
 @Command(scope = "configfile", name = "list", description = "Prints all config files")
 class ConfigFileListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    val results = services.getAllConfigFiles
+    val results = services.getConfigFiles
     ConfigFileView.printTable(results.toList)
   }
 }
@@ -63,43 +62,42 @@ class ConfigFileDownloadCommand extends ReefCommandSupport {
   }
 }
 
-@Command(scope = "configfile", name = "upload", description = "Upload a config file")
+@Command(scope = "configfile", name = "upload", description = "Upload a config file. If the file already exists in reef overwrite the data in the file.")
 class ConfigFileUploadCommand extends ReefCommandSupport {
 
-  @Argument(index = 0, name = "name", description = "Config file name", required = true, multiValued = false)
-  private var configFileName: String = null
+  @Argument(index = 0, name = "configFileName", description = "Name for config file in reef, this needs to match what is in configfile:list exactly to replace a file.", required = true, multiValued = false)
+  var configFileName: String = null
 
-  @Argument(index = 1, name = "inputFile", description = "File name to load data from, defaults to configFileName", required = false, multiValued = false)
-  private var inputFile: String = null
+  @Argument(index = 1, name = "inputFile", description = "Local File name to load data from, defaults to configFileName. Needs to be specified if local filename doesn't match reef configFileName.", required = false, multiValued = false)
+  var inputFile: String = null
 
-  @Argument(index = 2, name = "mimeType", description = "Mime Type of file, not necessary if overwriting config file", required = false, multiValued = false)
-  private var mimeType: String = null
+  @GogoOption(name = "-mimeType", description = "Mime Type of file, not necessary if overwriting config file", required = false, multiValued = false)
+  var mimeType: String = null
 
   @GogoOption(name = "-e", description = "Entity to attach configFile to.", required = false, multiValued = false)
   var entity: String = null
 
   def doCommand() = {
-    val currentFile = try {
-      // TODO: add findConfigFileByName
-      Some(services.getConfigFileByName(configFileName))
-    } catch {
-      case ex: BadRequestException => None
-    }
+    val currentFile = Option(services.findConfigFileByName(configFileName))
 
     val dataFile = new File(Option(inputFile).getOrElse(configFileName))
     val data = IOHelpers.readBinary(dataFile)
 
-    currentFile match {
+    val cf = currentFile match {
       case Some(cf) =>
-        services.updateConfigFile(cf, data)
+        Option(entity).map { services.getEntityByName(_).getUuid }.foreach { entUuid =>
+          services.addConfigFileUsedByEntity(cf, entUuid)
+        }
+        if (mimeType == null) mimeType = cf.getMimeType
+        services.createConfigFile(configFileName, mimeType, data)
       case None =>
         if (mimeType == null) throw new Exception("Must specify mimeType when uploading new config file")
 
-        // TODO: add a createConfigFile with list for entities
         Option(entity).map { services.getEntityByName(_).getUuid } match {
           case Some(entUuid) => services.createConfigFile(configFileName, mimeType, data, entUuid)
           case None => services.createConfigFile(configFileName, mimeType, data)
         }
     }
+    ConfigFileView.printTable(cf :: Nil)
   }
 }

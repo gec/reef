@@ -18,25 +18,23 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.Events.{ Event => EventProto }
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto }
 import org.totalgrid.reef.models.{ EventConfigStore, ApplicationSchema, AlarmModel, EventStore }
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Table
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.RequestEnv
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 // implicit proto properties
 import SquerylModel._
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class AlarmService(protected val model: AlarmServiceModel)
     extends SyncModeledServiceBase[Alarm, AlarmModel, AlarmServiceModel]
@@ -60,10 +58,10 @@ class AlarmService(protected val model: AlarmServiceModel)
   }
 }
 
-class AlarmServiceModel(summary: SummaryPoints)
+class AlarmServiceModel
     extends SquerylServiceModel[Alarm, AlarmModel]
     with EventedServiceModel[Alarm, AlarmModel]
-    with AlarmConversion with AlarmSummaryCalculations {
+    with AlarmConversion {
 
   // delayed link to eventServiceModel to break circular dependecy
   var eventModel: Option[EventServiceModel] = None
@@ -71,7 +69,7 @@ class AlarmServiceModel(summary: SummaryPoints)
   override def getEventProtoAndKey(alarm: AlarmModel) = {
     val (_, eventKeys) = EventConversion.makeEventProtoAndKey(alarm.event.value)
     val proto = convertToProto(alarm)
-    val keys = eventKeys.map { ProtoRoutingKeys.generateRoutingKey(proto.uid :: Nil) + "." + _ }
+    val keys = eventKeys.map { ProtoRoutingKeys.generateRoutingKey(proto.id.value :: Nil) + "." + _ }
 
     (proto, keys)
   }
@@ -80,7 +78,7 @@ class AlarmServiceModel(summary: SummaryPoints)
   override def getSubscribeKeys(req: Alarm): List[String] = {
     val eventKeys = EventConversion.makeSubscribeKeys(req.event.getOrElse(EventProto.newBuilder.build))
 
-    eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.uid :: Nil) + "." + _ }
+    eventKeys.map { ProtoRoutingKeys.generateRoutingKey(req.id.value :: Nil) + "." + _ }
   }
 
   override def createFromProto(context: RequestContext, req: Alarm): AlarmModel = {
@@ -113,7 +111,6 @@ class AlarmServiceModel(summary: SummaryPoints)
     if (existing.isNextStateValid(proto.getState.getNumber))
       update(context, updateModelEntry(proto, existing), existing)
     else {
-      // TODO: access the proto to print the state names in the exception.
       throw new BadRequestException("Invalid state transistion from " + Alarm.State.valueOf(existing.state) + " to " + proto.getState, Envelope.Status.BAD_REQUEST)
     }
   }
@@ -121,88 +118,7 @@ class AlarmServiceModel(summary: SummaryPoints)
   private def updateModelEntry(proto: Alarm, existing: AlarmModel): AlarmModel = {
     new AlarmModel(
       proto.getState.getNumber,
-      existing.eventUid) // Use the existing event so there's no possibility of an update.
-  }
-
-  /// hooks to feed the populated models to the summary counter
-  override def postCreate(context: RequestContext, created: AlarmModel): Unit = {
-    super.postCreate(context, created)
-    updateSummaries(created, None, summary.incrementSummary _)
-  }
-  override def postUpdate(context: RequestContext, updated: AlarmModel, original: AlarmModel): Unit = {
-    super.postUpdate(context, updated, original)
-    updateSummaries(updated, Some(original), summary.incrementSummary _)
-  }
-}
-
-/**
- * keeps a running tally of unacked alarms in the system.
- */
-trait AlarmSummaryCalculations {
-
-  // TODO: get summary point names from configuration
-  def severityName(n: Int) = "summary.unacked_alarms_severity_" + n
-  def subsystemName(n: String) = "summary.unacked_alarms_subsystem_" + n
-  def eqGroupName(n: String) = "summary.unacked_alarms_equipment_group_" + n
-
-  def initializeSummaries(summary: SummaryPoints) {
-    val severities = (for (i <- 1 to 3) yield i).toList
-    val subsystems = List("FEP", "Processing")
-    val eqGroups = EntityQueryManager.findEntitiesByType("EquipmentGroup" :: Nil).toList.map { _.name }
-
-    // TODO: get list of summary points from configuration somewhere
-    val names = severities.map { severityName(_) } ::: subsystems.map { subsystemName(_) } ::: eqGroups.map { eqGroupName(_) }
-
-    // look through all unacked alarms to regenerate counts
-    val results = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
-      where(alarm.state in List(AlarmModel.UNACK_AUDIBLE, AlarmModel.UNACK_SILENT) and
-        alarm.eventUid === event.id)
-        select (alarm, event))
-
-    val alarms = AlarmQueries.populate(results.toList)
-
-    // build a map with the intial values
-    val m = scala.collection.mutable.Map.empty[String, Int]
-    names.foreach(m(_) = 0) // start with 0
-    alarms.foreach(updateSummaries(_, None, { (name, value) =>
-      m.get(name) match {
-        case Some(prev) => m(name) = prev + value
-        case None => m(name) = value
-      }
-    }))
-
-    // publish the initial values only once
-    m.foreach(e => summary.setSummary(e._1, e._2))
-  }
-
-  def updateSummaries(alarm: AlarmModel, previous: Option[AlarmModel], func: (String, Int) => Any) {
-
-    // if we are counting for the integrity its either +1 or 0, if updating an event its either
-    // 0, -1, or 1 depending on state changes
-    var incr = if (alarm.isUnacked && !(previous.isDefined && previous.get.isUnacked)) 1 else 0
-    if (!alarm.isUnacked && previous.isDefined && previous.get.isUnacked) incr = -1
-
-    if (incr == 0) return
-
-    // TODO: publish by category instead of subsystem
-    func(severityName(alarm.event.value.severity), incr)
-    func(subsystemName(alarm.event.value.subsystem), incr)
-    alarm.event.value.groups.value.foreach(ent => func(eqGroupName(ent.name), incr))
-  }
-
-}
-object AlarmSummaryCalculations extends AlarmSummaryCalculations
-
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.services.ProtoServiceCoordinator
-
-class AlarmSummaryInitializer(model: AlarmServiceModel, summary: SummaryPoints) extends ProtoServiceCoordinator with AlarmSummaryCalculations {
-
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
-    reactor.execute {
-      model.initializeSummaries(summary)
-    }
+      existing.eventId) // Use the existing event so there's no possibility of an update.
   }
 }
 
@@ -224,10 +140,11 @@ trait AlarmConversion
     entry.state != existing.state
   }
 
+  // TODO: remove createModelEntry in alarm service
   def createModelEntry(proto: Alarm): AlarmModel = {
     new AlarmModel(
       proto.getState.getNumber,
-      proto.getEvent.getUid.toLong)
+      proto.getEvent.getId.getValue.toLong)
   }
 
   def convertToProto(entry: AlarmModel): Alarm = {
@@ -236,7 +153,7 @@ trait AlarmConversion
 
   def convertToProto(entry: AlarmModel, event: EventStore): Alarm = {
     Alarm.newBuilder
-      .setUid(entry.id.toString)
+      .setId(makeId(entry))
       .setState(Alarm.State.valueOf(entry.state))
       .setEvent(EventConversion.convertToProto(event))
       .build
@@ -260,7 +177,7 @@ trait AlarmQueries {
   }
 
   def uniqueQuery(proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
-    (proto.uid.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
+    (proto.id.value.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
   }
 
   def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
@@ -277,7 +194,7 @@ trait AlarmQueries {
         uniqueEventQuery(event, req.event) :::
         searchQuery(req, alarm) :::
         searchEventQuery(event, req.event)) and
-        alarm.eventUid === event.id)
+        alarm.eventId === event.id)
         select ((alarm, event))
         orderBy (new OrderByArg(event.time).desc)).page(0, 50)
 
@@ -289,7 +206,7 @@ trait AlarmQueries {
     //    val results = from(ApplicationSchema.alarms, ApplicationSchema.events, ApplicationSchema.entities)((alarm, event, entity) =>
     //        where(buildQuery(req, alarm) and
     //          optionalEventQuery(event, req.event) and
-    //          alarm.eventUid === event.id and event.entityId === entity.id)
+    //          alarm.eventId === event.id and event.entityId === entity.id)
     //          select ((alarm, event, entity))
     //          orderBy (new OrderByArg(event.time).desc)).page(0, 50)
 
@@ -302,7 +219,7 @@ trait AlarmQueries {
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
       where(SquerylModel.combineExpressions(uniqueQuery(req, alarm) :::
         uniqueEventQuery(event, req.event)) and
-        alarm.eventUid === event.id)
+        alarm.eventId === event.id)
         select ((alarm, event))
         orderBy (new OrderByArg(event.time).desc)).page(0, 50)
 

@@ -18,53 +18,9 @@
  */
 package org.totalgrid.reef.util
 
-import scala.collection.immutable
-import scala.annotation.tailrec
-
-class DecoratedInt(num: Int) extends Traversable[Int] {
-  assert(num >= 0)
-
-  def isEven = (num % 2) == 0
-  def isOdd = (num % 2) != 0
-
-  def times(f: => Unit): Unit = foreach(_ => f)
-
-  def foreach[U](f: Int => U): Unit = {
-    @tailrec
-    def times(i: Int): Unit = if (i <= num) {
-      f(i)
-      times(i + 1)
-    }
-    if (num > 0) times(1)
-  }
-}
-
-class Mapified[A](i: Iterable[A]) {
-
-  def mapify[B](keygen: A => B): immutable.Map[B, A] = {
-    i.foldLeft(immutable.Map.empty[B, A]) { (sum, x) =>
-      sum + (keygen(x) -> x)
-    }
-  }
-}
-
-class TakeRand[A](l: List[A]) {
-
-  /**
-   * @return an Option with either a random element from the list or None if list is empty
-   */
-  def takeRand: Option[A] = {
-    if (l.size == 0) None
-    else Some(l.apply(new scala.util.Random().nextInt(l.size)))
-  }
-}
-
 object Conversion {
 
-  implicit def convertIntToDecoratedInt(num: Int): DecoratedInt = new DecoratedInt(num)
-  implicit def convertIterableToMapified[A](i: Iterable[A]) = new Mapified(i)
-  implicit def convertAnyToOption[A <: Any](x: A): Option[A] = Option(x)
-  implicit def convertListToRandList[A](l: List[A]): TakeRand[A] = new TakeRand[A](l)
+  implicit def convertAnyToOption[A](x: A): Option[A] = Option(x)
 
   /**
    * takes a string and tries to cast it to long, double, boolean or returns the string
@@ -80,7 +36,6 @@ object Conversion {
       case _ => s
     }
   }
-
 }
 
 object Unappliers {

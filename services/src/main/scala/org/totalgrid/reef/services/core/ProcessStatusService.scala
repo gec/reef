@@ -21,24 +21,22 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.models.HeartbeatStatus
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.ProcessStatus._
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.ProcessStatus._
 
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.japi.BadRequestException
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
 
 // Implicits
-import org.totalgrid.reef.proto.OptionalProtos._ // implicit proto properties
+import org.totalgrid.reef.client.service.proto.OptionalProtos._ // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
-import org.totalgrid.reef.messaging.ProtoSerializer._
+import org.totalgrid.reef.client.sapi.types.Optional._
+import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
 class ProcessStatusService(val model: ProcessStatusServiceModel)
@@ -133,7 +131,8 @@ trait ProcessStatusConversion
   def uniqueQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {
     proto.processId.asParam(sql.processId === _) ::
       proto.instanceName.map { inst =>
-        val nameProto = ApplicationConfig.newBuilder.setInstanceName(inst).build // TODO: Make this better; shouldn't have to make a proto to use interface
+        // TODO: Make this better; shouldn't have to make a proto to use interface
+        val nameProto = ApplicationConfig.newBuilder.setInstanceName(inst).build
         sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(nameProto, { _.id })
       } :: Nil
   }

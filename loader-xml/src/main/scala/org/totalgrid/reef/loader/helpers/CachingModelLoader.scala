@@ -16,23 +16,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.totalgrid.reef.loader.helpers
 
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.promise.Promise
-import org.totalgrid.reef.sapi.client.{ Response, RestOperations }
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.loader.ModelLoader
-import org.totalgrid.reef.japi.ReefServiceException
-import org.totalgrid.reef.util.Logging
-import collection.mutable.Map
+import com.weiglewilczek.slf4s.Logging
 
-class CachingModelLoader(client: Option[RestOperations], create: Boolean = true) extends ModelLoader with Logging {
+import org.totalgrid.reef.loader.commons.LoaderServices
+import org.totalgrid.reef.loader.commons.ui.RequestViewer
+
+import java.io.PrintStream
+import org.totalgrid.reef.client.sapi.client.{ Promise, RequestSpy }
+import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
+
+class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]
-  private val triggers = scala.collection.mutable.Map.empty[String, TriggerSet]
   private val modelContainer = new ModelContainer
 
   def putOrThrow(entity: Entity) {
@@ -71,7 +72,7 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
     autoFlush
   }
 
-  def putOrThrow(endpointConfig: CommEndpointConfig) {
+  def putOrThrow(endpointConfig: Endpoint) {
     puts ::= endpointConfig;
     modelContainer.add(endpointConfig);
     autoFlush
@@ -90,74 +91,43 @@ class CachingModelLoader(client: Option[RestOperations], create: Boolean = true)
   }
 
   def putOrThrow(triggerSet: TriggerSet) {
-    triggers.put(triggerSet.getPoint.getName, triggerSet);
+    puts ::= triggerSet;
     modelContainer.add(triggerSet)
     autoFlush
   }
-
-  def getOrThrow(e: TriggerSet): List[TriggerSet] =
-    {
-      client.map {
-        _.get(e).await().expectMany()
-      }.getOrElse(triggers.get(e.getPoint.getName).map {
-        _ :: Nil
-      }.getOrElse(Nil))
-    }
 
   def autoFlush {
     client.foreach(flush(_, None))
   }
 
-  def getTriggerSets(): Map[String, TriggerSet] = {
-    triggers.clone()
+  def flush(client: LoaderServices, stream: Option[PrintStream]) = {
+
+    val uploadOrder = puts.reverse.toList
+    val uploadActions: List[LoaderServices => Promise[_]] = uploadOrder.map { eq => (c: LoaderServices) => c.put(eq) }
+
+    val viewer = stream.map { new RequestViewer(_, uploadActions.size) }
+
+    try {
+      RequestSpy.withRequestSpy(client, viewer) {
+        BatchOperations.batchOperations(client, uploadActions, batchSize)
+      }
+    } finally {
+      viewer.foreach { _.finish }
+    }
+
+    reset()
   }
 
-  def flush(client: RestOperations, progressMeter: Option[ResponseProgressRenderer]) =
-    {
-      logger.debug("flushing")
-      progressMeter.foreach(_.start(puts.size + triggers.size))
-
-      def handle[A <: AnyRef](promise: Promise[Response[A]], request: AnyRef) {
-        val response = promise.await
-
-        // check the response for any non-successful requests
-        try {
-          response.expectMany()
-        } catch {
-          case rse: ReefServiceException =>
-            // attach a helpful error message with exact data that caused failure
-            val errorMessage = "Error processing object of type: " + request.getClass.getSimpleName + ", with data: " + request
-            throw new ReefServiceException(errorMessage, rse.getStatus, rse)
-        }
-
-        progressMeter.foreach(_.update(response.status, request))
-      }
-
-      val uploadOrder = (puts.reverse ::: triggers.map {
-        _._2
-      }.toList)
-
-      if (create) {
-        uploadOrder.foreach { x => handle(client.put(x), x) }
-      } else {
-        uploadOrder.reverse.foreach { x => handle(client.delete(x), x) }
-      }
-
-      reset()
-      progressMeter.foreach(_.finish)
-    }
-
-  def getModelContainer: ModelContainer =
-    {
-      modelContainer
-    }
+  def getModelContainer: ModelContainer = {
+    modelContainer
+  }
 
   def reset() {
     puts = List.empty[AnyRef]
     modelContainer.reset
-    triggers.clear
   }
 
-  def size = puts.size + triggers.keys.size
+  def size = puts.size
+  def allProtos = puts.reverse
 }
 

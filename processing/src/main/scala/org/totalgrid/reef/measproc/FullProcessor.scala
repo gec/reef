@@ -18,58 +18,49 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.executor.{ Lifecycle, LifecycleManager }
-import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.app.SubscriptionHandler
+import org.totalgrid.reef.client.exception.ReefServiceException
 
-import org.totalgrid.reef.executor.ReactActorExecutor
-import org.totalgrid.reef.app.{ CoreApplicationComponents }
-import org.totalgrid.reef.persistence.{ InMemoryObjectCache }
-import org.totalgrid.reef.measurementstore.{ MeasurementStore, MeasurementStoreToMeasurementCacheAdapter }
+import net.agileautomata.executor4s._
+import org.totalgrid.reef.util.Lifecycle
 
 /**
  *  Non-entry point meas processor setup
  */
-class FullProcessor(components: CoreApplicationComponents, measStore: MeasurementStore) extends Logging with Lifecycle {
+class FullProcessor(
+    client: MeasurementProcessorServices,
+    connectionContext: SubscriptionHandler[MeasurementProcessingConnection],
+    appConfig: ApplicationConfig,
+    exe: Executor) extends Logging with Lifecycle {
 
-  var lifecycles = new LifecycleManager(List(components.heartbeatActor))
+  private var delayedAnnounce = Option.empty[Cancelable]
 
-  // caches used to store measurements and overrides
-  val measCache = new MeasurementStoreToMeasurementCacheAdapter(measStore)
-
-  // TODO: make override caches configurable like measurement store
-
-  val overCache = new InMemoryObjectCache[Measurement]
-  val triggerStateCache = new InMemoryObjectCache[Boolean]
-
-  val connectionHandler = new ConnectionHandler(addStreamProcessor(_)) with ReactActorExecutor
-
-  override def doStart() {
-    lifecycles.start
-    subscribeToStreams
+  final override def afterStart() {
+    subscribeToStreams()
   }
 
-  override def doStop() {
-    // make sure we stop the meas proc from readding connections
-    // as we are shutting down
-    connectionHandler.running = false
-    connectionHandler.clear
-    lifecycles.stop
+  final override def beforeStop() {
+
+    delayedAnnounce.foreach { _.cancel }
+
+    logger.info("Clearing connections")
+    connectionContext.cancel()
   }
 
-  def addStreamProcessor(streamConfig: ConnProto): MeasurementStreamProcessingNode = {
-    val reactor = new ReactActorExecutor {}
-    val streamHandler = new MeasurementStreamProcessingNode(components.amqp, components.registry, measCache, overCache, triggerStateCache, streamConfig, reactor)
-    streamHandler.setHookSource(components.metricsPublisher.getStore("measproc-" + streamConfig.getLogicalNode.getName))
-    streamHandler
-  }
+  private def subscribeToStreams() {
 
-  def subscribeToStreams() = {
-    val connection = ConnProto.newBuilder.setMeasProc(components.appConfig).build
-    connectionHandler.serviceHandler.addServiceContext(components.registry, 5000, ConnProto.parseFrom, connection, connectionHandler)
-    connectionHandler.start
+    try {
+      val result = client.subscribeToConnectionsForMeasurementProcessor(appConfig).await
+      connectionContext.setSubscription(result)
+    } catch {
+      case rse: ReefServiceException =>
+        logger.warn("Error subscribing to logical nodes to process: " + rse.toString, rse)
+        delayedAnnounce = Some(exe.schedule(5000.milliseconds) { subscribeToStreams })
+    }
   }
 }
 

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3.master
 
-import org.totalgrid.reef.proto.{ Measurements, Commands, Mapping }
+import org.totalgrid.reef.client.service.proto.{ Measurements, Commands, Mapping }
 
 import org.totalgrid.reef.protocol.dnp3._
 
@@ -26,6 +26,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.totalgrid.reef.client.service.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class DNPTranslatorTests extends FunSuite with ShouldMatchers {
@@ -90,9 +91,8 @@ class DNPTranslatorTests extends FunSuite with ShouldMatchers {
     // Test each conversion's translate call
     map.foreach(kvp => {
       val resp = new CommandResponse(kvp._1) // DNP class
-      val proto = DNPTranslator.translate(resp, "resp1") // translation call, arbitrary name
-      proto.getCorrelationId should equal("resp1") // arbitrary name
-      proto.getStatus should equal(kvp._2) // proto class
+      val proto = DNPTranslator.translateResponseToStatus(resp) // translation call, arbitrary name
+      proto should equal(kvp._2) // proto class
     })
   }
 
@@ -129,7 +129,7 @@ class DNPTranslatorTests extends FunSuite with ShouldMatchers {
     val protoCmd = Commands.CommandRequest.newBuilder
       .setType(Commands.CommandRequest.ValType.INT)
       .setIntVal(500)
-      .setName("sp1")
+      .setCommand(Command.newBuilder.setName("sp1").build)
       .setCorrelationId("spID1")
     val dnpCmd = DNPTranslator.translateSetpoint(protoCmd.build)
     dnpCmd.GetValue() should equal(500)

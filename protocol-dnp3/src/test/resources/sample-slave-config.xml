@@ -21,8 +21,7 @@
 -->
 <Slave xmlns:psi="org.psi.xml" xmlns="org.psi.xml.dnp3">
     <Stack>
-        <LinkLayer NumRetries="3" AckTimeoutMS="1000" UseConfirmations="false" 
-          RemoteAddress="100" LocalAddress="500" IsMaster="false"/>
+        <LinkLayer NumRetries="3" AckTimeoutMS="1000" UseConfirmations="false" RemoteAddress="100" LocalAddress="500" IsMaster="false"/>
         <AppLayer NumRetries="0" MaxFragSize="2048" TimeoutMS="5000"/>
     </Stack>
     <psi:Log Filter="LOG_WARNING"/>

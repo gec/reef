@@ -56,7 +56,7 @@ object ApplicationSchema extends Schema {
   val configFiles = table[ConfigFile]
 
   val userRequests = table[UserCommandModel]
-  val commandAccess = table[CommandAccessModel]
+  val commandAccess = table[CommandLockModel]
   val commandToBlocks = table[CommandBlockJoin]
 
   val events = table[EventStore]
@@ -73,7 +73,7 @@ object ApplicationSchema extends Schema {
 
   val alarms = table[AlarmModel]
   on(alarms)(s => declare(
-    s.eventUid is (indexed)))
+    s.eventId is (indexed)))
 
   val agents = table[Agent]
   val permissions = table[AuthPermission]

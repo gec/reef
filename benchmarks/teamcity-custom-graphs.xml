@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<settings>
+	<custom-graphs>
+		<graph title="Publishing 10 measurements through proxy (milliseconds)">
+			<valueType key="false10publishingTimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="false10publishingTimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="false10publishingTimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+		<graph title="Publishing 10 measurements direct (milliseconds)">
+			<valueType key="true10publishingTimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="true10publishingTimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="true10publishingTimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+		<graph title="Average Measurement Publishing Time (milliseconds)">
+			<valueType key="false1000publishingTimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="false1000publishingTimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="false1000publishingTimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+		<graph title="Benchmark Endpoint disable to COMMS_DOWN Time (milliseconds)">
+			<valueType key="benchmarkCOMMSDOWNStateTransmissionTimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="benchmarkCOMMSDOWNStateTransmissionTimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="benchmarkCOMMSDOWNStateTransmissionTimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+		<graph title="Benchmark Endpoint enable to COMMS_UP Time (milliseconds)">
+			<valueType key="benchmarkCOMMSUPStateTransmissionTimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="benchmarkCOMMSUPStateTransmissionTimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="benchmarkCOMMSUPStateTransmissionTimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+	</custom-graphs>
+</settings>

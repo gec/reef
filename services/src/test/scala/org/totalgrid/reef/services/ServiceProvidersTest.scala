@@ -18,53 +18,76 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.executor.Lifecycle
-import org.totalgrid.reef.sapi.auth.NullAuthService
-import org.totalgrid.reef.sapi.service.{ NoOpService, AsyncService }
-
-import org.totalgrid.reef.messaging.mock.AMQPFixture
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.proto.{ ReefServicesList }
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.executor.mock.InstantExecutor
-import org.totalgrid.reef.app.ApplicationEnroller
+import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
+import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
+import org.totalgrid.reef.metrics.MetricsSink
+import org.totalgrid.reef.util.Lifecycle
+import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.services.authz.NullAuthService
+
+/**
+ * A concrete example service that always responds immediately with Success and the correct Id
+ */
+class NoOpService extends AsyncService[Any] {
+
+  import Envelope._
+
+  /// noOpService that returns OK
+  def respond(request: ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) =
+    callback.onResponse(ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build)
+
+  override val descriptor = new TypeDescriptor[Any] {
+    def serialize(typ: Any): Array[Byte] = throw new Exception("unimplemented")
+    def deserialize(data: Array[Byte]): Any = throw new Exception("unimplemented")
+    def getKlass: Class[Any] = throw new Exception("unimplemented")
+    def id = "Any"
+  }
+}
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
   override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("test"))
+    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
   }
 
-  class ExchangeCheckingServiceContainer extends ServiceContainer {
-    def addCoordinator(coord: ProtoServiceCoordinator) {}
+  class ExchangeCheckingServiceContainer(amqp: Connection) extends ServiceContainer {
+    def addCoordinator(coord: ServerSideProcess) {}
 
     def addLifecycleObject(obj: Lifecycle) {}
 
     def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
-      ReefServicesList.getServiceInfo(endpoint.descriptor.getKlass) //call just so an exception will be thrown if it doesn't exist
+      val klass = endpoint.descriptor.getKlass
+      //call just so an exception will be thrown if it doesn't exist
+      amqp.declareEventExchange(klass)
       new NoOpService
     }
   }
 
   test("All Service Providers are in services list") {
-    AMQPFixture.mock(true) { amqp =>
+    ConnectionFixture.mock() { amqp =>
       ServiceBootstrap.resetDb
       ServiceBootstrap.seed("system")
 
-      val userSettings = ApplicationEnroller.getDefaultUserSettings
-      val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
+      val userSettings = new UserSettings("system", "system")
+      val nodeSettings = new NodeSettings("node1", "network", "location")
+      val serviceOptions = ServiceOptions.fromFile("../org.totalgrid.reef.test.cfg")
 
       val components = ServiceBootstrap.bootstrapComponents(amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore
-      val serviceContainer = new ExchangeCheckingServiceContainer
+      val serviceContainer = new ExchangeCheckingServiceContainer(amqp)
+      val metrics = MetricsSink.getInstance("test")
 
-      val serviceOptions = ServiceOptions.loadInfo
-
-      val provider = new ServiceProviders(components, measStore, serviceOptions, NullAuthService, new InstantExecutor)
+      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, metrics, "")
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

@@ -36,9 +36,8 @@ trait ShutdownHook {
   private def addShutdownHook(hook: => Unit) {
     Runtime.getRuntime.addShutdownHook(new Thread {
       override def run() {
-        // TODO is this correct??  shouldn't it do the work and then notify the caller?
-        synchronized { notifyAll() }
         hook
+        synchronized { notifyAll() }
       }
     })
   }

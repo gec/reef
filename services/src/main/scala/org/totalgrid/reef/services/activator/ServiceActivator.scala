@@ -1,5 +1,3 @@
-package org.totalgrid.reef.services.activator
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,81 +16,58 @@ package org.totalgrid.reef.services.activator
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.services.activator
+
+import net.agileautomata.executor4s._
+
 import org.osgi.framework._
-
-import org.totalgrid.reef.sapi.service.AsyncService
-
-import org.totalgrid.reef.osgi.OsgiConfigReader
-
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.proto.ReefServicesList
-import org.totalgrid.reef.broker.BrokerProperties
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, SqlProperties }
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnection
+
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.executor.{ LifecycleManager, ReactActorExecutor, Lifecycle }
+import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
+import org.totalgrid.reef.app.ConnectionCloseManagerEx
+import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
-import org.totalgrid.reef.app.ApplicationEnroller
-import org.totalgrid.reef.japi.client.{ NodeSettings, UserSettings }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 
-class ServiceActivator extends BundleActivator {
+class ServiceActivator extends ExecutorBundleActivator with Logging {
 
-  var manager: Option[LifecycleManager] = None
+  private var manager = Option.empty[ConnectionCloseManagerEx]
 
-  def start(context: BundleContext) {
+  def start(context: BundleContext, exe: Executor) {
 
-    org.totalgrid.reef.executor.Executor.setupThreadPools
+    logger.info("Starting Service bundle..")
 
-    val mgr = new LifecycleManager
-    manager = Some(mgr)
-
-    val sql = SqlProperties.get(OsgiConfigReader(context, "org.totalgrid.reef.sql"))
-    val brokerConfig = BrokerProperties.get(OsgiConfigReader(context, "org.totalgrid.reef.amqp"))
-    val options = ServiceOptions.get(OsgiConfigReader(context, "org.totalgrid.reef.services"))
+    val brokerConfig = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
+    val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
+    val options = new ServiceOptions(OsgiConfigReader(context, "org.totalgrid.reef.services").getProperties)
     val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
-    //val userSettings = ApplicationEnroller.getDefaultUserSettings
-    //val nodeSettings = ApplicationEnroller.getDefaultNodeSettings
+    val modules = new ServiceModulesFactory {
+      def getDbConnector() = DbConnector.connect(sql, context)
+      def getMeasStore() = MeasurementStoreFinder.getInstance(context)
 
-    val amqp = new AMQPProtoFactory with ReactActorExecutor {
-      val broker = new QpidBrokerConnection(brokerConfig)
+      def publishServices(services: Seq[AsyncService[_]]) {
+        services.foreach { x =>
+          context createService (x, "exchange" -> x.descriptor.id, interface[AsyncService[_]])
+        }
+      }
     }
 
-    mgr.add(amqp)
+    manager = Some(new ConnectionCloseManagerEx(brokerConfig, exe))
 
-    DbConnector.connect(sql, context)
+    manager.get.addConsumer(ServiceFactory.create(options, userSettings, nodeSettings, modules))
 
-    val components = ServiceBootstrap.bootstrapComponents(amqp, userSettings, nodeSettings)
-    mgr.add(components.heartbeatActor)
-
-    val metrics = new MetricsServiceWrapper(components, options)
-
-    val measExecutor = new ReactActorExecutor {}
-    mgr.add(measExecutor)
-    val measStore = MeasurementStoreFinder.getInstance(sql, measExecutor, context)
-
-    val coordinatorExecutor = new ReactActorExecutor {}
-    mgr.add(coordinatorExecutor)
-
-    val providers = new ServiceProviders(components, measStore, options, SqlAuthzService, coordinatorExecutor)
-
-    val serviceContext = new ServiceContext(mgr, amqp, metrics)
-
-    serviceContext.addCoordinator(providers.coordinators)
-
-    val services = serviceContext.attachServices(providers.services)
-
-    services.foreach { x =>
-      context createService (x, "exchange" -> x.descriptor.id, interface[AsyncService[_]])
-    }
-
-    mgr.start()
+    manager.foreach { _.start }
   }
 
-  def stop(context: BundleContext) {
+  def stop(context: BundleContext, exe: Executor) {
     manager.foreach(_.stop())
+
+    logger.info("Stopped Service bundle..")
   }
 
 }

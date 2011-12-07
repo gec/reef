@@ -22,24 +22,22 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Point, Entity }
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.util.Logging
-import org.totalgrid.reef.proto.Descriptors
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.service.proto.Descriptors
 
-import org.totalgrid.reef.messaging.ProtoSerializer._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.services.framework.ProtoSerializer._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
-import org.totalgrid.reef.messaging.serviceprovider.{ ServiceEventPublishers, ServiceSubscriptionHandler }
 
-import org.totalgrid.reef.services.{ ServiceDependencies, ProtoRoutingKeys }
-import org.totalgrid.reef.japi.BadRequestException
-import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
-import org.totalgrid.reef.sapi.{ RequestEnv, AllMessages }
+import org.totalgrid.reef.client.exception.BadRequestException
+
+import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class PointService(protected val model: PointServiceModel)
     extends SyncModeledServiceBase[PointProto, Point, PointServiceModel]
@@ -113,9 +111,9 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
    * this is the subscription routingKey
    */
   def getRoutingKey(req: PointProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid ::
+    req.uuid.value ::
       req.name ::
-      req.entity.uuid.uuid ::
+      req.entity.uuid.value ::
       req.abnormal :: // this subscribes the users to all points that have their abnormal field changed
       Nil
   }
@@ -124,23 +122,23 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
    * this is the service event notifaction routingKey
    */
   def getRoutingKey(req: PointProto, entry: Point) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid ::
+    req.uuid.value ::
       req.name ::
-      req.entity.uuid.uuid ::
+      req.entity.uuid.value ::
       Some(entry.abnormalUpdated) :: // we actually publish the key to intrested parties on change, not on current state
       Nil
   }
 
   def uniqueQuery(proto: PointProto, sql: Point) = {
 
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Point")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Point")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
       proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Point")))
   }
 
   def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
-    proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
 
   def isModified(entry: Point, existing: Point): Boolean = {
     entry.abnormal != existing.abnormal
@@ -154,7 +152,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     sql.entity.asOption.foreach(e => b.setEntity(EntityQueryManager.entityToProto(e)))
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
     b.setAbnormal(sql.abnormal)
     b.setType(PointType.valueOf(sql.pointType))
     b.setUnit(sql.unit)
@@ -162,7 +160,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
   }
 
   def createModelEntry(proto: PointProto): Point = {
-    Point.newInstance(proto.name.get, false, None, proto.getType.getNumber, proto.getUnit, proto.uuid)
+    Point.newInstance(proto.name.get, false, None, proto.getType, proto.getUnit, proto.uuid)
   }
 
 }
@@ -185,68 +183,7 @@ object PointTiedModel {
     val pb = PointProto.newBuilder
     pb.setName(point.entityName).setUuid(makeUuid(point))
     pb.setEntity(EntityQueryManager.entityToProto(point.entity.value))
-    point.logicalNode.value.foreach(p => pb.setLogicalNode(EntityQueryManager.entityToProto(p)))
+    point.logicalNode.value.foreach(p => pb.setEndpoint(EntityQueryManager.entityToProto(p)))
     pb
   }
 }
-
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.proto.Measurements.{ Measurement, Quality }
-import org.totalgrid.reef.executor.Executor
-import org.totalgrid.reef.services.ProtoServiceCoordinator
-
-import org.totalgrid.reef.util.Conversion.convertIterableToMapified
-
-/**
- * Watches the measurement stream looking for transitions in the abnormal value of points
- * TODO: move to its own file
- */
-class PointAbnormalsThunker(model: PointServiceModel, summary: SummaryPoints, contextSource: RequestContextSource) extends ProtoServiceCoordinator with Logging {
-
-  val pointMap = scala.collection.mutable.Map.empty[String, Point]
-
-  def addAMQPConsumers(amqp: AMQPProtoFactory, reactor: Executor) {
-    // TODO: assign abnormal thunkers to communication streams
-    reactor.execute {
-      transaction {
-        ApplicationSchema.points.where(p => true === true).toList.foreach { p: Point => pointMap.put(p.entityName, p) }
-      }
-      val startedAbnormal = pointMap.values.foldLeft(0) { case (sum, p) => if (p.abnormal) sum + 1 else sum }
-      summary.setSummary("summary.abnormals", startedAbnormal)
-    }
-    amqp.subscribe("measurement", AllMessages, Measurement.parseFrom(_), { msg: Measurement => reactor.execute { handleMeasurement(msg) } })
-  }
-
-  def handleMeasurement(m: Measurement): Unit = {
-
-    val point = pointMap.get(m.getName) match {
-      case Some(p) => p
-      case None =>
-        val p = transaction {
-          Point.findByName(m.getName).headOption
-        }
-        if (p.isEmpty) {
-          logger.error { "Got measurement for unknown point: " + m.getName }
-          return
-        } else {
-          if (p.get.abnormal) summary.incrementSummary("summary.abnormals", 1)
-          pointMap.put(m.getName, p.get)
-          p.get
-        }
-    }
-
-    val currentlyAbnormal = m.getQuality.getValidity != Quality.Validity.GOOD
-
-    if (currentlyAbnormal != point.abnormal) {
-      contextSource.transaction { context =>
-        logger.debug("updated point: " + m.getName + " to abnormal= " + currentlyAbnormal)
-        val updated = point.copy(abnormal = currentlyAbnormal)
-        updated.abnormalUpdated = true
-        model.update(context, updated, point)
-        point.abnormal = currentlyAbnormal
-        summary.incrementSummary("summary.abnormals", if (point.abnormal) 1 else -1)
-      }
-    }
-  }
-}
-

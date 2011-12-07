@@ -20,12 +20,13 @@ package org.totalgrid.reef.protocol.dnp3.master
 
 import scala.collection.mutable
 
-import org.totalgrid.reef.util.{ SafeExecution, Logging }
+import org.totalgrid.reef.util.SafeExecution
 
-import org.totalgrid.reef.proto.{ Mapping, Commands }
+import org.totalgrid.reef.client.service.proto.{ Mapping, Commands }
 
 import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.protocol.dnp3._
+import com.weiglewilczek.slf4s.Logging
 
 /**
  * Command adapter acts as a command response acceptor, forwarding translated responses to an actor
@@ -51,13 +52,13 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
       case Some(ResponseInfo(id, pub, obj)) =>
         logger.info("Got command response: " + rsp.getMResult.toString + " seq: " + seq)
         idMap -= seq //remove from the map
-        pub.publish(DNPTranslator.translate(rsp, id)) //send the response to the sender
+        pub.publish(DNPTranslator.translateResponseToStatus(rsp)) //send the response to the sender
       case None => logger.warn("Unknown command response with sequence " + seq)
     }
   }
 
   def issue(cr: Commands.CommandRequest, publisher: ResponsePublisher): Unit = safeExecute {
-    map.get(cr.getName) match {
+    map.get(cr.getCommand.getName) match {
       case Some(x) =>
         val index = x.getIndex
         if (x.getType == Mapping.CommandType.SETPOINT) {

@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.3.3</version>
+        <version>0.4.0</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-default-simulator</artifactId>
@@ -27,8 +27,8 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Default Simulator</Bundle-Name>
-                        <Bundle-Activator>org.totalgrid.reef.simulator.default.Activator</Bundle-Activator>
-                        <Private-Package>org.totalgrid.reef.simulator.default.*</Private-Package>
+                        <Bundle-Activator>org.totalgrid.reef.simulator.random.Activator</Bundle-Activator>
+                        <Private-Package>org.totalgrid.reef.simulator.random.*</Private-Package>
                         <Import-Package>!org.osgi.service.blueprint,org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
                     </instructions>
@@ -47,19 +47,19 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-api</artifactId>
-            <version>0.3.3</version>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
 	    <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-simulator</artifactId>
-            <version>0.3.3</version>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>		
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>
-            <version>0.3.3</version>
+            <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -70,7 +70,7 @@
       	<dependency>
           <groupId>org.totalgrid.reef</groupId>
           <artifactId>reef-proto-shell</artifactId>
-          <version>0.3.3</version>
+          <version>${reef.version}</version>
       	</dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>

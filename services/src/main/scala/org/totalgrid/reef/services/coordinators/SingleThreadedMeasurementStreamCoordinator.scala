@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services.coordinators
 
-import org.totalgrid.reef.executor.Executor
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.services.framework._
 
@@ -27,30 +26,48 @@ import org.totalgrid.reef.services.framework._
  * on the coordinated components at a time avoiding race conditions when we are adding endpoints and applications
  * at the same time.
  */
-class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementStreamCoordinator, contextSource: RequestContextSource, executor: Executor) extends MeasurementStreamCoordinator {
+class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementStreamCoordinator, contextSource: RequestContextSource) extends MeasurementStreamCoordinator {
 
   private def handle(context: RequestContext)(f: (MeasurementStreamCoordinator, RequestContext) => Unit): Unit = {
     context.operationBuffer.queuePostTransaction {
-      executor.request {
-        contextSource.transaction { c2 =>
-          f(real, c2)
+      // we have to actually give up our original transaction and wait for the lock on the coordinator
+      // outside of a transaction. If not its possible to deadlock at the database level because the
+      // original transactions may have acquired locks on the tables we are going to try to alter.
+      // Postgres can't "see" the deadlock because it doesn't know that our thread
+      contextSource.transaction { c =>
+        this.synchronized {
+          f(real, c)
         }
       }
     }
   }
 
-  def onMeasProcAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) = handle(context) { (r, c) => r.onMeasProcAppChanged(c, app, added) }
+  def onMeasProcAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) =
+    handle(context) { (r, c) => r.onMeasProcAppChanged(c, reloadApp(app), added) }
 
-  def onMeasProcAssignmentChanged(context: RequestContext, meas: MeasProcAssignment) = handle(context) { (r, c) => r.onMeasProcAssignmentChanged(c, meas) }
+  def onMeasProcAssignmentChanged(context: RequestContext, meas: MeasProcAssignment) =
+    handle(context) { (r, c) => r.onMeasProcAssignmentChanged(c, reloadMeas(meas)) }
 
-  def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) = handle(context) { (r, c) => r.onFepConnectionChange(c, sql, existing) }
+  def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) =
+    handle(context) { (r, c) => r.onFepConnectionChange(c, reloadFep(sql), existing) }
 
-  def onFepAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) = handle(context) { (r, c) => r.onFepAppChanged(c, app, added) }
+  def onFepAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) =
+    handle(context) { (r, c) => r.onFepAppChanged(c, reloadApp(app), added) }
 
-  def onEndpointDeleted(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointDeleted(c, ce) }
+  def onEndpointDeleted(context: RequestContext, ce: CommunicationEndpoint) =
+    handle(context) { (r, c) => r.onEndpointDeleted(c, ce) }
 
-  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointUpdated(c, ce) }
+  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint, existing: CommunicationEndpoint) =
+    handle(context) { (r, c) => r.onEndpointUpdated(c, reloadCe(ce), existing) }
 
-  def onEndpointCreated(context: RequestContext, ce: CommunicationEndpoint) = handle(context) { (r, c) => r.onEndpointCreated(c, ce) }
+  def onEndpointCreated(context: RequestContext, ce: CommunicationEndpoint) =
+    handle(context) { (r, c) => r.onEndpointCreated(c, reloadCe(ce)) }
+
+  import org.totalgrid.reef.client.exception.InternalServiceException
+  import org.squeryl.PrimitiveTypeMode._
+  private def reloadApp(ce: ApplicationInstance): ApplicationInstance = ApplicationSchema.apps.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
+  private def reloadMeas(ce: MeasProcAssignment) = ApplicationSchema.measProcAssignments.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
+  private def reloadFep(ce: FrontEndAssignment) = ApplicationSchema.frontEndAssignments.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
+  private def reloadCe(ce: CommunicationEndpoint) = ApplicationSchema.endpoints.lookup(ce.id).getOrElse(throw new InternalServiceException("row deleted!"))
 
 }

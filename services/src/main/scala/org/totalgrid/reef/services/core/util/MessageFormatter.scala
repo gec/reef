@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core.util
 
-import org.totalgrid.reef.proto.Utils
+import org.totalgrid.reef.client.service.proto.Utils
 
 /**
  *
@@ -90,8 +90,8 @@ object MessageFormatter {
    */
   def indexOfWithEscape(s: String, delimiter: Int, index: Int) = {
     s.indexOf(delimiter, index)
-    /* TODO: The escape sequence for resource strings uses single quotes and it's complicated!
-    var foundAt = s.indexOf(delimiter, index)
+    // The escape sequence for resource strings uses single quotes and it's complicated!
+    /*var foundAt = s.indexOf(delimiter, index)
     var i = index;
 
     while (foundAt >= 0 /* &&bla bla bla*/) {
@@ -127,8 +127,6 @@ case class ResourceSegmentString(s: String) extends ResourceSegment {
  * A named value part of a resource string.
  */
 case class ResourceSegmentNamedValue(name: String, original: String) extends ResourceSegment {
-  // TODO: we'll be adding date and number types.
-  // TODO: This breaks if the named attribute is not in the AttributeList. Need to return empty string in those cases.
 
   def apply(alist: AttributeList) = alist.get(name).map { _.getString }.getOrElse(original)
 }

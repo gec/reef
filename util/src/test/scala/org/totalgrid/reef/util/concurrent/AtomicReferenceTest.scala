@@ -20,7 +20,7 @@ package org.totalgrid.reef.util.concurrent
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.test.MockitoFunSuite
+import org.totalgrid.reef.test.MockitoFunSuite
 
 @RunWith(classOf[JUnitRunner])
 class AtomicReferenceTest extends MockitoFunSuite {

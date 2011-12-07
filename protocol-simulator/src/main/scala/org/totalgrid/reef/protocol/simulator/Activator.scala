@@ -18,21 +18,21 @@
  */
 package org.totalgrid.reef.protocol.simulator
 
-import org.osgi.framework.{ BundleActivator, BundleContext }
-import org.totalgrid.reef.executor.ReactActorExecutor
+import org.osgi.framework.{ BundleContext }
 import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.util.Logging
+import com.weiglewilczek.slf4s.Logging
+import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.osgi.ExecutorBundleActivator
 
-class Activator extends BundleActivator with Logging {
+final class Activator extends ExecutorBundleActivator with Logging {
 
-  val exe = new ReactActorExecutor {}
-  val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
+  def start(context: BundleContext, exe: Executor) {
 
-  final override def start(context: BundleContext) {
+    val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
+
     context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
-    context.createService(protocol, "protocol" -> protocol.name, interface[SimulatorManagement])
 
     context watchServices withInterface[SimulatorPluginFactory] andHandle {
       case AddingService(plugin, properties) =>
@@ -42,10 +42,8 @@ class Activator extends BundleActivator with Logging {
         logger.info("Removing a SimulatorPlugin: " + plugin.getClass.getName)
         protocol.removePluginFactory(plugin)
     }
-
-    exe.start()
   }
 
-  final override def stop(context: BundleContext) = exe.stop()
+  def stop(context: BundleContext, exe: Executor) {}
 
 }

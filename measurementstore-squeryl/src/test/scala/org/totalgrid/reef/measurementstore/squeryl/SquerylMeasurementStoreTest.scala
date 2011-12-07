@@ -1,5 +1,3 @@
-package org.totalgrid.reef.measurementstore.squeryl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,8 +16,8 @@ package org.totalgrid.reef.measurementstore.squeryl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.BeforeAndAfterEach
+package org.totalgrid.reef.measurementstore.squeryl
+
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
@@ -27,7 +25,6 @@ import org.totalgrid.reef.measurementstore.MeasurementStoreTest
 import org.totalgrid.reef.measurementstore.RTDatabaseReadPerformanceTestBase
 
 import org.totalgrid.reef.persistence.squeryl._
-import org.totalgrid.reef.persistence.LockStepConnection
 import org.squeryl.PrimitiveTypeMode._
 import postgresql.PostgresqlReset
 
@@ -35,11 +32,11 @@ import postgresql.PostgresqlReset
 class SqlMeasTest extends MeasurementStoreTest {
   def connect() = {
 
-    val conn_info = DbInfo.loadInfo("test")
+    val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
     val connection = DbConnector.connect(conn_info)
     PostgresqlReset.reset()
     transaction { SqlMeasurementStoreSchema.reset() }
-    new SqlMeasurementStore(new LockStepConnection(true))
+    SqlMeasurementStore
   }
   lazy val cm = connect()
 }
@@ -49,15 +46,13 @@ class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTest
 
   def connect() = {
     import org.totalgrid.reef.persistence.squeryl._
-    import org.totalgrid.reef.persistence.LockStepConnection
-    val conn_info = DbInfo.loadInfo("test")
+    val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
     val connection = DbConnector.connect(conn_info)
-    import org.squeryl.PrimitiveTypeMode._
     PostgresqlReset.reset()
-    val store = new SqlMeasurementStore(new LockStepConnection(true))
+    val store = SqlMeasurementStore
     store.reset
     store
   }
   lazy val cm = connect()
-  def fname = DbInfo.loadInfo("test").dbType + ".plt"
+  def fname = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg").dbType + ".plt"
 }

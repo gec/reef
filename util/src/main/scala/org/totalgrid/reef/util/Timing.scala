@@ -16,7 +16,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.totalgrid.reef.util
 
 /**
@@ -27,12 +26,11 @@ object Timing {
   /**
    * Runs a block of code and returns how long it took in milliseconds (not the return value of the block)
    */
-  def benchmark[A](fun: => A): Long =
-    {
-      val start = System.nanoTime()
-      fun
-      convertNanoToMilli(System.nanoTime() - start)
-    }
+  def benchmark[A](fun: => A): Long = {
+    val start = System.nanoTime
+    fun
+    convertNanoToMilli(System.nanoTime - start)
+  }
 
   /**
    * Runs a block of code and prints (to stdout) how long the operation took
@@ -43,17 +41,13 @@ object Timing {
   /**
    * Runs a block of code and passes the length of time it took to another function
    */
-  def time[A](timingFun: Long => Unit)(fun: => A): A =
-    {
-      val start = System.nanoTime()
-      val ret = fun
-      timingFun(convertNanoToMilli(System.nanoTime() - start))
-      ret
-    }
+  def time[A](timingFun: Long => Unit)(fun: => A): A = {
+    val start = System.nanoTime
+    val ret = fun
+    timingFun(convertNanoToMilli(System.nanoTime() - start))
+    ret
+  }
 
-  def convertNanoToMilli[A](value: Long): Long =
-    {
-      scala.math.floor(value / 1000000d).toLong
-    }
+  def convertNanoToMilli[A](value: Long): Long = scala.math.floor(value / 1000000d).toLong
 
 }

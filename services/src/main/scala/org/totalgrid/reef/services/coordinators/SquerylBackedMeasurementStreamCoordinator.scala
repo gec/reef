@@ -20,11 +20,12 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.services.core.{ CommunicationEndpointConnectionServiceModel, MeasurementProcessingConnectionServiceModel }
 import org.totalgrid.reef.measurementstore.MeasurementStore
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.models._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.services.framework.{ RequestContext, LinkedBufferedEvaluation }
+import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessException
 
 class SquerylBackedMeasurementStreamCoordinator(
   measProcModel: MeasurementProcessingConnectionServiceModel,
@@ -35,8 +36,8 @@ class SquerylBackedMeasurementStreamCoordinator(
     with LinkedBufferedEvaluation
     with MeasurementStreamCoordinator {
 
-  val initialConnectionState = CommEndpointConnection.State.COMMS_DOWN.getNumber
-  val onlineState = CommEndpointConnection.State.COMMS_UP.getNumber
+  val initialConnectionState = EndpointConnection.State.COMMS_DOWN.getNumber
+  val onlineState = EndpointConnection.State.COMMS_UP.getNumber
 
   val measProcTable = ApplicationSchema.measProcAssignments
   val fepAssignmentTable = ApplicationSchema.frontEndAssignments
@@ -56,7 +57,7 @@ class SquerylBackedMeasurementStreamCoordinator(
     fepConnection.create(context, new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, offlineTime, None))
   }
 
-  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint) {
+  def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint, existing: CommunicationEndpoint) {
     val measProcAssignment = measProcTable.where(measProc => measProc.endpointId === ce.id).single
     checkMeasProcAssignment(context, measProcAssignment)
 
@@ -123,10 +124,22 @@ class SquerylBackedMeasurementStreamCoordinator(
   /**
    * checks the fep assignment and sends out an update if there was a change
    */
-  private def checkFepAssignment(context: RequestContext, assign: FrontEndAssignment, ce: CommunicationEndpoint) {
-    val newAssign = determineFepAssignment(assign, ce)
-    // update the fep assignment if it changed
-    newAssign.foreach(newAssignment => fepConnection.update(context, newAssignment, assign))
+  private def checkFepAssignment(context: RequestContext, assign: FrontEndAssignment, ce: CommunicationEndpoint, retry: Boolean = true) {
+    try {
+      val newAssign = determineFepAssignment(assign, ce)
+      // update the fep assignment if it changed
+      newAssign.foreach(newAssignment => exclusiveUpdateFep(context, assign, newAssignment))
+    } catch {
+      case ex: ExclusiveAccessException =>
+        logger.warn("Lost race to update fep assignment, retrying")
+        val reloadedAssignment = ApplicationSchema.frontEndAssignments.lookup(assign.id)
+        val reloadedEndpoint = ApplicationSchema.endpoints.lookup(ce.id)
+        if (reloadedAssignment.isDefined && reloadedEndpoint.isDefined) {
+          checkFepAssignment(context, reloadedAssignment.get, reloadedEndpoint.get, false)
+        } else {
+          logger.warn("fep or endpoint deleted, not retrying.")
+        }
+    }
   }
 
   def onFepConnectionChange(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) {
@@ -189,6 +202,15 @@ class SquerylBackedMeasurementStreamCoordinator(
         serviceRoutingKey = serviceRoutingKey,
         readyTime = None)
       measProcModel.update(context, newAssign, assign)
+    }
+  }
+
+  private def exclusiveUpdateFep(context: RequestContext, assign: FrontEndAssignment, newAssign: FrontEndAssignment) {
+    def isSame(as: FrontEndAssignment) = as.applicationId == assign.applicationId &&
+      as.serviceRoutingKey == assign.serviceRoutingKey &&
+      as.enabled == assign.enabled && as.state == assign.state
+    fepConnection.exclusiveUpdate(context, assign, isSame _) { toChange =>
+      newAssign
     }
   }
 

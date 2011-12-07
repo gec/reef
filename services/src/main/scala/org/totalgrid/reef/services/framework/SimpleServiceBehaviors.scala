@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.sapi.service.HasServiceType
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.japi.Envelope
+import org.totalgrid.reef.client.sapi.service.HasServiceType
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.proto.Envelope
 
 object SimpleServiceBehaviors {
   trait SimpleRead extends HasServiceType with AsyncContextRestGet with AuthorizesRead {
@@ -36,9 +36,9 @@ object SimpleServiceBehaviors {
     }
 
     def subscribe(context: RequestContext, req: ServiceType) = {
-      context.headers.subQueue.foreach { subQueue =>
+      context.getHeaders.subQueue.foreach { subQueue =>
         val keys = getSubscribeKeys(req)
-        keys.foreach(context.subHandler.bind(subQueue, _, req))
+        keys.foreach(context.subHandler.bindQueueByClass(subQueue, _, req.getClass))
       }
     }
 

@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.protocol.dnp3.master
 
-import org.totalgrid.reef.proto.{ Measurements, Commands, Mapping }
+import org.totalgrid.reef.client.service.proto.{ Measurements, Commands, Mapping }
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => ProtoCommandStatus }
 
 object DNPTranslator {
 
@@ -68,8 +68,8 @@ object DNPTranslator {
     }
   }
 
-  def translate(rsp: CommandResponse, id: String) = {
-    val status = rsp.getMResult match {
+  def translateResponseToStatus(rsp: CommandResponse) = {
+    rsp.getMResult match {
       case CommandStatus.CS_SUCCESS => ProtoCommandStatus.SUCCESS
       case CommandStatus.CS_TIMEOUT => ProtoCommandStatus.TIMEOUT
       case CommandStatus.CS_NO_SELECT => ProtoCommandStatus.NO_SELECT
@@ -82,7 +82,6 @@ object DNPTranslator {
       case CommandStatus.CS_NOT_AUTHORIZED => ProtoCommandStatus.NOT_AUTHORIZED
       case _ => ProtoCommandStatus.UNDEFINED
     }
-    Commands.CommandResponse.newBuilder.setStatus(status).setCorrelationId(id).build
   }
   def translateCommandStatus(rsp: ProtoCommandStatus): CommandStatus = {
     rsp match {

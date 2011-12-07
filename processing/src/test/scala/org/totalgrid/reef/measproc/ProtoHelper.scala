@@ -18,11 +18,9 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.proto.{ Measurements, Processing }
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Model._
-import Measurements._
-import Processing._
+import org.totalgrid.reef.client.service.proto.Model.{ Point, ReefUUID, Entity }
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, DetailQual, Measurement, MeasurementBatch }
+import org.totalgrid.reef.client.service.proto.Processing.{ TriggerSet, MeasOverride }
 
 object ProtoHelper {
 
@@ -34,11 +32,11 @@ object ProtoHelper {
     mb.build
   }
 
-  def makeAnalog(name: String, value: Double, time: Long = System.currentTimeMillis, unit: String = "raw"): Measurements.Measurement = {
-    val m = Measurements.Measurement.newBuilder
+  def makeAnalog(name: String, value: Double, time: Long = System.currentTimeMillis, unit: String = "raw"): Measurement = {
+    val m = Measurement.newBuilder
     m.setTime(time)
     m.setName(name)
-    m.setType(Measurements.Measurement.Type.DOUBLE)
+    m.setType(Measurement.Type.DOUBLE)
     m.setDoubleVal(value)
     m.setQuality(makeNominalQuality)
     m.setUnit(unit)
@@ -66,25 +64,25 @@ object ProtoHelper {
 
   }
 
-  def makeString(name: String, value: String, time: Long = System.currentTimeMillis): Measurements.Measurement = {
-    Measurements.Measurement.newBuilder
+  def makeString(name: String, value: String, time: Long = System.currentTimeMillis): Measurement = {
+    Measurement.newBuilder
       .setTime(time)
       .setName(name)
-      .setType(Measurements.Measurement.Type.STRING)
+      .setType(Measurement.Type.STRING)
       .setStringVal(value)
       .setQuality(makeNominalQuality)
       .build
   }
 
   def makeNominalQuality() = {
-    Measurements.Quality.newBuilder.setDetailQual(Measurements.DetailQual.newBuilder).build
+    Quality.newBuilder.setDetailQual(DetailQual.newBuilder).build
   }
 
   def makeAbnormalQuality() = {
-    Measurements.Quality.newBuilder.setDetailQual(Measurements.DetailQual.newBuilder).setValidity(Measurements.Quality.Validity.INVALID).build
+    Quality.newBuilder.setDetailQual(DetailQual.newBuilder).setValidity(Quality.Validity.INVALID).build
   }
 
-  def updateQuality(m: Measurements.Measurement, q: Measurements.Quality): Measurements.Measurement = {
+  def updateQuality(m: Measurement, q: Quality): Measurement = {
     m.toBuilder.setQuality(q).build
   }
 
@@ -92,27 +90,95 @@ object ProtoHelper {
     Point.newBuilder.setName(pointName).build
   }
 
-  def makeNodeByUid(nodeUid: String): Entity = {
-    Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(nodeUid)).build
+  def makeNodeById(nodeId: String): Entity = {
+    Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(nodeId)).build
   }
 
-  def makeNodeByUid(nodeUid: ReefUUID): Entity = {
-    Entity.newBuilder.setUuid(nodeUid).build
+  def makeNodeById(nodeId: ReefUUID): Entity = {
+    Entity.newBuilder.setUuid(nodeId).build
   }
 
   def makeNodeByName(name: String): Entity = {
     Entity.newBuilder.setName(name).build
   }
 
-  def makePointByNodeUid(nodeUid: String): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByUid(nodeUid)).build
+  def makePointByNodeId(nodeId: String): Point = {
+    Point.newBuilder.setEndpoint(makeNodeById(nodeId)).build
   }
-  def makePointByNodeUid(nodeUid: ReefUUID): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByUid(nodeUid)).build
+  def makePointByNodeId(nodeId: ReefUUID): Point = {
+    Point.newBuilder.setEndpoint(makeNodeById(nodeId)).build
   }
 
   def makePointByNodeName(name: String): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByName(name)).build
+    Point.newBuilder.setEndpoint(makeNodeByName(name)).build
   }
 
+  def makeNIS(name: String) = {
+    MeasOverride.newBuilder.setPoint(Point.newBuilder.setName(name)).build
+  }
+  def makeOverride(name: String, value: Double, unit: String): MeasOverride = {
+    MeasOverride.newBuilder
+      .setPoint(Point.newBuilder.setName(name))
+      .setMeas(Measurement.newBuilder
+        .setTime(85)
+        .setName(name)
+        .setType(Measurement.Type.DOUBLE)
+        .setDoubleVal(value)
+        .setQuality(Quality.getDefaultInstance)
+        .setUnit(unit))
+      .build
+  }
+  def triggerSet = {
+    TriggerSet.newBuilder
+      .setPoint(Point.newBuilder.setName("meas01"))
+      .addTriggers(triggerRlcLow("meas01"))
+      .addTriggers(triggerTransformation("meas01"))
+      .build
+  }
+  def triggerRlcLow(measName: String) = {
+    import org.totalgrid.reef.client.service.proto.Processing._
+    Trigger.newBuilder
+      .setTriggerName("rlclow")
+      .setStopProcessingWhen(ActivationType.HIGH)
+      .setUnit("raw")
+      .setAnalogLimit(AnalogLimit.newBuilder.setLowerLimit(0).setDeadband(5))
+      .addActions(
+        Action.newBuilder
+          .setActionName("strip")
+          .setType(ActivationType.HIGH)
+          .setStripValue(true))
+        .addActions(
+          Action.newBuilder
+            .setActionName("qual")
+            .setType(ActivationType.HIGH)
+            .setQualityAnnotation(Quality.newBuilder.setValidity(Quality.Validity.QUESTIONABLE)))
+          .addActions(
+            Action.newBuilder
+              .setActionName("eventrise")
+              .setType(ActivationType.RISING)
+              .setEvent(EventGeneration.newBuilder.setEventType("event01")))
+            .addActions(
+              Action.newBuilder
+                .setActionName("eventfall")
+                .setType(ActivationType.FALLING)
+                .setEvent(EventGeneration.newBuilder.setEventType("event02")))
+              .build
+  }
+  def triggerTransformation(measName: String) = {
+    import org.totalgrid.reef.client.service.proto.Processing._
+    Trigger.newBuilder
+      .setTriggerName("trans")
+      .setUnit("raw")
+      .addActions(
+        Action.newBuilder
+          .setActionName("linear")
+          .setType(ActivationType.HIGH)
+          .setLinearTransform(LinearTransform.newBuilder.setScale(10).setOffset(50000)))
+        .addActions(
+          Action.newBuilder
+            .setActionName("unit")
+            .setType(ActivationType.HIGH)
+            .setSetUnit("V"))
+          .build
+  }
 }

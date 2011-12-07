@@ -18,35 +18,33 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.japi.{ BadRequestException, ReefServiceException }
+import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
 
 import com.google.protobuf.ByteString
 
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Model._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Model._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 import java.util.UUID
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.japi.Envelope.Status
+import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.{ FrontEndPort, DatabaseUsingTestBase }
-import org.totalgrid.reef.sapi.RequestEnv
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
-  val pubs = new SilentEventPublishers
   val rtDb = new InMemoryMeasurementStore()
-  val modelFac = new core.ModelFactories(ServiceDependencies(pubs, new SilentSummaryPoints, rtDb))
+  val modelFac = new ModelFactories(new ServiceDependenciesDefaults(cm = rtDb))
 
   val endpointService = new CommunicationEndpointService(modelFac.endpoints)
   val connectionService = new CommunicationEndpointConnectionService(modelFac.fepConn)
@@ -56,14 +54,13 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   val commandService = new CommandService(modelFac.cmds)
   val portService = new FrontEndPortService(modelFac.fepPort)
 
-  val headers = new RequestEnv
-  headers.setUserName("user")
+  val headers = BasicRequestHeaders.empty.setUserName("user")
 
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
-    CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name)
+    Endpoint.newBuilder().setProtocol(protocol).setName(name)
   }
   def getSinkEndpoint(name: String = "device", protocol: String = "benchmark") = {
-    CommEndpointConfig.newBuilder().setProtocol(protocol).setName(name).setDataSource(false)
+    Endpoint.newBuilder().setProtocol(protocol).setName(name).setDataSource(false)
   }
   def getIPPort(name: String = "device") = {
     CommChannel.newBuilder.setName(name + "-port").setIp(IpPort.newBuilder.setNetwork("any").setAddress("localhost").setPort(1200))
@@ -90,8 +87,8 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     mimeType.foreach(typ => cf.setMimeType(typ))
     cf
   }
-  def getConnection(name: String = "device", enabled: Option[Boolean] = None, state: Option[CommEndpointConnection.State] = None) = {
-    val b = CommEndpointConnection.newBuilder.setEndpoint(getEndpoint(name))
+  def getConnection(name: String = "device", enabled: Option[Boolean] = None, state: Option[EndpointConnection.State] = None) = {
+    val b = EndpointConnection.newBuilder.setEndpoint(getEndpoint(name))
     enabled.foreach(b.setEnabled(_))
     state.foreach(b.setState(_))
     b
@@ -107,7 +104,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     b.build
   }
 
-  test("Add parts seperatley (uid)") {
+  test("Add parts seperatley (id)") {
 
     pointService.put(getPoint().build).expectOne()
     commandService.put(getCommand().build).expectOne()
@@ -198,14 +195,14 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     val endpoint = endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
 
     val initialConnectionState = connectionService.get(getConnection().build).expectOne()
-    initialConnectionState.getState should equal(CommEndpointConnection.State.COMMS_DOWN)
+    initialConnectionState.getState should equal(EndpointConnection.State.COMMS_DOWN)
     initialConnectionState.getEnabled should equal(true)
 
     // cannot delete enabled endpoints
     intercept[BadRequestException] { endpointService.delete(endpoint) }
 
     // cannot delete endpoint because it is "enabled" and "online", would confuse Feps
-    connectionService.put(getConnection(state = Some(CommEndpointConnection.State.COMMS_UP)).build, headers)
+    connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build, headers)
     intercept[BadRequestException] { endpointService.delete(endpoint) }
 
     // cannot delete endpoint because even though it has been disabled it is still "online"
@@ -213,7 +210,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     intercept[BadRequestException] { endpointService.delete(endpoint) }
 
     // we can now delete because endpoint is "disabled" and "offline"
-    connectionService.put(getConnection(state = Some(CommEndpointConnection.State.COMMS_DOWN)).build, headers)
+    connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build, headers)
     endpointService.delete(endpoint).expectOne(Status.DELETED)
   }
 

@@ -22,9 +22,9 @@ import org.totalgrid.reef.shell.proto.presentation.{ EventView }
 
 import scala.collection.JavaConversions._
 import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption }
-import org.totalgrid.reef.proto.Utils.Attribute
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match
-import org.totalgrid.reef.proto.Alarms.{ EventConfig, Alarm }
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Alarms.{ EventConfig, Alarm }
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 
 @Command(scope = "event", name = "list", description = "Prints all recent events.")
 class EventListCommand extends ReefCommandSupport {
@@ -49,7 +49,7 @@ class EventViewCommand extends ReefCommandSupport {
   var eventId: String = null
 
   def doCommand() = {
-    EventView.printInspect(services.getEvent(eventId))
+    EventView.printInspect(services.getEventById(ReefID.newBuilder.setValue(eventId).build))
   }
 }
 
@@ -105,7 +105,7 @@ class EventPublishCommand extends ReefCommandSupport {
 class EventConfigListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    EventView.printConfigTable(services.getAllEventConfigurations.toList)
+    EventView.printConfigTable(services.getEventConfigurations.toList)
   }
 }
 
@@ -116,7 +116,7 @@ class EventConfigViewCommand extends ReefCommandSupport {
   var eventType: String = null
 
   def doCommand() = {
-    EventView.printConfigTable(services.getEventConfiguration(eventType) :: Nil)
+    EventView.printConfigTable(services.getEventConfigurationByType(eventType) :: Nil)
   }
 }
 
@@ -127,7 +127,7 @@ class EventConfigDeleteCommand extends ReefCommandSupport {
   var eventType: String = null
 
   def doCommand() = {
-    EventView.printConfigTable(services.deleteEventConfig(services.getEventConfiguration(eventType)) :: Nil)
+    EventView.printConfigTable(services.deleteEventConfig(services.getEventConfigurationByType(eventType)) :: Nil)
   }
 }
 

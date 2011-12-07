@@ -23,15 +23,15 @@ import org.junit.runner.RunWith
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship }
-import org.totalgrid.reef.proto.Model.{ Point => PointProto }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, Relationship }
+import org.totalgrid.reef.client.service.proto.Model.{ Point => PointProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.services._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.messaging.serviceprovider.SilentEventPublishers
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.client.service.proto.Model
 
 @RunWith(classOf[JUnitRunner])
 class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransaction {
@@ -46,12 +46,12 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
 
   def seedPoints {
     EntityQueryManager.findEntitiesByType(List("Point")).foreach { ent =>
-      ApplicationSchema.points.insert(Point.newInstance(ent.name, false, None, 1, "raw", None))
+      ApplicationSchema.points.insert(Point.newInstance(ent.name, false, None, Model.PointType.ANALOG, "raw", None))
     }
   }
 
   test("Point model lookup") {
-    val models = new ModelFactories(new ServiceDependencies)
+    val models = new ModelFactories(new ServiceDependenciesDefaults())
     val service = new PointService(models.points)
 
     val entReq =
@@ -75,7 +75,7 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
     val req = PointProto.newBuilder.setEntity(entReq).build
     val specIds = Point.findByNames(List("Pittsboro.B12.Kv", "Pittsboro.B24.Kv")).map(_.entityId).toList
     val resp = service.get(req).expectMany()
-    val resultIds = resp.map(x => java.util.UUID.fromString(x.getUuid.getUuid))
+    val resultIds = resp.map(x => java.util.UUID.fromString(x.getUuid.getValue))
 
     specIds.foldLeft(resultIds) { (left, id) =>
       left.contains(id) should equal(true)

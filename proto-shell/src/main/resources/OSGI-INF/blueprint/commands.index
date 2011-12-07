@@ -13,6 +13,7 @@ org.totalgrid.reef.shell.proto.EntityTypeCommand
 org.totalgrid.reef.shell.proto.EntityChildrenCommand
 org.totalgrid.reef.shell.proto.EntityCommand
 org.totalgrid.reef.shell.proto.EntityTreeCommand
+org.totalgrid.reef.shell.proto.EntityRelationsCommand
 org.totalgrid.reef.shell.proto.MeasListCommand
 org.totalgrid.reef.shell.proto.MeasFromCommand
 org.totalgrid.reef.shell.proto.MeasFromEndpointCommand

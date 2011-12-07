@@ -21,11 +21,12 @@ package org.totalgrid.reef.loader
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.communications._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.util.Logging
+//import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint => EndpointProto, _ }
+import org.totalgrid.reef.client.service.proto.Processing._
+import com.weiglewilczek.slf4s.Logging
 import java.io.File
-import org.totalgrid.reef.proto._
+import org.totalgrid.reef.client.service.proto._
 
 import EnhancedXmlClasses._
 import org.totalgrid.reef.loader.common.ConfigFile
@@ -45,7 +46,7 @@ object CommunicationsLoader {
 /**
  * Loader for the communications model.
  *
- * TODO: Add serial interfaces
+ * TODO: Add serial interfaces - backlog-65
  *
  */
 class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommunication, exceptionCollector: ExceptionCollector,
@@ -468,13 +469,18 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
         val point = toPoint(name)
 
-        addTriggers(modelLoader, point, toTrigger(name, s) :: Nil)
+        addTriggers(commonLoader.triggerCache, point, toTrigger(name, s) :: Nil)
 
         unit
       } else {
         if (!point.isSetUnit) "" else point.getUnit
       }
-      if (isDataSource) loadCache.addPoint(endpointName, name, index, unit)
+
+      if (isDataSource) {
+        loadCache.addPoint(endpointName, name, index, unit)
+        // once we have added any comms triggers the trigger set is complete and we can upload it
+        commonLoader.triggerCache.get(name).foreach { ts => modelLoader.putOrThrow(ts) }
+      }
     }
   }
 
@@ -543,9 +549,9 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
     points: HashMap[String, PointType],
-    isDataSource: Boolean): CommEndpointConfig.Builder = {
+    isDataSource: Boolean): EndpointProto.Builder = {
 
-    val proto = CommEndpointConfig.newBuilder
+    val proto = EndpointProto.newBuilder
       .setName(name)
       .setProtocol(protocol)
       .setOwnerships(toEndpointOwnership(controls.keys.toList ::: setpoints.keys.toList, points.keys))
@@ -713,7 +719,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     logger.debug("SIM POINT -> " + name)
     val builder = SimMapping.MeasSim.newBuilder.setName(name).setUnit(point.getUnit)
 
-    var triggerSet = modelLoader.getOrThrow(toTriggerSet(toPoint(name))).headOption
+    val triggerSet = commonLoader.triggerCache.get(name)
 
     var inBoundsRatio = 0.85
     var changeChance = 1.0
@@ -762,8 +768,6 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
       .setName(endpointName + "-sim.pi")
       .setMimeType("application/vnd.google.protobuf; proto=reef.proto.SimMapping.SimulatorMapping")
       .setFile(simMapping.toByteString)
-
-    logger.info("simulator mapping: endpoint: " + endpointName + ", mapping: " + simMapping.toString)
 
     configFileBuilder
   }

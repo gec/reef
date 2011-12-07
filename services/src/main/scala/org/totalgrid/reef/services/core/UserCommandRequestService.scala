@@ -18,23 +18,23 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.sapi.client.SessionPool
-
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.sapi.service.ServiceTypeIs
-import org.totalgrid.reef.sapi.client.Response
-import org.totalgrid.reef.japi.{ BadRequestException, Envelope }
-import org.totalgrid.reef.sapi.{ AddressableDestination }
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest }
-import org.totalgrid.reef.util.Logging
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, UserCommandRequest }
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.{ AddressableDestination, Routable }
 
 class UserCommandRequestService(
-  protected val model: UserCommandRequestServiceModel, pool: SessionPool)
+  protected val model: UserCommandRequestServiceModel)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]
     with UserCommandRequestValidation
     with AsyncGetEnabled
@@ -47,49 +47,49 @@ class UserCommandRequestService(
   override def doAsyncPutPost(contextSource: RequestContextSource, rsp: Response[UserCommandRequest], callback: Response[UserCommandRequest] => Unit) = {
     val request = rsp.expectOne
 
-    val address = contextSource.transaction { context =>
+    contextSource.transaction { context =>
 
-      val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
+      val command = Command.findByNames(request.getCommandRequest.getCommand.getName :: Nil).single
 
-      command.endpoint.value match {
+      val address = command.endpoint.value match {
         case Some(ep) =>
           val frontEndAssignment = ep.frontEndAssignment.value
 
-          val endpointState = CommEndpointConnection.State.valueOf(frontEndAssignment.state)
+          val endpointState = EndpointConnection.State.valueOf(frontEndAssignment.state)
 
-          if (endpointState != CommEndpointConnection.State.COMMS_UP) {
+          if (endpointState != EndpointConnection.State.COMMS_UP) {
             throw new BadRequestException("Endpoint: " + ep.entityName + " is not COMMS_UP, current state: " + endpointState)
           }
 
           frontEndAssignment.serviceRoutingKey match {
-            case Some(key) => AddressableDestination(key)
+            case Some(key) => new AddressableDestination(key)
             case None => throw new BadRequestException("No routing info for endpoint: " + ep.entityName)
           }
         case None => throw new BadRequestException("Command has no endpoint set: " + request)
       }
-    }
-
-    pool.borrow { session =>
-      session.put(request, destination = address).listen { response =>
-        contextSource.transaction { context =>
-          model.findRecord(context, request) match {
-            case Some(record) =>
-              val updatedStatus = if (response.success) {
-                response.list.head.getStatus
-              } else {
-                logger.warn { "Got non successful response to command request: " + request + " dest: " + address + " response: " + response }
-                CommandStatus.UNDEFINED
-              }
-              model.update(context, record.copy(status = updatedStatus.getNumber), record)
-            case None =>
-              logger.warn { "Couldn't find command request record to update" }
-          }
-        }
-        callback(response)
-      }
+      requestCommand(context.client, request, address, contextSource, callback)
     }
   }
 
+  private def requestCommand(client: Client, request: UserCommandRequest, address: Routable, contextSource: RequestContextSource, callback: Response[UserCommandRequest] => Unit) {
+    client.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
+      contextSource.transaction { context =>
+        model.findRecord(context, request) match {
+          case Some(record) =>
+            val updatedStatus = if (response.success) {
+              response.list.head.getStatus
+            } else {
+              logger.warn { "Got non successful response to command request: " + request + " dest: " + address + " response: " + response }
+              CommandStatus.UNDEFINED
+            }
+            model.update(context, record.copy(status = updatedStatus.getNumber), record)
+          case None =>
+            logger.warn { "Couldn't find command request record to update" }
+        }
+      }
+      callback(response)
+    }
+  }
 }
 
 trait UserCommandRequestValidation extends HasCreate with HasUpdate {
@@ -106,7 +106,7 @@ trait UserCommandRequestValidation extends HasCreate with HasUpdate {
 
   override protected def preCreate(context: RequestContext, proto: UserCommandRequest) = {
 
-    if (!proto.getCommandRequest.hasName)
+    if (!proto.getCommandRequest.getCommand.hasName)
       throw new BadRequestException("Request must specify command name", Envelope.Status.BAD_REQUEST)
 
     if (proto.hasStatus)

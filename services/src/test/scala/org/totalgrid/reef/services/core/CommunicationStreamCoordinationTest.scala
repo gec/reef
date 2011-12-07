@@ -21,22 +21,22 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.messaging.AMQPProtoFactory
-import org.totalgrid.reef.messaging.mock.AMQPFixture
+import org.totalgrid.reef.services.ConnectionFixture
 
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.japi.Envelope.Event
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Processing._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.japi.Envelope
 import org.totalgrid.reef.event.EventType
+import java.util.concurrent.TimeUnit
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
 
   test("Add Order: Device, FEP, Meas") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val device = coord.addDnp3Device("dev1")
@@ -53,12 +53,12 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.checkAssignments(1, Some(fep), Some(meas))
 
       // we should have sent an update to the fep to tell it the new routing address
-      fepEvents.pop(5000).event should equal(Event.MODIFIED)
+      fepEvents.pop(5000).event should equal(SubscriptionEventType.MODIFIED)
     }
   }
 
   test("Add Order: Device, Meas, FEP") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val device = coord.addDnp3Device("dev1")
@@ -74,7 +74,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Add Order: Meas, FEP, Device") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val fep = coord.addFep("fep")
@@ -87,7 +87,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Add Order: Combo(Meas, FEP), Device") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val bothApp = coord.addApp("both", List("FEP", "Processing"))
@@ -100,7 +100,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Many devices, one handler") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       for (i <- 1 to 3) yield coord.addDevice("dev" + i)
@@ -116,7 +116,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Many devices, many balanced handlers") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val feps = for (i <- 1 to 3) yield coord.addFep("fep" + i)
@@ -126,19 +126,19 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
 
       coord.pointsInDatabase should equal(9)
 
-      feps.foreach { fepUid =>
-        val fassign = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepUid).build).expectMany(3)
-        coord.checkFeps(fassign, false, Some(fepUid), true)
+      feps.foreach { fepId =>
+        val fassign = coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepId).build).expectMany(3)
+        coord.checkFeps(fassign, false, Some(fepId), true)
       }
-      procs.foreach { measUid =>
-        val massign = coord.measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measUid).build).expectMany(3)
-        coord.checkMeasProcs(massign, Some(measUid), true)
+      procs.foreach { measId =>
+        val massign = coord.measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measId).build).expectMany(3)
+        coord.checkMeasProcs(massign, Some(measId), true)
       }
     }
   }
 
   test("Search for Endpoints by channel") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val serialLocA1 = coord.addDnp3Device("serialLocA1", None, Some("locA"), Some("SerialA"))
@@ -160,15 +160,15 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       ipNetA1.getChannel should not equal (serialLocB1.getChannel)
       serialLocB1.getChannel should not equal (serialLocA1.getChannel)
 
-      coord.commEndpointService.get(CommEndpointConfig.newBuilder.setChannel(serialLocA1.getChannel).build).expectMany(2)
-      coord.commEndpointService.get(CommEndpointConfig.newBuilder.setChannel(serialLocB1.getChannel).build).expectMany(2)
-      coord.commEndpointService.get(CommEndpointConfig.newBuilder.setChannel(ipNetA1.getChannel).build).expectMany(3)
-      coord.commEndpointService.get(CommEndpointConfig.newBuilder.setChannel(ipNetB.getChannel).build).expectMany(1)
+      coord.commEndpointService.get(Endpoint.newBuilder.setChannel(serialLocA1.getChannel).build).expectMany(2)
+      coord.commEndpointService.get(Endpoint.newBuilder.setChannel(serialLocB1.getChannel).build).expectMany(2)
+      coord.commEndpointService.get(Endpoint.newBuilder.setChannel(ipNetA1.getChannel).build).expectMany(3)
+      coord.commEndpointService.get(Endpoint.newBuilder.setChannel(ipNetB.getChannel).build).expectMany(1)
     }
   }
 
   test("FEPS have correct ports") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val meas = coord.addMeasProc("meas")
@@ -181,9 +181,9 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       val serialLocB1 = coord.addDnp3Device("serialLocB1", None, Some("locB"))
       val serialLocB2 = coord.addDnp3Device("serialLocB2", None, Some("locB"))
 
-      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build).expectOne(), false, Some(fepNetALocA), true)
-      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build).expectOne(), false, Some(fepNetBLocA), true)
-      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build).expectMany(2), false, Some(fepNetBLocB), true)
+      coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build).expectOne(), false, Some(fepNetALocA), true)
+      coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build).expectOne(), false, Some(fepNetBLocA), true)
+      coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build).expectMany(2), false, Some(fepNetBLocB), true)
 
       val ipNetA1 = coord.addDnp3Device("ipNetA1", Some("netA"), None)
       val ipNetA2 = coord.addDnp3Device("ipNetA2", Some("netA"), None)
@@ -191,15 +191,15 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       val ipNetB2 = coord.addDnp3Device("ipNetB2", Some("netB"), None)
 
       // fepNetALocA should have got both netA devices and the fepNetB* feps will split the netB additions
-      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build).expectMany(2 + 1), false, Some(fepNetALocA), true)
-      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build).expectMany(2 + 1), false, Some(fepNetBLocA), true)
-      coord.checkFeps(coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build).expectMany(1 + 1), false, Some(fepNetBLocB), true)
+      coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepNetALocA).build).expectMany(2 + 1), false, Some(fepNetALocA), true)
+      coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build).expectMany(2 + 1), false, Some(fepNetBLocA), true)
+      coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build).expectMany(1 + 1), false, Some(fepNetBLocB), true)
 
     }
   }
 
   test("Disable/Enable Endpoint") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val fep = coord.addFep("fep")
@@ -212,7 +212,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointDisabled) should equal(0)
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointEnabled) should equal(0)
 
-      val connection = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build).expectOne()
+      val connection = coord.frontEndConnection.get(EndpointConnection.newBuilder.setEnabled(true).build).expectOne()
       coord.setEndpointEnabled(connection, false)
 
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointDisabled) should equal(1)
@@ -222,8 +222,8 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.checkAssignments(1, None, Some(meas))
 
       // we can also now search by enabled == false
-      coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(false).build).expectOne()
-      coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setEnabled(true).build).expectNone()
+      coord.frontEndConnection.get(EndpointConnection.newBuilder.setEnabled(false).build).expectOne()
+      coord.frontEndConnection.get(EndpointConnection.newBuilder.setEnabled(true).build).expectNone()
 
       coord.setEndpointEnabled(connection, true)
 
@@ -235,7 +235,7 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
   }
 
   test("Search connections by state") {
-    AMQPFixture.mock(true) { amqp: AMQPProtoFactory =>
+    ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)
 
       val fep = coord.addFep("fep")
@@ -250,16 +250,16 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointOffline) should equal(0)
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointOnline) should equal(0)
 
-      val connections = coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build).expectMany(2)
-      coord.setEndpointState(connections.head, CommEndpointConnection.State.COMMS_UP)
+      val connections = coord.frontEndConnection.get(EndpointConnection.newBuilder.setState(EndpointConnection.State.COMMS_DOWN).build).expectMany(2)
+      coord.setEndpointState(connections.head, EndpointConnection.State.COMMS_UP)
 
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointOffline) should equal(0)
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointOnline) should equal(1)
 
-      coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_DOWN).build).expectOne()
-      coord.frontEndConnection.get(CommEndpointConnection.newBuilder.setState(CommEndpointConnection.State.COMMS_UP).build).expectOne()
+      coord.frontEndConnection.get(EndpointConnection.newBuilder.setState(EndpointConnection.State.COMMS_DOWN).build).expectOne()
+      coord.frontEndConnection.get(EndpointConnection.newBuilder.setState(EndpointConnection.State.COMMS_UP).build).expectOne()
 
-      coord.setEndpointState(connections.head, CommEndpointConnection.State.COMMS_DOWN)
+      coord.setEndpointState(connections.head, EndpointConnection.State.COMMS_DOWN)
 
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointOffline) should equal(1)
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointOnline) should equal(1)

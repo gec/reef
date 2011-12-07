@@ -18,23 +18,22 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.Alarms._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, Entity }
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode }
 
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
-import org.totalgrid.reef.japi.BadRequestException
-import org.totalgrid.reef.services.ProtoRoutingKeys
+import org.totalgrid.reef.client.exception.BadRequestException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.util.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 import scala.collection.JavaConversions._
 
 import org.squeryl.dsl.ast.LogicalBoolean
@@ -81,10 +80,10 @@ class AlarmQueryService
   }
 
   override def subscribe(context: RequestContext, req: ServiceType) = {
-    context.headers.subQueue.foreach { subQueue =>
+    context.getHeaders.subQueue.foreach { subQueue =>
       val keys = getSubscribeKeys(req)
       // have to pass an alarm object so the binding is done to the correct queue
-      keys.foreach(context.subHandler.bind(subQueue, _, Alarm.newBuilder.build))
+      keys.foreach(context.subHandler.bindQueueByClass(subQueue, _, classOf[Alarm]))
     }
   }
 
@@ -105,7 +104,7 @@ class AlarmQueryService
     val results =
       from(alarms, events)((alarm, event) =>
         where(SquerylModel.combineExpressions(buildQuery(alarm, event, select).flatten) and
-          alarm.eventUid === event.id)
+          alarm.eventId === event.id)
           select ((alarm, event))
           orderBy timeOrder(event.time, select.eventSelect.ascending)).page(0, limit).toList
 
