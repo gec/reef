@@ -12,7 +12,8 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 Version 0.4.0
 ==============
 
-Major refactoring of communication client and threading structure.
+Major refactoring of communication client and threading structure. See MIGRATION_STEPS.markdown
+for help in updating an application from 0.3.x.
 
 ### Major Features:
 
@@ -32,10 +33,13 @@ Major refactoring of communication client and threading structure.
 ### Service/API Updates:
 
 * Entity service only returns BadRequestException about unknown types if no results are returned
-* Added SimpleAuthRequest proto and service to make logging not be dependent on complex reef types.
+* Added getEntityRelations queries to EntityService to make complex queries simpler to execute.
+* Added SimpleAuthRequest proto and service to make logging in and out not dependent on complex reef types.
+* Command requests are checked to verify right command type is used (control vs. setpoint)
 
 ### Reef Internals:
 
+* Protocol interface includes reef Client
 * Removed all usage of scala actors, replaced with Java Executors
 * Added many more integration tests for dnp3 and model loading and upload, fixed many endpoint related bugs.
 * Upgraded to karaf 2.2.4 from 2.2.2
