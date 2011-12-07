@@ -219,7 +219,7 @@
 			<equip:equipmentProfile name="MicrogridProfile"/>
 
 			<common:info>
-				<common:configFile fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
+				<common:configFile fileName="schematics/mainst.svg" mimeType="schematic/svg+xml"/>
 			</common:info>
 
 			<equip:equipment name="FID1">
@@ -317,7 +317,7 @@
 			<equip:equipmentProfile name="MicrogridProfile"/>
 
 			<common:info>
-				<common:configFile fileName="onelines/residential.xml" mimeType="oneline/xml"/>
+				<common:configFile fileName="schematics/residential.svg" mimeType="schematic/svg+xml"/>
 			</common:info>
 
 			<equip:equipment name="FID1">
@@ -339,7 +339,7 @@
 			<equip:type name="Root"/>
 			<equip:type name="MicroGrid"/>
 			<common:info>
-				<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
+				<common:configFile name="schematic-overview" fileName="schematics/overview.svg" mimeType="schematic/svg+xml"/>
 			</common:info>
 			<equip:equipment name="MainSt"/>
 			<equip:equipment name="Residential"/>
@@ -348,7 +348,7 @@
 		<equip:equipment name="MainSite" addParentNames="false">
 			<equip:type name="Site"/>
 			<common:info>
-				<common:configFile fileName="onelines/mainst.xml" mimeType="oneline/xml"/>
+				<common:configFile fileName="schematics/mainst.svg" mimeType="schematic/svg+xml"/>
 			</common:info>
 			<equip:equipment name="MainSt"/>
 		</equip:equipment>
@@ -356,7 +356,7 @@
 		<equip:equipment name="ResidentialSite" addParentNames="false">
 			<equip:type name="Site"/>
 			<common:info>
-				<common:configFile fileName="onelines/residential.xml" mimeType="oneline/xml"/>
+				<common:configFile fileName="schematics/residential.svg" mimeType="schematic/svg+xml"/>
 			</common:info>
 			<equip:equipment name="Residential"/>
 		</equip:equipment>
@@ -365,12 +365,12 @@
 			<equip:type name="Root"/>
 			<equip:type name="Site"/>
 			<common:info>
-				<common:configFile name="oneline-overview" fileName="onelines/overview.xml" mimeType="oneline/xml"/>
+				<common:configFile name="schematic-overview" fileName="schematics/overview.svg" mimeType="schematic/svg+xml"/>
 			</common:info>
 			<equip:equipment name="MainSite"/>
 			<equip:equipment name="ResidentialSite"/>
 		</equip:equipment>
-
+		
 	</equip:equipmentModel>
 
 	<comm:communicationsModel>
@@ -721,7 +721,7 @@
 		<comm:endpoint name="ChargePointRTU">
 			<comm:type name="Endpoint"/>
 
-			<comm:protocol name="chargePointUsage">
+			<comm:protocol name="chargePoint">
 				<common:configFile fileName="communication/chargePoint.properties" mimeType="chargePoint/properties"/>
 			</comm:protocol>
 
