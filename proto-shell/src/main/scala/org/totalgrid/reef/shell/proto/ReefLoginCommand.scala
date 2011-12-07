@@ -23,9 +23,9 @@ import java.io.{ BufferedReader, InputStreamReader }
 
 import org.totalgrid.reef.osgi.OsgiConfigReader
 
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
-import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 
 @Command(scope = "reef", name = "login", description = "Authorizes a user with a remote Reef node, asks for password interactively")
 class ReefLoginCommand extends ReefCommandSupport {
@@ -72,7 +72,7 @@ class ReefLogoutCommand extends ReefCommandSupport {
   def doCommand() = {
     try {
       this.get("authToken") match {
-        case Some(token) => services.deleteAuthorizationToken(token)
+        case Some(token) => //services.deleteAuthorizationToken(token) // TODO: reenable ability to actually delete it
         case None =>
       }
     } catch {

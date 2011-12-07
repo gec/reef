@@ -1,0 +1,46 @@
+
+package org.totalgrid.reef.client.service.proto.Mapping;
+
+option java_package = "org.totalgrid.reef.client.service.proto";
+option java_outer_classname = "Mapping";
+
+enum DataType {
+    ANALOG          = 1;
+    BINARY          = 2;
+    COUNTER         = 3;
+    CONTROL_STATUS  = 4;
+    SETPOINT_STATUS = 5;
+}
+
+enum CommandType {
+    PULSE       = 1;
+    LATCH_ON    = 2;
+    LATCH_OFF   = 3;
+    PULSE_CLOSE = 4;
+    PULSE_TRIP  = 5;
+    SETPOINT    = 6;
+}
+
+message MeasMap {
+    required DataType    type       = 1;
+    required uint32      index      = 2;
+    required string      point_name = 3;
+    optional string      unit       = 4; // this is the "raw" unit of the measurement.
+}
+
+message CommandMap {
+    required CommandType    type         = 1;
+    required uint32         index        = 2;
+    required string         command_name = 3;
+    optional uint32         on_time      = 4 [default = 100];
+    optional uint32         off_time     = 5 [default = 100];
+    optional uint32         count        = 6 [default = 1];
+}
+
+message IndexMapping {
+    //optional string           id          = 1;
+    optional string           device_id   = 2;
+    repeated MeasMap          measmap      = 3;
+    repeated CommandMap       commandmap   = 4;
+}
+

@@ -24,6 +24,7 @@ import presentation.{ CommandView }
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Conversion
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 
 @Command(scope = "command", name = "list", description = "Lists commands")
 class CommandListCommand extends ReefCommandSupport {
@@ -85,8 +86,8 @@ class AccessCommand extends ReefCommandSupport {
 
   def doCommand() = {
     Option(id) match {
-      case Some(uid) =>
-        CommandView.accessInspect(services.getCommandLock(id))
+      case Some(id) =>
+        CommandView.accessInspect(services.getCommandLockById(ReefID.newBuilder.setValue(id).build))
       case None =>
         CommandView.printAccessTable(services.getCommandLocks().toList)
     }
@@ -115,7 +116,7 @@ class AccessRemoveCommand extends ReefCommandSupport {
 
   def doCommand(): Unit = {
 
-    val access = services.deleteCommandLock(id)
+    val access = services.deleteCommandLock(ReefID.newBuilder.setValue(id).build)
     CommandView.removeBlockResponse(access :: Nil)
   }
 }

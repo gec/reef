@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.authz
 
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.models.{ AuthPermission, ApplicationSchema }

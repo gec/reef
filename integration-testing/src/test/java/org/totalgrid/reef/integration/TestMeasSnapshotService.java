@@ -22,11 +22,11 @@ import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
 
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.client.rpc.MeasurementService;
-import org.totalgrid.reef.client.rpc.PointService;
-import org.totalgrid.reef.proto.Measurements.*;
-import org.totalgrid.reef.proto.Model.*;
+import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.service.MeasurementService;
+import org.totalgrid.reef.client.service.PointService;
+import org.totalgrid.reef.client.service.proto.Measurements.*;
+import org.totalgrid.reef.client.service.proto.Model.*;
 import java.util.List;
 
 import org.totalgrid.reef.integration.helpers.*;
@@ -44,7 +44,7 @@ public class TestMeasSnapshotService extends ReefConnectionTestBase
     {
         PointService ps = helpers;
         MeasurementService ms = helpers;
-        List<Point> plist = ps.getAllPoints();
+        List<Point> plist = ps.getPoints();
         List<Measurement> mlist = ms.getMeasurementsByPoints( plist );
         assertEquals( plist.size(), mlist.size() );
     }

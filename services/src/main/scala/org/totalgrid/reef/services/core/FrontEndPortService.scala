@@ -18,24 +18,24 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.{ CommChannel => ChannelProto }
+import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 import org.squeryl.PrimitiveTypeMode._
 
 class FrontEndPortService(protected val model: FrontEndPortServiceModel)
@@ -48,7 +48,7 @@ class FrontEndPortService(protected val model: FrontEndPortServiceModel)
 
   override def merge(context: RequestContext, req: ServiceType, current: ModelType): ServiceType = {
 
-    import org.totalgrid.reef.proto.OptionalProtos._
+    import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
     val builder = FrontEndPortConversion.convertToProto(current).toBuilder
     req.state.foreach { builder.setState(_) }
@@ -94,7 +94,7 @@ trait FrontEndPortConversion
   }
 
   def uniqueQuery(proto: ChannelProto, sql: FrontEndPort) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Channel")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Channel")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }

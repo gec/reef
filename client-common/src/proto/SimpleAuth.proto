@@ -1,0 +1,16 @@
+package org.totalgrid.reef.client.proto.SimpleAuth;
+
+option java_package = "org.totalgrid.reef.client.proto";
+option java_outer_classname = "SimpleAuth";
+
+// This is a very simple authentication mechanism to break dependedcy on ReefUUID, Agent, etc.
+// The user can make a request to the fully featured AuthToken service with this auth token to delete
+// the auth token.
+message AuthRequest{
+    optional string id             = 1;
+    optional string name            = 2;
+    optional string password        = 3;
+    optional string login_location  = 4;
+    optional string token           = 5;
+    optional uint64 expiration_time = 6;
+}

@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.AlarmListRequestBuilders
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
@@ -79,10 +79,10 @@ class AlarmQueryTest
 
   test("Test alarm failure") {
     val exc = intercept[ReefServiceException] {
-      client.getAlarm("1234567890123456789").await
+      client.getAlarmById("1234567890123456789").await
     }.getMessage
     exc.contains("1234567890123456789") should equal(true)
-    exc.contains("uid") should equal(true)
+    exc.contains("id") should equal(true)
   }
 
 }

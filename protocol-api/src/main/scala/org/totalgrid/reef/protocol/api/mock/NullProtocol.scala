@@ -16,11 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.api.mock
+package org.totalgrid.reef.protocol.api.mock
 
-import org.totalgrid.reef.api.protocol.api.Protocol._
-import org.totalgrid.reef.api.protocol.api._
-import org.totalgrid.reef.proto.{ FEP, Model }
+import org.totalgrid.reef.protocol.api.Protocol._
+import org.totalgrid.reef.protocol.api._
+import org.totalgrid.reef.client.service.proto.{ FEP, Model }
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 class NullProtocol(protocolName: String = "NullProtocol") extends Protocol {
 
@@ -32,11 +33,12 @@ class NullProtocol(protocolName: String = "NullProtocol") extends Protocol {
     channelName: String,
     config: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler = NullCommandHandler
+    endpointPublisher: EndpointPublisher,
+    client: Client): CommandHandler = NullCommandHandler
 
   override def removeEndpoint(endpoint: String) = {}
 
-  override def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher) = {}
+  override def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher, client: Client) = {}
 
   override def removeChannel(channel: String) = {}
 

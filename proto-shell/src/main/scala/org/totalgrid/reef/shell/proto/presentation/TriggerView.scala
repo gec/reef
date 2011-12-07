@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Processing.TriggerSet
+import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 import org.totalgrid.reef.util.Table
 
 object TriggerView {
@@ -31,7 +31,7 @@ object TriggerView {
   }
 
   def row(a: TriggerSet) = {
-    "[" + a.getPoint.getUuid.getUuid + "]" :: a.getPoint.getName :: a.getTriggersCount.toString :: Nil
+    "[" + a.getPoint.getUuid.getValue + "]" :: a.getPoint.getName :: a.getTriggersCount.toString :: Nil
   }
 
   def inspectTrigger(a: TriggerSet) = {

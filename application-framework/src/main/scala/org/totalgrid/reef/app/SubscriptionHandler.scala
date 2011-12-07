@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.clientapi.SubscriptionResult
+import net.agileautomata.executor4s.Cancelable
+import org.totalgrid.reef.client.SubscriptionResult
 
 trait SubscriptionHandler[A] {
 

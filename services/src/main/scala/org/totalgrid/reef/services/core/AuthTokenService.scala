@@ -19,19 +19,19 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Auth._
-import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.proto.Envelope.Status
-import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
+import org.totalgrid.reef.client.service.proto.Auth._
+import org.totalgrid.reef.client.service.proto.Events._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope.Status
+import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.services.core.util._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import SquerylModel._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.models.{
   Agent,

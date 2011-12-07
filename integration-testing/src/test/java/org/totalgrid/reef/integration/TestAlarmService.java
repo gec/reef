@@ -21,15 +21,15 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.client.rpc.AlarmService;
-import org.totalgrid.reef.client.rpc.EntityService;
-import org.totalgrid.reef.client.rpc.EventConfigService;
-import org.totalgrid.reef.client.rpc.EventCreationService;
+import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.service.AlarmService;
+import org.totalgrid.reef.client.service.EntityService;
+import org.totalgrid.reef.client.service.EventConfigService;
+import org.totalgrid.reef.client.service.EventPublishingService;
 
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders;
-import org.totalgrid.reef.proto.Alarms.*;
-import org.totalgrid.reef.proto.Model.Entity;
+import org.totalgrid.reef.client.service.proto.Alarms.*;
+import org.totalgrid.reef.client.service.proto.Model.Entity;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class TestAlarmService extends ReefConnectionTestBase
     public void prepareAlarms() throws ReefServiceException
     {
         EventConfigService configService = helpers;
-        EventCreationService pub = helpers;
+        EventPublishingService pub = helpers;
 
         configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
 
@@ -79,7 +79,7 @@ public class TestAlarmService extends ReefConnectionTestBase
         Entity substation = entityService.getEntityByName( "StaticSubstation" );
 
         // Get all the points in the substation. Alarms are associated with individual points.
-        Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootUid( substation, "Point" );
+        Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootId( substation, "Point" );
 
         // Get the alarms on both the substation and devices under the substation.
         List<String> alarmTypes = new LinkedList<String>();

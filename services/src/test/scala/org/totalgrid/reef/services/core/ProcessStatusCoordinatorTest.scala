@@ -22,26 +22,26 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.proto.ProcessStatus._
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.ProcessStatus._
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
-import org.totalgrid.reef.clientapi.sapi.client.rest.SubscriptionHandler
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
+import org.totalgrid.reef.client.proto.Envelope
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
   class CountingSubscriptionHandler extends SubscriptionHandler {
     var count = new SyncVar(0: Int)
-    var lastEvent: Option[Envelope.Event] = None
+    var lastEvent: Option[Envelope.SubscriptionEventType] = None
     var lastKey: Option[String] = None
     var lastMessage: Option[AnyRef] = None
 
     def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
 
-    def publishEvent[A](typ: Envelope.Event, resp: A, key: String) {
+    def publishEvent[A](typ: Envelope.SubscriptionEventType, resp: A, key: String) {
       lastEvent = Some(typ)
       lastKey = Some(key)
       lastMessage = Some(resp.asInstanceOf[AnyRef])
@@ -94,7 +94,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     ss.getOnline should equal(true)
 
     fix.eventSink.waitForNEvents(1)
-    fix.eventSink.lastEvent should equal(Some(Envelope.Event.ADDED))
+    fix.eventSink.lastEvent should equal(Some(Envelope.SubscriptionEventType.ADDED))
   }
 
   test("Warns on unknown heartbeats") {
@@ -115,7 +115,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     val fix = new ProcessStatusFixture
 
     fix.eventSink.waitForNEvents(1)
-    fix.eventSink.lastEvent should equal(Some(Envelope.Event.ADDED))
+    fix.eventSink.lastEvent should equal(Some(Envelope.SubscriptionEventType.ADDED))
 
     val ss = fix.service.get(fix.namedProto.build).expectOne()
     ss.getOnline should equal(true)
@@ -136,7 +136,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     // since it should have now failed, we should have seen a modified offline message 
     fix.eventSink.waitForNEvents(2)
-    fix.eventSink.lastEvent should equal(Some(Envelope.Event.MODIFIED))
+    fix.eventSink.lastEvent should equal(Some(Envelope.SubscriptionEventType.MODIFIED))
 
     val ss3 = fix.service.get(fix.namedProto.build).expectOne()
     ss3.getOnline should equal(false)
@@ -152,7 +152,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     val failsAt = ss.getTime
 
     fix.eventSink.waitForNEvents(2)
-    fix.eventSink.lastEvent should equal(Some(Envelope.Event.ADDED))
+    fix.eventSink.lastEvent should equal(Some(Envelope.SubscriptionEventType.ADDED))
 
     // hasn't timeout out yet, no failure, no new events
     fix.coord.checkTimeouts(failsAt - 1)
@@ -161,7 +161,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     // check again, just after the timeout
     fix.coord.checkTimeouts(failsAt + 10)
     fix.eventSink.waitForNEvents(3)
-    fix.eventSink.lastEvent should equal(Some(Envelope.Event.MODIFIED))
+    fix.eventSink.lastEvent should equal(Some(Envelope.SubscriptionEventType.MODIFIED))
 
     val ss2 = fix.service.get(fix.namedProto.build).expectOne()
     ss2.getOnline should equal(false)

@@ -19,10 +19,10 @@
 package org.totalgrid.reef.loader
 
 import helpers.ModelContainer
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Processing._
 
 trait ModelLoader {
   def putOrThrow(e: Entity)
@@ -31,7 +31,7 @@ trait ModelLoader {
   def putOrThrow(e: Command)
   def putOrThrow(e: Point)
   def putOrThrow(e: EventConfig)
-  def putOrThrow(e: CommEndpointConfig)
+  def putOrThrow(e: Endpoint)
   def putOrThrow(e: ConfigFile)
   def putOrThrow(e: CommChannel)
 

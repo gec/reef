@@ -22,14 +22,14 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
-import org.totalgrid.reef.proto.Events.{ Event => EventProto }
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto }
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import org.totalgrid.reef.services.framework.SystemEventCreator
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.ServiceDependencies
-import org.totalgrid.reef.clientapi.exceptions.{ ReefServiceException, BadRequestException }
+import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
@@ -104,7 +104,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
     event.alarm.get should be(true)
     event.severity.get should be(3)
     event.rendered.get should be("Test Alarm")
-    event.uid should not be (None)
+    event.id should not be (None)
 
     val alarm = fix.alarmService.get(makeAlarm(event)).expectOne
     alarm.state.get should be(Alarm.State.UNACK_AUDIBLE)
@@ -129,7 +129,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 
     val alarm = fix.alarmService.put(alarmRequest).expectOne
     // make sure we added a new event than the template
-    alarm.event.uid.get should not equal (event.uid.get)
+    alarm.event.id.get should not equal (event.id.get)
     alarm.event.rendered should equal(event.rendered)
     alarm.state should equal(Some(Alarm.State.UNACK_AUDIBLE))
   }
@@ -192,7 +192,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
    */
   def makeAlarm(alarm: Alarm, state: Alarm.State) =
     Alarm.newBuilder
-      .setUid(alarm.getUid)
+      .setId(alarm.getId)
       .setState(state)
       .build
 

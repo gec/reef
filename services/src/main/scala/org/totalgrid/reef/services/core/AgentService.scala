@@ -18,16 +18,16 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.client.service.proto.Auth._
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 
@@ -127,7 +127,7 @@ trait AgentConversions
   val table = ApplicationSchema.agents
 
   def uniqueQuery(proto: Agent, sql: AgentModel) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Agent")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Agent")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }

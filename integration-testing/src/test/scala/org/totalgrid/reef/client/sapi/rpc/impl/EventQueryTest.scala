@@ -74,7 +74,7 @@ class EventQueryTest
     val twoHoursFromNow = nowPlus(Calendar.HOUR, 2)
 
     recorder.addExplanation("Get events with multiple selects", desc)
-    client.getEvents(EventListRequestBuilders.getByTimeRangeAndSubsystemSelector(yesterday, twoHoursFromNow, "Core", 2).build)
+    client.searchForEvents(EventListRequestBuilders.getByTimeRangeAndSubsystemSelector(yesterday, twoHoursFromNow, "Core", 2).build)
   }
 
   // Get a time offset based on the well known NOW_MS

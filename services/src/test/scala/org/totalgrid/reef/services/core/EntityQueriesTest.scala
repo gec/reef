@@ -24,11 +24,11 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity }
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
 import java.util.UUID
-import org.totalgrid.reef.client.rpc.entities.EntityRelation
+import org.totalgrid.reef.client.service.entity.EntityRelation
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
 
 @RunWith(classOf[JUnitRunner])
@@ -279,8 +279,8 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
       n
     }
 
-    def checkEnt(proto: EntityProto, uid: UUID, name: String, typ: String, relCount: Int) = {
-      proto.getUuid.getUuid should equal(uid.toString)
+    def checkEnt(proto: EntityProto, id: UUID, name: String, typ: String, relCount: Int) = {
+      proto.getUuid.getValue should equal(id.toString)
       proto.getName should equal(name)
       proto.getTypesCount should equal(1)
       proto.getTypes(0) should equal(typ)
@@ -470,7 +470,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   test("Get all") {
-    val req = EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*"))
+    val req = EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*"))
 
     val ents = ApplicationSchema.entities.where(t => true === true)
     val spec = ents.map(_.name).toList
@@ -482,7 +482,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   test("Double types") {
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA").head
     val req = EntityProto.newBuilder
-      .setUuid(ReefUUID.newBuilder.setUuid(entRoot.id.toString))
+      .setUuid(ReefUUID.newBuilder.setValue(entRoot.id.toString))
       .setName("RegA-SubA")
       .addTypes("Substation")
       .addTypes("EquipmentGroup")

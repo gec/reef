@@ -37,13 +37,13 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
     stream.println("package " + packageName)
 
     // we remove the java list import, so the name List will point to scala.collection.List
-    val importMap = Map("java.util.List" -> "", "org.totalgrid.reef.clientapi.ReefServiceException" -> "")
+    val importMap = Map("java.util.List" -> "", "org.totalgrid.reef.client.ReefServiceException" -> "")
 
     c.importedClasses().toList.foreach(p => importMap.get(p.qualifiedTypeName()) match {
       case None => stream.println("import " + p.qualifiedTypeName())
       case _ =>
     })
-    stream.println("import org.totalgrid.reef.clientapi.sapi.client.Promise")
+    stream.println("import org.totalgrid.reef.client.sapi.client.Promise")
     stream.println(commentString(c.getRawCommentText()))
     stream.println("trait " + c.name + "{")
 

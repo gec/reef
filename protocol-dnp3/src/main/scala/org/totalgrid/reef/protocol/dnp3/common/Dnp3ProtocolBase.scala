@@ -20,12 +20,13 @@ package org.totalgrid.reef.protocol.dnp3.common
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.util.Cancelable
-import org.totalgrid.reef.proto.{ FEP, Mapping, Model }
+import net.agileautomata.executor4s.Cancelable
+import org.totalgrid.reef.client.service.proto.{ FEP, Mapping, Model }
 
-import org.totalgrid.reef.api.protocol.api._
+import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol with Logging {
 
@@ -48,7 +49,7 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
 
   final def Shutdown() = dnp3.Shutdown()
 
-  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher) = {
+  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher, client: Client) = {
 
     val physMonitor = createChannelObserver(p.getName, publisher)
 
@@ -111,10 +112,10 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
     }
   }
 
-  private def translateStackState(state: StackStates): FEP.CommEndpointConnection.State = state match {
-    case StackStates.SS_COMMS_DOWN => FEP.CommEndpointConnection.State.COMMS_DOWN
-    case StackStates.SS_COMMS_UP => FEP.CommEndpointConnection.State.COMMS_UP
-    case StackStates.SS_UNKNOWN => FEP.CommEndpointConnection.State.UNKNOWN
+  private def translateStackState(state: StackStates): FEP.EndpointConnection.State = state match {
+    case StackStates.SS_COMMS_DOWN => FEP.EndpointConnection.State.COMMS_DOWN
+    case StackStates.SS_COMMS_UP => FEP.EndpointConnection.State.COMMS_UP
+    case StackStates.SS_UNKNOWN => FEP.EndpointConnection.State.UNKNOWN
   }
 
   private def translatePhysicalLayerState(state: PhysicalLayerState): FEP.CommChannel.State = state match {

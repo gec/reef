@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Events.Event
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import java.text.SimpleDateFormat
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Utils.Attribute
-import org.totalgrid.reef.proto.Alarms.{ Alarm, EventConfig }
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Alarms.{ Alarm, EventConfig }
 
 import org.totalgrid.reef.util.Table
 
@@ -35,14 +35,14 @@ object EventView {
   }
 
   def header = {
-    "Uid" :: "Type" :: "Alarm" :: "Sev" :: "User" :: "Entity" :: "Message" :: "Time" :: Nil
+    "Id" :: "Type" :: "Alarm" :: "Sev" :: "User" :: "Entity" :: "Message" :: "Time" :: Nil
   }
 
   val dateFormat = new SimpleDateFormat("HH:mm:ss MM-dd-yy")
   def timeString(time: Option[Long]) = time.map { t => dateFormat.format(new java.util.Date(t)) }.getOrElse("")
 
   def row(e: Event) = {
-    e.getUid :: e.getEventType :: e.getAlarm.toString :: e.getSeverity.toString :: e.getUserId :: e.entity.name.getOrElse("") :: e.getRendered :: timeString(e.time) :: Nil
+    e.getId.getValue :: e.getEventType :: e.getAlarm.toString :: e.getSeverity.toString :: e.getUserId :: e.entity.name.getOrElse("") :: e.getRendered :: timeString(e.time) :: Nil
   }
 
   private def getValueAsString(attr: Attribute): String = {
@@ -66,7 +66,7 @@ object EventView {
     }.getOrElse(Nil)
 
     val lines: List[List[String]] =
-      ("Uid" :: e.getUid :: Nil) ::
+      ("Id" :: e.getId.getValue :: Nil) ::
         ("Type" :: e.getEventType :: Nil) ::
         ("Alarm" :: e.getAlarm.toString :: Nil) ::
         ("Sev" :: e.getSeverity.toString :: Nil) ::

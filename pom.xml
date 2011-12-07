@@ -6,10 +6,10 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4.0-RC4-SNAPSHOT</version>
+	<version>0.4.1-SNAPSHOT</version>
 
 	<properties>
-		<reef.version>0.4.0-RC4-SNAPSHOT</reef.version>
+		<reef.version>0.4.1-SNAPSHOT</reef.version>
 		<mavenBundleVersion>2.1.0</mavenBundleVersion>
 		<felixCoreVersion>1.4.0</felixCoreVersion>
         <executor4s.version>0.1.9-RC3</executor4s.version>
@@ -20,9 +20,9 @@
 		<module>scala-base</module>
 		<module>api-enhancer</module>
 		<module>test-util</module>
-        <module>common-api</module>
-        <module>client-api</module>
-		<module>client</module>
+        <module>client-common</module>
+        <module>client</module>
+		<module>service-client</module>
 		<module>benchmarks</module>
 		<module>integration-testing</module>
         <module>executor</module>

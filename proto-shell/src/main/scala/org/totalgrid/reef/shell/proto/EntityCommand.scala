@@ -23,7 +23,7 @@ import org.apache.felix.gogo.commands.{ Command, Argument, Option => GogoOption 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.shell.proto.presentation.{ EntityView }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
-import org.totalgrid.reef.client.rpc.entities.EntityRelation
+import org.totalgrid.reef.client.service.entity.EntityRelation
 
 @Command(scope = "entity", name = "entity", description = "Prints all entities or information on a specific entity.")
 class EntityCommand extends ReefCommandSupport {
@@ -34,7 +34,7 @@ class EntityCommand extends ReefCommandSupport {
   def doCommand() = {
     Option(entityName) match {
       case Some(entId) => EntityView.printInspect(services.getEntityByName(entityName))
-      case None => EntityView.printList(services.getAllEntities().toList)
+      case None => EntityView.printList(services.getEntities().toList)
     }
   }
 }
@@ -46,7 +46,7 @@ class EntityTypeCommand extends ReefCommandSupport {
   var typeName: String = null
 
   def doCommand() = {
-    EntityView.printList(services.getAllEntitiesWithType(typeName).toList)
+    EntityView.printList(services.getEntitiesWithType(typeName).toList)
   }
 
 }
@@ -70,7 +70,7 @@ class EntityChildrenCommand extends ReefCommandSupport {
 
     val selector = EntityRequestBuilders.optionalChildrenSelector(parentName, Option(relType), Option(subType).toList, depths)
 
-    val ents = services.getEntityTree(selector)
+    val ents = services.searchForEntityTree(selector)
     if (depths) {
       EntityView.printTreeMultiDepth(ents)
     } else {

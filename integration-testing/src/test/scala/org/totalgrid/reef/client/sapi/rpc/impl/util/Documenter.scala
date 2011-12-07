@@ -26,9 +26,9 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor
 import java.io.File
 import xml.{ Node, XML, NodeSeq }
 
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.clientapi.sapi.client.{ FailureResponse, SuccessResponse, Response }
+import org.totalgrid.reef.client.sapi.client.{ FailureResponse, SuccessResponse, Response }
 
 object Documenter {
 

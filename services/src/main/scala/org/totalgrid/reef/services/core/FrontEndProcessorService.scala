@@ -18,20 +18,20 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.FrontEndProcessor
+import org.totalgrid.reef.client.service.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.models.{ ApplicationInstance, CommunicationProtocolApplicationInstance, ApplicationSchema }
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services
 import java.util.UUID
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 
 // implicits
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 
@@ -49,7 +49,7 @@ class FrontEndProcessorServiceModel(
     with FrontEndProcessorConversion {
 
   override def createFromProto(context: RequestContext, req: FrontEndProcessor): ApplicationInstance = {
-    val appInstance = table.where(a => a.entityId === UUID.fromString(req.getAppConfig.getUuid.getUuid)).single
+    val appInstance = table.where(a => a.entityId === UUID.fromString(req.getAppConfig.getUuid.getValue)).single
     req.getProtocolsList.toList.foreach(p => ApplicationSchema.protocols.insert(new CommunicationProtocolApplicationInstance(p, appInstance.id)))
     logger.info("Added FEP: " + appInstance.instanceName + " protocols: " + req.getProtocolsList.toList)
     coordinator.onFepAppChanged(context, appInstance, true)
@@ -76,7 +76,7 @@ trait FrontEndProcessorConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(req: FrontEndProcessor) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid :: Nil
+    req.uuid.value :: Nil
   }
 
   def searchQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
@@ -86,7 +86,7 @@ trait FrontEndProcessorConversion
   }
 
   def uniqueQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
-    proto.uuid.uuid.asParam(sql.id === _.toLong) ::
+    proto.uuid.value.asParam(sql.id === _.toLong) ::
       proto.appConfig.instanceName.asParam(sql.instanceName === _) ::
       Nil
   }

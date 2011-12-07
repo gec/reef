@@ -28,7 +28,7 @@ import org.totalgrid.reef.services.core.util.HistoryTrimmer
 import org.totalgrid.reef.services.authz.{ AuthServiceMetricsWrapper, AuthService }
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
 import org.totalgrid.reef.services.metrics.MetricsServiceWrapper
 
@@ -74,7 +74,7 @@ class ServiceProviders(
     new AgentService(modelFac.agents),
     new PermissionSetService(modelFac.permissionSets),
 
-    new CommandAccessService(modelFac.accesses),
+    new CommandLockService(modelFac.accesses),
 
     new UserCommandRequestService(modelFac.userRequests),
 

@@ -21,16 +21,16 @@
 
 // TODO: re-enable OSGiClientSession equivilant
 
-//import org.totalgrid.reef.clientapi.sapi.service.{ AsyncService, ServiceResponseCallback }
+//import org.totalgrid.reef.client.sapi.service.{ AsyncService, ServiceResponseCallback }
 //
-//import org.totalgrid.reef.clientapi.proto.Envelope.Verb
+//import org.totalgrid.reef.client.proto.Envelope.Verb
 //import org.osgi.framework.BundleContext
 //
 //import scala.annotation.tailrec
 //
-//import org.totalgrid.reef.clientapi.sapi._
-//import org.totalgrid.reef.clientapi.sapi.client._
-//import org.totalgrid.reef.clientapi._
+//import org.totalgrid.reef.client.sapi._
+//import org.totalgrid.reef.client.sapi.client._
+//import org.totalgrid.reef.client._
 //
 //import com.weiglewilczek.scalamodules._
 //import scala.collection.JavaConversions._

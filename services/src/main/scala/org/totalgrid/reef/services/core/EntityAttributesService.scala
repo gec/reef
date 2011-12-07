@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, EntityAttributes => AttrProto }
-import org.totalgrid.reef.proto.Utils.Attribute
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, EntityAttributes => AttrProto }
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Descriptors
 
-import org.totalgrid.reef.clientapi.sapi.client.Response
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
-import org.totalgrid.reef.clientapi.proto.Envelope.Status
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
 
@@ -108,7 +108,7 @@ class EntityAttributesService extends ServiceEntryPoint[AttrProto] with Authoriz
 
 object EntityAttributesService {
   import org.squeryl.PrimitiveTypeMode._
-  import org.totalgrid.reef.proto.OptionalProtos._
+  import org.totalgrid.reef.client.service.proto.OptionalProtos._
   import com.google.protobuf.ByteString
 
   def deleteAllFromEntity(entityId: UUID) = {
@@ -116,14 +116,14 @@ object EntityAttributesService {
   }
 
   def queryEntities(proto: EntityProto): List[AttrProto] = {
-    val join = if (proto.hasUuid && proto.getUuid.getUuid == "*") {
+    val join = if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allJoin
     } else if (proto.hasUuid) {
-      uidJoin(proto.getUuid.getUuid)
+      uidJoin(proto.getUuid.getValue)
     } else if (proto.hasName) {
       nameJoin(proto.getName)
     } else {
-      throw new BadRequestException("Must search for entities by uid or name.")
+      throw new BadRequestException("Must search for entities by id or name.")
     }
 
     if (join.isEmpty)
@@ -138,9 +138,9 @@ object EntityAttributesService {
     }
   }
 
-  def uidJoin(uid: String): List[(Entity, Option[AttrModel])] = {
+  def uidJoin(id: String): List[(Entity, Option[AttrModel])] = {
     join(ApplicationSchema.entities, ApplicationSchema.entityAttributes.leftOuter)((ent, attr) =>
-      where(ent.id === UUID.fromString(uid))
+      where(ent.id === UUID.fromString(id))
         select (ent, attr)
         on (Some(ent.id) === attr.map(_.entityId))).toList
   }

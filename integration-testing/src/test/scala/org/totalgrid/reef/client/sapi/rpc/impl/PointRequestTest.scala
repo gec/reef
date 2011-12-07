@@ -43,11 +43,11 @@ class PointRequestTest
   test("Simple gets") {
 
     recorder.addExplanation("Get all", "Get all Points")
-    // keep list of all points so we can use them for uid and name queries
-    val allResp = client.getAllPoints
+    // keep list of all points so we can use them for id and name queries
+    val allResp = client.getPoints
 
     recorder.addExplanation("Get by UID", "Get point that matches a certain UID.")
-    client.getPointByUid(allResp.await.head.getUuid)
+    client.getPointByUuid(allResp.await.head.getUuid)
 
     recorder.addExplanation("Get by name", "Get point that matches a certain name.")
     client.getPointByName(allResp.await.head.getName)

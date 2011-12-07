@@ -19,15 +19,16 @@
 package org.totalgrid.reef.integration;
 
 import org.junit.Test;
-import org.totalgrid.reef.client.ReefReconnectingFactory;
-import org.totalgrid.reef.client.rpc.MeasurementService;
-import org.totalgrid.reef.clientapi.Client;
-import org.totalgrid.reef.clientapi.Connection;
-import org.totalgrid.reef.clientapi.ConnectionWatcher;
-import org.totalgrid.reef.clientapi.ReconnectingConnectionFactory;
-import org.totalgrid.reef.clientapi.settings.AmqpSettings;
-import org.totalgrid.reef.clientapi.settings.UserSettings;
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader;
+import org.totalgrid.reef.client.factory.ReefReconnectingFactory;
+import org.totalgrid.reef.client.service.MeasurementService;
+import org.totalgrid.reef.client.service.list.ReefServices;
+import org.totalgrid.reef.client.Client;
+import org.totalgrid.reef.client.Connection;
+import org.totalgrid.reef.client.ConnectionWatcher;
+import org.totalgrid.reef.client.ReconnectingConnectionFactory;
+import org.totalgrid.reef.client.settings.AmqpSettings;
+import org.totalgrid.reef.client.settings.UserSettings;
+import org.totalgrid.reef.client.settings.util.PropertyReader;
 import org.totalgrid.reef.util.EmptySyncVar;
 import org.totalgrid.reef.util.SyncVar;
 
@@ -40,7 +41,7 @@ public class TestReconnectingFactory
         final AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
         final UserSettings userSettings = new UserSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
 
-        ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, 100, 500 );
+        ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, new ReefServices(), 100, 500 );
 
         final SyncVar closed = new SyncVar<Boolean>( Boolean.FALSE );
         final SyncVar closeExpected = new EmptySyncVar<Boolean>();
@@ -67,7 +68,7 @@ public class TestReconnectingFactory
 
         Connection c = (Connection)conn.current();
         Client client = c.login( userSettings );
-        client.getRpcInterface( MeasurementService.class );
+        client.getService( MeasurementService.class );
 
         factory.stop();
 

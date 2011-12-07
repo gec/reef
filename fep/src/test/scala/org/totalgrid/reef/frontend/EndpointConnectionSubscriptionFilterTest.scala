@@ -24,16 +24,17 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.app.ClearableMap
 import org.mockito.Mockito
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 
 import FrontEndTestHelpers._
+import net.agileautomata.executor4s.testing.InstantExecutor
 
 @RunWith(classOf[JUnitRunner])
 class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatchers {
   test("Adds and modifies are populated") {
-    val map = Mockito.mock(classOf[ClearableMap[CommEndpointConnection]])
+    val map = Mockito.mock(classOf[ClearableMap[EndpointConnection]])
     val populator = Mockito.mock(classOf[EndpointConnectionPopulatorAction])
-    val filter = new EndpointConnectionSubscriptionFilter(map, populator)
+    val filter = new EndpointConnectionSubscriptionFilter(map, populator, new InstantExecutor)
 
     val populated = getConnectionProto(true, Some("routing2"))
     val config = getConnectionProto(true, Some("routing"))
@@ -47,11 +48,11 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
   }
 
   test("Ignores Disabled or unrouted endpoints") {
-    val map = Mockito.mock(classOf[ClearableMap[CommEndpointConnection]])
+    val map = Mockito.mock(classOf[ClearableMap[EndpointConnection]])
     val populator = Mockito.mock(classOf[EndpointConnectionPopulatorAction])
-    val filter = new EndpointConnectionSubscriptionFilter(map, populator)
+    val filter = new EndpointConnectionSubscriptionFilter(map, populator, new InstantExecutor)
 
-    def testAddOrModifyBecomesRemove(obj: CommEndpointConnection) {
+    def testAddOrModifyBecomesRemove(obj: EndpointConnection) {
       filter.add(obj)
       filter.modify(obj)
       Mockito.verify(map, Mockito.times(2)).remove(obj)
@@ -70,9 +71,9 @@ class EndpointConnectionSubscriptionFilterTest extends FunSuite with ShouldMatch
   }
 
   test("Handles subscription and canceling") {
-    val map = Mockito.mock(classOf[ClearableMap[CommEndpointConnection]])
+    val map = Mockito.mock(classOf[ClearableMap[EndpointConnection]])
     val populator = Mockito.mock(classOf[EndpointConnectionPopulatorAction])
-    val filter = new EndpointConnectionSubscriptionFilter(map, populator)
+    val filter = new EndpointConnectionSubscriptionFilter(map, populator, new InstantExecutor)
 
     val populated = getConnectionProto(true, Some("routing2"))
     val config = getConnectionProto(true, Some("routing"))

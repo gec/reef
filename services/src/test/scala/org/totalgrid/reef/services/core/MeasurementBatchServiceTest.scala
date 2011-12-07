@@ -19,9 +19,9 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.ConnectionFixture
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
-import org.totalgrid.reef.clientapi.sapi.client.Response
+import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.exception.ReefServiceException
+import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.util.AsyncValue
 
 import org.scalatest.junit.JUnitRunner
@@ -32,7 +32,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-  import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+  import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 
   class BatchFixture(amqp: Connection) extends CoordinatorFixture(amqp) {
 

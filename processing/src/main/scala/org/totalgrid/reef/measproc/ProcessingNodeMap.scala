@@ -19,8 +19,8 @@
 package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.app.{ KeyedMap, SubscriptionHandlerBase, ServiceContext }
-import org.totalgrid.reef.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
-import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessingConnection => ConnProto }
+import net.agileautomata.executor4s.Cancelable
 
 class ProcessingNodeMap(connector: MeasStreamConnector)
     extends KeyedMap[ConnProto]
@@ -29,7 +29,7 @@ class ProcessingNodeMap(connector: MeasStreamConnector)
 
   def subscribed(list: List[ConnProto]) = list.foreach(add(_))
 
-  protected override def getKey(c: ConnProto) = c.getUid
+  protected override def getKey(c: ConnProto) = c.getId.getValue
 
   private var map = Map.empty[String, Cancelable]
 

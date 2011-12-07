@@ -21,21 +21,21 @@ package org.totalgrid.reef.services.core
 import org.squeryl.{ Table, Query }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Model.{ Command => FepCommandProto }
-import org.totalgrid.reef.proto.Commands.{ CommandAccess => AccessProto }
+import org.totalgrid.reef.client.service.proto.Model.{ Command => FepCommandProto }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandLock => AccessProto }
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.clientapi.exceptions.{ BadRequestException, UnauthorizedException }
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.exception.{ BadRequestException, UnauthorizedException }
 
-import org.totalgrid.reef.models.{ ApplicationSchema, CommandAccessModel => AccessModel, Command => CommandModel, CommandBlockJoin }
+import org.totalgrid.reef.models.{ ApplicationSchema, CommandLockModel => AccessModel, Command => CommandModel, CommandBlockJoin }
 import java.util.Date
 
-class CommandAccessServiceModel
+class CommandLockServiceModel
     extends SquerylServiceModel[AccessProto, AccessModel]
     with EventedServiceModel[AccessProto, AccessModel]
-    with CommandAccessConversion {
+    with CommandLockConversion {
 
   def commandModel = modelOption.get
   var modelOption: Option[CommandServiceModel] = None
@@ -50,6 +50,8 @@ class CommandAccessServiceModel
     val user = context.getHeaders.userName getOrElse { throw new BadRequestException("User must be in header.") }
     req.user.foreach { u => if (user != u) throw new BadRequestException("User name in request doesn't match any auth token owners, correct name or leave blank.") }
 
+    val commands = findCommands(req.getCommandsList.toList)
+
     if (req.getAccess == AccessProto.AccessMode.ALLOWED) {
 
       // process the time here. On requests the time is relative, on responses it is 
@@ -59,9 +61,9 @@ class CommandAccessServiceModel
         case None => None
       }
       // Do the select on the model, given the requested list of commands
-      selectCommands(context, user, time, req.getCommandsList.toList)
+      selectCommands(context, user, time, commands)
     } else {
-      blockCommands(context, user, req.getCommandsList.toList)
+      blockCommands(context, user, commands)
     }
   }
 
@@ -77,8 +79,8 @@ class CommandAccessServiceModel
     lookup.size == 1
   }
 
-  def areAnyBlocked(commands: List[String]): Boolean = {
-    val blocked = areAnyBlockedById(CommandModel.findByNames(commands).map { _.id }.toList)
+  def areAnyBlocked(commands: List[CommandModel]): Boolean = {
+    val blocked = areAnyBlockedById(commands.map { _.id }.toList)
     !blocked.isEmpty
   }
   def areAnyBlockedById(ids: List[Long]): List[AccessModel] = {
@@ -108,32 +110,26 @@ class CommandAccessServiceModel
     }
   }
 
-  def blockCommands(context: RequestContext, user: String, commands: List[String]): AccessModel = {
-    val foundCommands = CommandModel.findByNames(commands)
-
-    if (foundCommands.size != commands.size) {
-      val notFound: Set[String] = Set.empty[String]
-      notFound.addAll(commands)
-      commands.map(notFound.remove(_))
-      throw new BadRequestException("Commands not found: " + commands)
-    }
+  def blockCommands(context: RequestContext, user: String, commands: List[CommandModel]): AccessModel = {
 
     val accEntry = create(context, new AccessModel(AccessProto.AccessMode.BLOCKED.getNumber, None, Some(user)))
-    addEntryForAll(context, accEntry, foundCommands.toList)
+    addEntryForAll(context, accEntry, commands.toList)
     accEntry
   }
 
-  def selectCommands(context: RequestContext, user: String, expireTime: Option[Long], commandsRequested: List[String]): AccessModel = {
-
+  private def findCommands(commands: List[FepCommandProto]): List[CommandModel] = {
     // just remove duplicate names from request
-    val commands = commandsRequested.distinct
+    val commandNames = commands.map { _.getName }.distinct
+    val foundCommands = CommandModel.findByNames(commandNames).toList
 
-    val cmds = CommandModel.findByNames(commands).toList
-
-    if (cmds.size != commands.size) {
-      val missing = commands.diff(cmds.map { _.entityName })
-      throw new BadRequestException("Not all commands were found: " + missing.mkString(", "))
+    if (foundCommands.size != commandNames.size) {
+      val missing = commandNames.diff(foundCommands.map { _.entityName })
+      throw new BadRequestException("Commands not found: " + missing)
     }
+    foundCommands
+  }
+
+  def selectCommands(context: RequestContext, user: String, expireTime: Option[Long], cmds: List[CommandModel]): AccessModel = {
 
     val cmdIds = cmds.map { _.id }
     val blocked = areAnyBlockedById(cmdIds)
@@ -170,27 +166,27 @@ class CommandAccessServiceModel
   }
 }
 
-trait CommandAccessConversion
+trait CommandLockConversion
     extends UniqueAndSearchQueryable[AccessProto, AccessModel] {
 
   import org.squeryl.PrimitiveTypeMode._
   import AccessProto._
-  import org.totalgrid.reef.proto.OptionalProtos._
+  import org.totalgrid.reef.client.service.proto.OptionalProtos._
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
   def getRoutingKey(req: AccessProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid ::
+    req.id.value ::
       req.access ::
       req.user :: Nil
   }
 
   def uniqueQuery(proto: AccessProto, sql: AccessModel) = {
     List(
-      proto.uid.asParam(uid => sql.id === uid.toLong))
+      proto.id.value.asParam(id => sql.id === id.toLong))
   }
 
   def searchQuery(proto: AccessProto, sql: AccessModel) = {
-    val commandsListOption = if (proto.getCommandsCount > 0) Some(proto.getCommandsList.toList) else None
+    val commandsListOption = if (proto.getCommandsCount > 0) Some(proto.getCommandsList.toList.map { _.getName }) else None
     List(
       proto.access.asParam(ac => sql.access === ac.getNumber),
       proto.user.asParam(sql.agent === Some(_)),
@@ -216,9 +212,12 @@ trait CommandAccessConversion
 
   def convertToProto(entry: AccessModel): AccessProto = {
     val b = AccessProto.newBuilder
-      .setUid(makeUid(entry))
-      .addAllCommands(entry.commands.map(cmd => cmd.entityName))
+      .setId(makeId(entry))
       .setAccess(AccessMode.valueOf(entry.access))
+
+    entry.commands.foreach { cmd =>
+      b.addCommands(FepCommandProto.newBuilder.setName(cmd.entityName).setUuid(makeUuid(cmd)))
+    }
 
     // optional sql fields
     entry.expireTime.foreach(b.setExpireTime(_))

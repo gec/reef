@@ -16,15 +16,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.simulator
+package org.totalgrid.reef.protocol.simulator
 
-import org.totalgrid.reef.proto.{ SimMapping, Model, Commands }
+import org.totalgrid.reef.client.service.proto.{ SimMapping, Model, Commands }
 
-import org.totalgrid.reef.api.protocol.api._
+import org.totalgrid.reef.protocol.api._
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.proto.SimMapping.SimulatorMapping
-import org.totalgrid.reef.proto.FEP.CommChannel
+import org.totalgrid.reef.client.service.proto.SimMapping.SimulatorMapping
+import org.totalgrid.reef.client.service.proto.FEP.CommChannel
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior
@@ -35,7 +36,6 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
   import Protocol._
 
   final override def name: String = "benchmark"
-  final override def requiresChannel = false
 
   case class PluginRecord(endpoint: String, mapping: SimulatorMapping, publisher: BatchPublisher, current: Option[SimulatorPlugin])
 
@@ -48,7 +48,8 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
     channel: String,
     files: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler = mutex.synchronized {
+    endpointPublisher: EndpointPublisher,
+    client: Client): CommandHandler = mutex.synchronized {
 
     endpoints.get(endpoint) match {
       case Some(x) =>
@@ -75,9 +76,6 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
 
   class EndpointCommandHandler(endpoint: String) extends CommandHandler {
 
-    def buildResponse(cmd: Commands.CommandRequest, status: Commands.CommandStatus) =
-      Commands.CommandResponse.newBuilder.setCorrelationId(cmd.getCorrelationId).setStatus(status).build
-
     def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher): Unit = mutex.synchronized {
       endpoints.get(endpoint) match {
         case Some(record) =>
@@ -87,7 +85,7 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
               logger.error("Benchmark protocol received command for endpoint, but no plugin was loaded for endpoint: " + endpoint)
               Commands.CommandStatus.NOT_SUPPORTED
           }
-          publisher.publish(buildResponse(cmd, status))
+          publisher.publish(status)
         case None =>
           logger.error("Benchmark protocol received command for unregistered endpoint: " + endpoint)
       }

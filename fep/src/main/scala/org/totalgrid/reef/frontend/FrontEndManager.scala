@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.app.SubscriptionHandler
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.util.Lifecycle
@@ -30,7 +30,7 @@ import org.totalgrid.reef.util.Lifecycle
 class FrontEndManager(
   client: FrontEndProviderServices,
   exe: Executor,
-  connectionContext: SubscriptionHandler[CommEndpointConnection],
+  connectionContext: SubscriptionHandler[EndpointConnection],
   appConfig: ApplicationConfig,
   protocolNames: List[String],
   retryms: Long)
@@ -54,7 +54,7 @@ class FrontEndManager(
 
     try {
       val fep = client.registerApplicationAsFrontEnd(appConfig.getUuid, protocolNames).await
-      logger.info("Registered application as FEP with uid: " + fep.getUuid.getUuid)
+      logger.info("Registered application as FEP with id: " + fep.getUuid.getValue)
       val result = client.subscribeToEndpointConnectionsForFrontEnd(fep).await
       connectionContext.setSubscription(result)
     } catch {

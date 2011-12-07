@@ -20,11 +20,11 @@ package org.totalgrid.reef.loader.helpers
 
 import scala.collection.mutable.Queue
 
-import org.totalgrid.reef.clientapi.sapi.client.rest.RestOperations
+import org.totalgrid.reef.client.sapi.client.rest.RestOperations
 import net.agileautomata.executor4s.testing.MockFuture
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
-import org.totalgrid.reef.clientapi.sapi.client._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.client.sapi.client._
 import net.agileautomata.executor4s.{ Failure, Result, Future }
 
 /**

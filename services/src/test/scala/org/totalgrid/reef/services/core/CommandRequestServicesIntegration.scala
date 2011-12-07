@@ -23,19 +23,19 @@ import org.junit.runner.RunWith
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandAccess }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection, EndpointOwnership }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest, CommandLock }
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection, EndpointOwnership }
 
-import CommandAccess._
+import CommandLock._
 
 import org.totalgrid.reef.services._
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
-import org.totalgrid.reef.proto.Model.{ CommandType, Command }
-import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Response }
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.service.SyncServiceBase
+import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command }
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
@@ -48,7 +48,7 @@ class CommandRequestServicesIntegration
     val command = new SyncService(new CommandService(modelFac.cmds), contextSource)
     val commandRequest = new SyncService(new UserCommandRequestService(modelFac.userRequests), contextSource)
     val endpointService = new SyncService(new CommunicationEndpointService(modelFac.endpoints), contextSource)
-    val access = new SyncService(new CommandAccessService(modelFac.accesses), contextSource)
+    val access = new SyncService(new CommandLockService(modelFac.accesses), contextSource)
 
     def addFepAndMeasProc() {
       addFep("fep", List("benchmark"))
@@ -64,7 +64,7 @@ class CommandRequestServicesIntegration
         owns.addCommands(c)
       }
 
-      val send = CommEndpointConfig.newBuilder()
+      val send = Endpoint.newBuilder()
         .setName("endpoint1").setProtocol("benchmark").setOwnerships(owns).build
       endpointService.put(send).expectOne()
     }
@@ -82,7 +82,7 @@ class CommandRequestServicesIntegration
 
     val endpointService = new CommunicationEndpointService(modelFac.endpoints)
 
-    val access = new CommandAccessService(modelFac.accesses)
+    val access = new CommandLockService(modelFac.accesses)
 
     val mock = new MockConnection {}
     val pool = new SessionPool(mock)
@@ -121,14 +121,13 @@ class CommandRequestServicesIntegration
   }
   */
 
-  def commandAccessSearch(names: String*) = CommandAccess.newBuilder.addAllCommands(names).build
   def commandAccess(
     name: String = "cmd01",
     mode: AccessMode = AccessMode.ALLOWED,
     time: Long = System.currentTimeMillis + 40000 /*user: String = "user01"*/ ) = {
 
-    CommandAccess.newBuilder
-      .addCommands(name)
+    CommandLock.newBuilder
+      .addCommands(Command.newBuilder.setName(name))
       .setAccess(mode)
       .setExpireTime(time)
       .build
@@ -139,7 +138,7 @@ class CommandRequestServicesIntegration
     correlationId: Option[String] = None,
     status: Option[CommandStatus] = None): UserCommandRequest = {
 
-    val c = CommandRequest.newBuilder.setName(commandName)
+    val c = CommandRequest.newBuilder.setCommand(Command.newBuilder.setName(commandName))
     correlationId.foreach(c.setCorrelationId(_))
     val b = UserCommandRequest.newBuilder
       .setCommandRequest(c)
@@ -154,7 +153,7 @@ class CommandRequestServicesIntegration
     // Send a select (access request)
     val select = commandAccess()
     val selectResult = fixture.access.put(select).expectOne()
-    val selectId = selectResult.getUid
+    val selectId = selectResult.getId
 
     // the 'remote' service that will handle the call
     val service = new SyncServiceBase[UserCommandRequest] {
@@ -165,10 +164,10 @@ class CommandRequestServicesIntegration
         Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
     }
 
-    val conn = fixture.frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build).expectOne()
+    val conn = fixture.frontEndConnection.get(EndpointConnection.newBuilder.setId("*").build).expectOne()
 
     // act like the FEP and mark the endpoint as comms_up
-    fixture.setEndpointState(conn, CommEndpointConnection.State.COMMS_UP)
+    fixture.setEndpointState(conn, EndpointConnection.State.COMMS_UP)
 
     //bind the 'proxied' service that will handle the call
     fixture.bindCommandHandler(service, conn.getRouting.getServiceRoutingKey)

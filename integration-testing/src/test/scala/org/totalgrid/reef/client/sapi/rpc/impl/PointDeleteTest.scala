@@ -25,10 +25,10 @@ import org.scalatest.junit.JUnitRunner
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderClient }
-import org.totalgrid.reef.proto.Model.{ PointType, Point }
+import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, EndpointOwnership, CommEndpointConfig }
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, EndpointOwnership, Endpoint }
 
 @RunWith(classOf[JUnitRunner])
 class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete", <div></div>) {
@@ -49,10 +49,10 @@ class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete
 
     val owner = EndpointOwnership.newBuilder.addAllPoints(names)
 
-    val putEndpoint = CommEndpointConfig.newBuilder.setName("TestEndpoint").setProtocol("null").setOwnerships(owner).build
+    val putEndpoint = Endpoint.newBuilder.setName("TestEndpoint").setProtocol("null").setOwnerships(owner).build
     val endpoint = loaderServices.addEndpoint(putEndpoint).await
 
-    var connection = client.getEndpointConnection(endpoint.getUuid).await
+    var connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await
 
     var count = 0
     while (connection.getRouting.getServiceRoutingKey == "" && count < 5) {
@@ -60,7 +60,7 @@ class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete
       Thread.sleep(100)
       count += 1
       client.enableEndpointConnection(endpoint.getUuid).await
-      connection = client.getEndpointConnection(endpoint.getUuid).await
+      connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await
     }
     connection.getRouting.getServiceRoutingKey should not equal ("")
 
@@ -74,7 +74,7 @@ class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete
     client.disableEndpointConnection(endpoint.getUuid).await
     loaderServices.delete(endpoint).await
 
-    (0 to numberOfPoints).foreach { i => Timing.time("delete: " + (i * multiplier)) { loaderServices.delete(points.get(i).toBuilder.clearLogicalNode().build).await } }
+    (0 to numberOfPoints).foreach { i => Timing.time("delete: " + (i * multiplier)) { loaderServices.delete(points.get(i).toBuilder.clearEndpoint.build).await } }
   }
 
   private def publishNMeasurements(numMeas: Int, name: String) {

@@ -18,20 +18,20 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.clientapi.sapi.service.ServiceTypeIs
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, UserCommandRequest }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, UserCommandRequest }
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Response }
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
-import org.totalgrid.reef.clientapi.{ AddressableDestination, Routable }
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.{ AddressableDestination, Routable }
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel)
@@ -49,15 +49,15 @@ class UserCommandRequestService(
 
     contextSource.transaction { context =>
 
-      val command = Command.findByNames(request.getCommandRequest.getName :: Nil).single
+      val command = Command.findByNames(request.getCommandRequest.getCommand.getName :: Nil).single
 
       val address = command.endpoint.value match {
         case Some(ep) =>
           val frontEndAssignment = ep.frontEndAssignment.value
 
-          val endpointState = CommEndpointConnection.State.valueOf(frontEndAssignment.state)
+          val endpointState = EndpointConnection.State.valueOf(frontEndAssignment.state)
 
-          if (endpointState != CommEndpointConnection.State.COMMS_UP) {
+          if (endpointState != EndpointConnection.State.COMMS_UP) {
             throw new BadRequestException("Endpoint: " + ep.entityName + " is not COMMS_UP, current state: " + endpointState)
           }
 
@@ -106,7 +106,7 @@ trait UserCommandRequestValidation extends HasCreate with HasUpdate {
 
   override protected def preCreate(context: RequestContext, proto: UserCommandRequest) = {
 
-    if (!proto.getCommandRequest.hasName)
+    if (!proto.getCommandRequest.getCommand.hasName)
       throw new BadRequestException("Request must specify command name", Envelope.Status.BAD_REQUEST)
 
     if (proto.hasStatus)

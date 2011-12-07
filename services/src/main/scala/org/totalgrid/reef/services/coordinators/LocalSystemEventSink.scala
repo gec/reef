@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.event.SystemEventSink
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.squeryl.PrimitiveTypeMode
 import org.totalgrid.reef.services.framework.RequestContextSource
@@ -30,7 +30,7 @@ class LocalSystemEventSink extends SystemEventSink with Logging {
 
   private var components: Option[(RequestContextSource, EventServiceModel)] = None
 
-  def publishSystemEvent(evt: org.totalgrid.reef.proto.Events.Event) {
+  def publishSystemEvent(evt: org.totalgrid.reef.client.service.proto.Events.Event) {
     try {
       // we need a different transaction so events are retained even if
       // we rollback the rest of the transaction because of an error

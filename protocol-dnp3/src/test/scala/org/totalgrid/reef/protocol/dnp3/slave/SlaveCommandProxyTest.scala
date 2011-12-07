@@ -24,12 +24,12 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import org.mockito.{ Mockito, Matchers }
-import org.totalgrid.reef.proto.Model.Command
-import org.totalgrid.reef.proto.Mapping._
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus, CommandAccess }
-import org.totalgrid.reef.clientapi.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.client.service.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Mapping._
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => ProtoCommandStatus, CommandLock }
+import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.sapi.rpc.CommandService
@@ -134,7 +134,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
   def getWorkingCommandService(commandName: String, _result: ProtoCommandStatus) = {
     val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
     val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
-    val lock = new FixedPromise(Success(CommandAccess.newBuilder.build))
+    val lock = new FixedPromise(Success(CommandLock.newBuilder.build))
     val result = new FixedPromise(Success(_result))
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
     Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand.await)
@@ -162,7 +162,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
   def getExecutionFailureService(commandName: String) = {
     val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
     val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
-    val lock = new FixedPromise(Success(CommandAccess.newBuilder.build))
+    val lock = new FixedPromise(Success(CommandLock.newBuilder.build))
     val failure = new FixedPromise(Failure(new BadRequestException("Can't execute command")))
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
     Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand.await)
@@ -176,7 +176,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
 
   def makeMappings(list: CommandMap*) = {
     val map = IndexMapping.newBuilder
-    map.setDeviceUid("test")
+    map.setDeviceId("test")
     list.foreach { map.addCommandmap(_) }
     map.build
   }

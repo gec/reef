@@ -20,9 +20,9 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.event.SystemEventSink
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Connection, SubscriptionHandler }
+import org.totalgrid.reef.client.sapi.client.rest.{ Connection, SubscriptionHandler }
 import org.totalgrid.reef.models.AuthPermission
 
 class ServiceDependencies(

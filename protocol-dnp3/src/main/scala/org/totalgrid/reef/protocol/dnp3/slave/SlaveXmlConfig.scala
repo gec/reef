@@ -22,10 +22,10 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.protocol.dnp3.common.XmlToProtoTranslations
 import org.totalgrid.reef.util.XMLHelper
-import org.totalgrid.reef.api.protocol.api.Protocol
+import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.protocol.dnp3.xml.Slave.SlaveConfig
-import org.totalgrid.reef.proto.Mapping.{ DataType, IndexMapping, CommandType }
-import org.totalgrid.reef.proto.Model.{ ConfigFile }
+import org.totalgrid.reef.client.service.proto.Mapping.{ DataType, IndexMapping, CommandType }
+import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile }
 import org.totalgrid.reef.protocol.dnp3.master.{ MasterXmlConfig }
 import org.totalgrid.reef.protocol.dnp3.xml.Slave.SlaveConfig.{ TimeIINTask, UnsolDefaults }
 import org.totalgrid.reef.protocol.dnp3.xml._

@@ -23,8 +23,8 @@ import java.io.PrintStream
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.loader.commons.ui.{ RequestViewer, SimpleTraversalProgressNotifier }
-import org.totalgrid.reef.clientapi.sapi.client.RequestSpy
-import org.totalgrid.reef.proto.Model.Entity
+import org.totalgrid.reef.client.sapi.client.RequestSpy
+import org.totalgrid.reef.client.service.proto.Model.Entity
 
 object ModelDeleter {
   def deleteChildren(local: LoaderServices, roots: List[String], dryRun: Boolean, stream: Option[PrintStream], batchSize: Int = 25)(additionalDelete: (EquipmentModelTraverser, ModelCollector) => Unit): Long = {
@@ -82,13 +82,13 @@ object ModelDeleter {
       // since we never look at entities when we are deleting we dont need to look them up
       val fakeEntity = Entity.newBuilder.build
 
-      local.getAllEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
+      local.getEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
       val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
-      local.getAllEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
+      local.getEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
 
-      local.getAllCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
-      local.getAllConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
-      local.getAllPoints().await.foreach { collector.addPoint(_, fakeEntity) }
+      local.getCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
+      local.getConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
+      local.getPoints().await.foreach { collector.addPoint(_, fakeEntity) }
       local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
 
       // TODO: add deleting of eventConfigurations

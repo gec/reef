@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.event
 
-import org.totalgrid.reef.proto.Utils
+import org.totalgrid.reef.client.service.proto.Utils
 import com.google.protobuf.ByteString
 import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._ // toList
@@ -49,7 +49,7 @@ import scala.collection.JavaConversions._ // toList
  */
 abstract class ValueType(val id: Int)
 object ValueType {
-  import org.totalgrid.reef.proto.Utils.Attribute.Type
+  import org.totalgrid.reef.client.service.proto.Utils.Attribute.Type
 
   case object STRING extends ValueType(Type.STRING.getNumber)
   case object LONG extends ValueType(Type.SINT64.getNumber)

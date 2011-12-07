@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import org.totalgrid.reef.proto.Measurements
+import org.totalgrid.reef.client.service.proto.Measurements
 
 import MeasSink.Meas
 

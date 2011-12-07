@@ -19,20 +19,20 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel, UserCommandModel }
-import org.totalgrid.reef.proto.Commands.CommandRequest.ValType
-import org.totalgrid.reef.proto.Model.CommandType
+import org.totalgrid.reef.client.service.proto.Commands.CommandRequest.ValType
+import org.totalgrid.reef.client.service.proto.Model.CommandType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 
 class UserCommandRequestServiceModel(
-  accessModel: CommandAccessServiceModel)
+  accessModel: CommandLockServiceModel)
     extends SquerylServiceModel[UserCommandRequest, UserCommandModel]
     with EventedServiceModel[UserCommandRequest, UserCommandModel]
     with UserCommandRequestConversion
@@ -119,7 +119,7 @@ class UserCommandRequestServiceModel(
     }
 
     issueRequest(context,
-      findCommand(req.getCommandRequest.getName),
+      findCommand(req.getCommandRequest.getCommand.getName),
       id,
       user,
       req.getTimeoutMs,
@@ -128,7 +128,7 @@ class UserCommandRequestServiceModel(
 
   override def updateFromProto(context: RequestContext, req: UserCommandRequest, existing: UserCommandModel): (UserCommandModel, Boolean) = {
     if (existing.status != CommandStatus.EXECUTING.getNumber)
-      throw new BadRequestException("Current status was not executing on update", Envelope.Status.NOT_ALLOWED)
+      throw new BadRequestException("Current status was not executing on update, already: " + CommandStatus.valueOf(existing.status), Envelope.Status.NOT_ALLOWED)
 
     update(context, existing.copy(status = req.getStatus.getNumber), existing)
   }
@@ -140,16 +140,16 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
   def getRoutingKey(req: UserCommandRequest) = ProtoRoutingKeys.generateRoutingKey {
-    req.uid ::
+    req.id.value ::
       req.user ::
-      req.commandRequest.name ::
+      req.commandRequest.command.name ::
       req.commandRequest.correlationId :: Nil
   }
 
   // Relies on implicit to combine LogicalBooleans
   def uniqueQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
-      proto.uid.asParam(sql.id === _.toLong),
+      proto.id.value.asParam(sql.id === _.toLong),
       proto.commandRequest.correlationId.asParam(sql.corrolationId === _))
   }
 
@@ -157,7 +157,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
     List(
       proto.user.map(sql.agent === _),
       proto.status.map(st => sql.status === st.getNumber),
-      proto.commandRequest.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
+      proto.commandRequest.command.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
   }
 
   def isModified(existing: UserCommandModel, updated: UserCommandModel): Boolean = {
@@ -166,7 +166,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
 
   def convertToProto(entry: UserCommandModel): UserCommandRequest = {
     UserCommandRequest.newBuilder
-      .setUid(makeUid(entry))
+      .setId(makeId(entry))
       .setUser(entry.agent)
       .setStatus(CommandStatus.valueOf(entry.status))
       .setCommandRequest(CommandRequest.parseFrom(entry.commandProto))

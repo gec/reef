@@ -21,8 +21,8 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ SubscriptionHandler, Connection }
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Connection }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.{ DependenciesRequestContext, RequestContextDependencies, ServiceDependencies }
 import org.mockito.Mockito
 

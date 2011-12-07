@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
 import scala.annotation._
 
 import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.proto.Measurements
+import org.totalgrid.reef.client.service.proto.Measurements
 import org.scalatest._
 
 @RunWith(classOf[JUnitRunner])

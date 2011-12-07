@@ -28,7 +28,7 @@ import org.totalgrid.reef.shell.proto.presentation.PointView
 class PointListCommand extends ReefCommandSupport {
 
   def doCommand() = {
-    PointView.printPointTable(services.getAllPoints.toList)
+    PointView.printPointTable(services.getPoints.toList)
   }
 }
 
@@ -44,13 +44,13 @@ class PointCommandsCommand extends ReefCommandSupport {
   def doCommand() = {
 
     import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
-    import org.totalgrid.reef.proto.Model.Entity
+    import org.totalgrid.reef.client.service.proto.Model.Entity
 
     val query = Option(pointName) match {
       case Some(entName) => Entity.newBuilder().setName(pointName).addRelations(EntityRequestBuilders.getAllFeedBackCommands).build
       case None => EntityRequestBuilders.getAllPointsAndRelatedFeedbackCommands
     }
-    var entities = services.getEntities(query).toList
+    var entities = services.searchForEntities(query).toList
 
     if (!showPointsWithoutCommands) entities = entities.filter { _.getRelationsCount > 0 }
 

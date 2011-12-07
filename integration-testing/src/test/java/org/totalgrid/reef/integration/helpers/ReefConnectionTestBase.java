@@ -21,17 +21,18 @@ package org.totalgrid.reef.integration.helpers;
 import org.junit.After;
 import org.junit.Before;
 
-import org.totalgrid.reef.clientapi.Client;
-import org.totalgrid.reef.clientapi.Connection;
-import org.totalgrid.reef.clientapi.SubscriptionBinding;
-import org.totalgrid.reef.clientapi.SubscriptionCreationListener;
-import org.totalgrid.reef.clientapi.settings.AmqpSettings;
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
+import org.totalgrid.reef.client.service.list.ReefServices;
+import org.totalgrid.reef.client.Client;
+import org.totalgrid.reef.client.Connection;
+import org.totalgrid.reef.client.SubscriptionBinding;
+import org.totalgrid.reef.client.SubscriptionCreationListener;
+import org.totalgrid.reef.client.settings.AmqpSettings;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 
-import org.totalgrid.reef.clientapi.settings.UserSettings;
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader;
-import org.totalgrid.reef.client.ReefConnectionFactory;
-import org.totalgrid.reef.client.rpc.AllScadaService;
+import org.totalgrid.reef.client.settings.UserSettings;
+import org.totalgrid.reef.client.settings.util.PropertyReader;
+import org.totalgrid.reef.client.factory.ReefConnectionFactory;
+import org.totalgrid.reef.client.service.AllScadaService;
 import org.totalgrid.reef.loader.commons.LoaderClient;
 
 import java.io.IOException;
@@ -67,7 +68,7 @@ public class ReefConnectionTestBase implements SubscriptionCreationListener
         try
         {
             AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
-            this.factory = new ReefConnectionFactory( s );
+            this.factory = new ReefConnectionFactory( s, new ReefServices() );
         }
         catch ( Exception ex )
         {
@@ -95,11 +96,11 @@ public class ReefConnectionTestBase implements SubscriptionCreationListener
         }
         else
         {
-            client = connection.login( "" );
+            client = connection.createClient( "" );
         }
         LoaderClient.prepareClient( client );
         client.addSubscriptionCreationListener( this );
-        helpers = client.getRpcInterface( AllScadaService.class );
+        helpers = client.getService( AllScadaService.class );
     }
 
     @After

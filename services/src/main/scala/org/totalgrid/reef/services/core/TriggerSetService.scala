@@ -20,11 +20,11 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models._
 
-import org.totalgrid.reef.proto.Processing.{ TriggerSet => TriggerProto }
+import org.totalgrid.reef.client.service.proto.Processing.{ TriggerSet => TriggerProto }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
@@ -48,7 +48,7 @@ trait TriggerSetConversion
   val table = ApplicationSchema.triggerSets
 
   def getRoutingKey(req: TriggerProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.point.logicalNode.uuid.uuid :: req.point.name :: Nil
+    req.point.endpoint.uuid.value :: req.point.name :: Nil
   }
 
   def uniqueQuery(proto: TriggerProto, sql: TriggerSet) = {

@@ -22,7 +22,7 @@ import org.totalgrid.reef.broker._
 import org.apache.qpid.transport._
 import scala.{ Option => ScalaOption }
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 
 final class QpidBrokerSubscription(session: Session, queue: String, connection: QpidBrokerConnection) extends BrokerSubscription with Logging {
 

@@ -21,22 +21,23 @@ package org.totalgrid.reef.protocol.dnp3.integrationtests
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.client.ReefFactory
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
+import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.loader.commons.{ LoaderClient, LoaderServices, ModelDeleter }
 import org.totalgrid.reef.loader.LoadManager
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
-import org.totalgrid.reef.clientapi.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection.State._
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.proto.Measurements.Quality.Validity
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
+import org.totalgrid.reef.client.service.list.ReefServices
 
 @RunWith(classOf[JUnitRunner])
 class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
@@ -54,7 +55,7 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     val amqp = new AmqpSettings(props)
     val user = new UserSettings(props)
 
-    factoryOption = Some(new ReefFactory(amqp))
+    factoryOption = Some(new ReefFactory(amqp, new ReefServices))
 
     val connection = factoryOption.get.connect()
     val c = connection.login(user.getUserName, user.getUserPassword).await
@@ -79,11 +80,11 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
   }
 
   test("Cycle endpoints") {
-    val endpoints = services.getAllEndpoints().await.toList
+    val endpoints = services.getEndpoints().await.toList
 
     endpoints.isEmpty should equal(false)
 
-    val result = services.subscribeToAllEndpointConnections().await
+    val result = services.subscribeToEndpointConnections().await
 
     val map = new EndpointConnectionStateMap(result)
 
@@ -140,26 +141,26 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     measList.waitFor(_.find(m => m.getDoubleVal == meas.getDoubleVal && m.getTime == meas.getTime).isDefined)
   }
 
-  class EndpointConnectionStateMap(result: SubscriptionResult[List[CommEndpointConnection], CommEndpointConnection]) {
+  class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnection], EndpointConnection]) {
 
-    private def makeEntry(e: CommEndpointConnection) = {
-      //println(e.getEndpoint.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
+    private def makeEntry(e: EndpointConnection) = {
+      //println(e.getEndpointByUuid.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
       e.getEndpoint.getUuid -> e
     }
 
     val endpointStateMap = result.getResult.map { makeEntry(_) }.toMap
     val syncVar = new SyncVar(endpointStateMap)
 
-    result.getSubscription.start(new SubscriptionEventAcceptor[CommEndpointConnection] {
-      def onEvent(event: SubscriptionEvent[CommEndpointConnection]) {
+    result.getSubscription.start(new SubscriptionEventAcceptor[EndpointConnection] {
+      def onEvent(event: SubscriptionEvent[EndpointConnection]) {
         syncVar.atomic(m => m + makeEntry(event.getValue))
       }
     })
 
-    def checkAllState(enabled: Boolean, state: CommEndpointConnection.State) {
+    def checkAllState(enabled: Boolean, state: EndpointConnection.State) {
       syncVar.waitFor(x => x.values.forall(e => e.getEnabled == enabled && e.getState == state), 20000)
     }
-    def checkState(uuid: ReefUUID, enabled: Boolean, state: CommEndpointConnection.State) {
+    def checkState(uuid: ReefUUID, enabled: Boolean, state: EndpointConnection.State) {
       syncVar.waitFor(x => x.get(uuid).map(e => e.getEnabled == enabled && e.getState == state).getOrElse(false), 20000)
     }
   }

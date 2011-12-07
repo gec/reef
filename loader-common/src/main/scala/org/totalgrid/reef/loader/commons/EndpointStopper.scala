@@ -21,10 +21,10 @@ package org.totalgrid.reef.loader.commons
 import scala.collection.JavaConversions._
 
 import java.io.PrintStream
-import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection, CommEndpointConfig }
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, Endpoint }
 
-import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 import java.util.concurrent.{ TimeUnit, LinkedBlockingDeque }
 import com.weiglewilczek.slf4s.Logging
@@ -34,14 +34,14 @@ object EndpointStopper extends Logging {
    * synchronous function that blocks until all passed in endpoints are stopped
    * TODO: use endpoint stopper before reef:unload
    */
-  def stopEndpoints(local: LoaderServices, endpoints: List[CommEndpointConfig], stream: Option[PrintStream]) {
+  def stopEndpoints(local: LoaderServices, endpoints: List[Endpoint], stream: Option[PrintStream]) {
 
     val endpointUuids = endpoints.map { e => e.getUuid -> e.getName }.toMap
 
     stream.foreach { _.println("Disabling endpoints: " + endpoints.map { _.getName }.mkString(", ")) }
 
     // then subscribe to all of the connections
-    val subResult = local.subscribeToAllEndpointConnections().await
+    val subResult = local.subscribeToEndpointConnections().await
 
     // first we disable all of the endpoints
     endpointUuids.foreach { e => local.disableEndpointConnection(e._1).await }
@@ -54,9 +54,9 @@ object EndpointStopper extends Logging {
       if (endpointUuids.size > 0) {
 
         // start the subscription, shunting all incoming values to a queue
-        val queue = new LinkedBlockingDeque[CommEndpointConnection]()
-        subResult.getSubscription.start(new SubscriptionEventAcceptor[CommEndpointConnection] {
-          def onEvent(event: SubscriptionEvent[CommEndpointConnection]) {
+        val queue = new LinkedBlockingDeque[EndpointConnection]()
+        subResult.getSubscription.start(new SubscriptionEventAcceptor[EndpointConnection] {
+          def onEvent(event: SubscriptionEvent[EndpointConnection]) {
             val conn = event.getValue
             logger.info("EndpointChange " + event.getEventType + " " + conn.getEndpoint.getName + " e: " + conn.getEnabled + " s: " + conn.getState)
             queue.push(conn)
@@ -90,8 +90,8 @@ object EndpointStopper extends Logging {
     }
   }
 
-  private def filterEndpoints(stillRunningEndpoints: Map[ReefUUID, String], connection: CommEndpointConnection) = {
-    if (connection.getState != CommEndpointConnection.State.COMMS_UP && !connection.hasFrontEnd) {
+  private def filterEndpoints(stillRunningEndpoints: Map[ReefUUID, String], connection: EndpointConnection) = {
+    if (connection.getState != EndpointConnection.State.COMMS_UP && !connection.hasFrontEnd) {
       stillRunningEndpoints - connection.getEndpoint.getUuid
     } else {
       stillRunningEndpoints

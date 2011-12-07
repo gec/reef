@@ -22,10 +22,10 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.services.ConnectionFixture
 
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.proto.Events.{ EventList => EventListProto, EventSelect }
-import org.totalgrid.reef.proto.Alarms.{ EventConfig => EventConfigProto }
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.client.service.proto.Events.{ EventList => EventListProto, EventSelect }
+import org.totalgrid.reef.client.service.proto.Alarms.{ EventConfig => EventConfigProto }
+import org.totalgrid.reef.client.exception.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryIntegrationTests extends EventIntegrationTestsBase {

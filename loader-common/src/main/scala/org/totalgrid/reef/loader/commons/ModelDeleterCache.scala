@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.clientapi.sapi.client.rest.BatchOperations
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
 import com.google.protobuf.GeneratedMessage
 
 class EquipmentRemoverCache extends ModelDeleterCache
@@ -33,7 +33,7 @@ trait ModelDeleterCache extends ModelCollector {
 
   var points = List.empty[Point]
   var commands = List.empty[Command]
-  var endpoints = List.empty[CommEndpointConfig]
+  var endpoints = List.empty[Endpoint]
   var channel = List.empty[CommChannel]
   var equipment = List.empty[Entity]
   var configFiles = List.empty[ConfigFile]
@@ -41,12 +41,12 @@ trait ModelDeleterCache extends ModelCollector {
   def addPoint(obj: Point, entity: Entity) = {
     // need to clear off the logicalNode because delete uses searchQuery
     // TODO: fix services so they only first do unique query then search query on delete
-    points ::= obj.toBuilder.clearLogicalNode.build
+    points ::= obj.toBuilder.clearEndpoint.build
   }
   def addCommand(obj: Command, entity: Entity) = {
-    commands ::= obj.toBuilder.clearLogicalNode.build
+    commands ::= obj.toBuilder.clearEndpoint.build
   }
-  def addEndpoint(obj: CommEndpointConfig, entity: Entity) = {
+  def addEndpoint(obj: Endpoint, entity: Entity) = {
     endpoints ::= obj
   }
   def addChannel(obj: CommChannel, entity: Entity) = {

@@ -19,20 +19,20 @@
 package org.totalgrid.reef.services.core.util
 
 import java.util.UUID
-import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.OptionalProtos.OptModelReefUUID
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.OptionalProtos.OptModelReefUUID
 
 object UUIDConversions {
 
   implicit def convertReefUUIDToUUID(optUUID: Option[ReefUUID]) = {
-    optUUID.map { ru => UUID.fromString(ru.getUuid) }
+    optUUID.map { ru => UUID.fromString(ru.getValue) }
   }
 
   implicit def convertOptReefUUIDToUUID(optUUID: OptModelReefUUID) = {
-    optUUID.uuid.map { ru => UUID.fromString(ru) }
+    optUUID.value.map { ru => UUID.fromString(ru) }
   }
 
   implicit def convertUUIDtoReefUUID(uuid: UUID) = {
-    ReefUUID.newBuilder.setUuid(uuid.toString).build
+    ReefUUID.newBuilder.setValue(uuid.toString).build
   }
 }

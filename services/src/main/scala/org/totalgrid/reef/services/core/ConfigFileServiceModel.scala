@@ -21,16 +21,16 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import SquerylModel._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ ConfigFile => ConfigProto }
+import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile => ConfigProto }
 import java.util.UUID
 
 class ConfigFileService(protected val model: ConfigFileServiceModel)
@@ -124,7 +124,7 @@ class ConfigFileServiceModel
 trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigFile] {
 
   def getRoutingKey(configFileProto: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
-    configFileProto.uuid.uuid :: configFileProto.name :: configFileProto.mimeType :: Nil
+    configFileProto.uuid.value :: configFileProto.name :: configFileProto.mimeType :: Nil
   }
 
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
@@ -139,7 +139,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
   }
 
   def uniqueQuery(proto: ConfigProto, sql: ConfigFile) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("ConfigurationFile")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("ConfigurationFile")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }

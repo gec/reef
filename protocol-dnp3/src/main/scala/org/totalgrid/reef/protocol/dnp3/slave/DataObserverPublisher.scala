@@ -21,9 +21,9 @@ package org.totalgrid.reef.protocol.dnp3.slave
 import scala.collection.JavaConversions._
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.proto.Measurements.{ Measurement }
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement }
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.proto.Mapping.{ DataType, IndexMapping, MeasMap }
+import org.totalgrid.reef.client.service.proto.Mapping.{ DataType, IndexMapping, MeasMap }
 
 class DataObserverPublisher(mappingProto: IndexMapping, dataObserver: IDataObserver) extends Logging {
 

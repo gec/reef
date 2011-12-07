@@ -16,18 +16,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.simulator
+package org.totalgrid.reef.protocol.simulator
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.{ Commands, SimMapping, Measurements }
+import org.totalgrid.reef.client.service.proto.{ Commands, SimMapping, Measurements }
 import org.totalgrid.reef.simulator.example.ExampleSimulatorFactory
 import net.agileautomata.executor4s.testing.MockExecutor
-import org.totalgrid.reef.api.protocol.api.Publisher
-import org.totalgrid.reef.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.protocol.api.Publisher
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.Model.Command
 
 @RunWith(classOf[JUnitRunner])
 class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
@@ -61,7 +62,7 @@ class ExampleSimulatorTest extends FunSuite with ShouldMatchers {
     SimMapping.CommandSim.newBuilder.setName(name).setResponseStatus(Commands.CommandStatus.SUCCESS)
 
   def buildCommand(name: String) =
-    Commands.CommandRequest.newBuilder.setType(Commands.CommandRequest.ValType.NONE).setName(name).build()
+    Commands.CommandRequest.newBuilder.setType(Commands.CommandRequest.ValType.NONE).setCommand(Command.newBuilder.setName(name)).build()
 
   test("Correctly identifies endpoint") {
     ExampleSimulatorFactory.getSimLevel("test", simpleMapping("breaker.kW_a")) should equal(1)

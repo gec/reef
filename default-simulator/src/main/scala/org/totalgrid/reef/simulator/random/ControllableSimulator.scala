@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.simulator.random
 
-import org.totalgrid.reef.api.protocol.simulator.SimulatorPlugin
+import org.totalgrid.reef.protocol.simulator.SimulatorPlugin
 
 trait ControllableSimulator extends SimulatorPlugin {
   def getRepeatDelay: Long

@@ -20,25 +20,25 @@ package org.totalgrid.reef.frontend
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConfig, CommEndpointConnection }
+import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
 
 class EndpointConnectionPopulatorAction(client: FrontEndProviderServices) {
   /**
    * takes a partially populated endpoint connection and makes requests to the services to fill in the
    * partial fields (For example, we don't send the full configFile text for each endpoint)
    */
-  def populate(conn: CommEndpointConnection) = {
+  def populate(conn: EndpointConnection) = {
 
-    val cp = CommEndpointConnection.newBuilder(conn)
+    val cp = EndpointConnection.newBuilder(conn)
 
     val endpointUuid = conn.getEndpoint.getUuid
 
-    val ep = client.getEndpoint(endpointUuid).await
-    val endpoint = CommEndpointConfig.newBuilder(ep)
+    val ep = client.getEndpointByUuid(endpointUuid).await
+    val endpoint = Endpoint.newBuilder(ep)
 
-    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getConfigFileByUid(cf.getUuid).await))
+    ep.getConfigFilesList.toList.foreach(cf => endpoint.addConfigFiles(client.getConfigFileByUuid(cf.getUuid).await))
 
-    if (ep.hasChannel) endpoint.setChannel(client.getCommunicationChannel(ep.getChannel.getUuid).await)
+    if (ep.hasChannel) endpoint.setChannel(client.getCommunicationChannelByUuid(ep.getChannel.getUuid).await)
     cp.setEndpoint(endpoint).build
   }
 }

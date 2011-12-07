@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.measurementstore.squeryl
 
-import org.totalgrid.reef.proto.Measurements.{ Measurement => Meas }
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 
 import org.totalgrid.reef.measurementstore.MeasurementStore
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.clientapi.exceptions.InternalServiceException
+import org.totalgrid.reef.client.exception.InternalServiceException
 
 /**
  * implementation of measurement store that uses SqlMeasurementStoreOperations functions,

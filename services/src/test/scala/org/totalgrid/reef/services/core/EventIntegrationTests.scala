@@ -22,18 +22,18 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.services.ConnectionFixture
-import org.totalgrid.reef.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
-import org.totalgrid.reef.proto.Events.{ Event => EventProto, EventList => EventListProto }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
+import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto, EventList => EventListProto }
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
+import org.totalgrid.reef.client.service.proto.Alarms.{ Alarm => AlarmProto, EventConfig => EventConfigProto, AlarmList => AlarmListProto }
 
-import org.totalgrid.reef.proto.Utils.{ AttributeList, Attribute }
+import org.totalgrid.reef.client.service.proto.Utils.{ AttributeList, Attribute }
 
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._

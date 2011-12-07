@@ -19,8 +19,8 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.event.SystemEventSink
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ SubscriptionHandler, Client }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Client }
 import org.totalgrid.reef.models.AuthPermission
 
 /**

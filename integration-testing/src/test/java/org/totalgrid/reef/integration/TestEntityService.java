@@ -23,12 +23,12 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.totalgrid.reef.client.rpc.entities.EntityRelation;
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException;
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.client.rpc.EntityService;
-import org.totalgrid.reef.client.rpc.PointService;
-import org.totalgrid.reef.proto.Model.*;
+import org.totalgrid.reef.client.service.entity.EntityRelation;
+import org.totalgrid.reef.client.exception.BadRequestException;
+import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.service.EntityService;
+import org.totalgrid.reef.client.service.PointService;
+import org.totalgrid.reef.client.service.proto.Model.*;
 
 import java.util.*;
 
@@ -82,7 +82,7 @@ public class TestEntityService extends ReefConnectionTestBase
     public void getAllEntities() throws ReefServiceException
     {
         EntityService es = helpers;
-        List<Entity> list = es.getAllEntitiesWithType( "*" );
+        List<Entity> list = es.getEntitiesWithType( "*" );
         assertTrue( list.size() > 0 ); // the number here is arbitrary
 
     }
@@ -95,7 +95,7 @@ public class TestEntityService extends ReefConnectionTestBase
     public void getSubstationEntities() throws ReefServiceException
     {
         EntityService es = helpers;
-        List<Entity> list = es.getAllEntitiesWithType( "EquipmentGroup" );
+        List<Entity> list = es.getEntitiesWithType( "EquipmentGroup" );
         assertTrue( 2 <= list.size() );
         for ( Entity e : list )
         {
@@ -112,7 +112,7 @@ public class TestEntityService extends ReefConnectionTestBase
     {
         EntityService es = helpers;
 
-        List<Entity> list = es.getAllEntitiesWithTypes( Arrays.asList( "bkrStatus" ) );
+        List<Entity> list = es.getEntitiesWithTypes( Arrays.asList( "bkrStatus" ) );
         assertTrue( 2 <= list.size() );
 
         for ( Entity e : list )
@@ -130,7 +130,7 @@ public class TestEntityService extends ReefConnectionTestBase
     {
         EntityService es = helpers;
 
-        List<Entity> list = es.getAllEntitiesWithTypes( Arrays.asList( "Setpoint" ) );
+        List<Entity> list = es.getEntitiesWithTypes( Arrays.asList( "Setpoint" ) );
         assertTrue( 2 <= list.size() );
 
         for ( Entity e : list )
@@ -149,8 +149,8 @@ public class TestEntityService extends ReefConnectionTestBase
         PointService ps = helpers;
         EntityService es = helpers;
 
-        List<Point> points = ps.getAllPoints();
-        List<Entity> point_entities = es.getAllEntitiesWithType( "Point" );
+        List<Point> points = ps.getPoints();
+        List<Entity> point_entities = es.getEntitiesWithType( "Point" );
 
         assertEquals( points.size(), point_entities.size() ); // check that they have the same size
         Map<String, Point> pMap = getPointMap( points );
@@ -173,8 +173,8 @@ public class TestEntityService extends ReefConnectionTestBase
         PointService ps = helpers;
         EntityService es = helpers;
 
-        List<Point> points = ps.getAllPoints();
-        List<Entity> point_entities = es.getAllEntitiesWithType( "Point" );
+        List<Point> points = ps.getPoints();
+        List<Entity> point_entities = es.getEntitiesWithType( "Point" );
 
         assertEquals( points.size(), point_entities.size() ); // check that they have the same size
         Map<String, Point> pMap = getPointMap( points );
@@ -278,7 +278,7 @@ public class TestEntityService extends ReefConnectionTestBase
     {
         EntityService es = helpers;
 
-        Entity substation = es.getAllEntitiesWithType( "EquipmentGroup" ).get( 0 );
+        Entity substation = es.getEntitiesWithType( "EquipmentGroup" ).get( 0 );
 
         List<Entity> entities = es.getEntityRelatedChildrenOfType( substation.getUuid(), "owns", "Equipment" );
 

@@ -21,11 +21,11 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.PointRequestBuilders
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.clientapi.SubscriptionEvent
+import org.totalgrid.reef.client.SubscriptionEvent
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ClientSessionSuite }
 import net.agileautomata.commons.testing.SynchronizedList

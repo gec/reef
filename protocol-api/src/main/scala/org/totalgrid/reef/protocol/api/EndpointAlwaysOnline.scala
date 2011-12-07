@@ -16,10 +16,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.api.protocol.api
+package org.totalgrid.reef.protocol.api
 
-import org.totalgrid.reef.proto.{ Model, FEP }
+import org.totalgrid.reef.client.service.proto.{ Model, FEP }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 trait EndpointAlwaysOnline extends Protocol with Logging {
 
@@ -32,18 +33,19 @@ trait EndpointAlwaysOnline extends Protocol with Logging {
     channel: String,
     config: List[Model.ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): CommandHandler = {
+    endpointPublisher: EndpointPublisher,
+    client: Client): CommandHandler = {
 
-    val ret = super.addEndpoint(endpoint, channel, config, batchPublisher, endpointPublisher)
+    val ret = super.addEndpoint(endpoint, channel, config, batchPublisher, endpointPublisher, client)
     endpointMap += endpoint -> endpointPublisher
-    endpointPublisher.publish(FEP.CommEndpointConnection.State.COMMS_UP)
+    endpointPublisher.publish(FEP.EndpointConnection.State.COMMS_UP)
     ret
   }
 
   abstract override def removeEndpoint(endpoint: String): Unit = {
     super.removeEndpoint(endpoint)
     endpointMap.remove(endpoint) match {
-      case Some(x) => x.publish(FEP.CommEndpointConnection.State.COMMS_DOWN)
+      case Some(x) => x.publish(FEP.EndpointConnection.State.COMMS_DOWN)
       case None => logger.error("Referenced endpoint not in map: " + endpoint)
     }
   }

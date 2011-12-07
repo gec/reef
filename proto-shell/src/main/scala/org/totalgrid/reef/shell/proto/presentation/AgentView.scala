@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Auth._
+import org.totalgrid.reef.client.service.proto.Auth._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.util.Table
@@ -33,7 +33,7 @@ object AgentView {
   }
 
   def agentRow(a: Agent) = {
-    a.getUuid.getUuid :: a.getName :: a.getPermissionSetsList.toList.map { _.getName }.mkString(",") :: Nil
+    a.getUuid.getValue :: a.getName :: a.getPermissionSetsList.toList.map { _.getName }.mkString(",") :: Nil
   }
 
   def printPermissionSets(permissions: List[PermissionSet]) = {
@@ -48,6 +48,6 @@ object AgentView {
     val permissions = a.getPermissionsList.toList
     val allows = permissions.filter(_.getAllow == true).map { p => p.getVerb + "," + p.getResource }
     val denies = permissions.filter(_.getAllow == false).map { p => p.getVerb + "," + p.getResource }
-    a.getUuid.getUuid :: a.getName :: allows.mkString(";") :: denies.mkString(";") :: Nil
+    a.getUuid.getValue :: a.getName :: allows.mkString(";") :: denies.mkString(";") :: Nil
   }
 }

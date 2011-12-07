@@ -20,13 +20,13 @@ package org.totalgrid.reef.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Model.Command
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.proto.Mapping.{ CommandMap, CommandType => ProtoCommandType, IndexMapping }
+import org.totalgrid.reef.client.service.proto.Mapping.{ CommandMap, CommandType => ProtoCommandType, IndexMapping }
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.proto.Commands.{ CommandStatus => ProtoCommandStatus }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => ProtoCommandStatus }
 import org.totalgrid.reef.protocol.dnp3.master.DNPTranslator
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.sapi.rpc.CommandService
 

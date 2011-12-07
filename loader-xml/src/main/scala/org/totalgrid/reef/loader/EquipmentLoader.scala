@@ -22,9 +22,9 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
-import org.totalgrid.reef.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
+import org.totalgrid.reef.client.service.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
+import org.totalgrid.reef.client.service.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
 import org.totalgrid.reef.loader.equipment._
 
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
@@ -207,7 +207,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
    * Put the point and pointEntity and setup the owns relationship.
    * Return the pointEntity
    *
-   * TODO: Handle exceptions from invalid name references (ex: control)
+   * TODO: Handle exception from invalid name references (ex: control)
    */
   def processPointType(pointType: PointType, equipmentEntity: Entity, childPrefix: Option[String], actionModel: HashMap[String, ActionSet]): Entity = {
     import ProtoUtils._

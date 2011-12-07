@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Application._
+import org.totalgrid.reef.client.service.proto.Measurements._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.Application._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
@@ -31,19 +31,19 @@ import collection.JavaConversions._
 import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.sapi._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.sapi._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService }
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.clientapi.sapi.service.SyncServiceBase
-import org.totalgrid.reef.proto.Events
-import org.totalgrid.reef.clientapi.sapi.client.rest.{ Client, Connection }
-import org.totalgrid.reef.clientapi.sapi.client.{ Event, BasicRequestHeaders }
-import org.totalgrid.reef.proto.Commands.UserCommandRequest
-import org.totalgrid.reef.clientapi.AddressableDestination
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.sapi.service.SyncServiceBase
+import org.totalgrid.reef.client.service.proto.Events
+import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.sapi.client.{ Event, BasicRequestHeaders }
+import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest
+import org.totalgrid.reef.client.AddressableDestination
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
 
@@ -82,7 +82,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     def onMeasProcAssign(event: Event[MeasurementProcessingConnection]): Unit = {
 
       val measProcAssign = event.value
-      if (event.event != Envelope.Event.ADDED) return
+      if (event.event != Envelope.SubscriptionEventType.ADDED) return
 
       val measProc = new MeasBatchProcessor {
         def process(m: MeasurementBatch) {
@@ -97,7 +97,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
       amqp.bindService(measBatchService, client, destination, false)
 
-      logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " uid " + measProcAssign.getUid }
+      logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " id " + measProcAssign.getId }
 
       measProcConnection.put(measProcAssign.toBuilder.setReadyTime(System.currentTimeMillis).build)
     }
@@ -164,27 +164,27 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
       val conns = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setMeasProc(meas).build, env).expectMany()
 
-      conns.foreach(c => mockMeas.onMeasProcAssign(Event(Envelope.Event.ADDED, c)))
+      conns.foreach(c => mockMeas.onMeasProcAssign(Event(Envelope.SubscriptionEventType.ADDED, c)))
 
       measProcMap += (name -> mockMeas)
 
       meas
     }
 
-    def addDevice(name: String, pname: String = "test_point"): CommEndpointConfig = {
-      val send = CommEndpointConfig.newBuilder.setName(name).setProtocol("benchmark")
+    def addDevice(name: String, pname: String = "test_point"): Endpoint = {
+      val send = Endpoint.newBuilder.setName(name).setProtocol("benchmark")
       addEndpointPointsAndCommands(send, List(name + "." + pname), List(name + ".test_commands"))
     }
 
-    def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None, portName: Option[String] = None): CommEndpointConfig = {
+    def addDnp3Device(name: String, network: Option[String] = Some("any"), location: Option[String] = None, portName: Option[String] = None): Endpoint = {
       val netPort = network.map { net => CommChannel.newBuilder.setName(portName.getOrElse(name + "-port")).setIp(IpPort.newBuilder.setNetwork(net).setAddress("localhost").setPort(1200)).build }
       val locPort = location.map { loc => CommChannel.newBuilder.setName(portName.getOrElse(name + "-serial")).setSerial(SerialPort.newBuilder.setLocation(loc).setPortName("COM1")).build }
       val port = portService.put(netPort.getOrElse(locPort.get)).expectOne()
-      val send = CommEndpointConfig.newBuilder.setName(name).setProtocol("dnp3").setChannel(port)
+      val send = Endpoint.newBuilder.setName(name).setProtocol("dnp3").setChannel(port)
       addEndpointPointsAndCommands(send, List(name + ".test_point"), List(name + ".test_commands"))
     }
 
-    def addEndpointPointsAndCommands(ce: CommEndpointConfig.Builder, pointNames: List[String], commandNames: List[String]) = {
+    def addEndpointPointsAndCommands(ce: Endpoint.Builder, pointNames: List[String], commandNames: List[String]) = {
       val owns = EndpointOwnership.newBuilder
       pointNames.foreach { pname =>
         owns.addPoints(pname)
@@ -223,45 +223,45 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     def listenForMeasurements(measProcName: String) = measProcMap.get(measProcName).get.mb
 
-    def checkFeps(fep: CommEndpointConnection, online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit =
-      checkFeps(List(fep), online, frontEndUid, hasServiceRouting)
+    def checkFeps(fep: EndpointConnection, online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit =
+      checkFeps(List(fep), online, frontEndId, hasServiceRouting)
 
-    def checkFeps(feps: List[CommEndpointConnection], online: Boolean, frontEndUid: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
+    def checkFeps(feps: List[EndpointConnection], online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
-      //feps.forall { f => f.getState == CommEndpointConnection.State.COMMS_UP } should equal(true)
-      feps.forall { f => f.hasFrontEnd == frontEndUid.isDefined && (frontEndUid.isEmpty || frontEndUid.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
+      //feps.forall { f => f.getState == EndpointConnection.State.COMMS_UP } should equal(true)
+      feps.forall { f => f.hasFrontEnd == frontEndId.isDefined && (frontEndId.isEmpty || frontEndId.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
       //feps.forall { f => f.hasFrontEnd == hasFrontEnd } should equal(true)
       feps.forall { f => f.hasRouting == hasServiceRouting } should equal(true)
     }
 
-    def checkMeasProcs(procs: List[MeasurementProcessingConnection], measProcUid: Option[ApplicationConfig], serviceRouting: Boolean) {
+    def checkMeasProcs(procs: List[MeasurementProcessingConnection], measProcId: Option[ApplicationConfig], serviceRouting: Boolean) {
       procs.forall { f => f.hasLogicalNode == true } should equal(true)
-      procs.forall { f => f.hasMeasProc == measProcUid.isDefined && (measProcUid.isEmpty || measProcUid.get.getUuid == f.getMeasProc.getUuid) } should equal(true)
+      procs.forall { f => f.hasMeasProc == measProcId.isDefined && (measProcId.isEmpty || measProcId.get.getUuid == f.getMeasProc.getUuid) } should equal(true)
       procs.forall { f => f.hasRouting == serviceRouting } should equal(true)
     }
 
-    def checkAssignments(num: Int, fepFrontEndUid: Option[FrontEndProcessor], measProcUid: Option[ApplicationConfig]) {
-      val feps = frontEndConnection.get(CommEndpointConnection.newBuilder.setUid("*").build).expectMany(num)
-      val procs = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setUid("*").build).expectMany(num)
+    def checkAssignments(num: Int, fepFrontEndId: Option[FrontEndProcessor], measProcId: Option[ApplicationConfig]) {
+      val feps = frontEndConnection.get(EndpointConnection.newBuilder.setId("*").build).expectMany(num)
+      val procs = measProcConnection.get(MeasurementProcessingConnection.newBuilder.setId("*").build).expectMany(num)
 
-      checkFeps(feps, false, fepFrontEndUid, measProcUid.isDefined)
-      checkMeasProcs(procs, measProcUid, measProcUid.isDefined)
+      checkFeps(feps, false, fepFrontEndId, measProcId.isDefined)
+      checkMeasProcs(procs, measProcId, measProcId.isDefined)
     }
 
     def subscribeFepAssignements(expected: Int, fep: FrontEndProcessor) = {
-      val (updates, env) = getEventQueueWithCode(client, Descriptors.commEndpointConnection)
-      frontEndConnection.get(CommEndpointConnection.newBuilder.setFrontEnd(fep).build, env).expectMany(expected)
+      val (updates, env) = getEventQueueWithCode(client, Descriptors.endpointConnection)
+      frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fep).build, env).expectMany(expected)
       updates.size should equal(0)
       updates
     }
 
-    def setEndpointEnabled(ce: CommEndpointConnection, enabled: Boolean) = {
+    def setEndpointEnabled(ce: EndpointConnection, enabled: Boolean) = {
       val ret = frontEndConnection.put(ce.toBuilder.setEnabled(enabled).build, headers).expectOne()
       ret.getEnabled should equal(enabled)
       ret
     }
 
-    def setEndpointState(ce: CommEndpointConnection, state: CommEndpointConnection.State) = {
+    def setEndpointState(ce: EndpointConnection, state: EndpointConnection.State) = {
       val ret = frontEndConnection.put(ce.toBuilder.setState(state).build, headers).expectOne()
       ret.getState should equal(state)
       ret

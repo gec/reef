@@ -20,11 +20,18 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.test.BlockingQueue
 
-import org.totalgrid.reef.clientapi.sapi.client.{ BasicRequestHeaders, Event }
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Event }
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 
 object ServiceResponseTestingHelpers {
+
+  private def makeUuid(str: String) = ReefUUID.newBuilder.setValue(str).build
+  implicit def makeUuidFromString(str: String): ReefUUID = makeUuid(str)
+
+  private def makeId(str: String) = ReefID.newBuilder.setValue(str).build
+  implicit def makeIdFromString(str: String): ReefID = makeId(str)
 
   def getEventQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[A], BasicRequestHeaders) = {
 

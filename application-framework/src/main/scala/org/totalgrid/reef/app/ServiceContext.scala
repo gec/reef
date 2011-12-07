@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.{ SubscriptionResult, SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.client.{ SubscriptionResult, SubscriptionEvent, SubscriptionEventAcceptor }
 
 object ServiceContext {
   def attachToServiceContext[T <: List[U], U](result: SubscriptionResult[T, U], context: SubscriptionDataHandler[U]): Cancelable = {
@@ -68,10 +68,10 @@ trait ServiceContext[A] extends SubscriptionDataHandler[A] {
     subscribed(result)
   }
 
-  def handleEvent(event: Envelope.Event, result: A) = event match {
-    case Envelope.Event.ADDED => add(result)
-    case Envelope.Event.MODIFIED => modify(result)
-    case Envelope.Event.REMOVED => remove(result)
+  def handleEvent(event: SubscriptionEventType, result: A) = event match {
+    case SubscriptionEventType.ADDED => add(result)
+    case SubscriptionEventType.MODIFIED => modify(result)
+    case SubscriptionEventType.REMOVED => remove(result)
   }
 
 }
@@ -79,5 +79,5 @@ trait ServiceContext[A] extends SubscriptionDataHandler[A] {
 trait SubscriptionDataHandler[A] {
   def handleResponse(result: List[A])
 
-  def handleEvent(event: Envelope.Event, result: A)
+  def handleEvent(event: SubscriptionEventType, result: A)
 }

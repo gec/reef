@@ -22,15 +22,15 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Measurements.Measurement
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementRequestBuilders
 
 import org.totalgrid.reef.benchmarks.measurements.MeasurementRoundtripTimer
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 
 import org.totalgrid.reef.util.{ SyncVar, Timing }
-import org.totalgrid.reef.clientapi._
+import org.totalgrid.reef.client._
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchTest
@@ -78,7 +78,7 @@ class MeasurementBatchTest
 
     val points = names.map { client.getPointByName(_).await }
 
-    val connection = client.getEndpointConnection(points.head.getLogicalNode.getUuid).await
+    val connection = client.getEndpointConnectionByUuid(points.head.getEndpoint.getUuid).await
 
     val sub = client.subscribeToMeasurementsByNames(names).await
     var originals = sub.getResult

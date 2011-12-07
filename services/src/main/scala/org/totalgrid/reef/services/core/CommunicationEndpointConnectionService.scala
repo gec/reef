@@ -18,25 +18,25 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.FEP.{ CommEndpointConnection => ConnProto }
-import org.totalgrid.reef.proto.FEP._
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection => ConnProto }
+import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndAssignment, CommunicationEndpoint, ApplicationInstance, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Descriptors
 import ServiceBehaviors._
-import org.totalgrid.reef.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class CommunicationEndpointConnectionService(protected val model: CommunicationEndpointConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]
@@ -46,7 +46,7 @@ class CommunicationEndpointConnectionService(protected val model: CommunicationE
     with PostPartialUpdate
     with SubscribeEnabled {
 
-  override val descriptor = Descriptors.commEndpointConnection
+  override val descriptor = Descriptors.endpointConnection
 
   // we will manually merge by checking to see what fields are set and using exclusive acccess blocks
   override def merge(context: RequestContext, req: ConnProto, current: FrontEndAssignment) = req
@@ -116,7 +116,7 @@ class CommunicationEndpointConnectionServiceModel
   }
 
   override def postUpdate(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) {
-    logger.info("CommEndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " uid " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
+    logger.info("EndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " id " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
     coordinator.onFepConnectionChange(context, sql, existing)
   }
 }
@@ -129,7 +129,7 @@ trait CommunicationEndpointConnectionConversion
   val table = ApplicationSchema.frontEndAssignments
 
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.frontEnd.uuid.uuid :: req.uid :: Nil
+    req.frontEnd.uuid.value :: req.id.value :: Nil
   }
 
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {
@@ -140,7 +140,7 @@ trait CommunicationEndpointConnectionConversion
   }
 
   def uniqueQuery(proto: ConnProto, sql: FrontEndAssignment) = {
-    proto.uid.asParam(sql.id === _.toLong) ::
+    proto.id.value.asParam(sql.id === _.toLong) ::
       proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(endpoint, { _.id })) ::
       Nil
   }
@@ -157,7 +157,7 @@ trait CommunicationEndpointConnectionConversion
 
   def convertToProto(entry: FrontEndAssignment): ConnProto = {
 
-    val b = ConnProto.newBuilder.setUid(makeUid(entry))
+    val b = ConnProto.newBuilder.setId(makeId(entry))
 
     entry.application.value.foreach(app => b.setFrontEnd(FrontEndProcessor.newBuilder.setUuid(makeUuid(app)).setAppConfig(ApplicationConfig.newBuilder.setInstanceName(app.instanceName))))
     entry.endpoint.value.foreach(endpoint => b.setEndpoint(makeSparseEndpointProto(endpoint)))
@@ -175,7 +175,7 @@ trait CommunicationEndpointConnectionConversion
   // we add some interesting data about the endpoint in the connection proto but we dont want to
   // include the list of all points/commands in these communication related protos
   private def makeSparseEndpointProto(endpoint: CommunicationEndpoint) = {
-    val b = CommEndpointConfig.newBuilder
+    val b = Endpoint.newBuilder
       .setUuid(makeUuid(endpoint.entity.value))
       .setName(endpoint.entity.value.name)
       .setProtocol(endpoint.protocol)

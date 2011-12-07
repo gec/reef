@@ -18,18 +18,18 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
-import org.totalgrid.reef.proto.FEP.FrontEndProcessor
-import org.totalgrid.reef.proto.Auth.{ AuthToken, Agent }
+import org.totalgrid.reef.client.service.proto.FEP.FrontEndProcessor
+import org.totalgrid.reef.client.service.proto.Auth.{ AuthToken, Agent }
 
 import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
 import org.totalgrid.reef.services.framework.RequestContextSourceWithHeaders
-import org.totalgrid.reef.clientapi.settings.{ UserSettings, NodeSettings }
-import org.totalgrid.reef.clientapi.sapi.client.rest.Connection
+import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.ApplicationConfigBuilders
 import org.totalgrid.reef.services.core.{ ModelFactories, ApplicationConfigService, AuthTokenService, FrontEndProcessorService }
-import org.totalgrid.reef.client.sapi.ReefServicesList
+import org.totalgrid.reef.client.service.list.ReefServicesList
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 
@@ -48,8 +48,9 @@ object ServiceBootstrap {
    * during bootstrap so we correctly publish the "someone logged on" events
    */
   def defineEventExchanges(connection: Connection) {
-    ReefServicesList.getServicesList.foreach { serviceInfo =>
-      connection.declareEventExchange(serviceInfo.descriptor.getKlass)
+    import scala.collection.JavaConversions._
+    ReefServicesList.getServicesList.toList.foreach { serviceInfo =>
+      connection.declareEventExchange(serviceInfo.getDescriptor.getKlass)
     }
   }
 

@@ -21,14 +21,14 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.clientapi.proto.Envelope.Status
+import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.proto.Model.{ ReefUUID, ConfigFile, Entity }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, ConfigFile, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.services.framework.ProtoSerializer.convertStringToByteString
 
 @RunWith(classOf[JUnitRunner])
@@ -77,7 +77,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     s.put(configFile3).expectOne(Status.CREATED)
     s.put(configFile4).expectOne(Status.CREATED)
 
-    s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build).expectMany(4)
+    s.get(ConfigFile.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).expectMany(4)
     s.get(ConfigFile.newBuilder.setMimeType("text").build).expectMany(2)
     s.get(ConfigFile.newBuilder.setMimeType("html").build).expectMany(2)
     s.get(ConfigFile.newBuilder.setMimeType("xml").build).expectNone()
@@ -111,7 +111,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
 
     val cf = s.put(makeConfigFile("text", "blah", Some(node1))).expectOne(Status.CREATED)
 
-    cf.getName should equal(cf.getUuid.getUuid)
+    cf.getName should equal(cf.getUuid.getValue)
 
     s.put(makeConfigFile("text", "blah", Some(node1))).expectOne(Status.CREATED)
 

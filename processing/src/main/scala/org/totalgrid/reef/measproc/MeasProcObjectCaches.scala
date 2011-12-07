@@ -19,7 +19,7 @@
 package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.persistence.ObjectCache
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 case class MeasProcObjectCaches(
   measCache: ObjectCache[Measurement],

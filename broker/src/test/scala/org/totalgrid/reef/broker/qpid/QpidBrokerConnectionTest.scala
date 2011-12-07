@@ -25,9 +25,9 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.broker._
 import net.agileautomata.commons.testing._
-import org.totalgrid.reef.clientapi.settings.AmqpSettings
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader
-import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
+import org.totalgrid.reef.client.settings.AmqpSettings
+import org.totalgrid.reef.client.settings.util.PropertyReader
+import org.totalgrid.reef.client.exception.ServiceIOException
 
 @RunWith(classOf[JUnitRunner])
 class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
@@ -178,5 +178,33 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
     }
   }
 
+  test("Routing keys work as expected") {
+    fixture(defaults) { broker =>
+
+      val list1 = new SynchronizedList[String]
+      val consumer1 = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = list1.append(new String(msg.bytes))
+      }
+      val list2 = new SynchronizedList[String]
+      val consumer2 = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = list2.append(new String(msg.bytes))
+      }
+      val sub1 = broker.listen().start(consumer1)
+      val sub2 = broker.listen().start(consumer2)
+
+      // bind the queue to the test exchange and send it a message
+      broker.declareExchange("test3")
+      broker.bindQueue(sub1.getQueue, "test3", "key1", false)
+      broker.bindQueue(sub2.getQueue, "test3", "key2", false)
+
+      broker.publish("test3", "badKey", "key1Msg".getBytes, None)
+      broker.publish("test3", "key1", "key1Msg".getBytes, None)
+      broker.publish("test3", "key2", "key2Msg".getBytes, None)
+
+      list1 shouldBecome (List("key1Msg")) within (defaultTimeout)
+      list2 shouldBecome (List("key2Msg")) within (defaultTimeout)
+
+    }
+  }
 }
 

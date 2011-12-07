@@ -19,19 +19,19 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.{ Table, Query }
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import SquerylModel._
 
 import org.totalgrid.reef.services.core.util.UUIDConversions._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
+import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
 
 class CommandService(protected val model: CommandServiceModel)
@@ -53,7 +53,7 @@ class CommandService(protected val model: CommandServiceModel)
 }
 
 class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
-  commandSelectModel: CommandAccessServiceModel)
+  commandSelectModel: CommandLockServiceModel)
     extends SquerylServiceModel[CommandProto, Command]
     with EventedServiceModel[CommandProto, Command]
     with SimpleModelEntryCreation[CommandProto, Command]
@@ -95,19 +95,19 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Command] {
 
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid :: req.name :: req.entity.uuid.uuid :: Nil
+    req.uuid.value :: req.name :: req.entity.uuid.value :: Nil
   }
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {
 
-    val esearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Command")))
+    val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))
     List(
       esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
       proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Command")))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = List(
-    proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def createModelEntry(proto: CommandProto): Command = {
     Command.newInstance(proto.getName, proto.getDisplayName, proto.getType, proto.uuid)
@@ -130,7 +130,7 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     }
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
     b.setType(CommandType.valueOf(sql.commandType))
     b.build
   }

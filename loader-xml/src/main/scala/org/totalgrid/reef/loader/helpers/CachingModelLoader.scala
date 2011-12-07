@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.loader.helpers
 
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Alarms._
-import org.totalgrid.reef.proto.FEP._
-import org.totalgrid.reef.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.Alarms._
+import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.loader.ModelLoader
 import com.weiglewilczek.slf4s.Logging
 
@@ -29,8 +29,8 @@ import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.loader.commons.ui.RequestViewer
 
 import java.io.PrintStream
-import org.totalgrid.reef.clientapi.sapi.client.{ Promise, RequestSpy }
-import org.totalgrid.reef.clientapi.sapi.client.rest.BatchOperations
+import org.totalgrid.reef.client.sapi.client.{ Promise, RequestSpy }
+import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
 
 class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]
@@ -72,7 +72,7 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
     autoFlush
   }
 
-  def putOrThrow(endpointConfig: CommEndpointConfig) {
+  def putOrThrow(endpointConfig: Endpoint) {
     puts ::= endpointConfig;
     modelContainer.add(endpointConfig);
     autoFlush

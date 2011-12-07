@@ -18,13 +18,14 @@
  */
 package org.totalgrid.reef.benchmarks
 
-import org.totalgrid.reef.client.ReefFactory
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader
-import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings }
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
+import org.totalgrid.reef.client.settings.util.PropertyReader
+import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.benchmarks.measurements.MeasurementPublishingBenchmark
 import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
+import org.totalgrid.reef.client.service.list.ReefServices
 
 object AllBenchmarksEntryPoint {
   def main(args: Array[String]) {
@@ -34,7 +35,7 @@ object AllBenchmarksEntryPoint {
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
 
-    val factory = new ReefFactory(connectionInfo)
+    val factory = new ReefFactory(connectionInfo, new ReefServices)
 
     try {
 
@@ -46,7 +47,7 @@ object AllBenchmarksEntryPoint {
 
       val stream = Some(Console.out)
 
-      val endpoints = services.getAllEndpoints().await.filter(_.getProtocol == "benchmark").map { _.getName }
+      val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark").map { _.getName }
 
       if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
 

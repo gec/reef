@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Alarms.Alarm
-import org.totalgrid.reef.proto.OptionalProtos._
-import org.totalgrid.reef.proto.Events.Event
+import org.totalgrid.reef.client.service.proto.Alarms.Alarm
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Events.Event
 import org.totalgrid.reef.util.Table
 
 object AlarmView {
@@ -35,7 +35,7 @@ object AlarmView {
 
   def row(a: Alarm) = {
     val e = a.getEvent
-    a.getUid :: a.getState.toString :: e.getEventType :: e.getSeverity.toString :: associatedEntity(e) :: e.getUserId :: EventView.timeString(e.time) :: e.getRendered :: Nil
+    a.getId.getValue :: a.getState.toString :: e.getEventType :: e.getSeverity.toString :: associatedEntity(e) :: e.getUserId :: EventView.timeString(e.time) :: e.getRendered :: Nil
   }
 
   def associatedEntity(e: Event): String = {

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Model.{ Entity }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity }
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.util.Table
@@ -27,7 +27,7 @@ object EntityView {
 
   def printInspect(ent: Entity) = {
     val lines =
-      ("uid" :: ent.getUuid.getUuid :: Nil) ::
+      ("id" :: ent.getUuid.getValue :: Nil) ::
         ("name" :: ent.getName :: Nil) ::
         ("types" :: "(" + ent.getTypesList.toList.mkString(", ") + ")" :: Nil) ::
         Nil

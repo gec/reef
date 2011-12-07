@@ -20,24 +20,24 @@ package org.totalgrid.reef.services.core
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.clientapi.sapi.client.rest.impl.RestHelpers
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.proto.Envelope.Status._
-import org.totalgrid.reef.clientapi.proto.Envelope.Verb._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.sapi.client.rest.impl.RestHelpers
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope.Status._
+import org.totalgrid.reef.client.proto.Envelope.Verb._
+import org.totalgrid.reef.client.service.proto.Descriptors
 import java.util.UUID
-import org.totalgrid.reef.clientapi.proto.Envelope.{ SelfIdentityingServiceRequest, BatchServiceRequest }
-import org.totalgrid.reef.clientapi.types.TypeDescriptor
-import org.totalgrid.reef.clientapi.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.proto.Envelope.{ SelfIdentityingServiceRequest, BatchServiceRequest }
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 import org.totalgrid.reef.services.ServiceBootstrap
-import org.totalgrid.reef.proto.Model.{ CommandType, Command }
-import org.totalgrid.reef.proto.Commands.CommandAccess
+import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command }
+import org.totalgrid.reef.client.service.proto.Commands.CommandLock
 
 import scala.collection.JavaConversions._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterEach, BeforeAndAfterAll, FunSuite }
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {
@@ -56,7 +56,7 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
   val modelFac = new ModelFactories(deps)
   val services = List(
     new CommandService(modelFac.cmds),
-    new CommandAccessService(modelFac.accesses))
+    new CommandLockService(modelFac.accesses))
 
   val service = new SyncService(new BatchServiceRequestService(services), contextSource)
 
@@ -90,9 +90,9 @@ class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll wit
   }
 
   def commandAccess(verb: Envelope.Verb = PUT, name: String = "cmd01") = {
-    val ca = CommandAccess.newBuilder.addCommands(name).setAccess(CommandAccess.AccessMode.ALLOWED)
+    val ca = CommandLock.newBuilder.addCommands(Command.newBuilder.setName(name)).setAccess(CommandLock.AccessMode.ALLOWED)
       .setExpireTime(System.currentTimeMillis + 40000)
-    makeRequest(verb, ca.build, Descriptors.commandAccess)
+    makeRequest(verb, ca.build, Descriptors.commandLock)
   }
 
   def makeRequest[A](verb: Envelope.Verb, usr: A, descriptor: TypeDescriptor[A]): SelfIdentityingServiceRequest = {

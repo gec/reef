@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Model.Command
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Commands.{ CommandStatus, CommandAccess, UserCommandRequest }
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandLock, UserCommandRequest }
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.util.Table
 
 object CommandView {
@@ -38,14 +38,14 @@ object CommandView {
     a.getName ::
       a.getDisplayName ::
       a.getType.toString ::
-      a.logicalNode.name.getOrElse("") ::
+      a.endpoint.name.getOrElse("") ::
       Nil
   }
 
-  //def selectResponse(resp: CommandAccess)
+  //def selectResponse(resp: CommandLock)
   def commandResponse(resp: UserCommandRequest) = {
-    val rows = ("ID: " :: "[" + resp.getUid + "]" :: Nil) ::
-      ("Command:" :: resp.getCommandRequest.getName :: Nil) ::
+    val rows = ("ID: " :: "[" + resp.getId + "]" :: Nil) ::
+      ("Command:" :: resp.commandRequest.command.name.getOrElse("unknown") :: Nil) ::
       ("User:" :: resp.getUser :: Nil) ::
       ("Status:" :: resp.getStatus.toString :: Nil) :: Nil
 
@@ -57,53 +57,53 @@ object CommandView {
     Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
   }
 
-  def removeBlockResponse(removed: List[CommandAccess]) = {
-    val rows = removed.map(acc => "Removed:" :: "[" + acc.getUid + "]" :: Nil)
+  def removeBlockResponse(removed: List[CommandLock]) = {
+    val rows = removed.map(acc => "Removed:" :: "[" + acc.getId + "]" :: Nil)
     Table.renderRows(rows, " ")
   }
 
-  def blockResponse(acc: CommandAccess) = {
+  def blockResponse(acc: CommandLock) = {
     println("Block successful.")
     accessInspect(acc)
   }
 
-  def accessInspect(acc: CommandAccess) = {
+  def accessInspect(acc: CommandLock) = {
     val commands = acc.getCommandsList.toList
-    val first = commands.headOption.getOrElse("")
+    val first = commands.headOption.map { _.name }.flatten.toString
     val tail = commands.tail
 
-    val rows: List[List[String]] = ("ID:" :: "[" + acc.getUid + "]" :: Nil) ::
+    val rows: List[List[String]] = ("ID:" :: "[" + acc.getId.getValue + "]" :: Nil) ::
       ("Mode:" :: acc.getAccess.toString :: Nil) ::
       ("User:" :: acc.getUser :: Nil) ::
       ("Expires:" :: timeString(acc) :: Nil) ::
       ("Commands:" :: first :: Nil) :: Nil
 
-    val cmdRows = tail.map(cmd => ("" :: cmd.toString :: Nil))
+    val cmdRows = tail.map(cmd => ("" :: cmd.name.toString :: Nil))
 
     Table.renderRows(rows ::: cmdRows, " ")
   }
 
-  def timeString(acc: CommandAccess) = new java.util.Date(acc.getExpireTime).toString
+  def timeString(acc: CommandLock) = new java.util.Date(acc.getExpireTime).toString
 
   def accessHeader = {
     "Id" :: "Mode" :: "User" :: "Commands" :: "Expire Time" :: Nil
   }
 
-  def accessRow(acc: CommandAccess): List[String] = {
+  def accessRow(acc: CommandLock): List[String] = {
     val commands = commandsEllipsis(acc.getCommandsList.toList)
     val time = new java.util.Date(acc.getExpireTime).toString
-    "[" + acc.getUid + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
+    "[" + acc.getId.getValue + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
   }
 
-  def commandsEllipsis(names: List[String]) = {
+  def commandsEllipsis(names: List[Command]) = {
     names.length match {
       case 0 => ""
-      case 1 => names.head
-      case _ => "(" + names.head + ", ...)"
+      case 1 => names.head.name.getOrElse("unknown")
+      case _ => "(" + names.head.name.getOrElse("unknown") + ", ...)"
     }
   }
 
-  def printAccessTable(list: List[CommandAccess]) = {
+  def printAccessTable(list: List[CommandLock]) = {
     Table.printTable(accessHeader, list.map(accessRow(_)))
   }
 
@@ -112,12 +112,12 @@ object CommandView {
   }
 
   def historyHeader = {
-    "Uid" :: "Command" :: "Status" :: "User" :: "Type" :: Nil
+    "Id" :: "Command" :: "Status" :: "User" :: "Type" :: Nil
   }
 
   def historyRow(a: UserCommandRequest) = {
-    a.uid.getOrElse("unknown") ::
-      a.commandRequest.name.getOrElse("unknown") ::
+    a.id.value.getOrElse("unknown") ::
+      a.commandRequest.command.name.getOrElse("unknown") ::
       a.status.map { _.toString }.getOrElse("unknown") ::
       a.user.getOrElse("unknown") ::
       a.commandRequest._type.toString ::

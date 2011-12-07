@@ -20,20 +20,20 @@ package org.totalgrid.reef.integration;
 
 import org.junit.Test;
 
-import org.totalgrid.reef.clientapi.Subscription;
-import org.totalgrid.reef.clientapi.SubscriptionEvent;
-import org.totalgrid.reef.clientapi.SubscriptionResult;
-import org.totalgrid.reef.clientapi.exceptions.ReefServiceException;
-import org.totalgrid.reef.clientapi.proto.Envelope;
+import org.totalgrid.reef.client.Subscription;
+import org.totalgrid.reef.client.SubscriptionEvent;
+import org.totalgrid.reef.client.SubscriptionResult;
+import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.proto.Envelope;
 import org.totalgrid.reef.integration.helpers.MockSubscriptionEventAcceptor;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 
-import org.totalgrid.reef.client.rpc.MeasurementService;
+import org.totalgrid.reef.client.service.MeasurementService;
 
-import org.totalgrid.reef.client.rpc.PointService;
-import org.totalgrid.reef.proto.FEP;
-import org.totalgrid.reef.proto.Measurements;
-import org.totalgrid.reef.proto.Model;
+import org.totalgrid.reef.client.service.PointService;
+import org.totalgrid.reef.client.service.proto.FEP;
+import org.totalgrid.reef.client.service.proto.Measurements;
+import org.totalgrid.reef.client.service.proto.Model;
 
 import java.util.List;
 
@@ -58,19 +58,19 @@ public class TestEndToEndIntegration extends ReefConnectionTestBase
         PointService ps = helpers;
 
         // make sure all of the endpoints are enabled and COMMS_UP so measurements should be published
-        List<FEP.CommEndpointConfig> endpoints = helpers.getAllEndpoints();
-        for ( FEP.CommEndpointConfig endpoint : endpoints )
+        List<FEP.Endpoint> endpoints = helpers.getEndpoints();
+        for ( FEP.Endpoint endpoint : endpoints )
         {
-            FEP.CommEndpointConnection connection = helpers.getEndpointConnection( endpoint.getUuid() );
+            FEP.EndpointConnection connection = helpers.getEndpointConnectionByUuid( endpoint.getUuid() );
             assertEquals( connection.getEnabled(), true );
-            assertEquals( connection.getState(), FEP.CommEndpointConnection.State.COMMS_UP );
+            assertEquals( connection.getState(), FEP.EndpointConnection.State.COMMS_UP );
         }
 
         // mock object that will receive queue and measurement subscription
         MockSubscriptionEventAcceptor<Measurements.Measurement> mock = new MockSubscriptionEventAcceptor<Measurements.Measurement>();
 
 
-        List<Model.Point> points = ps.getAllPoints();
+        List<Model.Point> points = ps.getPoints();
 
         SubscriptionResult<List<Measurements.Measurement>, Measurements.Measurement> result = ms.subscribeToMeasurementsByPoints( points );
 
@@ -83,7 +83,7 @@ public class TestEndToEndIntegration extends ReefConnectionTestBase
 
         // check that at least one measurement has been updated in the queue
         SubscriptionEvent<Measurements.Measurement> m = mock.pop( 10000 );
-        assertEquals( m.getEventType(), Envelope.Event.MODIFIED );
+        assertEquals( m.getEventType(), Envelope.SubscriptionEventType.MODIFIED );
 
         // now cancel the subscription
         sub.cancel();

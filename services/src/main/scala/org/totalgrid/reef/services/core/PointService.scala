@@ -23,21 +23,21 @@ import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.ProtoSerializer._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.core.util.UUIDConversions._
 
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
+import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 class PointService(protected val model: PointServiceModel)
     extends SyncModeledServiceBase[PointProto, Point, PointServiceModel]
@@ -111,9 +111,9 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
    * this is the subscription routingKey
    */
   def getRoutingKey(req: PointProto) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid ::
+    req.uuid.value ::
       req.name ::
-      req.entity.uuid.uuid ::
+      req.entity.uuid.value ::
       req.abnormal :: // this subscribes the users to all points that have their abnormal field changed
       Nil
   }
@@ -122,23 +122,23 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
    * this is the service event notifaction routingKey
    */
   def getRoutingKey(req: PointProto, entry: Point) = ProtoRoutingKeys.generateRoutingKey {
-    req.uuid.uuid ::
+    req.uuid.value ::
       req.name ::
-      req.entity.uuid.uuid ::
+      req.entity.uuid.value ::
       Some(entry.abnormalUpdated) :: // we actually publish the key to intrested parties on change, not on current state
       Nil
   }
 
   def uniqueQuery(proto: PointProto, sql: Point) = {
 
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.name, proto.name.map(x => List("Point")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Point")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
       proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Point")))
   }
 
   def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
-    proto.logicalNode.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
 
   def isModified(entry: Point, existing: Point): Boolean = {
     entry.abnormal != existing.abnormal
@@ -152,7 +152,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     sql.entity.asOption.foreach(e => b.setEntity(EntityQueryManager.entityToProto(e)))
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setLogicalNode(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
     b.setAbnormal(sql.abnormal)
     b.setType(PointType.valueOf(sql.pointType))
     b.setUnit(sql.unit)
@@ -183,7 +183,7 @@ object PointTiedModel {
     val pb = PointProto.newBuilder
     pb.setName(point.entityName).setUuid(makeUuid(point))
     pb.setEntity(EntityQueryManager.entityToProto(point.entity.value))
-    point.logicalNode.value.foreach(p => pb.setLogicalNode(EntityQueryManager.entityToProto(p)))
+    point.logicalNode.value.foreach(p => pb.setEndpoint(EntityQueryManager.entityToProto(p)))
     pb
   }
 }

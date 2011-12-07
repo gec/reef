@@ -19,10 +19,10 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.services.framework.SquerylModel.NoSearchTermsException
-import org.totalgrid.reef.clientapi.sapi.client.Response
+import org.totalgrid.reef.client.sapi.client.Response
 
-import org.totalgrid.reef.clientapi.proto.Envelope
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.BadRequestException
 
 /**
  * implementations for common behaviors for the services that use a "model" object.

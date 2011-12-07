@@ -26,8 +26,8 @@ import scala.collection.JavaConversions._
 
 import java.io.File
 import java.text.SimpleDateFormat
-import org.totalgrid.reef.proto.Model.Point
-import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.client.service.proto.Model.Point
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
 
 @Command(scope = "meas", name = "list", description = "Prints all measurements or a specified measurement.")
 class MeasListCommand extends ReefCommandSupport {
@@ -58,7 +58,7 @@ class MeasListCommand extends ReefCommandSupport {
   }
 
   def getAllMeasurements = {
-    val points = services.getAllPoints
+    val points = services.getPoints
     services.getMeasurementsByPoints(points).toList
   }
 

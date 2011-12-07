@@ -18,21 +18,24 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.Model.ReefUUID
-import org.totalgrid.reef.proto.FEP.{ CommEndpointRouting, CommEndpointConfig, CommChannel, CommEndpointConnection }
-import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
+import org.totalgrid.reef.client.service.proto.FEP.{ CommEndpointRouting, Endpoint, CommChannel, EndpointConnection }
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
-import org.totalgrid.reef.clientapi.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
+import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
 
 object FrontEndTestHelpers {
 
-  private def makeUuid(str: String) = ReefUUID.newBuilder.setUuid(str).build
+  private def makeUuid(str: String) = ReefUUID.newBuilder.setValue(str).build
   implicit def makeUuidFromString(str: String): ReefUUID = makeUuid(str)
+
+  private def makeId(str: String) = ReefID.newBuilder.setValue(str).build
+  implicit def makeIdFromString(str: String): ReefID = makeId(str)
 
   def getConnectionProto(enabled: Boolean, routingKey: Option[String]) = {
     val pt = CommChannel.newBuilder.setUuid("port").setName("port")
-    val cfg = CommEndpointConfig.newBuilder.setProtocol("mock").setUuid("config").setChannel(pt).setName("endpoint1")
-    val b = CommEndpointConnection.newBuilder.setUid("connection").setEndpoint(cfg).setEnabled(enabled)
+    val cfg = Endpoint.newBuilder.setProtocol("mock").setUuid("config").setChannel(pt).setName("endpoint1")
+    val b = EndpointConnection.newBuilder.setId("connection").setEndpoint(cfg).setEnabled(enabled)
     routingKey.foreach { s => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(s).build) }
     b.build
   }
@@ -50,7 +53,7 @@ object FrontEndTestHelpers {
     }
   }
 
-  class MockCancelable extends Cancelable {
+  class MockCancelable extends net.agileautomata.executor4s.Cancelable {
     var canceled = false
     def cancel() = canceled = true
   }

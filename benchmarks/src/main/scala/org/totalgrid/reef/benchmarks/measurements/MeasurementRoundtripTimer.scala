@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.benchmarks.measurements
 
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.util.SyncVar
 
-import org.totalgrid.reef.clientapi.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
+import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.benchmarks.FailedBenchmarkException
 
 class MeasurementRoundtripTimer(result: SubscriptionResult[List[Measurement], Measurement]) extends SubscriptionEventAcceptor[Measurement] {

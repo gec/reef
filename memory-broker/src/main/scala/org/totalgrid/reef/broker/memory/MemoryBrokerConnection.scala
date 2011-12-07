@@ -23,7 +23,7 @@ import org.totalgrid.reef.broker._
 import net.agileautomata.executor4s.Executor
 
 import collection.immutable.Set
-import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 
 class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Executor) extends BrokerConnection {
 

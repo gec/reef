@@ -22,8 +22,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ Entity }
-import org.totalgrid.reef.proto.Utils.{ Attribute }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity }
+import org.totalgrid.reef.client.service.proto.Utils.{ Attribute }
 
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityAttributesBuilders
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
@@ -43,9 +43,9 @@ class EntityAttributesRequestTest
   test("Puts") {
     val ent = session.get(Entity.newBuilder.setName("StaticSubstation").build).await.expectOne
 
-    recorder.addExplanation("Put by entity uid", "Creates or replaces an attribute for the specified entity (selected by uid).")
+    recorder.addExplanation("Put by entity id", "Creates or replaces an attribute for the specified entity (selected by id).")
     val resp1 = session.put(
-      EntityAttributesBuilders.putAttributesToEntityUid(
+      EntityAttributesBuilders.putAttributesToEntityId(
         ent.getUuid,
         List(Attribute.newBuilder.setName("subName").setVtype(Attribute.Type.STRING).setValueString("Apex").build))).await.expectOne
 
@@ -61,8 +61,8 @@ class EntityAttributesRequestTest
     resp2.getAttributesCount should equal(2)
 
     {
-      recorder.addExplanation("Get by entity uid", "Finds the attributes associated with a particular entity.")
-      val resp = session.get(getForEntityUid(ent.getUuid)).await.expectOne
+      recorder.addExplanation("Get by entity id", "Finds the attributes associated with a particular entity.")
+      val resp = session.get(getForEntityId(ent.getUuid)).await.expectOne
       resp.getAttributesCount should equal(2)
     }
     {
@@ -72,8 +72,8 @@ class EntityAttributesRequestTest
     }
 
     {
-      recorder.addExplanation("Delete by entity uid", "Deletes the attributes associated with a particular entity.")
-      val resp = session.delete(getForEntityUid(ent.getUuid)).await.expectOne
+      recorder.addExplanation("Delete by entity id", "Deletes the attributes associated with a particular entity.")
+      val resp = session.delete(getForEntityId(ent.getUuid)).await.expectOne
       resp.getAttributesCount should equal(2)
     }
 
@@ -93,15 +93,15 @@ class EntityAttributesRequestTest
   test("API") {
     val ent = client.getEntityByName("StaticSubstation").await
 
-    val uid = ent.getUuid
+    val id = ent.getUuid
 
     {
-      val attr = client.getEntityAttributes(uid).await
+      val attr = client.getEntityAttributes(id).await
       attr.getAttributesCount should equal(0)
     }
 
     {
-      val attr = client.setEntityAttribute(uid, "test01", "testString").await
+      val attr = client.setEntityAttribute(id, "test01", "testString").await
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.STRING)
@@ -109,62 +109,62 @@ class EntityAttributesRequestTest
     }
 
     {
-      val attr = client.setEntityAttribute(uid, "test02", true).await
+      val attr = client.setEntityAttribute(id, "test02", true).await
       attr.getAttributesCount should equal(2)
     }
 
     {
-      val attr = client.removeEntityAttribute(uid, "test01").await
+      val attr = client.removeEntityAttribute(id, "test01").await
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0).getName should equal("test02")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.BOOL)
       attr.getAttributesList.get(0).getValueBool should equal(true)
     }
 
-    val attr = client.clearEntityAttributes(uid).await
+    val attr = client.clearEntityAttributes(id).await
     attr.map { _.getAttributesCount } should equal(Some(1))
 
   }
 
   test("Set types") {
     val ent = client.getEntityByName("StaticSubstation").await
-    val uid = ent.getUuid
+    val id = ent.getUuid
 
     {
-      val attr = client.setEntityAttribute(uid, "test01", true).await
+      val attr = client.setEntityAttribute(id, "test01", true).await
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.BOOL)
       attr.getAttributesList.get(0).getValueBool should equal(true)
-      client.removeEntityAttribute(uid, "test01").await
+      client.removeEntityAttribute(id, "test01").await
     }
     {
-      val attr = client.setEntityAttribute(uid, "test01", 23432).await
+      val attr = client.setEntityAttribute(id, "test01", 23432).await
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.SINT64)
       attr.getAttributesList.get(0).getValueSint64 should equal(23432)
-      client.removeEntityAttribute(uid, "test01").await
+      client.removeEntityAttribute(id, "test01").await
     }
     {
-      val attr = client.setEntityAttribute(uid, "test01", 5.437).await
+      val attr = client.setEntityAttribute(id, "test01", 5.437).await
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.DOUBLE)
       attr.getAttributesList.get(0).getValueDouble should equal(5.437)
-      client.removeEntityAttribute(uid, "test01").await
+      client.removeEntityAttribute(id, "test01").await
     }
     {
-      val attr = client.setEntityAttribute(uid, "test01", "test").await
+      val attr = client.setEntityAttribute(id, "test01", "test").await
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.STRING)
       attr.getAttributesList.get(0).getValueString should equal("test")
-      client.removeEntityAttribute(uid, "test01").await
+      client.removeEntityAttribute(id, "test01").await
     }
   }
 

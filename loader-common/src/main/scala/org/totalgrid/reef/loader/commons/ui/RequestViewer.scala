@@ -19,9 +19,9 @@
 package org.totalgrid.reef.loader.commons.ui
 
 import java.io.PrintStream
-import org.totalgrid.reef.clientapi.sapi.client.{ Response, RequestSpy }
+import org.totalgrid.reef.client.sapi.client.{ Response, RequestSpy }
 import net.agileautomata.executor4s.Future
-import org.totalgrid.reef.clientapi.proto.Envelope.{ BatchServiceRequest, Status, Verb }
+import org.totalgrid.reef.client.proto.Envelope.{ BatchServiceRequest, Status, Verb }
 
 class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends RequestSpy {
 

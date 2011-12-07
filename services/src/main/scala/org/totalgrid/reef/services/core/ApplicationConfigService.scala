@@ -19,18 +19,18 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema, ApplicationCapability }
-import org.totalgrid.reef.proto.Application._
+import org.totalgrid.reef.client.service.proto.Application._
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.proto.Descriptors
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
-import org.totalgrid.reef.clientapi.sapi.types.Optional._
+import org.totalgrid.reef.client.sapi.types.Optional._
 
 import scala.collection.JavaConversions._
 
@@ -92,7 +92,7 @@ trait ApplicationConfigConversion
   val table = ApplicationSchema.apps
 
   def getRoutingKey(proto: ApplicationConfig) = ProtoRoutingKeys.generateRoutingKey {
-    proto.uuid.uuid :: proto.instanceName :: Nil
+    proto.uuid.value :: proto.instanceName :: Nil
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
@@ -102,7 +102,7 @@ trait ApplicationConfigConversion
   }
 
   def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
-    val eSearch = EntitySearch(proto.uuid.uuid, proto.instanceName, proto.instanceName.map(x => List("Application")))
+    val eSearch = EntitySearch(proto.uuid.value, proto.instanceName, proto.instanceName.map(x => List("Application")))
     List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
   }
 

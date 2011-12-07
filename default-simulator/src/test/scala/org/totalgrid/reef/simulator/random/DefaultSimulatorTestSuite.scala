@@ -22,9 +22,9 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.api.protocol.api.Publisher
-import org.totalgrid.reef.proto.Measurements.{ Measurement, MeasurementBatch }
-import org.totalgrid.reef.proto.SimMapping
+import org.totalgrid.reef.protocol.api.Publisher
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement, MeasurementBatch }
+import org.totalgrid.reef.client.service.proto.SimMapping
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.commons.testing._
 import net.agileautomata.executor4s._

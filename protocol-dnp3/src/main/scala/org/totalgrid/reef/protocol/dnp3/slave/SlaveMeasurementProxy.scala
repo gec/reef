@@ -20,15 +20,15 @@ package org.totalgrid.reef.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.proto.Mapping.{ IndexMapping }
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Mapping.{ IndexMapping }
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.clientapi.proto.Envelope.Event
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.app.{ ServiceContext, SubscriptionDataHandler }
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 
 class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dataObserver: IDataObserver)
     extends SubscriptionDataHandler[Measurement] with Logging {
@@ -51,6 +51,6 @@ class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dat
   }
 
   def handleResponse(result: List[Measurement]) = packTimer.addEntries(result)
-  def handleEvent(event: Event, result: Measurement) = packTimer.addEntry(result)
+  def handleEvent(event: SubscriptionEventType, result: Measurement) = packTimer.addEntry(result)
 
 }

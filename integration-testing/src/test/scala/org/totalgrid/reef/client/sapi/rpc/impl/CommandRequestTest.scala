@@ -23,7 +23,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.proto.Model.{ Command, Entity, Relationship }
+import org.totalgrid.reef.client.service.proto.Model.{ Command, Entity, Relationship }
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
 
 @RunWith(classOf[JUnitRunner])
@@ -31,7 +31,7 @@ class CommandRequestTest
     extends ClientSessionSuite("Command.xml", "Command",
       <div>
         <p>
-          A Command represents a configured output point. CommandAccess and UserCommandRequest services use
+          A Command represents a configured output point. CommandLock and UserCommandRequest services use
   this command name.
         </p>
         <p>

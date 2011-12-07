@@ -20,7 +20,7 @@ package org.totalgrid.reef.broker.qpid
 
 import org.apache.qpid.transport._
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.clientapi.exceptions.ServiceIOException
+import org.totalgrid.reef.client.exception.ServiceIOException
 import scala.{ Option => ScalaOption }
 import org.totalgrid.reef.broker.BrokerDestination
 

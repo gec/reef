@@ -20,14 +20,14 @@ package org.totalgrid.reef.services.core
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.clientapi.sapi.types.BuiltInDescriptors
-import org.totalgrid.reef.clientapi.sapi.client.impl.SynchronizedPromise
-import org.totalgrid.reef.clientapi.sapi.client._
-import org.totalgrid.reef.clientapi.sapi.service.{ ServiceResponseCallback, ServiceHelpers }
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
+import org.totalgrid.reef.client.sapi.client.impl.SynchronizedPromise
+import org.totalgrid.reef.client.sapi.client._
+import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, ServiceHelpers }
+import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.clientapi.proto.Envelope.{ ServiceResponse, SelfIdentityingServiceRequest, ServiceRequest, BatchServiceRequest }
-import org.totalgrid.reef.clientapi.proto.{ StatusCodes, Envelope }
+import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, SelfIdentityingServiceRequest, ServiceRequest, BatchServiceRequest }
+import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 
 import org.totalgrid.reef.services.framework._
 

@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.FEP.{ CommChannel, CommEndpointConfig }
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, Endpoint }
 
 import scala.collection.JavaConversions._
 
@@ -49,11 +49,11 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
   def finish() {
     // much more efficient to grab all config files and filter off ones we don't know
     // versus asking for a config file for every entity
-    client.getAllConfigFiles.await.toList.foreach { cf =>
+    client.getConfigFiles.await.toList.foreach { cf =>
       val users = cf.getEntitiesList.toList
-      val knownUsers = users.filter(u => seenEntities.get(u.getUuid.getUuid).isDefined)
+      val knownUsers = users.filter(u => seenEntities.get(u.getUuid.getValue).isDefined)
       if (!knownUsers.isEmpty) {
-        val cfEntity = client.getEntityByUid(cf.getUuid).await
+        val cfEntity = client.getEntityByUuid(cf.getUuid).await
         notifier.foreach { _.display(cfEntity, 0) }
         collector.addConfigFile(cf, cfEntity)
         knownUsers.foreach { collector.addEdge(_, cfEntity, "uses") }
@@ -62,7 +62,7 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
   }
 
   private def handleEntity(entity: Entity, depth: Int): Entity = {
-    seenEntities.put(entity.getUuid.getUuid, entity)
+    seenEntities.put(entity.getUuid.getValue, entity)
 
     notifier.foreach { _.display(entity, depth) }
 
@@ -75,19 +75,19 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
           getEntity(c.getUuid, depth + 1) // load commands so we can set the feedback relationship immediatley
           collector.addEdge(entity, c, "feedback")
         }
-        if (point.hasLogicalNode) {
-          val endpoint = getEntity(point.getLogicalNode.getUuid, depth + 1)
+        if (point.hasEndpoint) {
+          val endpoint = getEntity(point.getEndpoint.getUuid, depth + 1)
           collector.addEdge(endpoint, entity, "source")
         }
 
       case command: Command =>
         collector.addCommand(command, entity)
-        if (command.hasLogicalNode) {
-          val endpoint = getEntity(command.getLogicalNode.getUuid, depth + 1)
+        if (command.hasEndpoint) {
+          val endpoint = getEntity(command.getEndpoint.getUuid, depth + 1)
           collector.addEdge(endpoint, entity, "source")
         }
 
-      case endpoint: CommEndpointConfig =>
+      case endpoint: Endpoint =>
         // add channel first, adding endpoint will automatically create channel with wrong uuid
         if (endpoint.hasChannel) getEntity(endpoint.getChannel.getUuid, depth + 1)
         collector.addEndpoint(endpoint, entity)
@@ -119,15 +119,15 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
     val types = entity.getTypesList.toList
 
     if (types.find(_ == "Point").isDefined) {
-      client.getPointByUid(entity.getUuid).await
+      client.getPointByUuid(entity.getUuid).await
     } else if (types.find(_ == "Command").isDefined) {
       client.getCommandByName(entity.getName).await
     } else if (types.find(_ == "CommunicationEndpoint").isDefined) {
-      client.getEndpoint(entity.getUuid).await
+      client.getEndpointByUuid(entity.getUuid).await
     } else if (types.find(_ == "Channel").isDefined) {
-      client.getCommunicationChannel(entity.getUuid).await
+      client.getCommunicationChannelByUuid(entity.getUuid).await
     } else if (types.find(_ == "ConfigurationFile").isDefined) {
-      client.getConfigFileByUid(entity.getUuid).await
+      client.getConfigFileByUuid(entity.getUuid).await
     } // TODO: do we want a "child having" type?
     else if (types.find(t => t == "Equipment" || t == "EquipmentGroup" || t == "Site" || t == "Root" || t == "Region").isDefined) {
       entity
@@ -140,13 +140,13 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
   // retrieve the full object because we can't reply on the system to give us fully populated
   // entities for linked objects (configfiles inside endpoints just have name and uuid).
   private def getEntity(logicalNode: ReefUUID, depth: Int) = {
-    val cached = seenEntities.get(logicalNode.getUuid)
-    if (!cached.isDefined) traverseEquipment(client.getEntityByUid(logicalNode).await, depth)
+    val cached = seenEntities.get(logicalNode.getValue)
+    if (!cached.isDefined) traverseEquipment(client.getEntityByUuid(logicalNode).await, depth)
     else cached.get
   }
 
   private def traverseEquipment(entity: Entity, depth: Int): Entity = {
-    val cached = seenEntities.get(entity.getUuid.getUuid)
+    val cached = seenEntities.get(entity.getUuid.getValue)
     if (!cached.isDefined) handleEntity(entity, depth)
     else cached.get
   }

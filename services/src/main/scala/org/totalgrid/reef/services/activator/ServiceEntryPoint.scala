@@ -19,15 +19,15 @@
 package org.totalgrid.reef.services.activator
 
 import org.totalgrid.reef.services.ServiceOptions
-import org.totalgrid.reef.clientapi.settings.{ NodeSettings, UserSettings, AmqpSettings }
+import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings, AmqpSettings }
 import org.totalgrid.reef.app.ConnectionCloseManagerEx
-import org.totalgrid.reef.clientapi.settings.util.PropertyReader
+import org.totalgrid.reef.client.settings.util.PropertyReader
 import net.agileautomata.executor4s.Executors
 import java.util.concurrent.{ Executors => JExecutors }
 import org.totalgrid.reef.util.ShutdownHook
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.measurementstore.squeryl.SqlMeasurementStore
-import org.totalgrid.reef.clientapi.sapi.service.AsyncService
+import org.totalgrid.reef.client.sapi.service.AsyncService
 
 object ServiceEntryPoint extends ShutdownHook {
   def main(args: Array[String]) = {

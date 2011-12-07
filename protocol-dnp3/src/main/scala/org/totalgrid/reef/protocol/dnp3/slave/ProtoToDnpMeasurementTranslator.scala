@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.protocol.dnp3.slave
 
-import org.totalgrid.reef.proto.Mapping.{ DataType, MeasMap }
+import org.totalgrid.reef.client.service.proto.Mapping.{ DataType, MeasMap }
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.proto.Measurements.Quality.Validity
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 
 object ProtoToDnpMeasurementTranslator {
 

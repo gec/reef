@@ -18,9 +18,10 @@
  */
 package org.totalgrid.reef.frontend
 
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext, ClearableMap }
+import net.agileautomata.executor4s.Executor
 
 /**
  * When we have subscribed to handle a set of endpoints we need to make sure that we only add enabled and routed
@@ -28,14 +29,14 @@ import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext, Clearab
  *
  * Keep in mind that most "live system" updates are going to be modifies of the enabled bit
  */
-class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpointConnection], populator: EndpointConnectionPopulatorAction)
-    extends ServiceContext[CommEndpointConnection]
-    with SubscriptionHandlerBase[CommEndpointConnection]
+class EndpointConnectionSubscriptionFilter(connections: ClearableMap[EndpointConnection], populator: EndpointConnectionPopulatorAction, exe: Executor)
+    extends ServiceContext[EndpointConnection]
+    with SubscriptionHandlerBase[EndpointConnection]
     with Logging {
 
   // all of the objects we receive here are incomplete we need to request
   // the full object tree for them
-  def add(c: CommEndpointConnection) = tryWrap("Error adding connProto: " + c) {
+  def add(c: EndpointConnection) = tryWrap("Error adding connProto: " + c) {
     logEndpointMessage(c, "ADD")
     // the coordinator assigns FEPs when available but meas procs may not be online yet
     // re sends with routing information when meas_proc is online
@@ -43,35 +44,35 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[CommEndpoin
     else connections.remove(c)
   }
 
-  def modify(c: CommEndpointConnection) = tryWrap("Error modifying connProto: " + c) {
+  def modify(c: EndpointConnection) = tryWrap("Error modifying connProto: " + c) {
     logEndpointMessage(c, "MODIFY")
     if (shouldStart(c)) connections.modify(populator.populate(c))
     else connections.remove(c)
   }
 
-  def remove(c: CommEndpointConnection) = tryWrap("Error removing connProto: " + c) {
+  def remove(c: EndpointConnection) = tryWrap("Error removing connProto: " + c) {
     logEndpointMessage(c, "REMOVE")
     connections.remove(c)
   }
 
-  def subscribed(list: List[CommEndpointConnection]) = list.foreach(add(_))
+  def subscribed(list: List[EndpointConnection]) = exe.execute { list.foreach(add(_)) }
 
-  def clear() = connections.clear()
+  def clear() = exe.attempt { connections.clear() }.await
 
   /**
    * we will get messages regardless of whether the endpoint is usable, we need to check that it is
    * still enabled and that there is a routing key (meas proc is ready for us) before adding it.
    * otherwise we remove it
    */
-  private def shouldStart(c: CommEndpointConnection) = c.hasRouting && c.hasEnabled && c.getEnabled
+  private def shouldStart(c: EndpointConnection) = c.hasRouting && c.hasEnabled && c.getEnabled
 
   // temporary logging to help track down intermittent error
-  private def logEndpointMessage(c: CommEndpointConnection, verb: String) {
+  private def logEndpointMessage(c: EndpointConnection, verb: String) {
     logger.info(verb + " : " + c.getEndpoint.getName + " enabled: " + c.getEnabled + " state: " + c.getState + " routing: " + c.getRouting.getServiceRoutingKey)
   }
 
   /**
-   * when setting up asynchronous callbacks it is doubly important to catch exceptions
+   * when setting up asynchronous callbacks it is doubly important to catch exception
    * near where they are thrown or else they will bubble all the way up into the calling code
    */
   private def tryWrap[A](msg: String)(fun: => A) {

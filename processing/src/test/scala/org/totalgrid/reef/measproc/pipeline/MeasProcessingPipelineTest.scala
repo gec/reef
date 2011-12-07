@@ -25,8 +25,8 @@ import org.junit.runner.RunWith
 
 import scala.collection.mutable
 
-import org.totalgrid.reef.proto.Events.Event
-import org.totalgrid.reef.proto.Measurements.{ Quality, MeasurementBatch, Measurement }
+import org.totalgrid.reef.client.service.proto.Events.Event
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, MeasurementBatch, Measurement }
 import org.totalgrid.reef.measproc.{ MeasProcObjectCaches, MockObjectCache, ProtoHelper }
 
 @RunWith(classOf[JUnitRunner])

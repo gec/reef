@@ -26,25 +26,32 @@ import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.test.MockitoStubbedOnly
 
 import FrontEndTestHelpers._
-import org.totalgrid.reef.api.protocol.api.mock.{ NullProtocol, RecordingProtocol }
-import org.totalgrid.reef.api.protocol.api.mock.RecordingProtocol._
+import org.totalgrid.reef.protocol.api.mock.{ NullProtocol, RecordingProtocol }
+import org.totalgrid.reef.protocol.api.mock.RecordingProtocol._
 import org.mockito.{ Matchers, Mockito }
-import org.totalgrid.reef.api.protocol.api.CommandHandler
+import org.totalgrid.reef.client.service.command.CommandRequestHandler
+import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
+import net.agileautomata.executor4s.Success
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
   test("Add/remove proto") {
     val config = getConnectionProto(true, Some("routing"))
     val client = Mockito.mock(classOf[FrontEndProviderServices], new MockitoStubbedOnly)
-    val commandBinding = new MockCancelable
-    Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config), Matchers.any(classOf[CommandHandler]))
+    val rawClient = Mockito.mock(classOf[Client])
+    val cancelable = new MockCancelable
+    val commandBinding = new FixedPromise(Success(cancelable))
+    Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config.getEndpoint.getUuid), Matchers.any(classOf[CommandRequestHandler]))
 
     val mp = new NullProtocol("mock") with RecordingProtocol { override def requiresChannel = true }
 
     val channelName = config.getEndpoint.getChannel.getName
     val endpointName = config.getEndpoint.getName
 
-    val connections = new FrontEndConnections(mp :: Nil, client)
+    cancelable.canceled should equal(false)
+
+    val connections = new FrontEndConnections(mp :: Nil, client, rawClient)
 
     connections.add(config)
 
@@ -58,6 +65,6 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
     mp.next() should equal(Some(RemoveChannel(channelName)))
     mp.next() should equal(None)
 
-    commandBinding.canceled should equal(true)
+    cancelable.canceled should equal(true)
   }
 }

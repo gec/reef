@@ -18,15 +18,16 @@
  */
 package org.totalgrid.reef.app
 
-import org.totalgrid.reef.util.Cancelable
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.clientapi.settings.{ NodeSettings, UserSettings }
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-import org.totalgrid.reef.client.sapi.ReefServices
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.list.ReefServices
+import org.totalgrid.reef.client.sapi.client.rest.Client
 import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 
 trait ConnectionConsumer {
   def newConnection(brokerConnection: BrokerConnection, exe: Executor): Cancelable
@@ -43,7 +44,8 @@ trait AppEnrollerConsumer {
 class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends ConnectionConsumer {
   def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
     // TODO: move defaultTimeout to userSettings file/object
-    val connection = ReefServices(brokerConnection, exe)
+    val connection = new DefaultConnection(brokerConnection, exe, 5000)
+    connection.addServicesList(new ReefServices)
     val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
 
     consumer.newClient(client)

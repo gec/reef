@@ -19,9 +19,9 @@
 package org.totalgrid.reef.simulator.example
 
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.api.protocol.api.Publisher
-import org.totalgrid.reef.api.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
-import org.totalgrid.reef.proto.{ Commands, Measurements, SimMapping }
+import org.totalgrid.reef.protocol.api.Publisher
+import org.totalgrid.reef.protocol.simulator.{ SimulatorPlugin, SimulatorPluginFactory }
+import org.totalgrid.reef.client.service.proto.{ Commands, Measurements, SimMapping }
 import com.weiglewilczek.slf4s.Logging
 import scala.collection.JavaConversions._
 
@@ -106,7 +106,7 @@ class ExampleBreakerSimulator(executor: Executor, publisher: Publisher[Measureme
       .addMeas(createStatus(names.status, "status", status)).build
   }
 
-  def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cr.getName match {
+  def issue(cr: Commands.CommandRequest): Commands.CommandStatus = cr.getCommand.getName match {
     case names.trip =>
       executor.execute(publisher.publish(createBreakerBatch(true)))
       Commands.CommandStatus.SUCCESS

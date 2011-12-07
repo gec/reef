@@ -20,17 +20,17 @@ package org.totalgrid.reef.entry
 
 import org.osgi.framework._
 
-import org.totalgrid.reef.api.protocol.api.Protocol
+import org.totalgrid.reef.protocol.api.Protocol
 import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.app._
-import org.totalgrid.reef.proto.Application.ApplicationConfig
-import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import net.agileautomata.executor4s.Cancelable
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.clientapi.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.frontend._
-import org.totalgrid.reef.clientapi.settings.{ AmqpSettings, UserSettings, NodeSettings }
+import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 
@@ -93,9 +93,9 @@ final class FepActivator extends ExecutorBundleActivator with Logging {
   private def create(client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
     val services = new FrontEndProviderServicesImpl(client)
 
-    val frontEndConnections = new FrontEndConnections(protocols, services)
+    val frontEndConnections = new FrontEndConnections(protocols, services, client)
     val populator = new EndpointConnectionPopulatorAction(services)
-    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator)
+    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client)
 
     // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events

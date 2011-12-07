@@ -32,7 +32,7 @@ import org.totalgrid.reef.loader.common.ConfigFile
 object LoadManager extends Logging {
 
   /**
-   * TODO: Catch file not found exceptions and call usage.
+   * TODO: Catch file not found exception and call usage.
    */
   def loadFile(client: => LoaderServices, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean = false, batchSize: Int = 25) = {
 

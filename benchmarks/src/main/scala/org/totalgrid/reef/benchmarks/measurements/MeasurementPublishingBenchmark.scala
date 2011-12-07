@@ -21,9 +21,9 @@ package org.totalgrid.reef.benchmarks.measurements
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.clientapi.{ AnyNodeDestination, AddressableDestination }
+import org.totalgrid.reef.client.{ AnyNodeDestination, AddressableDestination }
 import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.benchmarks._
 import java.io.PrintStream
 
@@ -56,7 +56,7 @@ class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int
 
     val names = endpoint.getOwnerships.getPointsList.toList
     val destination = if (direct) {
-      val connection = client.getEndpointConnection(endpoint.getUuid).await
+      val connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await
       new AddressableDestination(connection.getRouting.getServiceRoutingKey)
     } else {
       new AnyNodeDestination()

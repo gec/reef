@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.proto.Model.{ Point, ReefUUID, Entity }
-import org.totalgrid.reef.proto.Measurements.{ Quality, DetailQual, Measurement, MeasurementBatch }
-import org.totalgrid.reef.proto.Processing.{ TriggerSet, MeasOverride }
+import org.totalgrid.reef.client.service.proto.Model.{ Point, ReefUUID, Entity }
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, DetailQual, Measurement, MeasurementBatch }
+import org.totalgrid.reef.client.service.proto.Processing.{ TriggerSet, MeasOverride }
 
 object ProtoHelper {
 
@@ -90,27 +90,27 @@ object ProtoHelper {
     Point.newBuilder.setName(pointName).build
   }
 
-  def makeNodeByUid(nodeUid: String): Entity = {
-    Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(nodeUid)).build
+  def makeNodeById(nodeId: String): Entity = {
+    Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(nodeId)).build
   }
 
-  def makeNodeByUid(nodeUid: ReefUUID): Entity = {
-    Entity.newBuilder.setUuid(nodeUid).build
+  def makeNodeById(nodeId: ReefUUID): Entity = {
+    Entity.newBuilder.setUuid(nodeId).build
   }
 
   def makeNodeByName(name: String): Entity = {
     Entity.newBuilder.setName(name).build
   }
 
-  def makePointByNodeUid(nodeUid: String): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByUid(nodeUid)).build
+  def makePointByNodeId(nodeId: String): Point = {
+    Point.newBuilder.setEndpoint(makeNodeById(nodeId)).build
   }
-  def makePointByNodeUid(nodeUid: ReefUUID): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByUid(nodeUid)).build
+  def makePointByNodeId(nodeId: ReefUUID): Point = {
+    Point.newBuilder.setEndpoint(makeNodeById(nodeId)).build
   }
 
   def makePointByNodeName(name: String): Point = {
-    Point.newBuilder.setLogicalNode(makeNodeByName(name)).build
+    Point.newBuilder.setEndpoint(makeNodeByName(name)).build
   }
 
   def makeNIS(name: String) = {
@@ -136,7 +136,7 @@ object ProtoHelper {
       .build
   }
   def triggerRlcLow(measName: String) = {
-    import org.totalgrid.reef.proto.Processing._
+    import org.totalgrid.reef.client.service.proto.Processing._
     Trigger.newBuilder
       .setTriggerName("rlclow")
       .setStopProcessingWhen(ActivationType.HIGH)
@@ -165,7 +165,7 @@ object ProtoHelper {
               .build
   }
   def triggerTransformation(measName: String) = {
-    import org.totalgrid.reef.proto.Processing._
+    import org.totalgrid.reef.client.service.proto.Processing._
     Trigger.newBuilder
       .setTriggerName("trans")
       .setUnit("raw")

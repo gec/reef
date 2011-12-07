@@ -19,13 +19,14 @@
 package org.totalgrid.reef.protocol.dnp3.slave
 
 import org.totalgrid.reef.protocol.dnp3.common.Dnp3ProtocolBase
-import org.totalgrid.reef.proto.Model.ConfigFile
-import org.totalgrid.reef.api.protocol.api.Protocol._
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile
+import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.protocol.dnp3.{ ICommandAcceptor, IStackObserver }
-import org.totalgrid.reef.api.protocol.api.{ CommandHandler => ProtocolCommandHandler }
-import org.totalgrid.reef.proto.Commands.CommandRequest
-import org.totalgrid.reef.util.Cancelable
+import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
+import org.totalgrid.reef.client.service.proto.Commands.CommandRequest
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.client.rest.Client
 
 case class SlaveObjectsContainer(stackObserver: IStackObserver, commandProxy: ICommandAcceptor, measProxy: SlaveMeasurementProxy)
     extends Cancelable {
@@ -33,7 +34,7 @@ case class SlaveObjectsContainer(stackObserver: IStackObserver, commandProxy: IC
   def cancel() = measProxy.stop()
 }
 
-class Dnp3SlaveProtocol(services: AllScadaService) extends Dnp3ProtocolBase[SlaveObjectsContainer] {
+class Dnp3SlaveProtocol extends Dnp3ProtocolBase[SlaveObjectsContainer] {
 
   final override val name = "dnp3-slave"
 
@@ -41,9 +42,12 @@ class Dnp3SlaveProtocol(services: AllScadaService) extends Dnp3ProtocolBase[Slav
     channelName: String,
     files: List[ConfigFile],
     batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher): ProtocolCommandHandler = {
+    endpointPublisher: EndpointPublisher,
+    client: Client): ProtocolCommandHandler = {
 
-    logger.info("Adding device with uid: " + endpointName + " onto channel " + channelName)
+    val services = client.getRpcInterface(classOf[AllScadaService])
+
+    logger.info("Adding device with id: " + endpointName + " onto channel " + channelName)
 
     val mapping = getMappingProto(files)
     val (slaveConfig, filterLevel) = SlaveXmlConfig.getSlaveConfigFromConfigFiles(files, mapping)

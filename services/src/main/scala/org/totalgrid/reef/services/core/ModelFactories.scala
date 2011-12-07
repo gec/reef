@@ -27,7 +27,7 @@ class ModelFactories(measurementStore: MeasurementStore, contextSource: RequestC
 
   def this(deps: ServiceDependencies) = this(deps.measurementStore, new DependenciesSource(deps))
 
-  val accesses = new CommandAccessServiceModel
+  val accesses = new CommandLockServiceModel
   val userRequests = new UserCommandRequestServiceModel(accesses)
   val cmds = new CommandServiceModel(userRequests, accesses)
   accesses.setCommandModel(cmds)

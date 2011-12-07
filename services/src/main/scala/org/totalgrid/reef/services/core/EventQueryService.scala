@@ -18,18 +18,18 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Events._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode, LogicalBoolean }
 import org.squeryl.PrimitiveTypeMode._
 
-import org.totalgrid.reef.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 
 // implicit proto properties
 import SquerylModel._ // implict asParam

@@ -20,7 +20,7 @@ package org.totalgrid.reef.benchmarks.endpoints
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
-import org.totalgrid.reef.proto.FEP.CommEndpointConnection._
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection._
 import org.totalgrid.reef.benchmarks.{ BenchmarkReading, FailedBenchmarkException, BenchmarkTest }
 
 case class EndpointCycleReading(endpointName: String, protocol: String, finalState: State, stateTransitionTime: Long) extends BenchmarkReading {
@@ -41,7 +41,7 @@ class EndpointManagementBenchmark(endpointNames: List[String], cycles: Int) exte
 
     if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints to cycle")
 
-    val result = client.subscribeToAllEndpointConnections().await
+    val result = client.subscribeToEndpointConnections().await
 
     val map = new EndpointStateTransitionTimer(result, endpoints.map { _.getUuid })
 

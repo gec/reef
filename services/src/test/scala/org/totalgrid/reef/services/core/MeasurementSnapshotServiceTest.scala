@@ -20,14 +20,14 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.measurementstore.MeasSink.Meas
-import org.totalgrid.reef.proto.Measurements
-import org.totalgrid.reef.proto.Measurements.MeasurementSnapshot
+import org.totalgrid.reef.client.service.proto.Measurements
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {

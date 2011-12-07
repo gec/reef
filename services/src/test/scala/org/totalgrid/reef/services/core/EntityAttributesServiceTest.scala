@@ -21,34 +21,34 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.proto.Model.{ Entity, EntityAttributes }
-import org.totalgrid.reef.proto.Utils.Attribute
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityAttributes }
+import org.totalgrid.reef.client.service.proto.Utils.Attribute
 
-import org.totalgrid.reef.clientapi.proto.Envelope.Status
+import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.clientapi.exceptions.BadRequestException
+import org.totalgrid.reef.client.exception.BadRequestException
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, ApplicationSchema, EntityAttribute }
-import org.totalgrid.reef.proto.Model.{ ReefUUID, Entity, EntityAttributes }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity, EntityAttributes }
 import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])
 class EntityAttributesServiceTest extends DatabaseUsingTestBase {
 
   def seedEntity(name: String, typ: String) = {
-    ReefUUID.newBuilder.setUuid(EntityQueryManager.addEntity(name, typ).id.toString).build
+    ReefUUID.newBuilder.setValue(EntityQueryManager.addEntity(name, typ).id.toString).build
   }
 
   protected val service = SyncService(new EntityAttributesService)
 
   test("Put") {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -69,16 +69,16 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }*/
 
   test("Bad put - entity doesn't exist") {
-    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid(new UUID(0, 0).toString)).build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(new UUID(0, 0).toString)).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
 
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build))
   }
 
   test("Bad put - type but no value") {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -90,18 +90,18 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     EntityQueryManager.addEntity("ent02", "entType2")
 
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
-    ReefUUID.newBuilder.setUuid(id.toString).build
+    ReefUUID.newBuilder.setValue(id.toString).build
   }
 
-  def attrReq(entityUid: ReefUUID, attributes: List[Attribute]) = {
-    val entity = Entity.newBuilder.setUuid(entityUid).build
+  def attrReq(entityId: ReefUUID, attributes: List[Attribute]) = {
+    val entity = Entity.newBuilder.setUuid(entityId).build
     EntityAttributes.newBuilder.setEntity(entity).addAllAttributes(attributes.toList).build
   }
 
   test("Second put modifies") {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
@@ -120,18 +120,18 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put fully replaces") {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
     val initial = Attribute.newBuilder.setName("testAttr01").setVtype(Attribute.Type.SINT64).setValueSint64(56).build ::
       Attribute.newBuilder.setName("testAttr02").setVtype(Attribute.Type.SINT64).setValueSint64(23).build ::
       Nil
 
-    val entAttr = attrReq(entUid, initial)
+    val entAttr = attrReq(entId, initial)
 
     val result = service.put(entAttr).expectOne(Status.CREATED)
     result.getAttributesCount should equal(2)
 
-    val req2 = attrReq(entUid, List(Attribute.newBuilder.setName("testAttr03").setVtype(Attribute.Type.SINT64).setValueSint64(400).build))
+    val req2 = attrReq(entId, List(Attribute.newBuilder.setName("testAttr03").setVtype(Attribute.Type.SINT64).setValueSint64(400).build))
     val result2 = service.put(req2).expectOne(Status.UPDATED)
 
     result2.getAttributesCount should equal(1)
@@ -151,7 +151,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   test("Get all") {
     simpleGetScenario
 
-    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     val results = service.get(entAttr).expectMany(2)
@@ -169,10 +169,10 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     }
   }
 
-  test("Get by uid") {
-    val entUid = simpleGetScenario
+  test("Get by id") {
+    val entId = simpleGetScenario
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     checkSimpleGetScenario(entAttr)
@@ -197,7 +197,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr03", Some("hello"), None, None, None, None))
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId2, "attr04", Some("again"), None, None, None, None))
 
-    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setUuid("*")).build
+    val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
     val results = service.get(entAttr).expectMany(2)
@@ -207,16 +207,16 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def roundtrip[A](v: A, typ: Attribute.Type, setup: (Attribute.Builder, A) => Unit, get: Attribute => A) = {
-    val entUid = seedEntity("ent01", "entType")
+    val entId = seedEntity("ent01", "entType")
 
-    val entity = Entity.newBuilder.setUuid(entUid).build
+    val entity = Entity.newBuilder.setUuid(entId).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(typ)
     setup(attribute, v)
 
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
     service.put(entAttr).expectOne(Status.CREATED)
 
-    val result = service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entUid)).build).expectOne(Status.OK)
+    val result = service.get(EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(entId)).build).expectOne(Status.OK)
 
     result.getAttributesCount should equal(1)
     val attr = result.getAttributesList.get(0)
@@ -268,11 +268,11 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     val entId1 = EntityQueryManager.addEntity("ent01", "entType1").id
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
-    ReefUUID.newBuilder.setUuid(entId1.toString).build
+    ReefUUID.newBuilder.setValue(entId1.toString).build
   }
 
   def noneForEntity(entId: ReefUUID) = {
-    ApplicationSchema.entityAttributes.where(t => t.entityId === java.util.UUID.fromString(entId.getUuid)).toList should equal(Nil)
+    ApplicationSchema.entityAttributes.where(t => t.entityId === java.util.UUID.fromString(entId.getValue)).toList should equal(Nil)
   }
 
 }

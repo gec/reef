@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.metrics
 
 import org.totalgrid.reef.metrics.MetricsHookSource
-import org.totalgrid.reef.clientapi.proto.Envelope
+import org.totalgrid.reef.client.proto.Envelope
 
 object ProtoServicableMetrics {
 

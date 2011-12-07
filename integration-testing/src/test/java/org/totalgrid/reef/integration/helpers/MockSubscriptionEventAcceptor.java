@@ -18,9 +18,9 @@
  */
 package org.totalgrid.reef.integration.helpers;
 
-import org.totalgrid.reef.clientapi.proto.Envelope;
-import org.totalgrid.reef.clientapi.SubscriptionEvent;
-import org.totalgrid.reef.clientapi.SubscriptionEventAcceptor;
+import org.totalgrid.reef.client.proto.Envelope;
+import org.totalgrid.reef.client.SubscriptionEvent;
+import org.totalgrid.reef.client.SubscriptionEventAcceptor;
 
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -115,11 +115,11 @@ public class MockSubscriptionEventAcceptor<T> implements SubscriptionEventAccept
         return list;
     }
 
-    public List<Envelope.Event> getEventCodes()
+    public List<Envelope.SubscriptionEventType> getEventCodes()
     {
         if ( !storeResults )
             throw new RuntimeException( "Not storing results" );
-        List<Envelope.Event> list = new LinkedList<Envelope.Event>();
+        List<Envelope.SubscriptionEventType> list = new LinkedList<Envelope.SubscriptionEventType>();
         for ( SubscriptionEvent<T> p : results )
         {
             list.add( p.getEventType() );

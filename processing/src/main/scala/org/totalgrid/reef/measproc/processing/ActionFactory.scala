@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.measproc.processing
 
-import org.totalgrid.reef.proto.Measurements._
-import org.totalgrid.reef.proto.Events._
-import org.totalgrid.reef.proto.Model._
-import org.totalgrid.reef.proto.Processing.{ Action => ActionProto, ActivationType => TypeProto, LinearTransform => LinearProto, EventGeneration }
+import org.totalgrid.reef.client.service.proto.Measurements._
+import org.totalgrid.reef.client.service.proto.Events._
+import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.Processing.{ Action => ActionProto, ActivationType => TypeProto, LinearTransform => LinearProto, EventGeneration }
 import org.totalgrid.reef.event._
 
 /**
