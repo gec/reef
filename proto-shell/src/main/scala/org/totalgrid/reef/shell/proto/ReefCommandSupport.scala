@@ -30,7 +30,7 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.totalgrid.reef.client.ConnectionCloseListener
-import org.totalgrid.reef.client.factory.ReefFactory
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
@@ -64,7 +64,7 @@ object ReefCommandSupport extends Logging {
 
   def attemptLogin(session: CommandSession, amqpSettings: AmqpSettings, userSettings: UserSettings, unexpectedDisconnectCallback: () => Unit) = {
 
-    val factory = new ReefFactory(amqpSettings, ReefServices)
+    val factory = new ReefFactory(amqpSettings, new ReefServices)
     val conn = factory.connect
 
     val cancel = new Cancelable {

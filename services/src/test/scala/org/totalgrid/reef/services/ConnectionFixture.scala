@@ -33,7 +33,7 @@ object ConnectionFixture {
       val brokerConnection = broker.connect
 
       val connection = new DefaultConnection(brokerConnection, exe, 5000)
-      connection.addServicesList(ReefServices)
+      connection.addServicesList(new ReefServices)
       test(connection)
     } finally {
       exe.terminate()

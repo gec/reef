@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.benchmarks
 
-import org.totalgrid.reef.client.factory.ReefFactory
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
@@ -35,7 +35,7 @@ object AllBenchmarksEntryPoint {
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
 
-    val factory = new ReefFactory(connectionInfo, ReefServices)
+    val factory = new ReefFactory(connectionInfo, new ReefServices)
 
     try {
 

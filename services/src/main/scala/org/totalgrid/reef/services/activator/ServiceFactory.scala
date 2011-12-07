@@ -51,7 +51,7 @@ object ServiceFactory {
       def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
 
         val connection = new DefaultConnection(brokerConnection, exe, 5000)
-        connection.addServicesList(ReefServices)
+        connection.addServicesList(new ReefServices)
 
         modules.getDbConnector()
 

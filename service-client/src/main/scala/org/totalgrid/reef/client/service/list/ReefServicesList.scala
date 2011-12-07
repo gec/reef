@@ -18,11 +18,12 @@ package org.totalgrid.reef.client.service.list
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.totalgrid.reef.client.types.{ ServiceInfo, TypeDescriptor }
+import org.totalgrid.reef.client.types.{ ServiceInfo, TypeDescriptor, ServiceTypeInformation }
 import org.totalgrid.reef.client.service.proto.Descriptors
 
 object ReefServicesList {
-  def getServicesList = List(
+  import scala.collection.JavaConversions._
+  def getServicesList: java.util.List[ServiceTypeInformation[_, _]] = List(
     getEntry(Descriptors.commChannel),
     getEntry(Descriptors.frontEndProcessor),
     getEntry(Descriptors.endpoint),

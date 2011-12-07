@@ -22,7 +22,7 @@ import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.client.factory.ReefFactory
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
@@ -70,7 +70,7 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
     val config = new AmqpSettings(props)
     val userConfig = new UserSettings(props)
-    factoryOption = Some(new ReefFactory(config, ReefServices))
+    factoryOption = Some(new ReefFactory(config, new ReefServices))
     val conn = factoryOption.get.connect()
     sessionOption = Some(conn.login(userConfig.getUserName, userConfig.getUserPassword).await)
     clientOption = Some(session.getRpcInterface(classOf[AllScadaService]))

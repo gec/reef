@@ -44,8 +44,8 @@ trait AllScadaServiceImpl
 
 class AllScadaServiceWrapper(client: Client) extends ApiBase(client) with AllScadaServiceImpl
 
-object AllScadaServiceImpl {
-  val serviceInfo = RpcProvider(new AllScadaServiceWrapper(_),
+object AllScadaServiceImplServiceList {
+  def getServiceInfo = RpcProvider(new AllScadaServiceWrapper(_),
     List(
       classOf[AllScadaService],
       classOf[EntityService],

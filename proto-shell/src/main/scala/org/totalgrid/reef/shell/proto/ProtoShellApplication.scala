@@ -25,7 +25,7 @@ import org.apache.felix.gogo.runtime.CommandProcessorImpl
 import jline.Terminal
 import java.io.{ PrintStream, InputStream }
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
-import org.totalgrid.reef.client.factory.ReefFactory
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.service.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.settings.util.PropertyReader
@@ -39,7 +39,7 @@ object ProtoShellApplication {
     val userSettings = new UserSettings(PropertyReader.readFromFile("org.totalgrid.reef.user.cfg"))
     val connectionInfo = new AmqpSettings(PropertyReader.readFromFile("org.totalgrid.reef.amqp.cfg"))
 
-    val factory = new ReefFactory(connectionInfo, ReefServices)
+    val factory = new ReefFactory(connectionInfo, new ReefServices)
 
     val connection = factory.connect()
 

@@ -41,7 +41,7 @@ public class TestReconnectingFactory
         final AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
         final UserSettings userSettings = new UserSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
 
-        ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, ReefServices.getInstance(), 100, 500 );
+        ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, new ReefServices(), 100, 500 );
 
         final SyncVar closed = new SyncVar<Boolean>( Boolean.FALSE );
         final SyncVar closeExpected = new EmptySyncVar<Boolean>();

@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.dnp3.integrationtests
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.client.factory.ReefFactory
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.loader.commons.{ LoaderClient, LoaderServices, ModelDeleter }
 import org.totalgrid.reef.loader.LoadManager
@@ -55,7 +55,7 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     val amqp = new AmqpSettings(props)
     val user = new UserSettings(props)
 
-    factoryOption = Some(new ReefFactory(amqp, ReefServices))
+    factoryOption = Some(new ReefFactory(amqp, new ReefServices))
 
     val connection = factoryOption.get.connect()
     val c = connection.login(user.getUserName, user.getUserPassword).await

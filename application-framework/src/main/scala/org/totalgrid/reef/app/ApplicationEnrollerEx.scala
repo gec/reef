@@ -45,7 +45,7 @@ class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends Co
   def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
     // TODO: move defaultTimeout to userSettings file/object
     val connection = new DefaultConnection(brokerConnection, exe, 5000)
-    connection.addServicesList(ReefServices)
+    connection.addServicesList(new ReefServices)
     val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
 
     consumer.newClient(client)

@@ -68,7 +68,7 @@ public class ReefConnectionTestBase implements SubscriptionCreationListener
         try
         {
             AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
-            this.factory = new ReefConnectionFactory( s, ReefServices.getInstance() );
+            this.factory = new ReefConnectionFactory( s, new ReefServices() );
         }
         catch ( Exception ex )
         {

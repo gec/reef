@@ -55,8 +55,8 @@ final class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServi
   override def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = service.removeSubscriptionCreationListener(listener)
 }
 
-object AllScadaServiceJavaShim {
-  val serviceInfo = RpcProvider(new AllScadaServiceJavaShimWrapper(_),
+object AllScadaServiceJavaShimServiceList {
+  def getServiceInfo = RpcProvider(new AllScadaServiceJavaShimWrapper(_),
     List(
       classOf[AllScadaService],
       classOf[EntityService],

@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.loader.commons.LoaderServicesImpl
 import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.client.factory.ReefFactory
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 
 object StandaloneLoader {
   def run(connectionInfo: AmqpSettings, userSettings: UserSettings, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean): Unit = {
@@ -31,7 +31,7 @@ object StandaloneLoader {
     try {
       // we only connect to amqp if we are not doing a dry run
       def client = {
-        val factory = new ReefFactory(connectionInfo, ReefServices)
+        val factory = new ReefFactory(connectionInfo, new ReefServices)
         val conn = factory.connect
 
         val session = conn.login(userSettings.getUserName, userSettings.getUserPassword).await

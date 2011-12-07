@@ -48,7 +48,8 @@ object ServiceBootstrap {
    * during bootstrap so we correctly publish the "someone logged on" events
    */
   def defineEventExchanges(connection: Connection) {
-    ReefServicesList.getServicesList.foreach { serviceInfo =>
+    import scala.collection.JavaConversions._
+    ReefServicesList.getServicesList.toList.foreach { serviceInfo =>
       connection.declareEventExchange(serviceInfo.getDescriptor.getKlass)
     }
   }
