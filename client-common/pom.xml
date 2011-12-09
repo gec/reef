@@ -48,7 +48,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Common Api</Bundle-Name>
+                        <Bundle-Name>Reef Common API</Bundle-Name>
                         <Export-Package>
                             org.totalgrid.reef.client.exception,
                             org.totalgrid.reef.client.settings.*,
