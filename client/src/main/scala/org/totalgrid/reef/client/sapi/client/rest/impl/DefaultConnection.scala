@@ -95,9 +95,9 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     client
   }
 
-  def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, executor: Executor): Future[Response[A]] = {
+  def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): Future[Response[A]] = {
 
-    val future = executor.future[Response[A]]
+    val future = requestExecutor.future[Response[A]]
 
     def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) = result match {
       case Left(response) => future.set(response)
@@ -109,6 +109,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
       val timeout = headers.getTimeout.getOrElse(timeoutms)
       val descriptor = info.getDescriptor
 
+      // timeout callback will come in on a random executor thread and be marshalled correctly by future
       val uuid = correlator.register(executor, timeout.milliseconds, onResponse(descriptor))
       try {
         val request = RestHelpers.buildServiceRequest(verb, payload, descriptor, uuid, headers)
