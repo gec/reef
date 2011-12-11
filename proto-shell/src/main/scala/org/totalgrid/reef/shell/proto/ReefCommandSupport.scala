@@ -69,8 +69,7 @@ object ReefCommandSupport extends Logging {
 
     val cancel = new Cancelable {
       def cancel() = {
-        // TODO: should be exe.shutdown, deadlocks when onDisconnect occurs
-        factory.terminate()
+        factory.shutdown()
       }
     }
     conn.addConnectionListener(new ConnectionCloseListener {

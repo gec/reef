@@ -26,6 +26,11 @@ import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.ServicesList
 
+/**
+ * provide a one-shot factory that holds the made connection and calls disconnect
+ * during shutdown. Not thread-safe and needs to be reconstructed for a new
+ * connection.
+ */
 class ReefFactory(amqpSettings: AmqpSettings, servicesList: ServicesList) {
   private val factory = new QpidBrokerConnectionFactory(amqpSettings)
   private val exe = Executors.newScheduledThreadPool(5)
@@ -33,6 +38,9 @@ class ReefFactory(amqpSettings: AmqpSettings, servicesList: ServicesList) {
   private var broker = Option.empty[BrokerConnection]
   private var connection = Option.empty[Connection]
 
+  /**
+   * make a connection or return the already prepared connection
+   */
   def connect(): Connection = {
     if (connection.isEmpty) {
       broker = Some(factory.connect)
@@ -42,8 +50,22 @@ class ReefFactory(amqpSettings: AmqpSettings, servicesList: ServicesList) {
     connection.get
   }
 
-  def terminate() {
+  /**
+   * disconnect the connection and start shutting down the executor
+   */
+  def shutdown() {
+    // TODO: should this be connection.disconnect?
     broker.foreach { _.disconnect }
+    exe.shutdown()
+  }
+
+  /**
+   * calls shutdown, then waits for the executor to terminate
+   * NOTE: do not call from inside of the executor (such as in an onDisconnect callback)
+   * since it will deadlock in terminate
+   */
+  def terminate() {
+    shutdown()
     exe.terminate()
   }
 }
