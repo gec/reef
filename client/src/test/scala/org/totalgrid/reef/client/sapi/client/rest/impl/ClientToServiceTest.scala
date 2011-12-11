@@ -68,35 +68,43 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     }
   }
 
-  //  test("Service calls can be listened for") {
-  //    fixture(true) { c =>
-  //      val i = SomeInteger(1)
-  //      val future = c.put(i)
-  //      var listenFired = false
-  //      future.listen { result =>
-  //        result should equal(Response(Envelope.Status.OK, i.increment))
-  //        listenFired = true
-  //      }
-  //      // await should force future.listen calls to have fired
-  //      future.await
-  //      listenFired should equal(true)
-  //    }
-  //  }
-  //
-  //  test("Service calls can be listened for (promise)") {
-  //    fixture(true) { c =>
-  //      val i = SomeInteger(1)
-  //      val promise = Promise.from(c.put(i).map { _.one })
-  //      var listenFired = false
-  //      promise.listen { prom =>
-  //        prom.await should equal(i.increment)
-  //        listenFired = true
-  //      }
-  //      // await should force promise listens to have fired
-  //      promise.await
-  //      listenFired should equal(true)
-  //    }
-  //  }
+  test("Service calls can be listened for") {
+    fixture(true) { c =>
+      val i = SomeInteger(1)
+      val future = c.put(i)
+      val events = new SynchronizedList[SomeInteger]
+      future.listen { result =>
+        result should equal(Response(Envelope.Status.OK, i.increment))
+        events.append(result.list.head)
+      }
+      events shouldBecome (i.increment) within (100)
+    }
+  }
+
+  def testPromiseAwait(c: Client) {
+    val i = SomeInteger(1)
+    val promise = Promise.from(c.put(i).map { _.one })
+    val events = new SynchronizedList[SomeInteger]
+    promise.listen { prom =>
+      prom.await should equal(i.increment)
+      events.append(prom.await)
+    }
+    events shouldBecome (i.increment) within (100)
+  }
+
+  test("Service calls can be listened for (promise)") {
+    fixture(true) { c =>
+      testPromiseAwait(c)
+    }
+  }
+
+  test("Service calls promises can be listened for (inside strand)") {
+    fixture(true) { c =>
+      c.attempt {
+        testPromiseAwait(c)
+      }.await
+    }
+  }
 
   test("Subscription calls work") { //subscriptions not currently working with embedded broker
     fixture(true) { c =>
