@@ -55,7 +55,6 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   }
 
   private def handleDisconnect(expected: Boolean) {
-    subscription.close()
     conn.removeListener(this)
     correlator.close()
     this.notifyListenersOfClose(expected)
@@ -65,6 +64,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   def disconnect() = {
     val currentlyConnected = conn.isConnected()
     logger.info("disconnect called, connected: " + currentlyConnected)
+    subscription.close()
     if (currentlyConnected) {
       handleDisconnect(true)
       conn.disconnect()

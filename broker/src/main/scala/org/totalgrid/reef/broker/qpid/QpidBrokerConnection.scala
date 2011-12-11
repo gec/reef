@@ -62,6 +62,8 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
 
   def closed(conn: Connection) = {
 
+    logger.info("qpid connection closed")
+
     val expected = mutex.synchronized {
       val temp = disconnected
       // we want to make sure we have set the connection into a closed state
@@ -69,13 +71,13 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
       // in case they try to use the connection. they should also marshall all
       // calls to the
       disconnected = true
+      closed = true
       temp
     }
 
     this.onDisconnect(expected)
 
     mutex.synchronized {
-      closed = true
       mutex.notifyAll()
     }
 
