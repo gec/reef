@@ -43,7 +43,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   addServiceInfo(BuiltInDescriptors.batchServiceRequestServiceInfo)
 
   conn.declareExchange("amq.direct")
-  private val correlator = new ResponseCorrelator
+  private val correlator = new ResponseCorrelator(executor)
   private val subscription = conn.listen().start(correlator)
   conn.bindQueue(subscription.getQueue, "amq.direct", subscription.getQueue)
   conn.addListener(this)
@@ -110,7 +110,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
       val descriptor = info.getDescriptor
 
       // timeout callback will come in on a random executor thread and be marshalled correctly by future
-      val uuid = correlator.register(executor, timeout.milliseconds, onResponse(descriptor))
+      val uuid = correlator.register(timeout.milliseconds, onResponse(descriptor))
       try {
         val request = RestHelpers.buildServiceRequest(verb, payload, descriptor, uuid, headers)
         val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))

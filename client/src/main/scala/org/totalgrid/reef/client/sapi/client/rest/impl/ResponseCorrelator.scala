@@ -32,11 +32,9 @@ import org.totalgrid.reef.client.sapi.client.{ ResponseTimeout, FailureResponse 
 /**
  * Synchronizes and correlates the send/receive operations on a ProtoServiceChannel
  *
- * @param timeoutms The timeout in milliseconds for a service request
- * @param channel The ProtoServiceChannel on which requests and responses will be received
- *
+ * @param executor all timeouts and responses will be dispatched on this executor
  */
-class ResponseCorrelator extends Logging with BrokerMessageConsumer {
+class ResponseCorrelator(executor: Executor) extends Logging with BrokerMessageConsumer {
 
   type Response = Either[FailureResponse, ServiceResponse]
   type ResponseCallback = Response => Unit
@@ -48,7 +46,7 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
   private case class Record(timer: Cancelable, callback: ResponseCallback)
   private val map = mutable.Map.empty[String, Record]
 
-  def register(executor: Executor, interval: TimeInterval, callback: ResponseCallback): String = map.synchronized {
+  def register(interval: TimeInterval, callback: ResponseCallback): String = map.synchronized {
     val uuid = nextUuid
     val timer = executor.schedule(interval)(onTimeout(uuid))
     map.put(uuid, Record(timer, callback))
@@ -59,7 +57,7 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
     map.synchronized(map.remove(uuid)) match {
       case Some(Record(timer, callback)) =>
         timer.cancel()
-        callback(Left(response))
+        doCallback(callback, Left(response))
       case None =>
         logger.warn("Couldn't fail unknown uuid: " + uuid)
     }
@@ -76,14 +74,14 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
     }.foreach {
       case Record(timer, callback) =>
         timer.cancel()
-        callback(Left(FailureResponse(Envelope.Status.BUS_UNAVAILABLE, "Graceful close")))
+        doCallback(callback, Left(FailureResponse(Envelope.Status.BUS_UNAVAILABLE, "Graceful close")))
     }
   }
 
   private def onTimeout(uuid: String) = {
     map.synchronized(map.remove(uuid)) match {
       case Some(Record(timer, callback)) =>
-        callback(Left(ResponseTimeout))
+        doCallback(callback, Left(ResponseTimeout))
       case None =>
         logger.warn("Unexpected service response timeout w/ uuid: " + uuid)
     }
@@ -101,10 +99,17 @@ class ResponseCorrelator extends Logging with BrokerMessageConsumer {
     map.synchronized(map.remove(rsp.getId)) match {
       case Some(Record(timer, callback)) =>
         timer.cancel()
-        callback(Right(rsp))
+        doCallback(callback, Right(rsp))
       case None =>
         logger.warn("Unexpected request response w/ uuid: " + rsp.getId)
     }
+  }
+
+  /**
+   * dispatch the callback on the executors thread
+   */
+  private def doCallback(callback: ResponseCallback, response: Response) {
+    executor.execute { callback(response) }
   }
 
 }

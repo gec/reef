@@ -140,12 +140,18 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     val i = SomeInteger(1)
     // this test simulates an API call where we do 2 steps
     val f1: Future[Response[SomeInteger]] = c.put(i)
-    f1.flatMap {
+    val f2 = f1.flatMap {
+      _.one match {
+        case Success(int) => c.put(int)
+        case fail: Failure => f1.asInstanceOf[Future[Response[SomeInteger]]]
+      }
+    }
+    f2.flatMap {
       _.one match {
         case Success(int) => f1.replicate[Response[Double]](Response(Envelope.Status.OK, int.num * 88.88))
         case fail: Failure => f1.asInstanceOf[Future[Response[Double]]]
       }
-    }.await should equal(Response(Envelope.Status.OK, 88.88 * 2))
+    }.await should equal(Response(Envelope.Status.OK, 88.88 * 3))
   }
 
   test("Flatmapped service calls are successful") {
@@ -173,7 +179,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     }
   }
 
-  ignore("Flatmap services calls are successfull (inside strand)") {
+  test("Flatmap services calls are successfull (inside strand)") {
     // currently deadlocks because flatMap is implemented with a listen call that gets marshalled
     // to this same strand and therefore can never be run (since we are inside that thread already)
     fixture(true) { c =>
