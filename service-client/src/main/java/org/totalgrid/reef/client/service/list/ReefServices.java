@@ -21,6 +21,7 @@ package org.totalgrid.reef.client.service.list;
 import org.totalgrid.reef.client.ServiceProviderInfo;
 import org.totalgrid.reef.client.ServicesList;
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImplServiceList;
+import org.totalgrid.reef.client.sapi.rpc.impl.RESTServiceProviders;
 import org.totalgrid.reef.client.service.impl.AllScadaServiceJavaShimServiceList;
 import org.totalgrid.reef.client.types.ServiceTypeInformation;
 
@@ -43,6 +44,8 @@ public class ReefServices implements ServicesList
         List<ServiceProviderInfo> list = new LinkedList<ServiceProviderInfo>();
         list.add( AllScadaServiceImplServiceList.getServiceInfo() );
         list.add( AllScadaServiceJavaShimServiceList.getServiceInfo() );
+        list.add( RESTServiceProviders.getScalaServiceInfo() );
+        list.add( RESTServiceProviders.getJavaServiceInfo() );
         return list;
     }
 }
