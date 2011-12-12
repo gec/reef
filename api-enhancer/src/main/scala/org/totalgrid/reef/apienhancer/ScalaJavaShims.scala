@@ -48,17 +48,19 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
     stream.println("import scala.collection.JavaConversions._")
     stream.println("import org.totalgrid.reef.client.sapi.client.rpc.framework.Converters._")
     stream.println("import org.totalgrid.reef.client.service." + japiPackage + "{" + c.name + targetEx + "=> JInterface }")
-    stream.println("import org.totalgrid.reef.client.sapi.rpc.AllScadaService")
 
     if (isFuture) stream.println("import org.totalgrid.reef.client.Promise")
 
     stream.println("trait " + c.name + exName + " extends JInterface{")
 
-    stream.println("\tdef service: AllScadaService")
+    stream.println("\tdef service: org.totalgrid.reef.client.sapi.rpc." + c.name)
 
     c.methods.toList.foreach { m =>
 
-      var msg = "\t" + "override def " + m.name + "("
+      val typ = m.typeParameters().toList.headOption
+      val typAnnotation = typ.map { t => "[" + t.typeName() + "]" }.getOrElse("")
+
+      var msg = "\t" + "override def " + m.name + typAnnotation + "("
       msg += m.parameters().toList.map { p =>
         p.name + ": " + javaAsScalaTypeString(p.`type`)
       }.mkString(", ")

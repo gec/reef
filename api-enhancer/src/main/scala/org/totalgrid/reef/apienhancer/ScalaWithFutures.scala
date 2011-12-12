@@ -49,7 +49,10 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
 
     c.methods.toList.foreach { m =>
 
-      var msg = "\t" + "def " + m.name + "("
+      val typ = m.typeParameters().toList.headOption
+      val typAnnotation = typ.map { t => "[" + t.typeName() + "]" }.getOrElse("")
+
+      var msg = "\t" + "def " + m.name + typAnnotation + "("
       msg += m.parameters().toList.map { p =>
         p.name + ": " + scalaTypeString(p.`type`)
       }.mkString(", ")
