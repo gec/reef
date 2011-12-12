@@ -145,14 +145,18 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
       import org.totalgrid.reef.client.AddressableDestination
       import net.agileautomata.executor4s._
 
-      // TODO: reimplement with flatMap once strand/await/flatMap is sorted out
-      val connection = session.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build).map(_.one).await.get
-      val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
-      val service = new EndpointCommandHandlerImpl(handler)
+      val connectionFuture = session.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build)
 
-      val f2 = client.future[Result[Cancelable]]
-      f2.set(Success(client.bindService(service, client, destination, false)))
-      f2
+      connectionFuture.flatMap {
+        _.one match {
+          case Success(connection) =>
+            val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
+            val service = new EndpointCommandHandlerImpl(handler)
+            connectionFuture.replicate[Result[Cancelable]](Success(client.bindService(service, client, destination, false)))
+          case fail: Failure =>
+            connectionFuture.asInstanceOf[Future[Result[Cancelable]]]
+        }
+      }
     }
   }
 }
