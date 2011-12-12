@@ -138,7 +138,7 @@ public interface MeasurementService extends SubscriptionCreator
      * </ul>
      * TODO: protocol checking on publishMeasurements
      */
-    boolean publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
+    Boolean publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
 
     /**
      * Publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
@@ -151,7 +151,7 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
      */
-    boolean publishMeasurements( List<Measurement> measurements, Routable destination ) throws ReefServiceException;
+    Boolean publishMeasurements( List<Measurement> measurements, Routable destination ) throws ReefServiceException;
 
     /**
      * Publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
@@ -164,5 +164,5 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
      */
-    boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
+    Boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
 }
