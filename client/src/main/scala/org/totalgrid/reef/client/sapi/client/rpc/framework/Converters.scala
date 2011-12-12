@@ -33,4 +33,8 @@ object Converters {
   def convert[A](result: Option[A]): A = {
     result.getOrElse(null.asInstanceOf[A])
   }
+
+  def convert(result: scala.Boolean): java.lang.Boolean = {
+    result.asInstanceOf[java.lang.Boolean]
+  }
 }

@@ -23,8 +23,10 @@ import static org.junit.Assert.*;
 
 import com.google.protobuf.ByteString;
 
+import org.totalgrid.reef.client.Promise;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.RESTOperations;
+import org.totalgrid.reef.client.service.async.RESTOperationsAsync;
 import org.totalgrid.reef.client.service.proto.Model;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 
@@ -63,6 +65,27 @@ public class TestRESTOperations extends ReefConnectionTestBase
         try
         {
             ops.getOne( cf );
+            fail( "Should throw exception if getOne returns 0" );
+        }
+        catch ( ReefServiceException e )
+        {
+            assertTrue( true );
+        }
+    }
+
+    @Test
+    public void testGetAsync() throws Exception
+    {
+        RESTOperationsAsync ops = client.getService( RESTOperationsAsync.class );
+
+        Model.ConfigFile cf =
+            Model.ConfigFile.newBuilder().setName( "TestFile2" ).setMimeType( "test2" ).setFile( ByteString.copyFromUtf8( "test2" ) ).build();
+
+        Promise<Model.ConfigFile> promise = ops.getOne( cf );
+        try
+        {
+            // notice exception isn't throw until await is called
+            promise.await();
             fail( "Should throw exception if getOne returns 0" );
         }
         catch ( ReefServiceException e )

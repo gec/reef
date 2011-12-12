@@ -20,9 +20,6 @@ package org.totalgrid.reef.client.service.list;
 
 import org.totalgrid.reef.client.ServiceProviderInfo;
 import org.totalgrid.reef.client.ServicesList;
-import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImplServiceList;
-import org.totalgrid.reef.client.sapi.rpc.impl.RESTServiceProviders;
-import org.totalgrid.reef.client.service.impl.AllScadaServiceJavaShimServiceList;
 import org.totalgrid.reef.client.types.ServiceTypeInformation;
 
 import java.util.LinkedList;
@@ -42,10 +39,16 @@ public class ReefServices implements ServicesList
     public List<ServiceProviderInfo> getServiceProviders()
     {
         List<ServiceProviderInfo> list = new LinkedList<ServiceProviderInfo>();
-        list.add( AllScadaServiceImplServiceList.getServiceInfo() );
-        list.add( AllScadaServiceJavaShimServiceList.getServiceInfo() );
-        list.add( RESTServiceProviders.getScalaServiceInfo() );
-        list.add( RESTServiceProviders.getJavaServiceInfo() );
+
+        // having package imports where the javadoc tool can see them causes the api-enhancer
+        // step to fail on unknown imports.
+
+        list.add( org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImplServiceList.getServiceInfo() );
+        list.add( org.totalgrid.reef.client.service.impl.AllScadaServiceJavaShimServiceList.getServiceInfo() );
+        list.add( org.totalgrid.reef.client.service.impl.async.AllScadaServiceAsyncJavaShimServiceList.getServiceInfo() );
+        list.add( org.totalgrid.reef.client.sapi.rpc.impl.RESTServiceProviders.getScalaServiceInfo() );
+        list.add( org.totalgrid.reef.client.sapi.rpc.impl.RESTServiceProviders.getJavaServiceInfo() );
+        list.add( org.totalgrid.reef.client.sapi.rpc.impl.RESTServiceProviders.getJavaAsyncServiceInfo() );
         return list;
     }
 }

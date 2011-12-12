@@ -23,6 +23,8 @@ import org.totalgrid.reef.client.service.{ RESTOperations => JRESTOperations }
 import org.totalgrid.reef.client.sapi.client.rest.{ Client, RpcProvider }
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.service.impl.RESTOperationsJavaShim
+import org.totalgrid.reef.client.service.async.impl.RESTOperationsAsyncJavaShim
+import org.totalgrid.reef.client.service.async.RESTOperationsAsync
 
 class RESTOperationsWrapper(client: Client) extends ApiBase(client) with RESTOperationsImpl
 
@@ -33,7 +35,15 @@ final class RESTOperationsJavaShimWrapper(client: Client) extends RESTOperations
   override def service = srv
 }
 
+final class RESTOperationsAsyncJavaShimWrapper(client: Client) extends RESTOperationsAsyncJavaShim {
+
+  private val srv = new RESTOperationsWrapper(client)
+
+  override def service = srv
+}
+
 object RESTServiceProviders {
   def getScalaServiceInfo = RpcProvider(new RESTOperationsWrapper(_), List(classOf[RESTOperations]))
   def getJavaServiceInfo = RpcProvider(new RESTOperationsJavaShimWrapper(_), List(classOf[JRESTOperations]))
+  def getJavaAsyncServiceInfo = RpcProvider(new RESTOperationsAsyncJavaShimWrapper(_), List(classOf[RESTOperationsAsync]))
 }
