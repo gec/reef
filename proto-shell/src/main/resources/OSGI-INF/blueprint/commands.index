@@ -9,6 +9,7 @@ org.totalgrid.reef.shell.proto.AccessBlockCommand
 org.totalgrid.reef.shell.proto.AccessRemoveCommand
 org.totalgrid.reef.shell.proto.ReefLoginCommand
 org.totalgrid.reef.shell.proto.ReefLogoutCommand
+org.totalgrid.reef.shell.proto.ReefHeadersCommand
 org.totalgrid.reef.shell.proto.EntityTypeCommand
 org.totalgrid.reef.shell.proto.EntityChildrenCommand
 org.totalgrid.reef.shell.proto.EntityCommand
