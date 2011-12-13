@@ -83,6 +83,8 @@ trait FrontEndPortConversion
 
   val table = ApplicationSchema.frontEndPorts
 
+  def sortResults(list: List[ChannelProto]) = list.sortBy(_.getName)
+
   def getRoutingKey(req: ChannelProto) = ProtoRoutingKeys.generateRoutingKey {
     req.name ::
       req.ip.network ::

@@ -174,6 +174,8 @@ trait CommandLockConversion
   import org.totalgrid.reef.client.service.proto.OptionalProtos._
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
+  def sortResults(list: List[AccessProto]) = list.sortBy(_.getExpireTime)
+
   def getRoutingKey(req: AccessProto) = ProtoRoutingKeys.generateRoutingKey {
     req.id.value ::
       req.access ::

@@ -94,6 +94,8 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
 trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Command] {
 
+  def sortResults(list: List[CommandProto]) = list.sortBy(_.getName)
+
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
     req.uuid.value :: req.name :: req.entity.uuid.value :: Nil
   }

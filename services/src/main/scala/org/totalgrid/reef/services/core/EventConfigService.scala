@@ -161,6 +161,8 @@ trait EventConfigConversion
 
   val table = ApplicationSchema.eventConfigs
 
+  def sortResults(list: List[EventConfig]) = list.sortBy(_.getEventType)
+
   def getRoutingKey(req: EventConfig) = ProtoRoutingKeys.generateRoutingKey {
     req.eventType :: Nil
   }

@@ -156,6 +156,9 @@ trait EventConversion
 
   override def getOrdering[R](select: SelectState[R], sql: EventStore): QueryYield[R] = select.orderBy(new OrderByArg(sql.time).asc)
 
+  // we've already sorted with the getOrdering we needed to reterive from the database
+  def sortResults(list: List[Event]) = list
+
   // Derive a AMQP routing key from a proto. Used by post?
   def getRoutingKey(req: Event) = ProtoRoutingKeys.generateRoutingKey {
     req.eventType ::

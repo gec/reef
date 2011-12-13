@@ -130,6 +130,9 @@ trait AlarmConversion
 
   val table = ApplicationSchema.alarms
 
+  // we've already sorted with the Event getOrdering we needed to reterive from the database
+  def sortResults(list: List[Alarm]) = list
+
   // Did the update change anything that requires a notification to bus
   // subscribers.
   //

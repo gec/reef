@@ -79,6 +79,9 @@ trait OverrideConfigConversion
 
   val table = ApplicationSchema.overrides
 
+  // TODO: should sort on id for issuing order
+  def sortResults(list: List[MeasOverride]) = list.sortBy(_.getMeas.getName)
+
   def getRoutingKey(req: MeasOverride) = ProtoRoutingKeys.generateRoutingKey(
     req.point.endpoint.uuid.value :: req.point.name :: Nil)
 

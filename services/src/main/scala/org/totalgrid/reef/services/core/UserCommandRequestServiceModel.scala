@@ -30,6 +30,9 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel
 import org.totalgrid.reef.client.service.proto.Commands.CommandRequest.ValType
 import org.totalgrid.reef.client.service.proto.Model.CommandType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
+import org.squeryl.dsl.fsm.SelectState
+import org.squeryl.dsl.QueryYield
+import org.squeryl.dsl.ast.OrderByArg
 
 class UserCommandRequestServiceModel(
   accessModel: CommandLockServiceModel)
@@ -141,6 +144,11 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
 
   import org.squeryl.PrimitiveTypeMode._
   import SquerylModel._ // Implicit squeryl list -> query conversion
+
+  override def getOrdering[R](select: SelectState[R], sql: UserCommandModel): QueryYield[R] = select.orderBy(new OrderByArg(sql.id).desc)
+
+  // don't need to resort list, getOrdering has already sorted them correctly
+  def sortResults(list: List[UserCommandRequest]) = list
 
   def getRoutingKey(req: UserCommandRequest) = ProtoRoutingKeys.generateRoutingKey {
     req.id.value ::

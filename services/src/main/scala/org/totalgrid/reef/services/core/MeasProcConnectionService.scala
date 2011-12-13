@@ -76,6 +76,8 @@ trait MeasurementProcessingConnectionConversion
 
   val table = ApplicationSchema.measProcAssignments
 
+  def sortResults(list: List[ConnProto]) = list.sortBy(f => (f.measProc.instanceName, f.getLogicalNode.getName))
+
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
     req.measProc.uuid.value :: req.id.value :: Nil
   }

@@ -130,6 +130,8 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
 
   val table = ApplicationSchema.endpoints
 
+  def sortResults(list: List[CommEndCfgProto]) = list.sortBy(_.getName)
+
   def getRoutingKey(proto: CommEndCfgProto) = ProtoRoutingKeys.generateRoutingKey {
     proto.uuid.value :: proto.name :: Nil
   }
@@ -157,11 +159,11 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
     b.setProtocol(sql.protocol)
     sql.frontEndPortId.foreach(id => b.setChannel(CommChannel.newBuilder().setUuid(makeUuid(id)).build))
 
-    sql.configFiles.value.foreach(cf => b.addConfigFiles(ConfigFile.newBuilder().setUuid(makeUuid(cf)).build))
+    sql.configFiles.value.sortBy(_.entityName).foreach(cf => b.addConfigFiles(ConfigFile.newBuilder().setUuid(makeUuid(cf)).build))
 
     val o = EndpointOwnership.newBuilder
-    sql.points.value.foreach(p => o.addPoints(p.entityName))
-    sql.commands.value.foreach(p => o.addCommands(p.entityName))
+    sql.points.value.sortBy(_.entityName).foreach(p => o.addPoints(p.entityName))
+    sql.commands.value.sortBy(_.entityName).foreach(p => o.addCommands(p.entityName))
 
     b.setOwnerships(o)
 

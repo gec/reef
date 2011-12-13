@@ -104,6 +104,8 @@ trait PermissionSetConversions
 
   val table = ApplicationSchema.permissionSets
 
+  def sortResults(list: List[PermissionSetProto]) = list.sortBy(_.getName)
+
   def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("PermissionSet")))
     List(

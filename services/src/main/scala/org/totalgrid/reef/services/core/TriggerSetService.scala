@@ -47,6 +47,8 @@ trait TriggerSetConversion
 
   val table = ApplicationSchema.triggerSets
 
+  def sortResults(list: List[TriggerProto]) = list.sortBy(_.getPoint.getName)
+
   def getRoutingKey(req: TriggerProto) = ProtoRoutingKeys.generateRoutingKey {
     req.point.endpoint.uuid.value :: req.point.name :: Nil
   }

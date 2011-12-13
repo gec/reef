@@ -132,6 +132,8 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
 
   val table = ApplicationSchema.authTokens
 
+  def sortResults(list: List[AuthToken]) = list.sortBy(_.getExpirationTime)
+
   def getRoutingKey(req: AuthToken) = ProtoRoutingKeys.generateRoutingKey {
     req.loginLocation :: req.agent.name :: Nil
   }
