@@ -18,30 +18,25 @@
  */
 package org.totalgrid.reef.services.coordinators
 
-import org.totalgrid.reef.models._
+import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import com.weiglewilczek.slf4s.Logging
 
-import org.squeryl.Query
-import org.squeryl.PrimitiveTypeMode._
-
-import org.totalgrid.reef.measurementstore.{ MeasurementStore }
+import org.totalgrid.reef.measurementstore.MeasurementStore
 
 import org.totalgrid.reef.client.service.proto.Measurements
-import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 
 trait CommunicationEndpointOfflineBehaviors extends Logging {
 
   def measurementStore: MeasurementStore
 
   def markOffline(ce: CommunicationEndpoint) {
+    // dont need to mark commands on or offline
     markPointsOffline(ce.points.value)
-    markCommandsOffline(ce.commands.value)
-    logger.info("Marked: " + ce.entityName + " offline. Points: " + ce.points.value.size + " Commands: " + ce.commands.value.size)
+    logger.info("Marked: " + ce.entityName + " offline. Points: " + ce.points.value.size)
   }
 
   def markOnline(ce: CommunicationEndpoint) {
-    markCommandsOnline(ce.commands.value)
-    logger.info("Marked: " + ce.entityName + " online. Commands: " + ce.commands.value.size)
+    logger.info("Marked: " + ce.entityName + " online.")
   }
 
   protected def markPointsOffline(points: List[Point]) {
@@ -76,18 +71,4 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
     measurementStore.set(updated ::: missing)
   }
 
-  private def markCommandsOffline(commands: List[Command]) {
-    commands.foreach { c =>
-      c.connected = false
-      ApplicationSchema.commands.update(c)
-    }
-  }
-
-  private def markCommandsOnline(commands: List[Command]) {
-    // TODO: remove commands.connected
-    commands.foreach { c =>
-      c.connected = true
-      ApplicationSchema.commands.update(c)
-    }
-  }
 }
