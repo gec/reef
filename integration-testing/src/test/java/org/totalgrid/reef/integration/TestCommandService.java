@@ -245,6 +245,8 @@ public class TestCommandService extends ReefConnectionTestBase
                 return cs.executeCommandAsSetpoint( cmd, (int)value );
             case SETPOINT_DOUBLE:
                 return cs.executeCommandAsSetpoint( cmd, value );
+            case SETPOINT_STRING:
+                return cs.executeCommandAsSetpoint( cmd, "ENABLE" );
             default:
                 throw new ExpectationException( "Unknown command type." );
         }
