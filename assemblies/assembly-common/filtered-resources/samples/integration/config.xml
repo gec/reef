@@ -60,6 +60,8 @@
 					</common:info>
 				</equip:control>
 
+                <equip:setpoint name="TripSetting" setpointType="string" />
+
 				<equip:status name="Bkr" unit="status" pointProfile="BreakerStatus">
 					<equip:control name="Trip"/>
 					<equip:control name="Close"/>
@@ -144,6 +146,7 @@
 					<comm:status name="Tripped" index="1"/>
 					<comm:control name="Trip" index="0"/>
 					<comm:control name="Close" index="1"/>
+                    <comm:setpoint name="TripSetting" index="1"/>
 				</comm:equipment>
 
 				<comm:equipment name="Line01">
@@ -164,6 +167,7 @@
 					<comm:status name="Tripped" index="1"/>
 					<comm:control name="Trip" index="0"/>
 					<comm:control name="Close" index="1"/>
+                    <comm:setpoint name="TripSetting" index="1"/>
 				</comm:equipment>
 
 				<comm:equipment name="Line02">
