@@ -29,7 +29,14 @@ public interface CommandResultCallback
 
     /**
      * can only be called once per command request, a second call will cause an exception.
-     * @param status - any status but EXECUTING
+     * @param status any status but EXECUTING
      */
     void setCommandResult( CommandStatus status );
+
+    /**
+     * same as setCommandResult with additional error string for human readable descriptions
+     * @param status any status but EXECUTING
+     * @param errorMsg additional error message for non-successful requests
+     */
+    void setCommandResult( CommandStatus status, String errorMsg );
 }

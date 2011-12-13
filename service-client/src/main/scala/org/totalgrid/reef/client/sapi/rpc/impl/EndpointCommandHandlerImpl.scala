@@ -36,10 +36,18 @@ class EndpointCommandHandlerImpl(handler: CommandRequestHandler) extends AsyncSe
     val rspPublisher = new CommandResultCallback {
       var alreadySet = false
       def setCommandResult(status: CommandStatus) {
+        setCommandResult(status, "")
+      }
+
+      def setCommandResult(status: CommandStatus, errorMessage: String) {
         if (alreadySet) throw new IllegalArgumentException("Command result already set.")
         alreadySet = true
-        val response = UserCommandRequest.newBuilder(req).setStatus(status).build()
-        callback(SuccessResponse(Envelope.Status.OK, List(response)))
+        val response = UserCommandRequest.newBuilder(req).setStatus(status)
+
+        // dont set the errorMessage unless there is an interesting message
+        if (errorMessage != null && errorMessage != "") response.setErrorMessage(errorMessage)
+
+        callback(SuccessResponse(Envelope.Status.OK, List(response.build())))
       }
     }
 
