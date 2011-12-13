@@ -56,10 +56,14 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
   val env = BasicRequestHeaders.empty.setUserName("user01")
   val context = new HeadersRequestContext(env)
 
+  private def insert(r: TestRig, time: Long) = {
+    r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, time, cmdReq.toByteString.toByteArray, None))
+  }
+
   def markCompleted(status: CommandStatus) {
     val r = new TestRig
 
-    val inserted = r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, 5000 + System.currentTimeMillis, cmdReq.toByteString.toByteArray))
+    val inserted = insert(r, 5000 + System.currentTimeMillis)
 
     r.userRequests.markCompleted(context, inserted, status)
 
@@ -81,7 +85,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
   test("Mark expired") {
     val r = new TestRig
 
-    val inserted = r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, System.currentTimeMillis - 5000, cmdReq.toByteString.toByteArray))
+    val inserted = insert(r, System.currentTimeMillis - 5000)
 
     r.userRequests.findAndMarkExpired(context)
 

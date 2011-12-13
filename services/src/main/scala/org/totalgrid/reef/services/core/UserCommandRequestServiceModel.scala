@@ -95,12 +95,15 @@ class UserCommandRequestServiceModel(
         case Some(ValType.DOUBLE) =>
           checkCommandType(cmd.commandType, CommandType.SETPOINT_DOUBLE)
           (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
+        case Some(ValType.STRING) =>
+          checkCommandType(cmd.commandType, CommandType.SETPOINT_STRING)
+          (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.stringVal.get)
       }
       postSystemEvent(context, code, Some(cmd.entity.value), "command" -> cmd.entityName :: valueArg :: Nil)
 
       val expireTime = atTime + timeout
       val status = CommandStatus.EXECUTING.getNumber
-      create(context, new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, cmdRequest.toByteArray))
+      create(context, new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, cmdRequest.toByteArray, None))
 
     } else {
       throw new BadRequestException("Command not selected")
@@ -165,12 +168,15 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   }
 
   def convertToProto(entry: UserCommandModel): UserCommandRequest = {
-    UserCommandRequest.newBuilder
+    val b = UserCommandRequest.newBuilder
       .setId(makeId(entry))
       .setUser(entry.agent)
       .setStatus(CommandStatus.valueOf(entry.status))
       .setCommandRequest(CommandRequest.parseFrom(entry.commandProto))
-      .build
+
+    entry.errorMessage.foreach(b.setErrorMessage(_))
+
+    b.build
   }
 }
 

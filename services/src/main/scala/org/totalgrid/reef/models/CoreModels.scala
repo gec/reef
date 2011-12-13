@@ -76,7 +76,8 @@ object Command {
   def newInstance(name: String, displayName: String, _type: Model.CommandType, uuid: Option[UUID]) = {
     val baseType = _type match {
       case Model.CommandType.CONTROL => "Control"
-      case Model.CommandType.SETPOINT_DOUBLE | Model.CommandType.SETPOINT_INT => "Setpoint"
+      case Model.CommandType.SETPOINT_DOUBLE | Model.CommandType.SETPOINT_INT |
+        Model.CommandType.SETPOINT_STRING => "Setpoint"
     }
     val ent = EntityQueryManager.findOrCreateEntity(name, "Command" :: baseType :: Nil, uuid)
     val c = new Command(ent.id, displayName, _type.getNumber, false, None, None)

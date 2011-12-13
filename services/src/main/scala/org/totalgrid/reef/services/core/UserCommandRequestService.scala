@@ -76,13 +76,15 @@ class UserCommandRequestService(
       contextSource.transaction { context =>
         model.findRecord(context, request) match {
           case Some(record) =>
-            val updatedStatus = if (response.success) {
-              response.list.head.getStatus
+            val (updatedStatus, errorMessage) = if (response.success) {
+              val commandResponse = response.list.head
+              import org.totalgrid.reef.client.service.proto.OptionalProtos._
+              (commandResponse.getStatus, commandResponse.errorMessage)
             } else {
               logger.warn { "Got non successful response to command request: " + request + " dest: " + address + " response: " + response }
-              CommandStatus.UNDEFINED
+              (CommandStatus.UNDEFINED, Some(response.error))
             }
-            model.update(context, record.copy(status = updatedStatus.getNumber), record)
+            model.update(context, record.copy(status = updatedStatus.getNumber, errorMessage = errorMessage), record)
           case None =>
             logger.warn { "Couldn't find command request record to update" }
         }
