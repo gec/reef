@@ -66,7 +66,7 @@ class CommandIssueCommand extends ReefCommandSupport {
         case Some(s) => Conversion.convertStringToType(s) match {
           case x: Int => services.executeCommandAsSetpoint(cmd, x)
           case x: Double => services.executeCommandAsSetpoint(cmd, x)
-          case y: Any => throw new Exception("Setpoint value must be Int or Double: " + y)
+          case x: String => services.executeCommandAsSetpoint(cmd, x)
         }
         case None => services.executeCommandAsControl(cmd)
       }

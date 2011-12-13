@@ -47,7 +47,8 @@ object CommandView {
     val rows = ("ID: " :: "[" + resp.getId + "]" :: Nil) ::
       ("Command:" :: resp.commandRequest.command.name.getOrElse("unknown") :: Nil) ::
       ("User:" :: resp.getUser :: Nil) ::
-      ("Status:" :: resp.getStatus.toString :: Nil) :: Nil
+      ("Status:" :: resp.getStatus.toString :: Nil) ::
+      ("Message:" :: resp.getErrorMessage :: Nil) :: Nil
 
     Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
   }
@@ -112,13 +113,14 @@ object CommandView {
   }
 
   def historyHeader = {
-    "Id" :: "Command" :: "Status" :: "User" :: "Type" :: Nil
+    "Id" :: "Command" :: "Status" :: "Message" :: "User" :: "Type" :: Nil
   }
 
   def historyRow(a: UserCommandRequest) = {
     a.id.value.getOrElse("unknown") ::
       a.commandRequest.command.name.getOrElse("unknown") ::
       a.status.map { _.toString }.getOrElse("unknown") ::
+      a.errorMessage.getOrElse("") ::
       a.user.getOrElse("unknown") ::
       a.commandRequest._type.toString ::
       Nil
