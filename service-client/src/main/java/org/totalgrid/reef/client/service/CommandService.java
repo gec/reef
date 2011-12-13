@@ -225,6 +225,17 @@ public interface CommandService
     CommandStatus executeCommandAsSetpoint( Command cmd, int value ) throws ReefServiceException;
 
     /**
+     * Execute a setpoint on a field device with a string value, this will normally be an ENUM or
+     * configuration string that is meaningful to the remote device.
+     *
+     * @param cmd    the name of the command
+     * @param value Value of the setpoint
+     * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
+     * @throws ReefServiceException if an error occurs
+     */
+    CommandStatus executeCommandAsSetpoint( Command cmd, String value ) throws ReefServiceException;
+
+    /**
      * Select a field device so it will not accept any commands.
      * When an operator needs to make sure no one will execute any of a set of commands they
      * create a system-wide "denial lock" on those commands. This will prevent all operators and

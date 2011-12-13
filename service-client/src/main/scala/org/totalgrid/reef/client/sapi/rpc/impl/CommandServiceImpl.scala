@@ -73,6 +73,12 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     }
   }
 
+  override def executeCommandAsSetpoint(id: Command, value: String) = {
+    ops.operation("Couldn't execute setpoint: " + id.getName + " with string value: " + value) {
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getStatus))
+    }
+  }
+
   override def createCommandDenialLock(ids: List[Command]) = {
     ops.operation("Couldn't create denial lock on ids: " + ids.map { _.getName }) {
       _.put(CommandLockRequestBuilders.blockAccessForCommands(ids)).map(_.one)
