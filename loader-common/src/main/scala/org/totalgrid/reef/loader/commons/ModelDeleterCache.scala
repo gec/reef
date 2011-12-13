@@ -22,6 +22,7 @@ import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
 import com.google.protobuf.GeneratedMessage
+import org.totalgrid.reef.client.service.proto.Alarms.EventConfig
 
 class EquipmentRemoverCache extends ModelDeleterCache
 
@@ -37,6 +38,7 @@ trait ModelDeleterCache extends ModelCollector {
   var channel = List.empty[CommChannel]
   var equipment = List.empty[Entity]
   var configFiles = List.empty[ConfigFile]
+  var eventConfigs = List.empty[EventConfig]
 
   def addPoint(obj: Point, entity: Entity) = {
     // need to clear off the logicalNode because delete uses searchQuery
@@ -58,17 +60,20 @@ trait ModelDeleterCache extends ModelCollector {
   def addConfigFile(obj: ConfigFile, entity: Entity) = {
     configFiles ::= obj
   }
+  def addEventConfig(eventConfig: EventConfig) = {
+    eventConfigs ::= eventConfig
+  }
   def addEdge(edge: EntityEdge) = {}
 
   def doDeletes(local: LoaderServices, batchSize: Int) {
     // we need to delete endpoints first because we can't delete points and commands that
     // are sourced by endpoints
     // NOTE: we need the List.empty[GeneratedMessage] to tell the compiler what the type is, when it tries to guess it can run forever
-    val toDelete: List[GeneratedMessage] = endpoints ::: channel ::: commands ::: points ::: equipment ::: configFiles ::: List.empty[GeneratedMessage]
+    val toDelete: List[GeneratedMessage] = endpoints ::: channel ::: commands ::: points ::: equipment ::: configFiles ::: eventConfigs ::: List.empty[GeneratedMessage]
     val toDeleteOps = toDelete.map { entry => (c: LoaderServices) => c.delete(entry) }
 
     BatchOperations.batchOperations(local, toDeleteOps, batchSize)
   }
 
-  def size = endpoints.size + channel.size + commands.size + points.size + equipment.size + configFiles.size
+  def size = endpoints.size + channel.size + commands.size + points.size + equipment.size + configFiles.size + eventConfigs.size
 }

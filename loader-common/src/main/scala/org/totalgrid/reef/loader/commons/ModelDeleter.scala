@@ -90,8 +90,7 @@ object ModelDeleter {
       local.getConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
       local.getPoints().await.foreach { collector.addPoint(_, fakeEntity) }
       local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
-
-      // TODO: add deleting of eventConfigurations
+      local.getEventConfigurations().await.foreach { collector.addEventConfig(_) }
     }
   }
 

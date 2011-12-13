@@ -20,6 +20,7 @@ package org.totalgrid.reef.loader.commons
 
 import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.FEP._
+import org.totalgrid.reef.client.service.proto.Alarms.EventConfig
 
 object ModelCollector {
   def makeEdge(parent: Entity, child: Entity, rel: String) =
@@ -39,6 +40,7 @@ trait ModelCollector {
   def addChannel(obj: CommChannel, entity: Entity)
   def addEquipment(entity: Entity)
   def addConfigFile(configFile: ConfigFile, entity: Entity)
+  def addEventConfig(eventConfig: EventConfig)
   def addEdge(edge: EntityEdge): Unit
 
   final def addEdge(parent: Entity, child: Entity, rel: String): Unit =
