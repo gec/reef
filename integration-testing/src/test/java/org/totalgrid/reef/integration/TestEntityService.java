@@ -265,7 +265,7 @@ public class TestEntityService extends ReefConnectionTestBase
                 }
             }
         }
-        assertEquals( cmdCount, 3 );
+        assertEquals( cmdCount, 4 );
 
     }
 

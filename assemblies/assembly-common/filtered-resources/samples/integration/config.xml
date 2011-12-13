@@ -68,7 +68,9 @@
 					<equip:type name="bkrStatus"/>
 				</equip:status>
 
-				<equip:status name="Tripped" unit="status" pointProfile="TrippedStatus"/>
+				<equip:status name="Tripped" unit="status" pointProfile="TrippedStatus">
+                    <equip:setpoint name="TripSetting"/>
+                </equip:status>
 			</equip:equipmentProfile>
 
 			<equip:equipmentProfile name="MockLine">
