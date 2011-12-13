@@ -57,24 +57,24 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     _.delete(CommandLockRequestBuilders.getAll).map(_.many)
   }
 
-  override def executeCommandAsControl(id: Command) = ops.operation("Couldn't execute control: " + id) {
+  override def executeCommandAsControl(id: Command) = ops.operation("Couldn't execute control: " + id.getName) {
     _.put(UserCommandRequestBuilders.executeControl(id)).map(_.one.map(_.getStatus))
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Double) = {
-    ops.operation("Couldn't execute setpoint: " + id + " with double value: " + value) {
+    ops.operation("Couldn't execute setpoint: " + id.getName + " with double value: " + value) {
       _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getStatus))
     }
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Int) = {
-    ops.operation("Couldn't execute setpoint: " + id + " with integer value: " + value) {
+    ops.operation("Couldn't execute setpoint: " + id.getName + " with integer value: " + value) {
       _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getStatus))
     }
   }
 
   override def createCommandDenialLock(ids: List[Command]) = {
-    ops.operation("Couldn't create denial lock on ids: " + ids) {
+    ops.operation("Couldn't create denial lock on ids: " + ids.map { _.getName }) {
       _.put(CommandLockRequestBuilders.blockAccessForCommands(ids)).map(_.one)
     }
   }
@@ -88,13 +88,13 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def findCommandLockOnCommand(id: Command) = {
-    ops.operation("couldn't find command lock for command: " + id) {
+    ops.operation("couldn't find command lock for command: " + id.getName) {
       _.get(CommandLockRequestBuilders.getByCommand(id)).map { _.oneOrNone }
     }
   }
 
   override def getCommandLocksOnCommands(ids: List[Command]) = {
-    ops.operation("Couldn't get command locks for: " + ids) {
+    ops.operation("Couldn't get command locks for: " + ids.map { _.getName }) {
       _.get(CommandLockRequestBuilders.getByCommands(ids)).map(_.many)
     }
   }
