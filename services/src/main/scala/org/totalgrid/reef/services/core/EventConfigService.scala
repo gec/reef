@@ -49,7 +49,7 @@ object EventConfigService {
     def makeBuiltIn(name: String, designation: Int, serverity: Int, resource: String) = {
       name -> EventConfigStore(name, serverity, designation, UNACK_SILENT, resource, true)
     }
-    List(makeBuiltIn(System.UserLogin, EVENT, 5, "User logged in"),
+    List(makeBuiltIn(System.UserLogin, EVENT, 5, "User logged in: {user}"),
       makeBuiltIn(System.UserLoginFailure, ALARM, 1, "User login failed {reason}"),
       makeBuiltIn(System.UserLogout, EVENT, 5, "User logged out"),
       makeBuiltIn(System.SubsystemStarting, EVENT, 5, "Subsystem is starting"),
