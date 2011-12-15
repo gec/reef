@@ -31,15 +31,7 @@ import java.util.UUID
 import org.totalgrid.reef.client.service.entity.EntityRelation
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
 
-@RunWith(classOf[JUnitRunner])
-class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
-  import EntityQueryManager._
-
-  override def beforeAll() {
-    super.beforeAll
-    transaction { seed }
-  }
-
+object EntityTestSeed {
   def seed {
     val regId = EntityQueryManager.addEntity("RegA", "Region" :: "EquipmentGroup" :: Nil)
     seedSub(regId, "RegA-SubA")
@@ -62,6 +54,16 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   def seedPoint(regId: Entity, subId: Entity, devId: Entity, name: String, rel: String) {
     val pointId = EntityQueryManager.addEntity(name, "Point")
     val toDevId = EntityQueryManager.addEdge(devId, pointId, rel)
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+  import EntityQueryManager._
+
+  override def beforeAll() {
+    super.beforeAll
+    transaction { EntityTestSeed.seed }
   }
 
   class EdgeString(me: String) {

@@ -48,7 +48,7 @@ class ProcessStatusService(val model: ProcessStatusServiceModel)
 
 class ProcessStatusServiceModel(
   coordinator: MeasurementStreamCoordinator)
-    extends SquerylServiceModel[StatusSnapshot, HeartbeatStatus]
+    extends SquerylServiceModel[Long, StatusSnapshot, HeartbeatStatus]
     with EventedServiceModel[StatusSnapshot, HeartbeatStatus]
     with ProcessStatusConversion
     with Logging {

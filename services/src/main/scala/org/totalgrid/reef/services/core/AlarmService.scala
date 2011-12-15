@@ -59,7 +59,7 @@ class AlarmService(protected val model: AlarmServiceModel)
 }
 
 class AlarmServiceModel
-    extends SquerylServiceModel[Alarm, AlarmModel]
+    extends SquerylServiceModel[Long, Alarm, AlarmModel]
     with EventedServiceModel[Alarm, AlarmModel]
     with AlarmConversion {
 

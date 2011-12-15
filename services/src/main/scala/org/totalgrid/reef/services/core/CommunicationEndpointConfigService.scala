@@ -44,7 +44,7 @@ class CommEndCfgServiceModel(
   pointModel: PointServiceModel,
   portModel: FrontEndPortServiceModel,
   coordinator: MeasurementStreamCoordinator)
-    extends SquerylServiceModel[CommEndCfgProto, CommunicationEndpoint]
+    extends SquerylServiceModel[Long, CommEndCfgProto, CommunicationEndpoint]
     with EventedServiceModel[CommEndCfgProto, CommunicationEndpoint]
     with CommEndCfgServiceConversion {
 

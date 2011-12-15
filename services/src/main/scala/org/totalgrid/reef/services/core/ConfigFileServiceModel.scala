@@ -41,7 +41,7 @@ class ConfigFileService(protected val model: ConfigFileServiceModel)
 }
 
 class ConfigFileServiceModel
-    extends SquerylServiceModel[ConfigProto, ConfigFile]
+    extends SquerylServiceModel[Long, ConfigProto, ConfigFile]
     with EventedServiceModel[ConfigProto, ConfigFile]
     with ConfigFileConversion {
 

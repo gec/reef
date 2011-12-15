@@ -91,8 +91,22 @@ trait ActiveModel {
   }
 }
 
-trait ModelWithId extends KeyedEntity[Long] with ActiveModel {
+import org.squeryl.dsl.ast.LogicalBoolean
+
+trait ModelWithIdBase[A] extends KeyedEntity[A] with ActiveModel {
+  def id_=(v: A)
+
+  def getIn(list: List[A]): LogicalBoolean
+}
+
+trait ModelWithId extends ModelWithIdBase[Long] {
   var id: Long = 0
+
+  import org.squeryl.PrimitiveTypeMode._
+
+  def getIn(list: List[Long]): LogicalBoolean = {
+    id in list
+  }
 }
 
 import java.util.UUID
@@ -106,8 +120,14 @@ trait UUIDGenerator {
   }
 }
 
-trait ModelWithUUID extends KeyedEntity[UUID] with ActiveModel with UUIDGenerator {
+trait ModelWithUUID extends ModelWithIdBase[UUID] with UUIDGenerator {
   var id: UUID = newUUID
+
+  import org.squeryl.PrimitiveTypeMode._
+
+  def getIn(list: List[UUID]): LogicalBoolean = {
+    id in list
+  }
 }
 
 class EntityBasedModel(val entityId: UUID) extends ModelWithId {

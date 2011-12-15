@@ -669,7 +669,9 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
     val edgeIds = edges.map { _.id }
 
+    val derivedEdgeIds = ApplicationSchema.derivedEdges.where(_.edgeId in edgeIds).map { _.parentEdgeId }
     ApplicationSchema.derivedEdges.deleteWhere(_.edgeId in edgeIds)
+    ApplicationSchema.edges.deleteWhere(_.id in derivedEdgeIds)
     ApplicationSchema.edges.deleteWhere(_.id in edgeIds)
 
     // TODO: evaluate if we should be deleting events when entities get deleted

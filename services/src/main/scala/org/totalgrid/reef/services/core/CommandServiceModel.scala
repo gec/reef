@@ -54,7 +54,7 @@ class CommandService(protected val model: CommandServiceModel)
 
 class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
   commandSelectModel: CommandLockServiceModel)
-    extends SquerylServiceModel[CommandProto, Command]
+    extends SquerylServiceModel[Long, CommandProto, Command]
     with EventedServiceModel[CommandProto, Command]
     with SimpleModelEntryCreation[CommandProto, Command]
     with CommandServiceConversion {

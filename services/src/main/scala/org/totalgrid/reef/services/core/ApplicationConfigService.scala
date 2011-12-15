@@ -42,7 +42,7 @@ class ApplicationConfigService(val model: ApplicationConfigServiceModel)
 }
 
 class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
-    extends SquerylServiceModel[ApplicationConfig, ApplicationInstance]
+    extends SquerylServiceModel[Long, ApplicationConfig, ApplicationInstance]
     with EventedServiceModel[ApplicationConfig, ApplicationInstance]
     with ApplicationConfigConversion {
 

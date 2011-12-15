@@ -18,17 +18,22 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.DatabaseUsingTestBase
 import java.util.UUID
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
 
 import SyncServiceShims._
 import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.proto.Envelope.Status
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import org.totalgrid.reef.models.{ ApplicationSchema, DatabaseUsingTestBase }
+import scala.collection.JavaConversions._
 
+@RunWith(classOf[JUnitRunner])
 class EntityServiceTest extends DatabaseUsingTestBase {
 
-  val service = new EntityService()
+  val service = new EntityService
+  //val service = new EntityModelService(new EntityServiceModel)
 
   test("Put Entity with predetermined UUID") {
 
@@ -61,9 +66,54 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     val upload2 = Entity.newBuilder.setName("MagicTestObject").addTypes("TestType4").addTypes("TestType2").build
 
     service.put(upload1).expectOne(Status.CREATED)
-    service.put(upload2).expectOne(Status.UPDATED)
+    val updated = service.put(upload2).expectOne(Status.UPDATED)
+
+    val types = List("TestType1", "TestType3", "TestType4", "TestType2")
+    updated.getTypesList.toList.diff(types) should equal(Nil)
 
     service.put(upload1).expectOne(Status.NOT_MODIFIED)
     service.put(upload2).expectOne(Status.NOT_MODIFIED)
+  }
+
+  test("Delete Entity") {
+
+    val upload = Entity.newBuilder.setName("MagicTestObject").addTypes("TestType").build
+
+    val created = service.put(upload).expectOne(Status.CREATED)
+
+    val deleteEnt = Entity.newBuilder().setUuid(created.getUuid).build()
+
+    val deleted = service.delete(deleteEnt).expectOne(Status.DELETED)
+  }
+
+  import org.squeryl.PrimitiveTypeMode._
+
+  test("Complicated Delete") {
+
+    val regId = EntityQueryManager.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityQueryManager.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    EntityQueryManager.addEdge(regId, subId, "owns")
+    val devId = EntityQueryManager.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    EntityQueryManager.addEdge(subId, devId, "owns")
+
+    val edges = ApplicationSchema.edges
+    val deriveds = ApplicationSchema.derivedEdges
+
+    val preEdges = edges.where(e => true === true).toList
+    val preDeriveds = deriveds.where(e => true === true).toList
+
+    preEdges.size should equal(3)
+    preDeriveds.size should equal(1)
+
+    val deleteEnt = Entity.newBuilder().setName("Sub").build()
+
+    val deleted = service.delete(deleteEnt).expectOne(Status.DELETED)
+
+    val postEdges = edges.where(e => true === true).toList
+    postEdges should equal(Nil)
+
+    val postDeriveds = deriveds.where(e => true === true).toList
+    postDeriveds should equal(Nil)
+
   }
 }

@@ -126,7 +126,7 @@ class EventConfigService(protected val model: EventConfigServiceModel)
 }
 
 class EventConfigServiceModel
-    extends SquerylServiceModel[EventConfig, EventConfigStore]
+    extends SquerylServiceModel[Long, EventConfig, EventConfigStore]
     with EventedServiceModel[EventConfig, EventConfigStore]
     with SimpleModelEntryCreation[EventConfig, EventConfigStore]
     with EventConfigConversion {

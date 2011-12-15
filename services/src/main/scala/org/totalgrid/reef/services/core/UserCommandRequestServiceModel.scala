@@ -36,7 +36,7 @@ import org.squeryl.dsl.ast.OrderByArg
 
 class UserCommandRequestServiceModel(
   accessModel: CommandLockServiceModel)
-    extends SquerylServiceModel[UserCommandRequest, UserCommandModel]
+    extends SquerylServiceModel[Long, UserCommandRequest, UserCommandModel]
     with EventedServiceModel[UserCommandRequest, UserCommandModel]
     with UserCommandRequestConversion
     with ServiceModelSystemEventPublisher {

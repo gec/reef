@@ -165,7 +165,7 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
 }
 
 class AuthTokenServiceModel
-    extends SquerylServiceModel[AuthToken, AuthTokenModel]
+    extends SquerylServiceModel[Long, AuthToken, AuthTokenModel]
     with EventedServiceModel[AuthToken, AuthTokenModel]
     with AuthTokenConversions
     with ServiceModelSystemEventPublisher {

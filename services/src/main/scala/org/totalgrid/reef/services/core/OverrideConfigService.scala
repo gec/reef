@@ -42,7 +42,7 @@ class OverrideConfigService(protected val model: OverrideConfigServiceModel)
 }
 
 class OverrideConfigServiceModel
-    extends SquerylServiceModel[MeasOverride, OverrideConfig]
+    extends SquerylServiceModel[Long, MeasOverride, OverrideConfig]
     with EventedServiceModel[MeasOverride, OverrideConfig]
     with SimpleModelEntryCreation[MeasOverride, OverrideConfig]
     with OverrideConfigConversion

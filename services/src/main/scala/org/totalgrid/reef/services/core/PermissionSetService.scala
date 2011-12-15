@@ -39,7 +39,7 @@ class PermissionSetService(protected val model: PermissionSetServiceModel)
 }
 
 class PermissionSetServiceModel
-    extends SquerylServiceModel[PermissionSetProto, PermissionSet]
+    extends SquerylServiceModel[Long, PermissionSetProto, PermissionSet]
     with EventedServiceModel[PermissionSetProto, PermissionSet]
     with PermissionSetConversions {
 

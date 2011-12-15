@@ -61,7 +61,7 @@ class PointService(protected val model: PointServiceModel)
 class PointServiceModel(triggerModel: TriggerSetServiceModel,
   overrideModel: OverrideConfigServiceModel,
   val measurementStore: MeasurementStore)
-    extends SquerylServiceModel[PointProto, Point]
+    extends SquerylServiceModel[Long, PointProto, Point]
     with EventedServiceModel[PointProto, Point]
     with SimpleModelEntryCreation[PointProto, Point]
     with PointServiceConversion

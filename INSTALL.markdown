@@ -56,9 +56,10 @@ Windows:
 
 http://www.riverace.com/qpid/downloads.htm
 
-If running on windows you will need to update the "org.totalgrid.reef.cfg" file to set the
+
+If running on windows you will need to update the "org.totalgrid.reef.amqp.cfg" file to set the
 "org.totalgrid.reef.amqp.user" and "org.totalgrid.reef.amqp.password" fields to a valid windows
-user.
+user. It's recommended that you create a "qpid" windows user with minimal permissions for logging into qpid.
 
 DNP3
 ==============================
@@ -83,3 +84,13 @@ Make a symbolic link to the current version:
 Windows:
 
 Copy the file to your windows system 32 directory. 64bit users copy the 64bit library to systemWow64.
+
+
+IntelliJ IDEA
+===============================
+
+Install the Scala plugin from File -> Settings -> Plugins.
+
+Create new project, import from Maven format.
+
+To run tests, Edit Run/Debug Configuration -> Defaults -> JUnit and set Working Directory to $MODULE_DIR$.

@@ -40,6 +40,9 @@ object Response {
   }
 
   def apply[A](status: Envelope.Status, single: A): Response[A] = apply(status, single :: Nil, "")
+
+  def apply[A](status: Envelope.Status, list: List[A]): Response[A] = apply(status, list, "")
+
 }
 
 sealed trait Response[+A] extends Expectations[A] {

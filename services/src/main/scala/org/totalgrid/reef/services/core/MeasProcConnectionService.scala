@@ -42,7 +42,7 @@ class MeasurementProcessingConnectionService(protected val model: MeasurementPro
 }
 
 class MeasurementProcessingConnectionServiceModel
-    extends SquerylServiceModel[ConnProto, MeasProcAssignment]
+    extends SquerylServiceModel[Long, ConnProto, MeasProcAssignment]
     with EventedServiceModel[ConnProto, MeasProcAssignment]
     with SimpleModelEntryCreation[ConnProto, MeasProcAssignment]
     with MeasurementProcessingConnectionConversion {

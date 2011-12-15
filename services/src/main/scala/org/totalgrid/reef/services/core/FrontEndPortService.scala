@@ -61,7 +61,7 @@ class FrontEndPortService(protected val model: FrontEndPortServiceModel)
 }
 
 class FrontEndPortServiceModel
-    extends SquerylServiceModel[ChannelProto, FrontEndPort]
+    extends SquerylServiceModel[Long, ChannelProto, FrontEndPort]
     with EventedServiceModel[ChannelProto, FrontEndPort]
     with SimpleModelEntryCreation[ChannelProto, FrontEndPort]
     with FrontEndPortConversion {

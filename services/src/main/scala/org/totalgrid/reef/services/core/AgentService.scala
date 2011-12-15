@@ -39,7 +39,7 @@ class AgentService(protected val model: AgentServiceModel)
 }
 
 class AgentServiceModel
-    extends SquerylServiceModel[Agent, AgentModel]
+    extends SquerylServiceModel[Long, Agent, AgentModel]
     with EventedServiceModel[Agent, AgentModel]
     with AgentConversions {
 

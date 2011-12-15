@@ -37,7 +37,7 @@ class TriggerSetService(protected val model: TriggerSetServiceModel)
 }
 
 class TriggerSetServiceModel
-  extends SquerylServiceModel[TriggerProto, TriggerSet]
+  extends SquerylServiceModel[Long, TriggerProto, TriggerSet]
   with EventedServiceModel[TriggerProto, TriggerSet]
   with SimpleModelEntryCreation[TriggerProto, TriggerSet]
   with TriggerSetConversion {}

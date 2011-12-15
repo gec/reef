@@ -66,7 +66,7 @@ class EventService(protected val model: EventServiceModel)
 // The business model for managing incoming events and deciding whether they are Alarms, Events, or Logs.
 // This will use the ConfigService to determine what is an Alarm, Event, or Log.
 class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel: AlarmServiceModel)
-    extends SquerylServiceModel[Event, EventStore]
+    extends SquerylServiceModel[Long, Event, EventStore]
     with EventedServiceModel[Event, EventStore]
     with EventConversion {
 
