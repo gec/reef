@@ -21,8 +21,8 @@ package org.totalgrid.reef.client.service.async;
 import org.totalgrid.reef.client.SubscriptionCreator;
 
 /**
- * "Super" interface that includes all of the individual service interfaces. This could be broken down
- * into smaller functionality based sections or not created at all.
+ * "Super" interface that includes all of the individual service interfaces and the subscription creator
+ * interface.
  */
 public abstract class AllScadaServiceAsync implements
                                           SubscriptionCreator,

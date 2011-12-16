@@ -30,16 +30,12 @@
  * serve as a starting point and suite of examples to pull from to make more complex requests when necessary.
  * 
  * <p>
- * Some applications have to write custom requests to support some use cases. Many very "chatty" sets of requests can be implemented with a single
- * more complex request. We envision application developers extending the interfaces with their own custom functions for their application. To add
- * those custom functions it is best to understand the requests we have provided in reference implementations. This can be done in a few ways.
- * </p>
- * <ul>
- * <li>read the code in XxxxxRequestBuilders and XxxxxServiceImpl classes</li>
- * <li>read the "generated proto request/reply" documents, they show live versions of the proto messages that are sent over the wires</li>
- * <li>read the documentation on the protobuf files (*.proto)</li>
- * </ul>
- * Once a new query has been figured out, the XxxxxService class can be extended to add in the new requests.
+ * Some applications have to write custom requests to support some use cases. Many very "chatty" sets of requests can be
+ * implemented with a single more complex request. We envision application developers extending the interfaces with
+ * their own custom functions for their application.
+ * 
+ * If that is necessary the application developer can use the RESTOperations interface to make and handle the results
+ * of those more complex queries.
  */
 package org.totalgrid.reef.client.service;
 
