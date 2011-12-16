@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.proto.Commands.CommandLock;
-import org.totalgrid.reef.client.service.proto.Commands.CommandStatus;
+import org.totalgrid.reef.client.service.proto.Commands.CommandResult;
 import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest;
 import org.totalgrid.reef.client.service.proto.Model.Command;
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
@@ -193,7 +193,7 @@ public interface CommandService
      * @return the status of the execution, SUCCESS is only non-failure (throw exception?)
      * @throws ReefServiceException if an error occurs
      */
-    CommandStatus executeCommandAsControl( Command cmd ) throws ReefServiceException;
+    CommandResult executeCommandAsControl( Command cmd ) throws ReefServiceException;
 
     /**
      * Execute a setpoint on a field device.
@@ -208,7 +208,7 @@ public interface CommandService
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
      * @throws ReefServiceException if an error occurs
      */
-    CommandStatus executeCommandAsSetpoint( Command cmd, double value ) throws ReefServiceException;
+    CommandResult executeCommandAsSetpoint( Command cmd, double value ) throws ReefServiceException;
 
     /**
      * Execute a setpoint on a field device.
@@ -222,7 +222,7 @@ public interface CommandService
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
      * @throws ReefServiceException if an error occurs
      */
-    CommandStatus executeCommandAsSetpoint( Command cmd, int value ) throws ReefServiceException;
+    CommandResult executeCommandAsSetpoint( Command cmd, int value ) throws ReefServiceException;
 
     /**
      * Execute a setpoint on a field device with a string value, this will normally be an ENUM or
@@ -233,7 +233,7 @@ public interface CommandService
      * @return the status of the execution, SUCCESS is only non-failure (throw execption?)
      * @throws ReefServiceException if an error occurs
      */
-    CommandStatus executeCommandAsSetpoint( Command cmd, String value ) throws ReefServiceException;
+    CommandResult executeCommandAsSetpoint( Command cmd, String value ) throws ReefServiceException;
 
     /**
      * Select a field device so it will not accept any commands.

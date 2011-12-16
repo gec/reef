@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus, CommandRequest, UserCommandRequest }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
@@ -182,7 +182,13 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
       .setStatus(CommandStatus.valueOf(entry.status))
       .setCommandRequest(CommandRequest.parseFrom(entry.commandProto))
 
-    entry.errorMessage.foreach(b.setErrorMessage(_))
+    val result = CommandResult.newBuilder.setStatus(CommandStatus.valueOf(entry.status))
+    entry.errorMessage.foreach { msg =>
+      b.setErrorMessage(msg)
+      result.setErrorMessage(msg)
+    }
+
+    b.setResult(result)
 
     b.build
   }

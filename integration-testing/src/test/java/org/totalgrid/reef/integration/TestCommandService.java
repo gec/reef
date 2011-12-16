@@ -121,8 +121,8 @@ public class TestCommandService extends ReefConnectionTestBase
             try
             {
                 assertTrue( accessResponse.getExpireTime() > 0 );
-                CommandStatus cmdResponse = executeCommandAsRightType( cs, cmd, 99.0 );
-                assertEquals( cmdResponse, CommandStatus.SUCCESS );
+                CommandResult cmdResponse = executeCommandAsRightType( cs, cmd, 99.0 );
+                assertEquals( cmdResponse.getStatus(), CommandStatus.SUCCESS );
             }
             finally
             {
@@ -213,8 +213,8 @@ public class TestCommandService extends ReefConnectionTestBase
         assertTrue( accessResponse.getExpireTime() > 0 );
 
         // execute
-        CommandStatus cmdResponse = executeCommandAsRightType( cs, cmd, 50.0 );
-        assertEquals( CommandStatus.SUCCESS, cmdResponse );
+        CommandResult cmdResponse = executeCommandAsRightType( cs, cmd, 50.0 );
+        assertEquals( CommandStatus.SUCCESS, cmdResponse.getStatus() );
 
         // delete
         cs.deleteCommandLock( accessResponse );
@@ -235,7 +235,7 @@ public class TestCommandService extends ReefConnectionTestBase
         assertTrue( intialRequests.size() < requests.size() );
     }
 
-    private CommandStatus executeCommandAsRightType( CommandService cs, Command cmd, double value ) throws ReefServiceException
+    private CommandResult executeCommandAsRightType( CommandService cs, Command cmd, double value ) throws ReefServiceException
     {
         switch( cmd.getType() )
         {

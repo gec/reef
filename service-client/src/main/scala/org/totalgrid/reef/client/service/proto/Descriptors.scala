@@ -100,6 +100,12 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest]
     def id = "user_command_request"
   }
+  def commandResult() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Commands.CommandResult] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Commands.CommandResult): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Commands.CommandResult.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Commands.CommandResult]
+    def id = "command_result"
+  }
   def commandLock() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Commands.CommandLock] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.Commands.CommandLock): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Commands.CommandLock.parseFrom(bytes)

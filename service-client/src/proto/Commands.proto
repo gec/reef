@@ -18,10 +18,21 @@ message UserCommandRequest {
 
 	optional org.totalgrid.reef.client.service.proto.Model.ReefID         id             = 1;
 	optional CommandRequest command_request = 2;
+	// TODO: remove status and error_message in 0.5.0
 	optional CommandStatus  status          = 3;
 	optional string         error_message   = 6;
 	optional string         user            = 4;
 	optional int32          timeout_ms      = 5 [default = 5000];
+	optional CommandResult  result          = 7;
+}
+
+/**
+  CommandResult, encapsulates the result of the command and any error message associated with the
+  result.
+*/
+message CommandResult{
+    optional CommandStatus  status          = 1;
+	optional string         error_message   = 2;
 }
 
 /*

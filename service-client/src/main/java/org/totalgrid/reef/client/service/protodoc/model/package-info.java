@@ -111,6 +111,7 @@
  *   CONTROL         = 1;
  *   SETPOINT_INT    = 2;
  *   SETPOINT_DOUBLE = 3;
+ *   SETPOINT_STRING = 4;
  * }
  * 
  * /*

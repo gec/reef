@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.command.{ CommandResultCallback, CommandRequestHandler }
-import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, UserCommandRequest }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus, UserCommandRequest }
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.client.{ SuccessResponse, BasicRequestHeaders, Response }
 
@@ -44,8 +44,13 @@ class EndpointCommandHandlerImpl(handler: CommandRequestHandler) extends AsyncSe
         alreadySet = true
         val response = UserCommandRequest.newBuilder(req).setStatus(status)
 
+        val result = CommandResult.newBuilder().setStatus(status)
         // dont set the errorMessage unless there is an interesting message
-        if (errorMessage != null && errorMessage != "") response.setErrorMessage(errorMessage)
+        if (errorMessage != null && errorMessage != "") {
+          response.setErrorMessage(errorMessage)
+          result.setErrorMessage(errorMessage)
+        }
+        response.setResult(result)
 
         callback(SuccessResponse(Envelope.Status.OK, List(response.build())))
       }

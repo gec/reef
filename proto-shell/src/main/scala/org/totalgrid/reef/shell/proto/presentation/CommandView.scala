@@ -20,9 +20,9 @@ package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.client.service.proto.Model.Command
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandLock, UserCommandRequest }
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.util.Table
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus, CommandLock, UserCommandRequest }
 
 object CommandView {
 
@@ -52,8 +52,11 @@ object CommandView {
 
     Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
   }
-  def commandResponse(resp: CommandStatus) = {
-    val rows = ("Status:" :: resp.toString :: Nil) :: Nil
+  def commandResponse(resp: CommandResult) = {
+
+    val msgEntries = resp.errorMessage.map { msg: String => List(" ErrorMessage: ", msg) }.getOrElse(List.empty[String])
+
+    val rows = ("Status:" :: resp.getStatus.toString :: msgEntries) :: Nil
 
     Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
   }

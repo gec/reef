@@ -47,7 +47,7 @@ class UserCommandRequestTest
       recorder.addExplanation("UserCommandRequestBuilders.executeCommand", "Issue a command request for the specified point.")
       val commandStatus = client.executeCommandAsControl(cmd).await
 
-      commandStatus should equal(CommandStatus.SUCCESS)
+      commandStatus.getStatus should equal(CommandStatus.SUCCESS)
     } finally {
       client.deleteCommandLock(lock)
     }

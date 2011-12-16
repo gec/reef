@@ -105,13 +105,14 @@ public class TestCommandHandler extends ReefConnectionTestBase
 
             access = helpers.createCommandExecutionLock( cmd );
 
-            Commands.CommandStatus status = helpers.executeCommandAsSetpoint( cmd, "TestString" );
+            Commands.CommandResult status = helpers.executeCommandAsSetpoint( cmd, "TestString" );
 
-            assertEquals( status, Commands.CommandStatus.TOO_MANY_OPS );
+            assertEquals( Commands.CommandStatus.TOO_MANY_OPS, status.getStatus() );
 
             List<Commands.UserCommandRequest> commands = helpers.getCommandHistory( cmd );
-            assertEquals( commands.get( 0 ).getStatus(), Commands.CommandStatus.TOO_MANY_OPS );
-            assertEquals( commands.get( 0 ).getErrorMessage(), "Extra Error Message" );
+            Commands.CommandResult result = commands.get( 0 ).getResult();
+            assertEquals( Commands.CommandStatus.TOO_MANY_OPS, result.getStatus() );
+            assertEquals( "Extra Error Message", result.getErrorMessage() );
         }
         finally
         {

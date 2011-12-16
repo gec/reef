@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.service.proto.Model.Command
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.proto.Mapping.{ CommandMap, CommandType => ProtoCommandType, IndexMapping }
 import org.totalgrid.reef.protocol.dnp3._
-import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => ProtoCommandStatus }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => ProtoCommandStatus, CommandResult => ProtoCommandResult }
 import org.totalgrid.reef.protocol.dnp3.master.DNPTranslator
 import org.totalgrid.reef.client.exception.ReefServiceException
 
@@ -46,6 +46,13 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping)
     case _ => false
   }
 
+  private def handleCommandResult(result: ProtoCommandResult): ProtoCommandStatus = {
+    if (result.getStatus != ProtoCommandStatus.SUCCESS) {
+      logger.warn("Proxied command failed: " + result.getStatus + " msg: " + result.getErrorMessage)
+    }
+    result.getStatus
+  }
+
   final override def AcceptCommand(obj: BinaryOutput, index: Long, seq: Int, accept: IResponseAcceptor) = {
     handleCommand(Index(false, index), seq, accept) { (command, config) =>
       val rawCode = DNPTranslator.translateCommandType(config.getType)
@@ -53,7 +60,7 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping)
         logger.warn("Got wrong command type for command: " + command.getName + " got: " + obj.GetCode() + " not: " + rawCode)
         ProtoCommandStatus.FORMAT_ERROR
       } else {
-        service.executeCommandAsControl(command).await
+        handleCommandResult(service.executeCommandAsControl(command).await)
       }
     }
   }
@@ -62,8 +69,10 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping)
     handleCommand(Index(true, index), seq, accept) { (command, config) =>
       import SetpointEncodingType._
       obj.GetOptimalEncodingType() match {
-        case SPET_AUTO_DOUBLE | SPET_DOUBLE | SPET_FLOAT => service.executeCommandAsSetpoint(command, obj.GetValue()).await
-        case SPET_AUTO_INT | SPET_INT16 | SPET_INT32 => service.executeCommandAsSetpoint(command, obj.GetIntValue()).await
+        case SPET_AUTO_DOUBLE | SPET_DOUBLE | SPET_FLOAT =>
+          handleCommandResult(service.executeCommandAsSetpoint(command, obj.GetValue()).await)
+        case SPET_AUTO_INT | SPET_INT16 | SPET_INT32 =>
+          handleCommandResult(service.executeCommandAsSetpoint(command, obj.GetIntValue()).await)
         case _ =>
           logger.error("Unknown setpoint encoding type: " + obj.GetOptimalEncodingType())
           ProtoCommandStatus.FORMAT_ERROR

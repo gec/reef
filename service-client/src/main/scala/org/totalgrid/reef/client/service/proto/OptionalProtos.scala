@@ -118,6 +118,12 @@ object OptionalProtos {
     val errorMessage = optionally(_.hasErrorMessage, _.getErrorMessage)
     val user = optionally(_.hasUser, _.getUser)
     val timeoutMs = optionally(_.hasTimeoutMs, _.getTimeoutMs)
+    val result = new OptCommandsCommandResult(optionally(_.hasResult, _.getResult))
+  }
+  implicit def proto2OptCommandsCommandResult(a: org.totalgrid.reef.client.service.proto.Commands.CommandResult): OptCommandsCommandResult = new OptCommandsCommandResult(Some(a))
+  class OptCommandsCommandResult(real: Option[org.totalgrid.reef.client.service.proto.Commands.CommandResult]) extends OptionalStruct(real) {
+    val status = optionally(_.hasStatus, _.getStatus)
+    val errorMessage = optionally(_.hasErrorMessage, _.getErrorMessage)
   }
   implicit def proto2OptCommandsCommandLock(a: org.totalgrid.reef.client.service.proto.Commands.CommandLock): OptCommandsCommandLock = new OptCommandsCommandLock(Some(a))
   class OptCommandsCommandLock(real: Option[org.totalgrid.reef.client.service.proto.Commands.CommandLock]) extends OptionalStruct(real) {

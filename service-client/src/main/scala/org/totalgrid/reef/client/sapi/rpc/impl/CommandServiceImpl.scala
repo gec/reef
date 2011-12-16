@@ -58,24 +58,24 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def executeCommandAsControl(id: Command) = ops.operation("Couldn't execute control: " + id.getName) {
-    _.put(UserCommandRequestBuilders.executeControl(id)).map(_.one.map(_.getStatus))
+    _.put(UserCommandRequestBuilders.executeControl(id)).map(_.one.map(_.getResult))
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Double) = {
     ops.operation("Couldn't execute setpoint: " + id.getName + " with double value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getStatus))
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
     }
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Int) = {
     ops.operation("Couldn't execute setpoint: " + id.getName + " with integer value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getStatus))
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
     }
   }
 
   override def executeCommandAsSetpoint(id: Command, value: String) = {
     ops.operation("Couldn't execute setpoint: " + id.getName + " with string value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getStatus))
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
     }
   }
 
