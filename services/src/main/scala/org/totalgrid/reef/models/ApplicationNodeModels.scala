@@ -22,7 +22,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
-import org.totalgrid.reef.services.core.EntityQueryManager
+import org.totalgrid.reef.services.core.EntityQuery
 
 case class ApplicationCapability(
     val applicationId: Long,
@@ -33,7 +33,7 @@ case class ApplicationCapability(
 
 object ApplicationInstance {
   def newInstance(instanceName: String, userName: String, location: String, network: String) = {
-    val ent = EntityQueryManager.findOrCreateEntity(instanceName, "Application" :: Nil, None)
+    val ent = EntityQuery.findOrCreateEntity(instanceName, "Application" :: Nil, None)
     val a = new ApplicationInstance(ent.id, instanceName, userName, location, network)
     a.entity.value = ent
     a

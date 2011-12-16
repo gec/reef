@@ -96,7 +96,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
 
     measurementStore.remove(entry.entityName :: Nil)
 
-    EntityQueryManager.deleteEntity(entry.entity.value)
+    EntityQuery.deleteEntity(entry.entity.value)
   }
 }
 
@@ -136,11 +136,11 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Point")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
-      proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Point")))
+      proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Point")))
   }
 
   def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
-    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Point")))
 
   def isModified(entry: Point, existing: Point): Boolean = {
     entry.abnormal != existing.abnormal
@@ -151,10 +151,10 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
 
     b.setUuid(makeUuid(sql))
     b.setName(sql.entityName)
-    sql.entity.asOption.foreach(e => b.setEntity(EntityQueryManager.entityToProto(e)))
+    sql.entity.asOption.foreach(e => b.setEntity(EntityQuery.entityToProto(e)))
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQuery.minimalEntityToProto(ln).build) } }
     b.setAbnormal(sql.abnormal)
     b.setType(PointType.valueOf(sql.pointType))
     b.setUnit(sql.unit)
@@ -184,8 +184,8 @@ object PointTiedModel {
   def populatedPointProto(point: Point): PointProto.Builder = {
     val pb = PointProto.newBuilder
     pb.setName(point.entityName).setUuid(makeUuid(point))
-    pb.setEntity(EntityQueryManager.entityToProto(point.entity.value))
-    point.logicalNode.value.foreach(p => pb.setEndpoint(EntityQueryManager.entityToProto(p)))
+    pb.setEntity(EntityQuery.entityToProto(point.entity.value))
+    point.logicalNode.value.foreach(p => pb.setEndpoint(EntityQuery.entityToProto(p)))
     pb
   }
 }

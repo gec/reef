@@ -83,7 +83,7 @@ class AlarmServiceModel
 
   override def createFromProto(context: RequestContext, req: Alarm): AlarmModel = {
 
-    val entity = req.event.entity.map(EntityQueryManager.findEntity(_)).getOrElse(None)
+    val entity = req.event.entity.map(EntityQuery.findEntity(_)).getOrElse(None)
 
     val eventProto = req.getEvent
 

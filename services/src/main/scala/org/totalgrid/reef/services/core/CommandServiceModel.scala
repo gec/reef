@@ -87,7 +87,7 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
     selects.foreach(s => commandSelectModel.removeAccess(context, s))
     commandHistory.foreach(s => commandHistoryModel.delete(context, s))
 
-    EntityQueryManager.deleteEntity(entry.entity.value)
+    EntityQuery.deleteEntity(entry.entity.value)
   }
 
 }
@@ -105,11 +105,11 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))
     List(
       esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
-      proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Command")))
+      proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Command")))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = List(
-    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def createModelEntry(proto: CommandProto): Command = {
     Command.newInstance(proto.getName, proto.getDisplayName, proto.getType, proto.uuid)
@@ -127,12 +127,12 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
 
     //sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
     sql.entity.asOption match {
-      case Some(e) => b.setEntity(EntityQueryManager.entityToProto(e))
+      case Some(e) => b.setEntity(EntityQuery.entityToProto(e))
       case None => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(sql.entityId)))
     }
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQuery.minimalEntityToProto(ln).build) } }
     b.setType(CommandType.valueOf(sql.commandType))
     b.build
   }

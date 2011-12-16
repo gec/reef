@@ -21,7 +21,7 @@ package org.totalgrid.reef.models
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
-import org.totalgrid.reef.services.core.EntityQueryManager
+import org.totalgrid.reef.services.core.EntityQuery
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords
@@ -62,7 +62,7 @@ object Agent {
 
   def createAgentWithPassword(name: String, password: String): Agent = {
     val (digest, saltText) = makeDigestAndSalt(password)
-    val entity = EntityQueryManager.findOrCreateEntity(name, "Agent" :: Nil, None)
+    val entity = EntityQuery.findOrCreateEntity(name, "Agent" :: Nil, None)
     val agent = new Agent(entity.id, enc64(digest), enc64(saltText))
     agent.entity.value = entity
     agent
@@ -101,7 +101,7 @@ case class AuthPermission(
 
 object PermissionSet {
   def newInstance(name: String, defaultExpirationTime: Long) = {
-    val entity = EntityQueryManager.findOrCreateEntity(name, "PermissionSet" :: Nil, None)
+    val entity = EntityQuery.findOrCreateEntity(name, "PermissionSet" :: Nil, None)
     val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
     permissionSet.entity.value = entity
     permissionSet

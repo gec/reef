@@ -19,7 +19,6 @@
 package org.totalgrid.reef.services.core
 
 import java.util.UUID
-import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
 
 import SyncServiceShims._
 import org.totalgrid.reef.client.exception.ReefServiceException
@@ -28,12 +27,13 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.{ ApplicationSchema, DatabaseUsingTestBase }
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.client.service.proto.Model.{ Relationship, Entity, ReefUUID }
 
 @RunWith(classOf[JUnitRunner])
 class EntityServiceTest extends DatabaseUsingTestBase {
 
-  val service = new EntityService
-  //val service = new EntityModelService(new EntityServiceModel)
+  //val service = new EntityService
+  val service = new EntityModelService(new EntityServiceModel)
 
   test("Put Entity with predetermined UUID") {
 
@@ -90,11 +90,11 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   test("Complicated Delete") {
 
-    val regId = EntityQueryManager.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val subId = EntityQueryManager.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQueryManager.addEdge(regId, subId, "owns")
-    val devId = EntityQueryManager.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
-    EntityQueryManager.addEdge(subId, devId, "owns")
+    val regId = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    EntityQuery.addEdge(regId, subId, "owns")
+    val devId = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    EntityQuery.addEdge(subId, devId, "owns")
 
     val edges = ApplicationSchema.edges
     val deriveds = ApplicationSchema.derivedEdges
@@ -114,6 +114,30 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val postDeriveds = deriveds.where(e => true === true).toList
     postDeriveds should equal(Nil)
+  }
 
+  test("Get") {
+
+    val regId = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    EntityQuery.addEdge(regId, subId, "owns")
+    val devId = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    EntityQuery.addEdge(subId, devId, "owns")
+
+    val req = Entity.newBuilder
+      .setName("Reg")
+      .addRelations(
+        Relationship.newBuilder
+          .setRelationship("owns")
+          .setDescendantOf(true)
+          .setDistance(1))
+
+    val root = service.get(req.build).expectOne(Status.OK)
+    root.getName should equal("Reg")
+
+    root.getRelationsCount should equal(1)
+    root.getRelations(0).getEntitiesCount should equal(1)
+    root.getRelations(0).getEntities(0).getName should equal("Sub")
+    root.getRelations(0).getEntities(0).getRelationsCount should equal(0)
   }
 }

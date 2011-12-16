@@ -27,8 +27,8 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.proto.Envelope.Status
-import org.totalgrid.reef.models.Entity
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
 
 object EntityService {
   def seed() {
@@ -62,33 +62,33 @@ class EntityService extends ServiceEntryPoint[EntityProto] with AuthorizesEveryt
       authorizeRead(context, req)
       val types = req.getTypesList.toList
       val name = req.getName
-      val list = EntityQueryManager.nameTypeQuery(Some(name), None)
+      val list = EntityQuery.nameTypeQuery(Some(name), None)
 
       var (status, ent) = list match {
         case List(ent, _) => throw new BadRequestException("more than one entity matched: " + name + " types:" + types)
         case List(ent) => (Status.NOT_MODIFIED, list.head)
         case Nil =>
           authorizeCreate(context, req)
-          (Status.CREATED, EntityQueryManager.addEntity(name, types, req.uuid))
+          (Status.CREATED, EntityQuery.addEntity(name, types, req.uuid))
       }
 
       val additionalTypes = types.diff(ent.types.value)
 
       if (!additionalTypes.isEmpty) {
         authorizeUpdate(context, req)
-        ent = EntityQueryManager.addTypesToEntity(ent, additionalTypes)
+        ent = EntityQuery.addTypesToEntity(ent, additionalTypes)
         if (status == Status.NOT_MODIFIED) status = Status.UPDATED
       }
-      Response(status, EntityQueryManager.entityToProto(ent).build :: Nil)
+      Response(status, EntityQuery.entityToProto(ent).build :: Nil)
     })
   }
 
   override def getAsync(source: RequestContextSource, req: EntityProto)(callback: (Response[EntityProto]) => Unit) {
     callback(source.transaction { context =>
       authorizeRead(context, req)
-      val result = EntityQueryManager.fullQuery(req)
+      val result = EntityQuery.fullQuery(req)
       if (result.size == 0) {
-        EntityQueryManager.checkAllTypesInSystem(req)
+        EntityQuery.checkAllTypesInSystem(req)
       }
       Response(Status.OK, result)
     })
@@ -98,13 +98,13 @@ class EntityService extends ServiceEntryPoint[EntityProto] with AuthorizesEveryt
     callback(source.transaction { context =>
       authorizeRead(context, req)
       authorizeDelete(context, req)
-      val entities = EntityQueryManager.fullQueryAsModels(req);
+      val entities = EntityQuery.fullQueryAsModels(req);
 
       val (results, status) = entities match {
         case Nil => (req :: Nil, Status.NOT_MODIFIED)
         case l: List[Entity] =>
-          EntityQueryManager.deleteEntities(entities)
-          (entities.map { EntityQueryManager.entityToProto(_).build }, Status.DELETED)
+          EntityQuery.deleteEntities(entities)
+          (entities.map { EntityQuery.entityToProto(_).build }, Status.DELETED)
       }
       Response(status, results)
     })
@@ -131,15 +131,15 @@ class EntityEdgeService extends ServiceEntryPoint[EntityEdgeProto] with Authoriz
     callback(source.transaction { context =>
       authorizeRead(context, req)
 
-      val parentEntity = EntityQueryManager.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent: " + req.getParent))
-      val childEntity = EntityQueryManager.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child: " + req.getChild))
-      val existingEdge = EntityQueryManager.findEdge(parentEntity, childEntity, req.getRelationship)
+      val parentEntity = EntityQuery.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent: " + req.getParent))
+      val childEntity = EntityQuery.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child: " + req.getChild))
+      val existingEdge = EntityQuery.findEdge(parentEntity, childEntity, req.getRelationship)
 
       val (edge, status) = existingEdge match {
         case Some(edge) => (edge, Status.NOT_MODIFIED)
         case None =>
           authorizeCreate(context, req)
-          (EntityQueryManager.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
+          (EntityQuery.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
       }
       val proto = convertToProto(edge)
       Response(status, proto :: Nil)
@@ -150,15 +150,15 @@ class EntityEdgeService extends ServiceEntryPoint[EntityEdgeProto] with Authoriz
     callback(source.transaction { context =>
       authorizeRead(context, req)
       authorizeDelete(context, req)
-      val existingEdge: Option[EntityEdge] = EntityQueryManager.findEntity(req.getParent).flatMap { parent =>
-        EntityQueryManager.findEntity(req.getChild).flatMap { child =>
-          EntityQueryManager.findEdge(parent, child, req.getRelationship)
+      val existingEdge: Option[EntityEdge] = EntityQuery.findEntity(req.getParent).flatMap { parent =>
+        EntityQuery.findEntity(req.getChild).flatMap { child =>
+          EntityQuery.findEdge(parent, child, req.getRelationship)
         }
       }
 
       val (proto, status) = existingEdge match {
         case Some(edge) =>
-          EntityQueryManager.deleteEdge(edge)
+          EntityQuery.deleteEdge(edge)
           (convertToProto(edge), Status.DELETED)
         case None => (req, Status.NOT_MODIFIED)
       }
@@ -171,7 +171,7 @@ class EntityEdgeService extends ServiceEntryPoint[EntityEdgeProto] with Authoriz
       authorizeRead(context, req)
       // TODO: add edge searching
       import org.squeryl.PrimitiveTypeMode._
-      val edges = EntityQueryManager.edges.where(t => true === true).toList
+      val edges = ApplicationSchema.edges.where(t => true === true).toList
       Response(Status.OK, edges.map { convertToProto(_) })
     })
   }

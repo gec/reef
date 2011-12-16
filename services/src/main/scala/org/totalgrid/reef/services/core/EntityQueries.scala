@@ -38,148 +38,9 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.types.Optional._
 import scala.collection.JavaConversions._
 
-trait EntityTreeQueries { self: EntityQueries =>
+object EntityQuery extends Logging {
 
   import ApplicationSchema._
-
-  implicit def queryNodeToList(node: QueryNode): List[QueryNode] = List(node)
-
-  /**
-   * Executes a recursive search to go from a set of query trees to a set of result trees.
-   *
-   * @param queries Query tree root nodes
-   * @param rootSet Entities from root query
-   * @return Result tree root nodes (maps to rootSet) filled out by query
-   */
-  def resultsForQuery(queries: List[QueryNode], rootSet: List[Entity]): List[ResultNode] = {
-    val select = from(entities)(t => where(t.id in rootSet.map(_.id)) select (t))
-    resultsForQuery(queries, rootSet, select)
-  }
-
-  /**
-   * Executes a recursive search to go from a set of query trees to a set of result trees.
-   *
-   * @param queries Query tree root nodes
-   * @param rootSelect Squeryl/sql select that represents the root set
-   * @return Result tree root nodes (maps to rootSet) filled out by query
-   */
-  def resultsForQuery(queries: List[QueryNode], rootSelect: Query[Entity]): List[ResultNode] = {
-    resultsForQuery(queries, rootSelect.toList, rootSelect)
-  }
-
-  /**
-   * Executes a recursive search to go from a set of query trees to a set of result trees.
-   *
-   * @param queries Query tree root nodes
-   * @param rootSet Entities from root query
-   * @param rootSelect Squeryl/sql select that represents the root set
-   * @return Result tree root nodes (maps to rootSet) filled out by query
-   */
-  def resultsForQuery(queries: List[QueryNode], rootSet: List[Entity], rootSelect: Query[Entity]): List[ResultNode] = {
-    val results = rootSet.map(new ResultNodeBuilder(_)).toList
-    queries.foreach(_.fillChildren(rootSelect, results))
-    results.map(_.build)
-  }
-
-  /**
-   * Translates a proto entity tree query to the internal, useful
-   * representation.
-   *
-   * @param proto Proto representation of a entity tree query
-   * @return List of tree subqueries.
-   */
-  def protoToQuery(proto: EntityProto): List[QueryNode] = {
-    def buildSubQuery(rel: Relationship): List[QueryNode] = {
-      if (rel.getEntitiesCount > 0) {
-        rel.getEntitiesList.map { ent =>
-          val subs = ent.getRelationsList.flatMap(buildSubQuery(_)).toList
-          QueryNode(rel.relationship, rel.descendantOf, rel.distance, ent.name, ent.getTypesList.toList, subs)
-        }.toList
-      } else {
-        QueryNode(rel.relationship, rel.descendantOf, rel.distance, None, Nil, Nil)
-      }
-    }
-
-    proto.getRelationsList.flatMap(buildSubQuery(_)).toList
-  }
-
-  /**
-   * Interprets a proto object as a entity tree query, gets the root set of
-   * entities, and retrieves the query results.
-   *
-   * @param proto Proto representation of a entity tree query
-   * @return List of root nodes representing result trees.
-   */
-  def protoTreeQuery(proto: EntityProto): List[ResultNode] = {
-
-    // For the moment not allowing a root set of everything
-    if (proto.uuid.value == None && proto.name == None && proto.getTypesCount == 0)
-      throw new BadRequestException("Must specify root set")
-
-    def expr(ent: Entity, typ: EntityToTypeJoins) = {
-      proto.uuid.value.map(ent.id === UUID.fromString(_)) ::
-        proto.name.map(ent.name === _) ::
-        ((proto.getTypesCount > 0) thenGet ((typ.entType in proto.getTypesList.toList)
-          and (typ.entityId === ent.id))) ::
-          Nil
-    }
-
-    // If query specifies type, do a join, otherwise simpler query on id/name
-    val rootQuery = if (proto.getTypesCount != 0) {
-      from(entities, entityTypes)((ent, typ) =>
-        where(expr(ent, typ).flatten)
-          select (ent)).distinct
-    } else {
-      from(entities)(ent =>
-        where((proto.uuid.value.map(ent.id === UUID.fromString(_)) ::
-          proto.name.map(ent.name === _) :: Nil).flatten)
-          select (ent))
-    }
-
-    // Execute query (unless root set is nil)
-    if (rootQuery.size == 0) Nil
-    else resultsForQuery(protoToQuery(proto), rootQuery)
-  }
-
-  /**
-   * go through the request recursivley and check that every type is a valid
-   * and expected type
-   */
-  def checkAllTypesInSystem(proto: EntityProto) {
-    // recusivley collect all types asked for in the request
-    def getTypes(e: EntityProto): List[String] = {
-      e.getTypesList.toList :::
-        e.getRelationsList.toList.map { rel => rel.getEntitiesList.toList.map { getTypes(_) }.flatten }.flatten
-    }
-
-    val requestTypes = getTypes(proto).distinct.sorted
-    if (!requestTypes.isEmpty) {
-      val inSystemTypes = from(entityTypeMetaModel)(et =>
-        where(et.id in requestTypes)
-          select (et.entType)).distinct.toList.sorted
-
-      val missing = requestTypes.diff(inSystemTypes)
-      if (!missing.isEmpty) throw new BadRequestException("Retreived no results and requested unknown entity types: " + missing)
-    }
-  }
-
-  /**
-   * Return all ids of a certain entity type retrieved by an entity query.
-   *
-   * @param proto Proto representation of a entity tree query
-   * @param typ Entity type to return ids of
-   * @return List of entity ids from entity query of specified type
-   */
-  def typeIdsFromProtoQuery(proto: EntityProto, typ: String): List[UUID] = {
-    protoTreeQuery(proto).flatMap(_.idsForType(typ))
-  }
-
-  /**
-   * Return a list of descendants of the entity aUUID with this entity.
-   */
-  def idsFromProtoQuery(proto: EntityProto): List[UUID] = {
-    protoTreeQuery(proto).flatMap(_.flatIds())
-  }
 
   /**
    * Entity-to-entity relationship.
@@ -373,15 +234,145 @@ trait EntityTreeQueries { self: EntityQueries =>
       foreignKey :: optList.flatten
     }
   }
-}
 
-trait EntityQueries extends EntityTreeQueries with Logging {
+  implicit def queryNodeToList(node: QueryNode): List[QueryNode] = List(node)
 
-  val entities = ApplicationSchema.entities
-  val edges = ApplicationSchema.edges
-  val deriveds = ApplicationSchema.derivedEdges
-  val entityTypes = ApplicationSchema.entityTypes
-  val entityTypeMetaModel = ApplicationSchema.entityTypeMetaModel
+  /**
+   * Executes a recursive search to go from a set of query trees to a set of result trees.
+   *
+   * @param queries Query tree root nodes
+   * @param rootSet Entities from root query
+   * @return Result tree root nodes (maps to rootSet) filled out by query
+   */
+  def resultsForQuery(queries: List[QueryNode], rootSet: List[Entity]): List[ResultNode] = {
+    val select = from(entities)(t => where(t.id in rootSet.map(_.id)) select (t))
+    resultsForQuery(queries, rootSet, select)
+  }
+
+  /**
+   * Executes a recursive search to go from a set of query trees to a set of result trees.
+   *
+   * @param queries Query tree root nodes
+   * @param rootSelect Squeryl/sql select that represents the root set
+   * @return Result tree root nodes (maps to rootSet) filled out by query
+   */
+  def resultsForQuery(queries: List[QueryNode], rootSelect: Query[Entity]): List[ResultNode] = {
+    resultsForQuery(queries, rootSelect.toList, rootSelect)
+  }
+
+  /**
+   * Executes a recursive search to go from a set of query trees to a set of result trees.
+   *
+   * @param queries Query tree root nodes
+   * @param rootSet Entities from root query
+   * @param rootSelect Squeryl/sql select that represents the root set
+   * @return Result tree root nodes (maps to rootSet) filled out by query
+   */
+  def resultsForQuery(queries: List[QueryNode], rootSet: List[Entity], rootSelect: Query[Entity]): List[ResultNode] = {
+    val results = rootSet.map(new ResultNodeBuilder(_)).toList
+    queries.foreach(_.fillChildren(rootSelect, results))
+    results.map(_.build)
+  }
+
+  /**
+   * Translates a proto entity tree query to the internal, useful
+   * representation.
+   *
+   * @param proto Proto representation of a entity tree query
+   * @return List of tree subqueries.
+   */
+  def protoToQuery(proto: EntityProto): List[QueryNode] = {
+    def buildSubQuery(rel: Relationship): List[QueryNode] = {
+      if (rel.getEntitiesCount > 0) {
+        rel.getEntitiesList.map { ent =>
+          val subs = ent.getRelationsList.flatMap(buildSubQuery(_)).toList
+          QueryNode(rel.relationship, rel.descendantOf, rel.distance, ent.name, ent.getTypesList.toList, subs)
+        }.toList
+      } else {
+        QueryNode(rel.relationship, rel.descendantOf, rel.distance, None, Nil, Nil)
+      }
+    }
+
+    proto.getRelationsList.flatMap(buildSubQuery(_)).toList
+  }
+
+  /**
+   * Interprets a proto object as a entity tree query, gets the root set of
+   * entities, and retrieves the query results.
+   *
+   * @param proto Proto representation of a entity tree query
+   * @return List of root nodes representing result trees.
+   */
+  def protoTreeQuery(proto: EntityProto): List[ResultNode] = {
+
+    // For the moment not allowing a root set of everything
+    if (proto.uuid.value == None && proto.name == None && proto.getTypesCount == 0)
+      throw new BadRequestException("Must specify root set")
+
+    def expr(ent: Entity, typ: EntityToTypeJoins) = {
+      proto.uuid.value.map(ent.id === UUID.fromString(_)) ::
+        proto.name.map(ent.name === _) ::
+        ((proto.getTypesCount > 0) thenGet ((typ.entType in proto.getTypesList.toList)
+          and (typ.entityId === ent.id))) ::
+          Nil
+    }
+
+    // If query specifies type, do a join, otherwise simpler query on id/name
+    val rootQuery = if (proto.getTypesCount != 0) {
+      from(entities, entityTypes)((ent, typ) =>
+        where(expr(ent, typ).flatten)
+          select (ent)).distinct
+    } else {
+      from(entities)(ent =>
+        where((proto.uuid.value.map(ent.id === UUID.fromString(_)) ::
+          proto.name.map(ent.name === _) :: Nil).flatten)
+          select (ent))
+    }
+
+    // Execute query (unless root set is nil)
+    if (rootQuery.size == 0) Nil
+    else resultsForQuery(protoToQuery(proto), rootQuery)
+  }
+
+  /**
+   * go through the request recursivley and check that every type is a valid
+   * and expected type
+   */
+  def checkAllTypesInSystem(proto: EntityProto) {
+    // recusivley collect all types asked for in the request
+    def getTypes(e: EntityProto): List[String] = {
+      e.getTypesList.toList :::
+        e.getRelationsList.toList.map { rel => rel.getEntitiesList.toList.map { getTypes(_) }.flatten }.flatten
+    }
+
+    val requestTypes = getTypes(proto).distinct.sorted
+    if (!requestTypes.isEmpty) {
+      val inSystemTypes = from(entityTypeMetaModel)(et =>
+        where(et.id in requestTypes)
+          select (et.entType)).distinct.toList.sorted
+
+      val missing = requestTypes.diff(inSystemTypes)
+      if (!missing.isEmpty) throw new BadRequestException("Retreived no results and requested unknown entity types: " + missing)
+    }
+  }
+
+  /**
+   * Return all ids of a certain entity type retrieved by an entity query.
+   *
+   * @param proto Proto representation of a entity tree query
+   * @param typ Entity type to return ids of
+   * @return List of entity ids from entity query of specified type
+   */
+  def typeIdsFromProtoQuery(proto: EntityProto, typ: String): List[UUID] = {
+    protoTreeQuery(proto).flatMap(_.idsForType(typ))
+  }
+
+  /**
+   * Return a list of descendants of the entity aUUID with this entity.
+   */
+  def idsFromProtoQuery(proto: EntityProto): List[UUID] = {
+    protoTreeQuery(proto).flatMap(_.flatIds())
+  }
 
   def minimalEntityToProto(entry: Entity): EntityProto.Builder = {
     EntityProto.newBuilder.setUuid(makeUuid(entry)).setName(entry.name)
@@ -452,6 +443,18 @@ trait EntityQueries extends EntityTreeQueries with Logging {
       allQuery
     } else {
       protoTreeQuery(proto).map { _.flatEntites }.flatten
+    }
+  }
+
+  // Attaches ResultNode to Entity and returns the list of Entitys
+  def fullModelQuery(proto: EntityProto): List[Entity] = {
+    if (proto.hasUuid && proto.getUuid.getValue == "*") {
+      allQuery
+    } else {
+      protoTreeQuery(proto).map { resultNode =>
+       // resultNode.ent.resultNode = Some(resultNode)
+        resultNode.ent
+      }
     }
   }
 
@@ -562,10 +565,10 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   }
 
   def deleteEdge(edge: Edge) = {
-    val derivedEdges = deriveds.where(t => t.parentEdgeId === edge.id).toList
-    derivedEdges.foreach { de =>
+    val deriveds = derivedEdges.where(t => t.parentEdgeId === edge.id).toList
+    deriveds.foreach { de =>
       edges.delete(de.edgeId)
-      deriveds.delete(de.id)
+      derivedEdges.delete(de.id)
     }
     edges.delete(edge.id)
   }
@@ -583,15 +586,15 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
   def deleteEdges(edgeList: List[Edge]) = {
     val edgeIds = edgeList.map { _.id }
-    val derivedEdgeIds = deriveds.where(t => t.parentEdgeId in edgeIds).toList.map { _.id }
+    val derivedEdgeIds = derivedEdges.where(t => t.parentEdgeId in edgeIds).toList.map { _.id }
     edges.deleteWhere(e => (e.id in edgeIds) or (e.id in derivedEdgeIds))
-    deriveds.deleteWhere(t => t.parentEdgeId in edgeIds)
+    derivedEdges.deleteWhere(t => t.parentEdgeId in edgeIds)
   }
 
   private def addDerivedEdge(parent: Entity, child: Entity, relation: String, depth: Int, sourceEdge: Edge) = {
     assert(depth > 1)
     val derivedEdge = edges.insert(new Edge(parent.id, child.id, relation, depth))
-    deriveds.insert(new Derived(sourceEdge.id, derivedEdge.id))
+    derivedEdges.insert(new Derived(sourceEdge.id, derivedEdge.id))
     derivedEdge
   }
 
@@ -663,6 +666,11 @@ trait EntityQueries extends EntityTreeQueries with Logging {
   def deleteEntity(entity: Entity) = deleteEntities(entity :: Nil)
 
   def deleteEntities(entities: List[Entity]) = {
+    cleanupEntities(entities)
+    ApplicationSchema.entities.deleteWhere(_.id in entities.map { _.id })
+  }
+
+  def cleanupEntities(entities: List[Entity]) = {
     val entityIds = entities.map { _.id }
 
     val edges = ApplicationSchema.edges.where(e => (e.parentId in entityIds) or (e.childId in entityIds))
@@ -681,7 +689,6 @@ trait EntityQueries extends EntityTreeQueries with Logging {
 
     ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId in entityIds)
     ApplicationSchema.entityTypes.deleteWhere(et => et.entityId in entityIds)
-    ApplicationSchema.entities.deleteWhere(_.id in entityIds)
   }
 }
 
@@ -691,7 +698,7 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
     List(
       proto.uuid.value.asParam(sql.id === UUID.fromString(_)),
       proto.name.asParam(sql.name === _),
-      EntityQueryManager.noneIfEmpty(proto.types).asParam(sql.id in EntityQueryManager.entityIdsFromTypes(_)))
+      EntityQuery.noneIfEmpty(proto.types).asParam(sql.id in EntityQuery.entityIdsFromTypes(_)))
   }
 
   def searchQuery(proto: EntityProto, sql: Entity) = Nil
@@ -711,11 +718,10 @@ trait EntityPartsSearches extends UniqueAndSearchQueryable[EntitySearch, Entity]
     List(
       proto.uuid.asParam(sql.id === UUID.fromString(_)),
       proto.name.asParam(sql.name === _),
-      EntityQueryManager.noneIfEmpty(proto.types).asParam(sql.id in EntityQueryManager.entityIdsFromTypes(_)))
+      EntityQuery.noneIfEmpty(proto.types).asParam(sql.id in EntityQuery.entityIdsFromTypes(_)))
   }
 
   def searchQuery(proto: EntitySearch, sql: Entity) = Nil
 }
 object EntityPartsSearches extends EntityPartsSearches
 
-object EntityQueryManager extends EntityQueries

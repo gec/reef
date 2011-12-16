@@ -104,7 +104,7 @@ trait MeasurementProcessingConnectionConversion
 
     val b = ConnProto.newBuilder.setId(makeId(entry))
 
-    entry.endpoint.value.foreach(endpoint => b.setLogicalNode(EntityQueryManager.entityToProto(endpoint.entity.value)))
+    entry.endpoint.value.foreach(endpoint => b.setLogicalNode(EntityQuery.entityToProto(endpoint.entity.value)))
     entry.application.value.map(app => b.setMeasProc(ApplicationConfig.newBuilder.setUuid(makeUuid(app))))
     entry.serviceRoutingKey.foreach(k => {
       val r = MeasurementProcessingRouting.newBuilder

@@ -19,10 +19,11 @@
 package org.totalgrid.reef.models
 
 import org.squeryl.PrimitiveTypeMode._
-
+import org.totalgrid.reef.services.core.EntityQuery.ResultNode
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
 import org.squeryl.{ KeyedEntity, Table }
+import org.squeryl.annotations.Transient
 
 case class Entity(
     val name: String) extends ModelWithUUID {
@@ -30,6 +31,9 @@ case class Entity(
   val types = LazyVar(from(ApplicationSchema.entityTypes)(t => where(id === t.entityId) select (&(t.entType))).toList)
 
   val attributes = LazyVar(from(ApplicationSchema.entityAttributes)(t => where(id === t.entityId) select (t)).toList)
+
+  @Transient
+  var resultNode: Option[ResultNode] = None
 
   def asType[A <: { val entityId: UUID }](table: Table[A], ofType: String) = {
     if (types.value.find(_ == ofType).isEmpty) {

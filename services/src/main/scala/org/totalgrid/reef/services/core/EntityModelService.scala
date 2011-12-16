@@ -42,11 +42,11 @@ class EntityServiceModel
   val table = ApplicationSchema.entities
 
   def findRecord(context: RequestContext, req: EntityProto): Option[Entity] = {
-    EntityQueryManager.findEntity(req)
+    EntityQuery.findEntity(req)
   }
 
   def findRecords(context: RequestContext, req: EntityProto): List[Entity] = {
-    EntityQueryManager.fullQueryAsModels(req)
+    EntityQuery.fullModelQuery(req)
   }
 
   def createFromProto(context: RequestContext, req: EntityProto): Entity = {
@@ -68,7 +68,7 @@ class EntityServiceModel
       entityModel.id = id
     }
     val ent = create(context, entityModel)
-    EntityQueryManager.addEntityTypes(types.toList)
+    EntityQuery.addEntityTypes(types.toList)
     types.foreach(t => entityTypes.insert(new EntityToTypeJoins(ent.id, t)))
     ent
   }
@@ -81,7 +81,7 @@ class EntityServiceModel
     val additionalTypes = types.diff(existing.types.value)
 
     if (!additionalTypes.isEmpty) {
-      val ent = EntityQueryManager.addTypesToEntity(existing, additionalTypes)
+      val ent = EntityQuery.addTypesToEntity(existing, additionalTypes)
       (ent, true)
     } else {
       (existing, false)
@@ -97,7 +97,7 @@ class EntityServiceModel
   }
 
   def convertToProto(entry: Entity): EntityProto = {
-    EntityQueryManager.entityToProto(entry).build
+    EntityQuery.entityToProto(entry).build
   }
 
   def isModified(entry: Entity, previous: Entity): Boolean = {
@@ -106,6 +106,6 @@ class EntityServiceModel
   }
 
   override protected def postDelete(context: RequestContext, previous: Entity) {
-
+    EntityQuery.cleanupEntities(List(previous))
   }
 }
