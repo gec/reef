@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.mockito.{ Mockito, Matchers }
 import org.totalgrid.reef.client.service.proto.Model.Command
 import org.totalgrid.reef.client.service.proto.Mapping._
-import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus => ProtoCommandStatus, CommandLock }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus => ProtoCommandStatus, CommandLock }
 import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.client.exception.BadRequestException
@@ -135,7 +135,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
     val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
     val lock = new FixedPromise(Success(CommandLock.newBuilder.build))
-    val result = new FixedPromise(Success(_result))
+    val result = new FixedPromise(Success(CommandResult.newBuilder.setStatus(_result).build))
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
     Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand.await)
     Mockito.doReturn(lock).when(commandService).deleteCommandLock(lock.await)
