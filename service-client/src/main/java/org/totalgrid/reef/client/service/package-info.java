@@ -30,12 +30,10 @@
  * serve as a starting point and suite of examples to pull from to make more complex requests when necessary.
  * 
  * <p>
- * Some applications have to write custom requests to support some use cases. Many very "chatty" sets of requests can be
- * implemented with a single more complex request. We envision application developers extending the interfaces with
- * their own custom functions for their application.
+ * Some applications have to write custom requests to support some use cases. Many very "chatty" sets of requests can be implemented with a single
+ * more complex request. We envision application developers extending the interfaces with their own custom functions for their application.
  * 
- * If that is necessary the application developer can use the RESTOperations interface to make and handle the results
- * of those more complex queries.
+ * If that is necessary the application developer can use the RESTOperations interface to make and handle the results of those more complex queries.
  */
 package org.totalgrid.reef.client.service;
 

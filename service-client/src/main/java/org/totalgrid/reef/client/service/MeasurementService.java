@@ -136,7 +136,6 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
-     * TODO: protocol checking on publishMeasurements
      */
     Boolean publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
 

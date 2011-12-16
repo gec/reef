@@ -41,6 +41,7 @@ object OverrideProcessor {
   }
 }
 
+// TODO: OLD should not be set until a new field measurement comes in (61850-7-3).
 class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCache[Measurement], current: String => Option[Measurement])
     extends MeasProcServiceContext[MeasOverride] with MetricsHooks with Logging {
 
