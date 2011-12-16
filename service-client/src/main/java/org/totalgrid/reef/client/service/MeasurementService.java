@@ -136,6 +136,7 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
+     * @return a Boolean that will always be true (otherwise an exception has been thrown), included for api consistency only
      */
     Boolean publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
 
@@ -149,6 +150,7 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
+     * @return a Boolean that will always be true (otherwise an exception has been thrown), included for api consistency only
      */
     Boolean publishMeasurements( List<Measurement> measurements, Routable destination ) throws ReefServiceException;
 
@@ -162,6 +164,7 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
+     * @return a Boolean that will always be true (otherwise an exception has been thrown), included for api consistency only
      */
     Boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
 }
