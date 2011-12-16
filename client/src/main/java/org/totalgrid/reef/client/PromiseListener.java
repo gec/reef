@@ -18,8 +18,23 @@
  */
 package org.totalgrid.reef.client;
 
+/**
+ * callback interface for listening to a promise when writing asynchronous code
+ * @param <A>
+ */
 public interface PromiseListener<A>
 {
-
+    /**
+     * when a promise has completed (successfully or not) all PromiseListeners will be called
+     * back with a reference to a new promise that has a result set. This is so the client
+     * can call the await() method to retrieve the value and be notified by exception if the
+     * call failed.
+     *
+     * This callback will come in on the connection thread and should be handled like a subscription
+     * event, and not block for extended periods because it may stop other Promises or subscriptions
+     * from being completed.
+     *
+     * @param promise a complete promise whose value (or error) is retrievable by calling await.
+     */
     void onComplete( Promise<A> promise );
 }
