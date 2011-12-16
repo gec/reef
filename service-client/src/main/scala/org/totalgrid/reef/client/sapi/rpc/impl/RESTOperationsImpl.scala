@@ -34,6 +34,17 @@ trait RESTOperationsImpl extends HasAnnotatedOperations with RESTOperations {
     _.get(request).map(_.many)
   }
 
+  def subscribeMany[T](request: T) = {
+    import org.totalgrid.reef.client.types.TypeDescriptor
+    import org.totalgrid.reef.client.sapi.client.Subscription._
+
+    val descriptor = client.getServiceInfo(request.asInstanceOf[AnyRef].getClass).getDescriptor
+    val typeDescriptor = descriptor.asInstanceOf[TypeDescriptor[T]]
+    ops.subscription(typeDescriptor, "Cannot getMany with request: " + request) { (sub, c) =>
+      c.get(request, sub).map(_.many)
+    }
+  }
+
   def deleteOne[T](request: T) = ops.operation("Cannot deleteOne with request: " + request) {
     _.delete(request).map(_.one)
   }

@@ -57,6 +57,8 @@ public interface RESTOperations
      */
     public <T> List<T> getMany( T request ) throws ReefServiceException;
 
+    public <T> SubscriptionResult<List<T>, T> subscribeMany( T request ) throws ReefServiceException;
+
     public <T> T deleteOne( T request ) throws ReefServiceException;
 
     public <T> List<T> deleteMany( T request ) throws ReefServiceException;
