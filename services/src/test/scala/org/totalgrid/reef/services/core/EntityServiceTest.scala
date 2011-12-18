@@ -116,7 +116,7 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     postDeriveds should equal(Nil)
   }
 
-  test("Get") {
+  test("Get multi level") {
 
     val regId = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
     val subId = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)

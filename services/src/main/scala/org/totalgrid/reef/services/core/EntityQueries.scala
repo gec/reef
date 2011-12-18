@@ -452,7 +452,7 @@ object EntityQuery extends Logging {
       allQuery
     } else {
       protoTreeQuery(proto).map { resultNode =>
-       // resultNode.ent.resultNode = Some(resultNode)
+        resultNode.ent.resultNode = Some(resultNode)
         resultNode.ent
       }
     }

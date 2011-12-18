@@ -97,7 +97,11 @@ class EntityServiceModel
   }
 
   def convertToProto(entry: Entity): EntityProto = {
-    EntityQuery.entityToProto(entry).build
+    entry.resultNode match {
+      case None => EntityQuery.entityToProto(entry).build
+      case Some(result) => result.toProto
+    }
+
   }
 
   def isModified(entry: Entity, previous: Entity): Boolean = {
