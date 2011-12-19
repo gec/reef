@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, Relationship }
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, EntityEdge => EntityEdgeProto, Relationship }
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -410,16 +410,16 @@ object EntityQuery extends Logging {
     if (listO.isEmpty || listO.get.size == 0) None else listO
   }
 
-  def returnSingleOption[A](o: List[A]): Option[A] = {
-    if (o.size > 1) throw new Exception("Entity does not exist")
+  def returnSingleOption[A](o: List[A], what: String): Option[A] = {
+    if (o.size > 1) throw new Exception(what + " does not exist")
     if (o.size == 1) Some(o.head) else None
   }
 
   def findEntity(proto: EntityProto): Option[Entity] = {
     if (proto.hasUuid) {
-      returnSingleOption(entities.where(t => t.id === UUID.fromString(proto.getUuid.getValue)).toList)
+      returnSingleOption(entities.where(t => t.id === UUID.fromString(proto.getUuid.getValue)).toList, "Entity")
     } else if (proto.hasName) {
-      returnSingleOption(entities.where(t => t.name === proto.getName).toList)
+      returnSingleOption(entities.where(t => t.name === proto.getName).toList, "Entity")
     } else {
       throw new Exception("Not valid query")
     }
@@ -428,6 +428,7 @@ object EntityQuery extends Logging {
   def findEntities(protos: List[EntityProto]): List[Entity] = {
     protos.map { findEntity(_) }.flatten
   }
+
 
   // Main entry point for requests in the form of protos
   def fullQuery(proto: EntityProto): List[EntityProto] = {
@@ -549,6 +550,33 @@ object EntityQuery extends Logging {
       val known = from(entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
       val newTypes = customTypes.diff(known)
       newTypes.foreach(t => entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
+    }
+  }
+
+
+  def findEdge(proto: EntityEdgeProto): Option[Edge] = {
+    proto.uuid.value.flatMap { v =>
+      returnSingleOption(edges.where(t => t.id === v.toInt).toList, "Entity Edge")
+    }
+  }
+
+  def findEdges(proto: EntityEdgeProto): List[Edge] ={
+    if (proto.hasUuid && proto.getUuid.getValue == "*") {
+      edges.where(t => true === true).toList
+    } else if (proto.hasUuid) {
+      edges.where(t => t.id === proto.getUuid.getValue.toInt).toList
+    } else {
+
+
+
+      def expr(t: Edge) = {
+        proto.child.uuid.value.map(v => t.parentId === UUID.fromString(v)) ::
+          proto.parent.uuid.value.map(v => t.childId === UUID.fromString(v)) ::
+          proto.relationship.map(t.relationship === _) ::
+        Nil
+      }
+
+      edges.where(expr(_).flatten).toList
     }
   }
 
