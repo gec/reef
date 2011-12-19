@@ -64,7 +64,8 @@ class ServiceProviders(
 
   private var crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
     new EntityEdgeService,
-    new EntityService,
+    //new EntityService,
+    new EntityModelService(modelFac.entities),
     new EntityAttributesService,
     new MeasurementHistoryService(wrappedHistorian),
     new MeasurementSnapshotService(wrappedDb),

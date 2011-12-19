@@ -71,4 +71,6 @@ class ModelFactories(measurementStore: MeasurementStore, contextSource: RequestC
   val procStatus = new ProcessStatusServiceModel(coordinator)
   val appConfig = new ApplicationConfigServiceModel(procStatus)
 
+  val entities = new EntityServiceModel
+
 }

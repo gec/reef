@@ -140,4 +140,21 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     root.getRelations(0).getEntities(0).getName should equal("Sub")
     root.getRelations(0).getEntities(0).getRelationsCount should equal(0)
   }
+
+  test("Get single level") {
+
+    val regId = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    EntityQuery.addEdge(regId, subId, "owns")
+    val devId = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    EntityQuery.addEdge(subId, devId, "owns")
+
+    val req = Entity.newBuilder
+      .addTypes("Region")
+
+    val root = service.get(req.build).expectOne(Status.OK)
+
+    root.getName should equal("Reg")
+    root.getRelationsCount should equal(0)
+  }
 }
