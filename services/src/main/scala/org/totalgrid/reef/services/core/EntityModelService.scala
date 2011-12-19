@@ -46,7 +46,8 @@ class EntityServiceModel
   }
 
   def findRecords(context: RequestContext, req: EntityProto): List[Entity] = {
-    EntityQuery.fullModelQuery(req)
+    // TODO: Make this non-superficial
+    EntityQuery.fullModelQuery(req).take(context.getHeaders.getResultLimit().getOrElse(100))
   }
 
   def createFromProto(context: RequestContext, req: EntityProto): Entity = {
@@ -89,7 +90,7 @@ class EntityServiceModel
   }
 
   def sortResults(list: List[EntityProto]): List[EntityProto] = {
-    list.sortWith { (a, b) => a.getName.compareTo(b.getName) > 0 }
+    list.sortWith { (a, b) => a.getName.toLowerCase.compareTo(b.getName.toLowerCase) < 0 }
   }
 
   def getRoutingKey(req: EntityProto): String = ProtoRoutingKeys.generateRoutingKey {
@@ -101,7 +102,6 @@ class EntityServiceModel
       case None => EntityQuery.entityToProto(entry).build
       case Some(result) => result.toProto
     }
-
   }
 
   def isModified(entry: Entity, previous: Entity): Boolean = {

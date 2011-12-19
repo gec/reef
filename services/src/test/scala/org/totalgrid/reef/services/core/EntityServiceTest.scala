@@ -28,6 +28,7 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.{ ApplicationSchema, DatabaseUsingTestBase }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Model.{ Relationship, Entity, ReefUUID }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
 @RunWith(classOf[JUnitRunner])
 class EntityServiceTest extends DatabaseUsingTestBase {
@@ -157,4 +158,77 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     root.getName should equal("Reg")
     root.getRelationsCount should equal(0)
   }
+
+  test("Get sorted") {
+
+    val regId = EntityQuery.addEntity("B", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityQuery.addEntity("a", "Substation" :: "EquipmentGroup" :: Nil)
+    EntityQuery.addEdge(regId, subId, "owns")
+    val devId = EntityQuery.addEntity("c", "Breaker" :: "Equipment" :: Nil)
+    EntityQuery.addEdge(subId, devId, "owns")
+
+    val req = Entity.newBuilder.setUuid(ReefUUID.newBuilder().setValue("*"))
+
+    val list = service.get(req.build).expectMany(Status.OK)
+
+    list.get(0).getName() should equal("a")
+    list.get(1).getName() should equal("B")
+    list.get(2).getName() should equal("c")
+  }
+
+  test("Get result limit: all") {
+
+    val regId = EntityQuery.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityQuery.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
+    EntityQuery.addEdge(regId, subId, "owns")
+    val devId = EntityQuery.addEntity("c", "Breaker" :: "Equipment" :: Nil)
+    EntityQuery.addEdge(subId, devId, "owns")
+
+    val req = Entity.newBuilder.setUuid(ReefUUID.newBuilder().setValue("*"))
+
+    val env = BasicRequestHeaders.empty
+    val list = service.get(req.build, env.setResultLimit(1)).expectMany(1)
+
+    list.size() should equal(1)
+    list.get(0).getName() should equal("a")
+  }
+
+  test("Get result limit: types") {
+
+    val regId = EntityQuery.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityQuery.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
+    EntityQuery.addEdge(regId, subId, "owns")
+    val devId = EntityQuery.addEntity("c", "Breaker" :: "Equipment" :: Nil)
+    EntityQuery.addEdge(subId, devId, "owns")
+
+    val req = Entity.newBuilder.addTypes("EquipmentGroup")
+
+    val env = BasicRequestHeaders.empty
+    val list = service.get(req.build, env.setResultLimit(1)).expectMany(Status.OK) //.expectMany(1)
+
+    list.size() should equal(1)
+    //list.get(0).getName() should equal("a")
+  }
+
+  test("Get result limit: tree") {
+
+    val regId = EntityQuery.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityQuery.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
+    EntityQuery.addEdge(regId, subId, "owns")
+    val devId = EntityQuery.addEntity("c", "Breaker" :: "Equipment" :: Nil)
+    EntityQuery.addEdge(subId, devId, "owns")
+
+    val req = Entity.newBuilder
+      .addTypes("EquipmentGroup")
+      .addRelations(
+      Relationship.newBuilder
+        .setDistance(1))
+
+    val env = BasicRequestHeaders.empty
+    val list = service.get(req.build, env.setResultLimit(1)).expectMany(1)
+
+    list.size() should equal(1)
+    //list.get(0).getName() should equal("a")
+  }
+
 }
