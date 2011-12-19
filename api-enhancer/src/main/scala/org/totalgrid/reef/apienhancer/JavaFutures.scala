@@ -29,7 +29,7 @@ import java.io.{ PrintStream, File }
 class JavaFutures extends ApiTransformer with GeneratorFunctions {
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
 
-    getFileStream(packageStr, rootDir, sourceFile, ".client.rpc.futures", false, c.name + "Futures") { (stream, javaPackage) =>
+    getFileStream(packageStr, rootDir, sourceFile, ".client.service.async", false, c.name + "Async") { (stream, javaPackage) =>
       javaFuture(c, stream, javaPackage)
     }
   }
@@ -39,15 +39,17 @@ class JavaFutures extends ApiTransformer with GeneratorFunctions {
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName() + ";"))
     stream.println("import org.totalgrid.reef.client.Promise;")
     stream.println(commentString(c.getRawCommentText()))
-    stream.println("public interface " + c.name + "Futures" + "{")
+    stream.println("public interface " + c.name + "Async" + "{")
 
     c.methods.toList.foreach { m =>
 
-      var msg = "\t" + "Promise<" + typeString(m.returnType) + "> " + m.name + "("
+      val typAnnotation: String = typeAnnotation(m, true)
+
+      var msg = "\t" + typAnnotation + "Promise<" + typeString(m.returnType) + "> " + m.name + "("
       msg += m.parameters().toList.map { p =>
         typeString(p.`type`) + " " + p.name
       }.mkString(", ")
-      msg += ") throws ReefServiceException;"
+      msg += ");"
       stream.println(commentString(m.getRawCommentText()))
       stream.println(msg)
     }

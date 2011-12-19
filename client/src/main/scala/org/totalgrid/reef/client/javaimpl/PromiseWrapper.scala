@@ -16,23 +16,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.rpc
+package org.totalgrid.reef.client.javaimpl
 
-import org.totalgrid.reef.client.sapi.client.rpc.framework.{ ClientOperations => ApiClientOperations }
+import org.totalgrid.reef.client.{ PromiseListener, Promise => JPromise }
+import org.totalgrid.reef.client.sapi.client.Promise
 
-trait AllScadaService
-  extends ApiClientOperations
-  with EntityService
-  with ConfigFileService
-  with MeasurementService
-  with MeasurementOverrideService
-  with EventService
-  with EventPublishingService
-  with EventConfigService
-  with CommandService
-  with PointService
-  with AlarmService
-  with AgentService
-  with EndpointService
-  with ApplicationService
-  with CommunicationChannelService
+class PromiseWrapper[A](prom: Promise[A]) extends JPromise[A] {
+  def await() = prom.await
+
+  def listen(listener: PromiseListener[A]) {
+    prom.listen(p => listener.onComplete(this))
+  }
+
+  def isComplete = prom.isComplete
+}

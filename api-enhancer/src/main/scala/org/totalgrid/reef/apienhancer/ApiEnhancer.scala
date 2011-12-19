@@ -34,7 +34,7 @@ object ApiEnhancer {
     val rootDir = new File(".")
     val sourceDir = new File(rootDir, "../../src/main/java")
 
-    val transformers = List(new ScalaWithFutures, new ScalaJavaShims(false))
+    val transformers = List(new ScalaWithFutures, new ScalaJavaShims(false), new JavaFutures, new ScalaJavaShims(true))
 
     root.classes.toList.filter { c =>
       c.getRawCommentText.indexOf("!api-definition!") != -1

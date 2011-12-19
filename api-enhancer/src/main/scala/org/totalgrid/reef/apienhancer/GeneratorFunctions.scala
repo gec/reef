@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.apienhancer
 
-import com.sun.javadoc.Type
+import com.sun.javadoc.{ MethodDoc, Type }
 import java.io.{ FileOutputStream, PrintStream, File }
 
 trait GeneratorFunctions {
@@ -44,7 +44,8 @@ trait GeneratorFunctions {
   }
 
   def commentString(commentText: String): String = {
-    "/**\n" + commentText.lines.toList.map { " *" + _ }.mkString("\n") + "\n*/"
+    val strippedText = commentText.replaceAllLiterally("!api-definition!", "")
+    "/**\n" + strippedText.lines.toList.map { " *" + _ }.mkString("\n") + "\n*/"
   }
 
   def typeString(ptype: Type): String = {
@@ -55,6 +56,14 @@ trait GeneratorFunctions {
     } else {
       ptype.simpleTypeName() + ptype.dimension()
     }
+  }
+
+  def typeAnnotation(m: MethodDoc, java: Boolean): String = {
+    val typ = m.typeParameters().toList.headOption
+    val typAnnotation = typ.map { t =>
+      if (java) "<" + t.typeName() + "> " else "[" + t.typeName() + "] "
+    }.getOrElse("")
+    typAnnotation
   }
 
   def scalaTypeString(ptype: Type): String = {
@@ -84,7 +93,8 @@ trait GeneratorFunctions {
       "long" -> "Long",
       "double" -> "Double",
       "byte" -> "Array[Byte]",
-      "List" -> "java.util.List")
+      "List" -> "java.util.List",
+      "Boolean" -> "java.lang.Boolean")
 
     if (ptype.asParameterizedType() != null) {
 
