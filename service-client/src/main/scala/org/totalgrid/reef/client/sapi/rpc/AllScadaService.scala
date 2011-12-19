@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.client.sapi.rpc
 
-import org.totalgrid.reef.client.sapi.client.rpc.framework.ClientOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.{ ClientOperations => ApiClientOperations }
 
 trait AllScadaService
-  extends ClientOperations
+  extends ApiClientOperations
   with EntityService
   with ConfigFileService
   with MeasurementService

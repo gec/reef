@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.client.sapi.rpc.RESTOperations
+import org.totalgrid.reef.client.sapi.rpc.ClientOperations
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
-trait RESTOperationsImpl extends HasAnnotatedOperations with RESTOperations {
+trait ClientOperationsImpl extends HasAnnotatedOperations with ClientOperations {
   def getOne[T](request: T) = ops.operation("Cannot getOne with request: " + request) {
     _.get(request).map(_.one)
   }

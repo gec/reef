@@ -31,6 +31,10 @@ import java.util.List;
  */
 public class ReefServices implements ServicesList
 {
+    /*
+      Note that this class is only implemented in java so it shows up in javadoc.
+     */
+
     public List<ServiceTypeInformation<?, ?>> getServiceTypeInformation()
     {
         return ReefServicesList.getServicesList();
@@ -46,9 +50,9 @@ public class ReefServices implements ServicesList
         list.add( org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImplServiceList.getServiceInfo() );
         list.add( org.totalgrid.reef.client.service.impl.AllScadaServiceJavaShimServiceList.getServiceInfo() );
         list.add( org.totalgrid.reef.client.service.impl.async.AllScadaServiceAsyncJavaShimServiceList.getServiceInfo() );
-        list.add( org.totalgrid.reef.client.sapi.rpc.impl.RESTServiceProviders.getScalaServiceInfo() );
-        list.add( org.totalgrid.reef.client.sapi.rpc.impl.RESTServiceProviders.getJavaServiceInfo() );
-        list.add( org.totalgrid.reef.client.sapi.rpc.impl.RESTServiceProviders.getJavaAsyncServiceInfo() );
+        list.add( org.totalgrid.reef.client.sapi.rpc.impl.ClientOperationsServiceProviders.getScalaServiceInfo() );
+        list.add( org.totalgrid.reef.client.sapi.rpc.impl.ClientOperationsServiceProviders.getJavaServiceInfo() );
+        list.add( org.totalgrid.reef.client.sapi.rpc.impl.ClientOperationsServiceProviders.getJavaAsyncServiceInfo() );
         return list;
     }
 }
