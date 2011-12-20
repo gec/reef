@@ -25,6 +25,8 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models._
 
+
+import SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.Model.{ReefUUID, Entity => EntityProto, EntityEdge => EntityEdgeProto}
 
@@ -44,42 +46,37 @@ class EntityEdgeServiceModel
 
 
   def findRecord(context: RequestContext, req: EntityEdgeProto): Option[EntityEdge] = {
-    def uniquePossible(edge: EntityEdgeProto) = {
-      (edge.parent.uuid.value.isDefined || edge.parent.name.isDefined) &&
-        (edge.child.uuid.value.isDefined || edge.child.name.isDefined) &&
-        edge.hasRelationship
-    }
-
-    def entQuery(proto: EntityProto) = {
-      proto.uuid.value match {
-        case Some(uuid) =>
-          from(ApplicationSchema.entities)(ent => where(ent.id === UUID.fromString(uuid)) select(ent.id))
-        case None =>
-          from(ApplicationSchema.entities)(ent => where(ent.name === proto.getName) select(ent.id))
-      }
-    }
-    
-    if (uniquePossible(req)) {
-      
-      val query =
-        from(table)(edge =>
-        where((edge.parentId in entQuery(req.getParent)) and
-          (edge.childId in entQuery(req.getChild)) and
-          (edge.relationship === req.getRelationship))
-        select(edge))
-
-      query.toList match {
-        case List(head, _) => None
-        case List(head) => Some(head)
-        case Nil => None
-      }
-    } else {
-      None
+    findRecords(context, req) match {
+      case List(head, _) => None
+      case List(head) => Some(head)
+      case Nil => None
     }
   }
 
   def findRecords(context: RequestContext, req: EntityEdgeProto): List[EntityEdge] = {
-    EntityQuery.findEdges(req)
+    import ApplicationSchema._
+
+    if (req.hasUuid && req.getUuid.getValue == "*") {
+      edges.where(t => true === true).toList
+    } else if (req.hasUuid) {
+      edges.where(t => t.id === req.getUuid.getValue.toInt).toList
+    } else {
+
+      def entExpr(ent: Entity, proto: EntityProto) = {
+        proto.uuid.value.map(v => ent.id === UUID.fromString(v)) ::
+          proto.name.map(v => ent.name === v) :: Nil
+      }
+
+      def edgeExpr(edge: EntityEdge, proto: EntityEdgeProto) = {
+        proto.parent.map(entProto => edge.parentId in from(entities)(ent => where(entExpr(ent, entProto).flatten) select(ent.id))) ::
+          proto.child.map(entProto => edge.childId in from(entities)(ent => where(entExpr(ent, entProto).flatten) select(ent.id))) ::
+          proto.relationship.map(rel => edge.relationship === rel) :: Nil
+      }
+
+      from(edges) (edge =>
+        where(edgeExpr(edge, req).flatten)
+        select(edge)).toList
+    }
   }
 
   def createFromProto(context: RequestContext, req: EntityEdgeProto): EntityEdge = {

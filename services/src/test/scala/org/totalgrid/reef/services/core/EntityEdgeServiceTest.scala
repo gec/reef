@@ -31,6 +31,19 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
       .build
   }
 
+  test("Put and get wrong name") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+
+    val edge = buildEdge("Reg", "Sub", "owns")
+
+    val result = service.put(edge).expectOne(Status.CREATED)
+
+    val partial = buildEdge("Reg", "Wrong", "owns")
+
+    service.get(partial).expectNone()
+  }
+
   test("Put single") {
     val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
     val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
@@ -101,6 +114,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
       service.put(edge)
     }
   }
+
+
 
   test("Put to nonexistent entity partial match possible") {
     val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)

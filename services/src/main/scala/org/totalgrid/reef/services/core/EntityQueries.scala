@@ -558,7 +558,7 @@ object EntityQuery extends Logging {
     }
   }
 
-  def findEdges(proto: EntityEdgeProto): List[Edge] = {
+  /*def findEdges(proto: EntityEdgeProto): List[Edge] = {
     if (proto.hasUuid && proto.getUuid.getValue == "*") {
       edges.where(t => true === true).toList
     } else if (proto.hasUuid) {
@@ -574,7 +574,7 @@ object EntityQuery extends Logging {
 
       edges.where(expr(_).flatten).toList
     }
-  }
+  }*/
 
   def findEdge(parent: Entity, child: Entity, relation: String): Option[Edge] = {
     val matching = edges.where(r => r.parentId === parent.id and r.childId === child.id and r.relationship === relation and r.distance === 1).toList
