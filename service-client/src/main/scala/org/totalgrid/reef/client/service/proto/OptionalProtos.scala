@@ -115,8 +115,15 @@ object OptionalProtos {
     val id = new OptModelReefID(optionally(_.hasId, _.getId))
     val commandRequest = new OptCommandsCommandRequest(optionally(_.hasCommandRequest, _.getCommandRequest))
     val status = optionally(_.hasStatus, _.getStatus)
+    val errorMessage = optionally(_.hasErrorMessage, _.getErrorMessage)
     val user = optionally(_.hasUser, _.getUser)
     val timeoutMs = optionally(_.hasTimeoutMs, _.getTimeoutMs)
+    val result = new OptCommandsCommandResult(optionally(_.hasResult, _.getResult))
+  }
+  implicit def proto2OptCommandsCommandResult(a: org.totalgrid.reef.client.service.proto.Commands.CommandResult): OptCommandsCommandResult = new OptCommandsCommandResult(Some(a))
+  class OptCommandsCommandResult(real: Option[org.totalgrid.reef.client.service.proto.Commands.CommandResult]) extends OptionalStruct(real) {
+    val status = optionally(_.hasStatus, _.getStatus)
+    val errorMessage = optionally(_.hasErrorMessage, _.getErrorMessage)
   }
   implicit def proto2OptCommandsCommandLock(a: org.totalgrid.reef.client.service.proto.Commands.CommandLock): OptCommandsCommandLock = new OptCommandsCommandLock(Some(a))
   class OptCommandsCommandLock(real: Option[org.totalgrid.reef.client.service.proto.Commands.CommandLock]) extends OptionalStruct(real) {
@@ -133,6 +140,7 @@ object OptionalProtos {
     val _type = optionally(_.hasType, _.getType)
     val intVal = optionally(_.hasIntVal, _.getIntVal)
     val doubleVal = optionally(_.hasDoubleVal, _.getDoubleVal)
+    val stringVal = optionally(_.hasStringVal, _.getStringVal)
   }
   implicit def proto2OptEventsEvent(a: org.totalgrid.reef.client.service.proto.Events.Event): OptEventsEvent = new OptEventsEvent(Some(a))
   class OptEventsEvent(real: Option[org.totalgrid.reef.client.service.proto.Events.Event]) extends OptionalStruct(real) {

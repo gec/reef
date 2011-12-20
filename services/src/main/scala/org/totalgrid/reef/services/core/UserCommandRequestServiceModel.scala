@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest, UserCommandRequest }
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus, CommandRequest, UserCommandRequest }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
@@ -30,6 +30,9 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Command => FepCommandModel
 import org.totalgrid.reef.client.service.proto.Commands.CommandRequest.ValType
 import org.totalgrid.reef.client.service.proto.Model.CommandType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
+import org.squeryl.dsl.fsm.SelectState
+import org.squeryl.dsl.QueryYield
+import org.squeryl.dsl.ast.OrderByArg
 
 class UserCommandRequestServiceModel(
   accessModel: CommandLockServiceModel)
@@ -95,12 +98,15 @@ class UserCommandRequestServiceModel(
         case Some(ValType.DOUBLE) =>
           checkCommandType(cmd.commandType, CommandType.SETPOINT_DOUBLE)
           (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.doubleVal.get)
+        case Some(ValType.STRING) =>
+          checkCommandType(cmd.commandType, CommandType.SETPOINT_STRING)
+          (EventType.Scada.UpdatedSetpoint, "value" -> cmdRequest.stringVal.get)
       }
       postSystemEvent(context, code, Some(cmd.entity.value), "command" -> cmd.entityName :: valueArg :: Nil)
 
       val expireTime = atTime + timeout
       val status = CommandStatus.EXECUTING.getNumber
-      create(context, new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, cmdRequest.toByteArray))
+      create(context, new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, cmdRequest.toByteArray, None))
 
     } else {
       throw new BadRequestException("Command not selected")
@@ -139,6 +145,11 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   import org.squeryl.PrimitiveTypeMode._
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
+  override def getOrdering[R](select: SelectState[R], sql: UserCommandModel): QueryYield[R] = select.orderBy(new OrderByArg(sql.id).desc)
+
+  // don't need to resort list, getOrdering has already sorted them correctly
+  def sortResults(list: List[UserCommandRequest]) = list
+
   def getRoutingKey(req: UserCommandRequest) = ProtoRoutingKeys.generateRoutingKey {
     req.id.value ::
       req.user ::
@@ -165,12 +176,21 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   }
 
   def convertToProto(entry: UserCommandModel): UserCommandRequest = {
-    UserCommandRequest.newBuilder
+    val b = UserCommandRequest.newBuilder
       .setId(makeId(entry))
       .setUser(entry.agent)
       .setStatus(CommandStatus.valueOf(entry.status))
       .setCommandRequest(CommandRequest.parseFrom(entry.commandProto))
-      .build
+
+    val result = CommandResult.newBuilder.setStatus(CommandStatus.valueOf(entry.status))
+    entry.errorMessage.foreach { msg =>
+      b.setErrorMessage(msg)
+      result.setErrorMessage(msg)
+    }
+
+    b.setResult(result)
+
+    b.build
   }
 }
 

@@ -136,9 +136,9 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
-     * TODO: protocol checking on publishMeasurements
+     * @return a Boolean that will always be true (otherwise an exception has been thrown), included for api consistency only
      */
-    boolean publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
+    Boolean publishMeasurements( List<Measurement> measurements ) throws ReefServiceException;
 
     /**
      * Publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
@@ -150,8 +150,9 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
+     * @return a Boolean that will always be true (otherwise an exception has been thrown), included for api consistency only
      */
-    boolean publishMeasurements( List<Measurement> measurements, Routable destination ) throws ReefServiceException;
+    Boolean publishMeasurements( List<Measurement> measurements, Routable destination ) throws ReefServiceException;
 
     /**
      * Publish a batch of measurements as if the client was a protocol adapter. Can fail for many reasons and most clients
@@ -163,6 +164,7 @@ public interface MeasurementService extends SubscriptionCreator
      *   <li>The points must be configured to use an appropriate protocol (benchmark or manual) to maintain the message stream</li>
      *   <li>Measurement processors must be available to process the measurement (issue for system startup)</li>
      * </ul>
+     * @return a Boolean that will always be true (otherwise an exception has been thrown), included for api consistency only
      */
-    boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
+    Boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
 }

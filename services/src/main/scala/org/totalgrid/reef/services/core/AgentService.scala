@@ -126,6 +126,8 @@ trait AgentConversions
 
   val table = ApplicationSchema.agents
 
+  def sortResults(list: List[Agent]) = list.sortBy(_.getName)
+
   def uniqueQuery(proto: Agent, sql: AgentModel) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Agent")))
     List(

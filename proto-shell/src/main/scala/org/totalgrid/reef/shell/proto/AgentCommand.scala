@@ -50,7 +50,7 @@ abstract class SingleAgentCommandBase extends AgentCommandBase {
   var agentName: String = null
 }
 
-@Command(scope = "agents", name = "password", description = "Sets the password for an agent")
+@Command(scope = "agent", name = "password", description = "Sets the password for an agent")
 class AgentSetPasswordCommand extends SingleAgentCommandBase {
 
   def doCommand() = {
@@ -63,7 +63,7 @@ class AgentSetPasswordCommand extends SingleAgentCommandBase {
   }
 }
 
-@Command(scope = "agents", name = "list", description = "View agents on system")
+@Command(scope = "agent", name = "list", description = "View agents on system")
 class AgentListCommand extends AgentCommandBase {
 
   def doCommand() = {
@@ -133,7 +133,7 @@ class AgentPermissionsDeleteCommand extends AgentCommandBase {
   }
 }
 
-@Command(scope = "agents", name = "create", description = "Create a new agent on system")
+@Command(scope = "agent", name = "create", description = "Create a new agent on system")
 class AgentCreateCommand extends SingleAgentCommandBase {
 
   @GogoOption(name = "-s", description = "Names of wanted permissionSets, must include at least one", required = true, multiValued = true)
@@ -157,7 +157,7 @@ class AgentCreateCommand extends SingleAgentCommandBase {
   }
 }
 
-@Command(scope = "agents", name = "delete", description = "Delete an agent from the system")
+@Command(scope = "agent", name = "delete", description = "Delete an agent from the system")
 class AgentDeleteCommand extends SingleAgentCommandBase {
 
   def doCommand() = {

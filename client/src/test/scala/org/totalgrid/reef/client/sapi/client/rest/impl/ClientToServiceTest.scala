@@ -34,16 +34,16 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.rest.fixture._
 
 @RunWith(classOf[JUnitRunner])
-class QpidClientToService extends ConnectionToServiceTest with QpidBrokerTestFixture
+class QpidClientToService extends ClientToServiceTest with QpidBrokerTestFixture
 
 @RunWith(classOf[JUnitRunner])
-class MemoryClientToService extends ConnectionToServiceTest with MemoryBrokerTestFixture
+class MemoryClientToService extends ClientToServiceTest with MemoryBrokerTestFixture
 
 // provides a specification for how the client should interact with brokers. testable on multiple brokers via minx
-trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
+trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
 
-  def fixture(attachService: Boolean)(fun: Client => Unit) = broker { b =>
-    val executor = Executors.newScheduledSingleThread()
+  def fixture[A](attachService: Boolean)(fun: Client => A) = broker { b =>
+    val executor = Executors.newScheduledThreadPool(5)
     var binding: Option[Cancelable] = None
     try {
       val conn = new DefaultConnection(b, executor, 100)
@@ -57,42 +57,54 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
     }
   }
 
+  def testSuccess(c: Client) {
+    val i = SomeInteger(1)
+    c.put(i).await should equal(Response(Envelope.Status.OK, i.increment))
+  }
+
   test("Service calls are successful") {
     fixture(true) { c =>
-      val i = SomeInteger(1)
-      c.put(i).await should equal(Response(Envelope.Status.OK, i.increment))
+      testSuccess(c)
     }
   }
 
-  //  test("Service calls can be listened for") {
-  //    fixture(true) { c =>
-  //      val i = SomeInteger(1)
-  //      val future = c.put(i)
-  //      var listenFired = false
-  //      future.listen { result =>
-  //        result should equal(Response(Envelope.Status.OK, i.increment))
-  //        listenFired = true
-  //      }
-  //      // await should force future.listen calls to have fired
-  //      future.await
-  //      listenFired should equal(true)
-  //    }
-  //  }
-  //
-  //  test("Service calls can be listened for (promise)") {
-  //    fixture(true) { c =>
-  //      val i = SomeInteger(1)
-  //      val promise = Promise.from(c.put(i).map { _.one })
-  //      var listenFired = false
-  //      promise.listen { prom =>
-  //        prom.await should equal(i.increment)
-  //        listenFired = true
-  //      }
-  //      // await should force promise listens to have fired
-  //      promise.await
-  //      listenFired should equal(true)
-  //    }
-  //  }
+  test("Service calls can be listened for") {
+    fixture(true) { c =>
+      val i = SomeInteger(1)
+      val future = c.put(i)
+      val events = new SynchronizedList[SomeInteger]
+      future.listen { result =>
+        result should equal(Response(Envelope.Status.OK, i.increment))
+        events.append(result.list.head)
+      }
+      events shouldBecome (i.increment) within (100)
+    }
+  }
+
+  def testPromiseAwait(c: Client) {
+    val i = SomeInteger(1)
+    val promise = Promise.from(c.put(i).map { _.one })
+    val events = new SynchronizedList[SomeInteger]
+    promise.listen { prom =>
+      prom.await should equal(i.increment)
+      events.append(prom.await)
+    }
+    events shouldBecome (i.increment) within (100)
+  }
+
+  test("Service calls can be listened for (promise)") {
+    fixture(true) { c =>
+      testPromiseAwait(c)
+    }
+  }
+
+  test("Service calls promises can be listened for (inside strand)") {
+    fixture(true) { c =>
+      c.attempt {
+        testPromiseAwait(c)
+      }.await
+    }
+  }
 
   test("Subscription calls work") { //subscriptions not currently working with embedded broker
     fixture(true) { c =>
@@ -121,10 +133,67 @@ trait ConnectionToServiceTest extends BrokerTestFixture with FunSuite with Shoul
     }
   }
 
+  def testTimeout(c: Client) {
+    val i = SomeInteger(1)
+    c.put(i).await should equal(Response(Envelope.Status.RESPONSE_TIMEOUT))
+  }
+
   test("Failures timeout sucessfully") {
     fixture(false) { c =>
-      val i = SomeInteger(1)
-      c.put(i).await.status should equal(Envelope.Status.RESPONSE_TIMEOUT)
+      testTimeout(c)
+    }
+  }
+
+  def testFlatmapSuccess(c: Client) {
+    val i = SomeInteger(1)
+    // this test simulates an API call where we do 2 steps
+    val f1: Future[Response[SomeInteger]] = c.put(i)
+    val f2 = f1.flatMap {
+      _.one match {
+        case Success(int) => c.put(int)
+        case fail: Failure => f1.asInstanceOf[Future[Response[SomeInteger]]]
+      }
+    }
+    f2.flatMap {
+      _.one match {
+        case Success(int) => f1.replicate[Response[Double]](Response(Envelope.Status.OK, int.num * 88.88))
+        case fail: Failure => f1.asInstanceOf[Future[Response[Double]]]
+      }
+    }.await should equal(Response(Envelope.Status.OK, 88.88 * 3))
+  }
+
+  test("Flatmapped service calls are successful") {
+    fixture(true) { c =>
+      testFlatmapSuccess(c)
+    }
+  }
+
+  // below show that these operations will succeed when run inside the strand (like on a subscription
+  // callback)
+
+  test("Service calls are successful (inside strand)") {
+    fixture(true) { c =>
+      c.attempt {
+        testSuccess(c)
+      }.await
+    }
+  }
+
+  test("Failures timeout sucessfully (inside strand)") {
+    fixture(false) { c =>
+      c.attempt {
+        testTimeout(c)
+      }.await
+    }
+  }
+
+  test("Flatmap services calls are successfull (inside strand)") {
+    // currently deadlocks because flatMap is implemented with a listen call that gets marshalled
+    // to this same strand and therefore can never be run (since we are inside that thread already)
+    fixture(true) { c =>
+      c.attempt {
+        testFlatmapSuccess(c)
+      }.await
     }
   }
 }

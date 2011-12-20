@@ -452,10 +452,20 @@ value will be classified as Abnormal.-->
 		</xs:complexType>
 	</xs:element>
 
+    <xs:simpleType name="SetpointType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="double"/>
+			<xs:enumeration value="integer"/>
+            <xs:enumeration value="string"/>
+		</xs:restriction>
+	</xs:simpleType>
+
 	<xs:element name="setpoint">
 		<xs:complexType>
 			<xs:complexContent>
-				<xs:extension base="command"/>
+				<xs:extension base="command">
+                    <xs:attribute name="setpointType" type="SetpointType" default="double" />
+                </xs:extension>
 			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>reef-scala-base</artifactId>
         <groupId>org.totalgrid.reef</groupId>
-        <version>0.4.0</version>
+        <version>0.4.1</version>
          <relativePath>../scala-base</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -48,7 +48,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Common Api</Bundle-Name>
+                        <Bundle-Name>Reef Common API</Bundle-Name>
                         <Export-Package>
                             org.totalgrid.reef.client.exception,
                             org.totalgrid.reef.client.settings.*,

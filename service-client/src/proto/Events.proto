@@ -71,7 +71,7 @@ message Event {
   optional uint64   device_time   =  5 [default = 0]; // milliseconds since midnight January 1, 1970 not counting leap seconds (Unix time, but with milliseconds)
   optional uint32   severity      =  6;   // 1 is most severe. Number of severity levels is configurable (default is 1-8).
   optional string   subsystem     =  7;   // Subsystem that authored this event (frontend, measproc, etc.)
-  optional string   user_id       =  8;   // User's login ID. TODO: this should be Agent
+  optional string   user_id       =  8;   // User's login ID.
   optional org.totalgrid.reef.client.service.proto.Model.Entity entity =  9;   // Device or point (ex: southeast.substationAlpha.bay42.breaker23)
   optional org.totalgrid.reef.client.service.proto.Utils.AttributeList args = 10;   // Extra arguments for a specific event. Used by the localization resource string.
   optional string   rendered      = 11;   // This event rendered as a localized string.

@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="text/ecmascript" zoomAndPan="magnify" style="background-color:black" contentStyleType="text/css" viewBox="0.0,0.0,1256.0,427.0" preserveAspectRatio="xMidYMid meet" version="1.0"><defs><style type="text/css" xml:space="preserve"><![CDATA[
+.bbox, .terminal, .debug {
+display:none;
+stroke-width:1;
+fill:none;
+}
+.bbox, .debug {
+stroke:red;
+}
+.terminal {
+stroke:blue;
+}
+.symbol, .connection {
+stroke-width:2;
+}
+.symbol {
+stroke:white;
+background-color:transparent;
+}
+text {
+font-family:Verdana;
+}
+text.default {
+fill:white;
+font-size:12;
+}
+text.data-label {
+font-size:11;
+fill:#FFFF00;
+}
+.clickable {
+cursor:pointer;
+}
+.navigation-area {
+fill-opacity:0;
+fill:#000000;
+}
+.navigation-area:hover {
+fill-opacity:0.3;
+fill:#008080;
+stroke:gray;
+stroke-width:2px;
+}
+.rect {
+fill:#FFFFFF;
+stroke:#FFFFFF;
+}
+.gridline {
+stroke:#666666;
+stroke-opacity:.25;
+}
+.gridline-major {
+stroke:#666666;
+stroke-opacity:1.0;
+}
+p.device-label {
+color:white;
+font-family:Verdana;
+font-size:18px;
+text-align:center;
+word-wrap:break-word;
+}
+.voltage-22kV {
+stroke:#ef2929;
+fill:#ef2929;
+}
+.voltage-default {
+stroke:#fce94f;
+}
+.voltage-7_2kV {
+stroke:#fce94f;
+fill:#fce94f;
+}
+.voltage-277V {
+stroke:aqua;
+fill:aqua;
+}
+.voltage-240V {
+stroke:#729fcf;
+fill:#729fcf;
+}
+.voltage-208V {
+stroke:deeppink;
+fill:deeppink;
+}
+.voltage-120V {
+stroke:purple;
+fill:purple;
+}]]></style></defs><g><line y2="427.0" x1="0.0" class="debug gridline-major" x2="0.0" y1="0.0"/><line y2="427.0" x1="20.0" class="debug gridline" x2="20.0" y1="0.0"/><line y2="427.0" x1="40.0" class="debug gridline" x2="40.0" y1="0.0"/><line y2="427.0" x1="60.0" class="debug gridline" x2="60.0" y1="0.0"/><line y2="427.0" x1="80.0" class="debug gridline" x2="80.0" y1="0.0"/><line y2="427.0" x1="100.0" class="debug gridline-major" x2="100.0" y1="0.0"/><line y2="427.0" x1="120.0" class="debug gridline" x2="120.0" y1="0.0"/><line y2="427.0" x1="140.0" class="debug gridline" x2="140.0" y1="0.0"/><line y2="427.0" x1="160.0" class="debug gridline" x2="160.0" y1="0.0"/><line y2="427.0" x1="180.0" class="debug gridline" x2="180.0" y1="0.0"/><line y2="427.0" x1="200.0" class="debug gridline-major" x2="200.0" y1="0.0"/><line y2="427.0" x1="220.0" class="debug gridline" x2="220.0" y1="0.0"/><line y2="427.0" x1="240.0" class="debug gridline" x2="240.0" y1="0.0"/><line y2="427.0" x1="260.0" class="debug gridline" x2="260.0" y1="0.0"/><line y2="427.0" x1="280.0" class="debug gridline" x2="280.0" y1="0.0"/><line y2="427.0" x1="300.0" class="debug gridline-major" x2="300.0" y1="0.0"/><line y2="427.0" x1="320.0" class="debug gridline" x2="320.0" y1="0.0"/><line y2="427.0" x1="340.0" class="debug gridline" x2="340.0" y1="0.0"/><line y2="427.0" x1="360.0" class="debug gridline" x2="360.0" y1="0.0"/><line y2="427.0" x1="380.0" class="debug gridline" x2="380.0" y1="0.0"/><line y2="427.0" x1="400.0" class="debug gridline-major" x2="400.0" y1="0.0"/><line y2="427.0" x1="420.0" class="debug gridline" x2="420.0" y1="0.0"/><line y2="427.0" x1="440.0" class="debug gridline" x2="440.0" y1="0.0"/><line y2="427.0" x1="460.0" class="debug gridline" x2="460.0" y1="0.0"/><line y2="427.0" x1="480.0" class="debug gridline" x2="480.0" y1="0.0"/><line y2="427.0" x1="500.0" class="debug gridline-major" x2="500.0" y1="0.0"/><line y2="427.0" x1="520.0" class="debug gridline" x2="520.0" y1="0.0"/><line y2="427.0" x1="540.0" class="debug gridline" x2="540.0" y1="0.0"/><line y2="427.0" x1="560.0" class="debug gridline" x2="560.0" y1="0.0"/><line y2="427.0" x1="580.0" class="debug gridline" x2="580.0" y1="0.0"/><line y2="427.0" x1="600.0" class="debug gridline-major" x2="600.0" y1="0.0"/><line y2="427.0" x1="620.0" class="debug gridline" x2="620.0" y1="0.0"/><line y2="427.0" x1="640.0" class="debug gridline" x2="640.0" y1="0.0"/><line y2="427.0" x1="660.0" class="debug gridline" x2="660.0" y1="0.0"/><line y2="427.0" x1="680.0" class="debug gridline" x2="680.0" y1="0.0"/><line y2="427.0" x1="700.0" class="debug gridline-major" x2="700.0" y1="0.0"/><line y2="427.0" x1="720.0" class="debug gridline" x2="720.0" y1="0.0"/><line y2="427.0" x1="740.0" class="debug gridline" x2="740.0" y1="0.0"/><line y2="427.0" x1="760.0" class="debug gridline" x2="760.0" y1="0.0"/><line y2="427.0" x1="780.0" class="debug gridline" x2="780.0" y1="0.0"/><line y2="427.0" x1="800.0" class="debug gridline-major" x2="800.0" y1="0.0"/><line y2="427.0" x1="820.0" class="debug gridline" x2="820.0" y1="0.0"/><line y2="427.0" x1="840.0" class="debug gridline" x2="840.0" y1="0.0"/><line y2="427.0" x1="860.0" class="debug gridline" x2="860.0" y1="0.0"/><line y2="427.0" x1="880.0" class="debug gridline" x2="880.0" y1="0.0"/><line y2="427.0" x1="900.0" class="debug gridline-major" x2="900.0" y1="0.0"/><line y2="427.0" x1="920.0" class="debug gridline" x2="920.0" y1="0.0"/><line y2="427.0" x1="940.0" class="debug gridline" x2="940.0" y1="0.0"/><line y2="427.0" x1="960.0" class="debug gridline" x2="960.0" y1="0.0"/><line y2="427.0" x1="980.0" class="debug gridline" x2="980.0" y1="0.0"/><line y2="427.0" x1="1000.0" class="debug gridline-major" x2="1000.0" y1="0.0"/><line y2="427.0" x1="1020.0" class="debug gridline" x2="1020.0" y1="0.0"/><line y2="427.0" x1="1040.0" class="debug gridline" x2="1040.0" y1="0.0"/><line y2="427.0" x1="1060.0" class="debug gridline" x2="1060.0" y1="0.0"/><line y2="427.0" x1="1080.0" class="debug gridline" x2="1080.0" y1="0.0"/><line y2="427.0" x1="1100.0" class="debug gridline-major" x2="1100.0" y1="0.0"/><line y2="427.0" x1="1120.0" class="debug gridline" x2="1120.0" y1="0.0"/><line y2="427.0" x1="1140.0" class="debug gridline" x2="1140.0" y1="0.0"/><line y2="427.0" x1="1160.0" class="debug gridline" x2="1160.0" y1="0.0"/><line y2="427.0" x1="1180.0" class="debug gridline" x2="1180.0" y1="0.0"/><line y2="427.0" x1="1200.0" class="debug gridline-major" x2="1200.0" y1="0.0"/><line y2="427.0" x1="1220.0" class="debug gridline" x2="1220.0" y1="0.0"/><line y2="427.0" x1="1240.0" class="debug gridline" x2="1240.0" y1="0.0"/><line y2="0.0" x1="0.0" class="debug gridline-major" x2="1256.0" y1="0.0"/><line y2="20.0" x1="0.0" class="debug gridline" x2="1256.0" y1="20.0"/><line y2="40.0" x1="0.0" class="debug gridline" x2="1256.0" y1="40.0"/><line y2="60.0" x1="0.0" class="debug gridline" x2="1256.0" y1="60.0"/><line y2="80.0" x1="0.0" class="debug gridline" x2="1256.0" y1="80.0"/><line y2="100.0" x1="0.0" class="debug gridline-major" x2="1256.0" y1="100.0"/><line y2="120.0" x1="0.0" class="debug gridline" x2="1256.0" y1="120.0"/><line y2="140.0" x1="0.0" class="debug gridline" x2="1256.0" y1="140.0"/><line y2="160.0" x1="0.0" class="debug gridline" x2="1256.0" y1="160.0"/><line y2="180.0" x1="0.0" class="debug gridline" x2="1256.0" y1="180.0"/><line y2="200.0" x1="0.0" class="debug gridline-major" x2="1256.0" y1="200.0"/><line y2="220.0" x1="0.0" class="debug gridline" x2="1256.0" y1="220.0"/><line y2="240.0" x1="0.0" class="debug gridline" x2="1256.0" y1="240.0"/><line y2="260.0" x1="0.0" class="debug gridline" x2="1256.0" y1="260.0"/><line y2="280.0" x1="0.0" class="debug gridline" x2="1256.0" y1="280.0"/><line y2="300.0" x1="0.0" class="debug gridline-major" x2="1256.0" y1="300.0"/><line y2="320.0" x1="0.0" class="debug gridline" x2="1256.0" y1="320.0"/><line y2="340.0" x1="0.0" class="debug gridline" x2="1256.0" y1="340.0"/><line y2="360.0" x1="0.0" class="debug gridline" x2="1256.0" y1="360.0"/><line y2="380.0" x1="0.0" class="debug gridline" x2="1256.0" y1="380.0"/><line y2="400.0" x1="0.0" class="debug gridline-major" x2="1256.0" y1="400.0"/><line y2="420.0" x1="0.0" class="debug gridline" x2="1256.0" y1="420.0"/></g><g schematic-type="connection"><line y2="103.0" x1="146.0" class="voltage-22kV" x2="228.25" y1="103.0"/><circle r="3" class="debug" cx="146.0" cy="103.0"/><line y2="127.5" x1="228.25" class="voltage-22kV" x2="228.25" y1="103.0"/><circle r="3" class="debug" cx="228.25" cy="103.0"/><line y2="127.5" x1="228.25" class="voltage-22kV" x2="310.5" y1="127.5"/><circle r="3" class="debug" cx="228.25" cy="127.5"/><circle r="3" class="debug" cx="310.5" cy="127.5"/></g><g schematic-type="connection"><line y2="127.5" x1="344.5" class="voltage-7_2kV" x2="387.25" y1="127.5"/><circle r="3" class="debug" cx="344.5" cy="127.5"/><line y2="127.5" x1="387.25" class="voltage-7_2kV" x2="430.0" y1="127.5"/><circle r="3" class="debug" cx="387.25" cy="127.5"/><circle r="3" class="debug" cx="430.0" cy="127.5"/></g><g schematic-type="connection"><line y2="111.0" x1="430.0" class="voltage-7_2kV" x2="453.0" y1="111.0"/><circle r="3" class="debug" cx="430.0" cy="111.0"/><line y2="85.0" x1="453.0" class="voltage-7_2kV" x2="453.0" y1="111.0"/><circle r="3" class="debug" cx="453.0" cy="111.0"/><line y2="85.0" x1="453.0" class="voltage-7_2kV" x2="476.0" y1="85.0"/><circle r="3" class="debug" cx="453.0" cy="85.0"/><circle r="3" class="debug" cx="476.0" cy="85.0"/></g><g schematic-type="connection"><line y2="142.0" x1="430.0" class="voltage-7_2kV" x2="453.0" y1="142.0"/><circle r="3" class="debug" cx="430.0" cy="142.0"/><line y2="142.0" x1="453.0" class="voltage-7_2kV" x2="476.0" y1="142.0"/><circle r="3" class="debug" cx="453.0" cy="142.0"/><circle r="3" class="debug" cx="476.0" cy="142.0"/></g><g schematic-type="connection"><line y2="304.5" x1="466.5" class="voltage-7_2kV" x2="421.59998" y1="304.5"/><circle r="3" class="debug" cx="466.5" cy="304.5"/><line y2="304.5" x1="421.59998" class="voltage-7_2kV" x2="376.69998" y1="304.5"/><circle r="3" class="debug" cx="421.59998" cy="304.5"/><circle r="3" class="debug" cx="376.69998" cy="304.5"/></g><g schematic-type="connection"><line y2="304.5" x1="342.69998" class="voltage-240V" x2="263.4" y1="304.5"/><circle r="3" class="debug" cx="342.69998" cy="304.5"/><line y2="278.0" x1="263.4" class="voltage-240V" x2="263.4" y1="304.5"/><circle r="3" class="debug" cx="263.4" cy="304.5"/><line y2="278.0" x1="263.4" class="voltage-240V" x2="184.09999" y1="278.0"/><circle r="3" class="debug" cx="263.4" cy="278.0"/><circle r="3" class="debug" cx="184.09999" cy="278.0"/></g><g schematic-type="connection"><line y2="278.0" x1="182.09999" class="voltage-240V" x2="143.59999" y1="278.0"/><circle r="3" class="debug" cx="182.09999" cy="278.0"/><line y2="278.0" x1="143.59999" class="voltage-240V" x2="105.1" y1="278.0"/><circle r="3" class="debug" cx="143.59999" cy="278.0"/><circle r="3" class="debug" cx="105.1" cy="278.0"/></g><g schematic-type="connection"><line y2="278.0" x1="103.1" class="voltage-240V" x2="89.475" y1="278.0"/><circle r="3" class="debug" cx="103.1" cy="278.0"/><line y2="293.0" x1="89.475" class="voltage-240V" x2="89.475" y1="278.0"/><circle r="3" class="debug" cx="89.475" cy="278.0"/><line y2="293.0" x1="89.475" class="voltage-240V" x2="75.85" y1="293.0"/><circle r="3" class="debug" cx="89.475" cy="293.0"/><circle r="3" class="debug" cx="75.85" cy="293.0"/></g><g schematic-type="connection"><line y2="315.5" x1="183.09999" class="voltage-240V" x2="183.09999" y1="279.0"/><circle r="3" class="debug" cx="183.09999" cy="279.0"/><line y2="315.5" x1="183.09999" class="voltage-240V" x2="207.09999" y1="315.5"/><circle r="3" class="debug" cx="183.09999" cy="315.5"/><line y2="352.0" x1="207.09999" class="voltage-240V" x2="207.09999" y1="315.5"/><circle r="3" class="debug" cx="207.09999" cy="315.5"/><circle r="3" class="debug" cx="207.09999" cy="352.0"/></g><g schematic-type="connection"><line y2="315.0" x1="104.1" class="voltage-240V" x2="104.1" y1="279.0"/><circle r="3" class="debug" cx="104.1" cy="279.0"/><line y2="315.0" x1="104.1" class="voltage-240V" x2="116.1" y1="315.0"/><circle r="3" class="debug" cx="104.1" cy="315.0"/><line y2="351.0" x1="116.1" class="voltage-240V" x2="116.1" y1="315.0"/><circle r="3" class="debug" cx="116.1" cy="315.0"/><circle r="3" class="debug" cx="116.1" cy="351.0"/></g><g schematic-type="connection"><line y2="355.0" x1="116.1" class="voltage-240V" x2="116.1" y1="327.0"/><circle r="3" class="debug" cx="116.1" cy="327.0"/><line y2="355.0" x1="116.1" class="voltage-240V" x2="118.1" y1="355.0"/><circle r="3" class="debug" cx="116.1" cy="355.0"/><line y2="383.0" x1="118.1" class="voltage-240V" x2="118.1" y1="355.0"/><circle r="3" class="debug" cx="118.1" cy="355.0"/><circle r="3" class="debug" cx="118.1" cy="383.0"/></g><g schematic-type="connection"><line y2="339.0" x1="466.5" class="voltage-7_2kV" x2="446.75" y1="339.0"/><circle r="3" class="debug" cx="466.5" cy="339.0"/><line y2="339.0" x1="446.75" class="voltage-7_2kV" x2="427.0" y1="339.0"/><circle r="3" class="debug" cx="446.75" cy="339.0"/><circle r="3" class="debug" cx="427.0" cy="339.0"/></g><g schematic-type="connection"><line y2="339.0" x1="451.0" class="voltage-7_2kV" x2="412.375" y1="339.0"/><circle r="3" class="debug" cx="451.0" cy="339.0"/><line y2="373.0" x1="412.375" class="voltage-7_2kV" x2="412.375" y1="339.0"/><circle r="3" class="debug" cx="412.375" cy="339.0"/><circle r="3" class="debug" cx="412.375" cy="373.0"/></g><g schematic-type="connection"><line y2="293.0" x1="466.5" class="voltage-7_2kV" x2="516.0" y1="293.0"/><circle r="3" class="debug" cx="466.5" cy="293.0"/><line y2="142.0" x1="516.0" class="voltage-7_2kV" x2="516.0" y1="293.0"/><circle r="3" class="debug" cx="516.0" cy="293.0"/><line y2="142.0" x1="516.0" class="voltage-7_2kV" x2="506.0" y1="142.0"/><circle r="3" class="debug" cx="516.0" cy="142.0"/><circle r="3" class="debug" cx="506.0" cy="142.0"/></g><g schematic-type="connection"><line y2="318.0" x1="466.5" class="voltage-7_2kV" x2="563.25" y1="318.0"/><circle r="3" class="debug" cx="466.5" cy="318.0"/><line y2="318.0" x1="563.25" class="voltage-7_2kV" x2="660.0" y1="318.0"/><circle r="3" class="debug" cx="563.25" cy="318.0"/><circle r="3" class="debug" cx="660.0" cy="318.0"/></g><g schematic-type="connection"><line y2="127.5" x1="776.0" class="voltage-7_2kV" x2="849.25" y1="127.5"/><circle r="3" class="debug" cx="776.0" cy="127.5"/><line y2="127.5" x1="849.25" class="voltage-7_2kV" x2="922.5" y1="127.5"/><circle r="3" class="debug" cx="849.25" cy="127.5"/><circle r="3" class="debug" cx="922.5" cy="127.5"/></g><g schematic-type="connection"><line y2="127.5" x1="956.5" class="voltage-240V" x2="984.25" y1="127.5"/><circle r="3" class="debug" cx="956.5" cy="127.5"/><line y2="101.0" x1="984.25" class="voltage-240V" x2="984.25" y1="127.5"/><circle r="3" class="debug" cx="984.25" cy="127.5"/><line y2="101.0" x1="984.25" class="voltage-240V" x2="1012.0" y1="101.0"/><circle r="3" class="debug" cx="984.25" cy="101.0"/><circle r="3" class="debug" cx="1012.0" cy="101.0"/></g><g schematic-type="connection"><line y2="101.0" x1="1014.0" class="voltage-240V" x2="1089.0" y1="101.0"/><circle r="3" class="debug" cx="1014.0" cy="101.0"/><line y2="101.0" x1="1089.0" class="voltage-240V" x2="1164.0" y1="101.0"/><circle r="3" class="debug" cx="1089.0" cy="101.0"/><circle r="3" class="debug" cx="1164.0" cy="101.0"/></g><g schematic-type="connection"><line y2="101.0" x1="1166.0" class="voltage-240V" x2="1195.5" y1="101.0"/><circle r="3" class="debug" cx="1166.0" cy="101.0"/><line y2="116.0" x1="1195.5" class="voltage-240V" x2="1195.5" y1="101.0"/><circle r="3" class="debug" cx="1195.5" cy="101.0"/><line y2="116.0" x1="1195.5" class="voltage-240V" x2="1225.0" y1="116.0"/><circle r="3" class="debug" cx="1195.5" cy="116.0"/><circle r="3" class="debug" cx="1225.0" cy="116.0"/></g><g schematic-type="connection"><line y2="138.5" x1="1013.0" class="voltage-240V" x2="1013.0" y1="102.0"/><circle r="3" class="debug" cx="1013.0" cy="102.0"/><line y2="138.5" x1="1013.0" class="voltage-240V" x2="1037.0" y1="138.5"/><circle r="3" class="debug" cx="1013.0" cy="138.5"/><line y2="175.0" x1="1037.0" class="voltage-240V" x2="1037.0" y1="138.5"/><circle r="3" class="debug" cx="1037.0" cy="138.5"/><circle r="3" class="debug" cx="1037.0" cy="175.0"/></g><g schematic-type="connection"><line y2="138.0" x1="1165.0" class="voltage-240V" x2="1165.0" y1="102.0"/><circle r="3" class="debug" cx="1165.0" cy="102.0"/><line y2="138.0" x1="1165.0" class="voltage-240V" x2="1177.0" y1="138.0"/><circle r="3" class="debug" cx="1165.0" cy="138.0"/><line y2="174.0" x1="1177.0" class="voltage-240V" x2="1177.0" y1="138.0"/><circle r="3" class="debug" cx="1177.0" cy="138.0"/><circle r="3" class="debug" cx="1177.0" cy="174.0"/></g><g schematic-type="connection"><line y2="178.0" x1="1177.0" class="voltage-240V" x2="1177.0" y1="150.0"/><circle r="3" class="debug" cx="1177.0" cy="150.0"/><line y2="178.0" x1="1177.0" class="voltage-240V" x2="1179.0" y1="178.0"/><circle r="3" class="debug" cx="1177.0" cy="178.0"/><line y2="206.0" x1="1179.0" class="voltage-240V" x2="1179.0" y1="178.0"/><circle r="3" class="debug" cx="1179.0" cy="178.0"/><circle r="3" class="debug" cx="1179.0" cy="206.0"/></g><g schematic-type="connection"><line y2="162.0" x1="776.0" class="voltage-7_2kV" x2="808.0" y1="162.0"/><circle r="3" class="debug" cx="776.0" cy="162.0"/><line y2="162.0" x1="808.0" class="voltage-7_2kV" x2="840.0" y1="162.0"/><circle r="3" class="debug" cx="808.0" cy="162.0"/><circle r="3" class="debug" cx="840.0" cy="162.0"/></g><g schematic-type="connection"><line y2="162.0" x1="816.0" class="voltage-7_2kV" x2="861.0" y1="162.0"/><circle r="3" class="debug" cx="816.0" cy="162.0"/><line y2="196.0" x1="861.0" class="voltage-7_2kV" x2="861.0" y1="162.0"/><circle r="3" class="debug" cx="861.0" cy="162.0"/><circle r="3" class="debug" cx="861.0" cy="196.0"/></g><g schematic-type="connection"><line y2="85.0" x1="506.0" class="voltage-7_2kV" x2="641.0" y1="85.0"/><circle r="3" class="debug" cx="506.0" cy="85.0"/><line y2="116.0" x1="641.0" class="voltage-7_2kV" x2="641.0" y1="85.0"/><circle r="3" class="debug" cx="641.0" cy="85.0"/><line y2="116.0" x1="641.0" class="voltage-7_2kV" x2="776.0" y1="116.0"/><circle r="3" class="debug" cx="641.0" cy="116.0"/><circle r="3" class="debug" cx="776.0" cy="116.0"/></g><g schematic-type="connection"><line y2="142.0" x1="746.0" class="voltage-7_2kV" x2="761.0" y1="142.0"/><circle r="3" class="debug" cx="746.0" cy="142.0"/><line y2="142.0" x1="761.0" class="voltage-7_2kV" x2="776.0" y1="142.0"/><circle r="3" class="debug" cx="761.0" cy="142.0"/><circle r="3" class="debug" cx="776.0" cy="142.0"/></g><g schematic-type="connection"><line y2="304.5" x1="746.0" class="voltage-7_2kV" x2="819.25" y1="304.5"/><circle r="3" class="debug" cx="746.0" cy="304.5"/><line y2="304.5" x1="819.25" class="voltage-7_2kV" x2="892.5" y1="304.5"/><circle r="3" class="debug" cx="819.25" cy="304.5"/><circle r="3" class="debug" cx="892.5" cy="304.5"/></g><g schematic-type="connection"><line y2="304.5" x1="926.5" class="voltage-240V" x2="954.25" y1="304.5"/><circle r="3" class="debug" cx="926.5" cy="304.5"/><line y2="278.0" x1="954.25" class="voltage-240V" x2="954.25" y1="304.5"/><circle r="3" class="debug" cx="954.25" cy="304.5"/><line y2="278.0" x1="954.25" class="voltage-240V" x2="982.0" y1="278.0"/><circle r="3" class="debug" cx="954.25" cy="278.0"/><circle r="3" class="debug" cx="982.0" cy="278.0"/></g><g schematic-type="connection"><line y2="278.0" x1="984.0" class="voltage-240V" x2="1059.0" y1="278.0"/><circle r="3" class="debug" cx="984.0" cy="278.0"/><line y2="278.0" x1="1059.0" class="voltage-240V" x2="1134.0" y1="278.0"/><circle r="3" class="debug" cx="1059.0" cy="278.0"/><circle r="3" class="debug" cx="1134.0" cy="278.0"/></g><g schematic-type="connection"><line y2="278.0" x1="1136.0" class="voltage-240V" x2="1165.5" y1="278.0"/><circle r="3" class="debug" cx="1136.0" cy="278.0"/><line y2="293.0" x1="1165.5" class="voltage-240V" x2="1165.5" y1="278.0"/><circle r="3" class="debug" cx="1165.5" cy="278.0"/><line y2="293.0" x1="1165.5" class="voltage-240V" x2="1195.0" y1="293.0"/><circle r="3" class="debug" cx="1165.5" cy="293.0"/><circle r="3" class="debug" cx="1195.0" cy="293.0"/></g><g schematic-type="connection"><line y2="315.5" x1="983.0" class="voltage-240V" x2="983.0" y1="279.0"/><circle r="3" class="debug" cx="983.0" cy="279.0"/><line y2="315.5" x1="983.0" class="voltage-240V" x2="1007.0" y1="315.5"/><circle r="3" class="debug" cx="983.0" cy="315.5"/><line y2="352.0" x1="1007.0" class="voltage-240V" x2="1007.0" y1="315.5"/><circle r="3" class="debug" cx="1007.0" cy="315.5"/><circle r="3" class="debug" cx="1007.0" cy="352.0"/></g><g schematic-type="connection"><line y2="315.0" x1="1135.0" class="voltage-240V" x2="1135.0" y1="279.0"/><circle r="3" class="debug" cx="1135.0" cy="279.0"/><line y2="315.0" x1="1135.0" class="voltage-240V" x2="1147.0" y1="315.0"/><circle r="3" class="debug" cx="1135.0" cy="315.0"/><line y2="351.0" x1="1147.0" class="voltage-240V" x2="1147.0" y1="315.0"/><circle r="3" class="debug" cx="1147.0" cy="315.0"/><circle r="3" class="debug" cx="1147.0" cy="351.0"/></g><g schematic-type="connection"><line y2="355.0" x1="1147.0" class="voltage-240V" x2="1147.0" y1="327.0"/><circle r="3" class="debug" cx="1147.0" cy="327.0"/><line y2="355.0" x1="1147.0" class="voltage-240V" x2="1149.0" y1="355.0"/><circle r="3" class="debug" cx="1147.0" cy="355.0"/><line y2="383.0" x1="1149.0" class="voltage-240V" x2="1149.0" y1="355.0"/><circle r="3" class="debug" cx="1149.0" cy="355.0"/><circle r="3" class="debug" cx="1149.0" cy="383.0"/></g><g schematic-type="connection"><line y2="339.0" x1="746.0" class="voltage-7_2kV" x2="778.0" y1="339.0"/><circle r="3" class="debug" cx="746.0" cy="339.0"/><line y2="339.0" x1="778.0" class="voltage-7_2kV" x2="810.0" y1="339.0"/><circle r="3" class="debug" cx="778.0" cy="339.0"/><circle r="3" class="debug" cx="810.0" cy="339.0"/></g><g schematic-type="connection"><line y2="339.0" x1="786.0" class="voltage-7_2kV" x2="831.0" y1="339.0"/><circle r="3" class="debug" cx="786.0" cy="339.0"/><line y2="373.0" x1="831.0" class="voltage-7_2kV" x2="831.0" y1="339.0"/><circle r="3" class="debug" cx="831.0" cy="339.0"/><circle r="3" class="debug" cx="831.0" cy="373.0"/></g><g schematic-type="connection"><line y2="142.0" x1="716.0" class="voltage-7_2kV" x2="706.0" y1="142.0"/><circle r="3" class="debug" cx="716.0" cy="142.0"/><line y2="293.0" x1="706.0" class="voltage-7_2kV" x2="706.0" y1="142.0"/><circle r="3" class="debug" cx="706.0" cy="142.0"/><line y2="293.0" x1="706.0" class="voltage-7_2kV" x2="746.0" y1="293.0"/><circle r="3" class="debug" cx="706.0" cy="293.0"/><circle r="3" class="debug" cx="746.0" cy="293.0"/></g><g schematic-type="connection"><line y2="318.0" x1="690.0" class="voltage-7_2kV" x2="718.0" y1="318.0"/><circle r="3" class="debug" cx="690.0" cy="318.0"/><line y2="318.0" x1="718.0" class="voltage-7_2kV" x2="746.0" y1="318.0"/><circle r="3" class="debug" cx="718.0" cy="318.0"/><circle r="3" class="debug" cx="746.0" cy="318.0"/></g><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.Grid" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="gridtiepoint" class="symbol" xmlns="http://www.w3.org/2000/svg" x="140.0" y="100.0">
+	<g transform="rotate(0.0,3.0,3.0)" state="default">
+		<circle cx="3" r="3" cy="3"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="6" y="0" height="6"/>
+		<circle cx="3" r="1" cy="3"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,3.0,3.0)">
+		<circle name="north" r="1" cx="3" cy="0"/>
+		<circle name="south" r="1" cx="3" cy="6"/>
+		<circle name="east" r="1" cx="6" cy="3"/>
+		<circle name="west" r="1" cx="0" cy="3"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.Substation1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="transformer" class="symbol" xmlns="http://www.w3.org/2000/svg" x="300.0" y="100.0">
+	<g transform="rotate(0.0,27.5,27.5)" state="default">
+		<g class="voltage-22kV" name="west" style="fill:none">
+			<path d="M 10.5 0 A 5 5 0 0 1 10.5 13.5"/>
+			<path d="M 10.5 13.5 A 5 5 0 0 1 10.5 27"/>
+			<path d="M 10.5 27 A 5 5 0 0 1 10.5 40.5"/>
+			<path d="M 10.5 40.5 A 5 5 0 0 1 10.5 54"/>
+			<path d="M 23.5 0 L 23.5 54"/>
+		</g>
+		<g class="voltage-7_2kV" name="east" style="fill:none">
+			<path d="M 31.5 0 L 31.5 54"/>
+			<path d="M 44.5 0 A 5 5 0 0 0 44.5 13.5"/>
+			<path d="M 44.5 13.5 A 5 5 0 0 0 44.5 27"/>
+			<path d="M 44.5 27 A 5 5 0 0 0 44.5 40.5"/>
+			<path d="M 44.5 40.5 A 5 5 0 0 0 44.5 54"/>
+		</g>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="55" y="0" height="55"/>
+		<circle cx="27.5" r="1" cy="27.5"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,27.5,27.5)">
+		<circle name="west" r="1" cx="10.5" cy="27.5"/>
+		<circle name="east" r="1" cx="44.5" cy="27.5"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.NONAME" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="busbar" height="107.0" class="voltage-7_2kV" xmlns="http://www.w3.org/2000/svg" x="430.0" y="95.0">
+	<g transform="rotate(0.0,53.5,53.5)" state="default">
+		<rect rx="2" ry="2" width="4" height="107.0" style="stroke-width:0"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,53.5,53.5)">
+	</g>
+	<g class="bbox">
+		<rect x="0" width="5" y="0" height="5"/>
+		<circle cx="0" r="1" cy="0"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.FID1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="circuitbreaker" class="symbol" xmlns="http://www.w3.org/2000/svg" x="476.0" y="70.0">
+	<g style="display:none" transform="rotate(0.0,15.0,15.0)" state="open">
+		<rect style="fill:#00FF00" width="30" height="30"/>
+	</g>
+	<g style="display:inherit" transform="rotate(0.0,15.0,15.0)" state="closed">
+		<rect style="fill:#A40000" width="30" height="30"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="west" r="1" cx="0" cy="15"/>
+		<circle name="east" r="1" cx="30" cy="15"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.FID2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="circuitbreaker" class="symbol" xmlns="http://www.w3.org/2000/svg" x="476.0" y="127.0">
+	<g style="display:none" transform="rotate(0.0,15.0,15.0)" state="open">
+		<rect style="fill:#00FF00" width="30" height="30"/>
+	</g>
+	<g style="display:inherit" transform="rotate(0.0,15.0,15.0)" state="closed">
+		<rect style="fill:#A40000" width="30" height="30"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="west" r="1" cx="0" cy="15"/>
+		<circle name="east" r="1" cx="30" cy="15"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.Bus3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="busbar" height="150.0" class="voltage-7_2kV" xmlns="http://www.w3.org/2000/svg" x="466.5" y="277.0">
+	<g transform="rotate(0.0,75.0,75.0)" state="default">
+		<rect rx="2" ry="2" width="4" height="150.0" style="stroke-width:0"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,75.0,75.0)">
+	</g>
+	<g class="bbox">
+		<rect x="0" width="5" y="0" height="5"/>
+		<circle cx="0" r="1" cy="0"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LC_DES3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="lineconnector" class="voltage-240V" xmlns="http://www.w3.org/2000/svg" x="182.09999" y="277.0">
+	<g transform="rotate(0.0,1.0,1.0)" state="default">
+		<circle cx="1" r="2" cy="1"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="2" y="0" height="2"/>
+		<circle cx="1" r="1" cy="1"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,1.0,1.0)">
+		<circle name="north" r="1" cx="1" cy="0"/>
+		<circle name="south" r="1" cx="1" cy="2"/>
+		<circle name="east" r="1" cx="2" cy="1"/>
+		<circle name="west" r="1" cx="0" cy="1"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.DES3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="storage" class="symbol" xmlns="http://www.w3.org/2000/svg" x="182.09999" y="352.0">
+	<g transform="rotate(0.0,25.0,25.0)" state="open">
+		<rect rx="3" width="40" x="5" ry="3" y="1" height="50"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="50" y="0" height="50"/>
+		<circle cx="25" r="1" cy="25"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,25.0,25.0)">
+		<circle name="north" r="1" cx="25" cy="0"/>
+		<circle name="south" r="1" cx="25" cy="50"/>
+		<circle name="east" r="1" cx="0" cy="25"/>
+		<circle name="west" r="1" cx="50" cy="25"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LC3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="lineconnector" class="voltage-240V" xmlns="http://www.w3.org/2000/svg" x="103.1" y="277.0">
+	<g transform="rotate(0.0,1.0,1.0)" state="default">
+		<circle cx="1" r="2" cy="1"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="2" y="0" height="2"/>
+		<circle cx="1" r="1" cy="1"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,1.0,1.0)">
+		<circle name="north" r="1" cx="1" cy="0"/>
+		<circle name="south" r="1" cx="1" cy="2"/>
+		<circle name="east" r="1" cx="2" cy="1"/>
+		<circle name="west" r="1" cx="0" cy="1"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.Load3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="load" class="symbol" xmlns="http://www.w3.org/2000/svg" x="103.1" y="327.0">
+	<g transform="rotate(90.0,12.5,12.5)" state="default">
+		<rect x="1" width="24" height="6" y="9.5"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="25" y="0" height="25"/>
+		<circle cx="12" r="1" cy="12"/>
+	</g>
+	<g class="terminal" transform="rotate(90.0,12.5,12.5)">
+		<circle name="east" r="1" cx="0" cy="12"/>
+		<circle name="west" r="1" cx="24" cy="12"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.GroundPv3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="ground" class="symbol" xmlns="http://www.w3.org/2000/svg" x="103.1" y="377.0">
+	<g transform="rotate(0.0,15.0,15.0)" state="default" stroke="gray">
+		<line y2="6" x1="0" x2="30" y1="6"/>
+		<line y2="15" x1="3.75" x2="26.25" y1="15"/>
+		<line y2="24" x1="11.25" x2="18.75" y1="24"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="north" r="1" cx="15" cy="6"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.PV3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="generator" class="symbol" xmlns="http://www.w3.org/2000/svg" x="43.85" y="277.0">
+	<g transform="rotate(0.0,16.0,16.0)" state="default">
+		<circle r="15" cx="16" cy="16"/>
+		<text x="15" dominant-baseline="central" y="15" class="default" text-anchor="middle">PV</text> 
+	</g>
+	<g class="bbox">
+		<rect x="0" width="31" y="0" height="32"/>
+		<circle cx="16" r="1" cy="16"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,16.0,16.0)">
+		<circle name="north" r="1" cx="16" cy="0"/>
+		<circle name="south" r="1" cx="16" cy="30"/>
+		<circle name="west" r="1" cx="1" cy="16"/>
+		<circle name="east" r="1" cx="32" cy="16"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.SST3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="transformer" class="symbol" xmlns="http://www.w3.org/2000/svg" x="332.19998" y="277.0">
+	<g transform="rotate(0.0,27.5,27.5)" state="default">
+		<g class="voltage-277V" name="west" style="fill:none">
+			<path d="M 10.5 0 A 5 5 0 0 1 10.5 13.5"/>
+			<path d="M 10.5 13.5 A 5 5 0 0 1 10.5 27"/>
+			<path d="M 10.5 27 A 5 5 0 0 1 10.5 40.5"/>
+			<path d="M 10.5 40.5 A 5 5 0 0 1 10.5 54"/>
+			<path d="M 23.5 0 L 23.5 54"/>
+		</g>
+		<g class="voltage-7_2kV" name="east" style="fill:none">
+			<path d="M 31.5 0 L 31.5 54"/>
+			<path d="M 44.5 0 A 5 5 0 0 0 44.5 13.5"/>
+			<path d="M 44.5 13.5 A 5 5 0 0 0 44.5 27"/>
+			<path d="M 44.5 27 A 5 5 0 0 0 44.5 40.5"/>
+			<path d="M 44.5 40.5 A 5 5 0 0 0 44.5 54"/>
+		</g>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="55" y="0" height="55"/>
+		<circle cx="27.5" r="1" cy="27.5"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,27.5,27.5)">
+		<circle name="west" r="1" cx="10.5" cy="27.5"/>
+		<circle name="east" r="1" cx="44.5" cy="27.5"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LoadBus3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="load" class="symbol" xmlns="http://www.w3.org/2000/svg" x="427.0" y="327.0">
+	<g transform="rotate(0.0,12.5,12.5)" state="default">
+		<rect x="1" width="24" height="6" y="9.5"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="25" y="0" height="25"/>
+		<circle cx="12" r="1" cy="12"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,12.5,12.5)">
+		<circle name="east" r="1" cx="0" cy="12"/>
+		<circle name="west" r="1" cx="24" cy="12"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.GroundBus3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="ground" class="symbol" xmlns="http://www.w3.org/2000/svg" x="397.375" y="367.0">
+	<g transform="rotate(0.0,15.0,15.0)" state="default" stroke="gray">
+		<line y2="6" x1="0" x2="30" y1="6"/>
+		<line y2="15" x1="3.75" x2="26.25" y1="15"/>
+		<line y2="24" x1="11.25" x2="18.75" y1="24"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="north" r="1" cx="15" cy="6"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.FID4" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="circuitbreaker" class="symbol" xmlns="http://www.w3.org/2000/svg" x="660.0" y="303.0">
+	<g style="display:none" transform="rotate(0.0,15.0,15.0)" state="open">
+		<rect style="fill:#00FF00" width="30" height="30"/>
+	</g>
+	<g style="display:inherit" transform="rotate(0.0,15.0,15.0)" state="closed">
+		<rect style="fill:#A40000" width="30" height="30"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="west" r="1" cx="0" cy="15"/>
+		<circle name="east" r="1" cx="30" cy="15"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.FID3" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="circuitbreaker" class="symbol" xmlns="http://www.w3.org/2000/svg" x="716.0" y="127.0">
+	<g style="display:none" transform="rotate(0.0,15.0,15.0)" state="open">
+		<rect style="fill:#00FF00" width="30" height="30"/>
+	</g>
+	<g style="display:inherit" transform="rotate(0.0,15.0,15.0)" state="closed">
+		<rect style="fill:#A40000" width="30" height="30"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="west" r="1" cx="0" cy="15"/>
+		<circle name="east" r="1" cx="30" cy="15"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.Bus1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="busbar" height="150.0" class="voltage-7_2kV" xmlns="http://www.w3.org/2000/svg" x="776.0" y="100.0">
+	<g transform="rotate(0.0,75.0,75.0)" state="default">
+		<rect rx="2" ry="2" width="4" height="150.0" style="stroke-width:0"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,75.0,75.0)">
+	</g>
+	<g class="bbox">
+		<rect x="0" width="5" y="0" height="5"/>
+		<circle cx="0" r="1" cy="0"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LC_DES1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="lineconnector" class="voltage-240V" xmlns="http://www.w3.org/2000/svg" x="1012.0" y="100.0">
+	<g transform="rotate(0.0,1.0,1.0)" state="default">
+		<circle cx="1" r="2" cy="1"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="2" y="0" height="2"/>
+		<circle cx="1" r="1" cy="1"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,1.0,1.0)">
+		<circle name="north" r="1" cx="1" cy="0"/>
+		<circle name="south" r="1" cx="1" cy="2"/>
+		<circle name="east" r="1" cx="2" cy="1"/>
+		<circle name="west" r="1" cx="0" cy="1"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.DES1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="storage" class="symbol" xmlns="http://www.w3.org/2000/svg" x="1012.0" y="175.0">
+	<g transform="rotate(0.0,25.0,25.0)" state="open">
+		<rect rx="3" width="40" x="5" ry="3" y="1" height="50"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="50" y="0" height="50"/>
+		<circle cx="25" r="1" cy="25"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,25.0,25.0)">
+		<circle name="north" r="1" cx="25" cy="0"/>
+		<circle name="south" r="1" cx="25" cy="50"/>
+		<circle name="east" r="1" cx="0" cy="25"/>
+		<circle name="west" r="1" cx="50" cy="25"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LC1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="lineconnector" class="voltage-240V" xmlns="http://www.w3.org/2000/svg" x="1164.0" y="100.0">
+	<g transform="rotate(0.0,1.0,1.0)" state="default">
+		<circle cx="1" r="2" cy="1"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="2" y="0" height="2"/>
+		<circle cx="1" r="1" cy="1"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,1.0,1.0)">
+		<circle name="north" r="1" cx="1" cy="0"/>
+		<circle name="south" r="1" cx="1" cy="2"/>
+		<circle name="east" r="1" cx="2" cy="1"/>
+		<circle name="west" r="1" cx="0" cy="1"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.Load1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="load" class="symbol" xmlns="http://www.w3.org/2000/svg" x="1164.0" y="150.0">
+	<g transform="rotate(90.0,12.5,12.5)" state="default">
+		<rect x="1" width="24" height="6" y="9.5"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="25" y="0" height="25"/>
+		<circle cx="12" r="1" cy="12"/>
+	</g>
+	<g class="terminal" transform="rotate(90.0,12.5,12.5)">
+		<circle name="east" r="1" cx="0" cy="12"/>
+		<circle name="west" r="1" cx="24" cy="12"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.GroundPv1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="ground" class="symbol" xmlns="http://www.w3.org/2000/svg" x="1164.0" y="200.0">
+	<g transform="rotate(0.0,15.0,15.0)" state="default" stroke="gray">
+		<line y2="6" x1="0" x2="30" y1="6"/>
+		<line y2="15" x1="3.75" x2="26.25" y1="15"/>
+		<line y2="24" x1="11.25" x2="18.75" y1="24"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="north" r="1" cx="15" cy="6"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.PV1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="generator" class="symbol" xmlns="http://www.w3.org/2000/svg" x="1224.0" y="100.0">
+	<g transform="rotate(0.0,16.0,16.0)" state="default">
+		<circle r="15" cx="16" cy="16"/>
+		<text x="15" dominant-baseline="central" y="15" class="default" text-anchor="middle">PV</text> 
+	</g>
+	<g class="bbox">
+		<rect x="0" width="31" y="0" height="32"/>
+		<circle cx="16" r="1" cy="16"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,16.0,16.0)">
+		<circle name="north" r="1" cx="16" cy="0"/>
+		<circle name="south" r="1" cx="16" cy="30"/>
+		<circle name="west" r="1" cx="1" cy="16"/>
+		<circle name="east" r="1" cx="32" cy="16"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.SST1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="transformer" class="symbol" xmlns="http://www.w3.org/2000/svg" x="912.0" y="100.0">
+	<g transform="rotate(0.0,27.5,27.5)" state="default">
+		<g class="voltage-7_2kV" name="west" style="fill:none">
+			<path d="M 10.5 0 A 5 5 0 0 1 10.5 13.5"/>
+			<path d="M 10.5 13.5 A 5 5 0 0 1 10.5 27"/>
+			<path d="M 10.5 27 A 5 5 0 0 1 10.5 40.5"/>
+			<path d="M 10.5 40.5 A 5 5 0 0 1 10.5 54"/>
+			<path d="M 23.5 0 L 23.5 54"/>
+		</g>
+		<g class="voltage-277V" name="east" style="fill:none">
+			<path d="M 31.5 0 L 31.5 54"/>
+			<path d="M 44.5 0 A 5 5 0 0 0 44.5 13.5"/>
+			<path d="M 44.5 13.5 A 5 5 0 0 0 44.5 27"/>
+			<path d="M 44.5 27 A 5 5 0 0 0 44.5 40.5"/>
+			<path d="M 44.5 40.5 A 5 5 0 0 0 44.5 54"/>
+		</g>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="55" y="0" height="55"/>
+		<circle cx="27.5" r="1" cy="27.5"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,27.5,27.5)">
+		<circle name="west" r="1" cx="10.5" cy="27.5"/>
+		<circle name="east" r="1" cx="44.5" cy="27.5"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LoadBus1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="load" class="symbol" xmlns="http://www.w3.org/2000/svg" x="816.0" y="150.0">
+	<g transform="rotate(0.0,12.5,12.5)" state="default">
+		<rect x="1" width="24" height="6" y="9.5"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="25" y="0" height="25"/>
+		<circle cx="12" r="1" cy="12"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,12.5,12.5)">
+		<circle name="east" r="1" cx="0" cy="12"/>
+		<circle name="west" r="1" cx="24" cy="12"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.GroundBus1" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="ground" class="symbol" xmlns="http://www.w3.org/2000/svg" x="846.0" y="190.0">
+	<g transform="rotate(0.0,15.0,15.0)" state="default" stroke="gray">
+		<line y2="6" x1="0" x2="30" y1="6"/>
+		<line y2="15" x1="3.75" x2="26.25" y1="15"/>
+		<line y2="24" x1="11.25" x2="18.75" y1="24"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="north" r="1" cx="15" cy="6"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.Bus2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="busbar" height="150.0" class="voltage-7_2kV" xmlns="http://www.w3.org/2000/svg" x="746.0" y="277.0">
+	<g transform="rotate(0.0,75.0,75.0)" state="default">
+		<rect rx="2" ry="2" width="4" height="150.0" style="stroke-width:0"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,75.0,75.0)">
+	</g>
+	<g class="bbox">
+		<rect x="0" width="5" y="0" height="5"/>
+		<circle cx="0" r="1" cy="0"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LC_DES2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="lineconnector" class="voltage-240V" xmlns="http://www.w3.org/2000/svg" x="982.0" y="277.0">
+	<g transform="rotate(0.0,1.0,1.0)" state="default">
+		<circle cx="1" r="2" cy="1"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="2" y="0" height="2"/>
+		<circle cx="1" r="1" cy="1"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,1.0,1.0)">
+		<circle name="north" r="1" cx="1" cy="0"/>
+		<circle name="south" r="1" cx="1" cy="2"/>
+		<circle name="east" r="1" cx="2" cy="1"/>
+		<circle name="west" r="1" cx="0" cy="1"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.DES2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="storage" class="symbol" xmlns="http://www.w3.org/2000/svg" x="982.0" y="352.0">
+	<g transform="rotate(0.0,25.0,25.0)" state="open">
+		<rect rx="3" width="40" x="5" ry="3" y="1" height="50"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="50" y="0" height="50"/>
+		<circle cx="25" r="1" cy="25"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,25.0,25.0)">
+		<circle name="north" r="1" cx="25" cy="0"/>
+		<circle name="south" r="1" cx="25" cy="50"/>
+		<circle name="east" r="1" cx="0" cy="25"/>
+		<circle name="west" r="1" cx="50" cy="25"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LC2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="lineconnector" class="voltage-240V" xmlns="http://www.w3.org/2000/svg" x="1134.0" y="277.0">
+	<g transform="rotate(0.0,1.0,1.0)" state="default">
+		<circle cx="1" r="2" cy="1"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="2" y="0" height="2"/>
+		<circle cx="1" r="1" cy="1"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,1.0,1.0)">
+		<circle name="north" r="1" cx="1" cy="0"/>
+		<circle name="south" r="1" cx="1" cy="2"/>
+		<circle name="east" r="1" cx="2" cy="1"/>
+		<circle name="west" r="1" cx="0" cy="1"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.Load2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="load" class="symbol" xmlns="http://www.w3.org/2000/svg" x="1134.0" y="327.0">
+	<g transform="rotate(90.0,12.5,12.5)" state="default">
+		<rect x="1" width="24" height="6" y="9.5"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="25" y="0" height="25"/>
+		<circle cx="12" r="1" cy="12"/>
+	</g>
+	<g class="terminal" transform="rotate(90.0,12.5,12.5)">
+		<circle name="east" r="1" cx="0" cy="12"/>
+		<circle name="west" r="1" cx="24" cy="12"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.GroundPv2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="ground" class="symbol" xmlns="http://www.w3.org/2000/svg" x="1134.0" y="377.0">
+	<g transform="rotate(0.0,15.0,15.0)" state="default" stroke="gray">
+		<line y2="6" x1="0" x2="30" y1="6"/>
+		<line y2="15" x1="3.75" x2="26.25" y1="15"/>
+		<line y2="24" x1="11.25" x2="18.75" y1="24"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="north" r="1" cx="15" cy="6"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.PV2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="generator" class="symbol" xmlns="http://www.w3.org/2000/svg" x="1194.0" y="277.0">
+	<g transform="rotate(0.0,16.0,16.0)" state="default">
+		<circle r="15" cx="16" cy="16"/>
+		<text x="15" dominant-baseline="central" y="15" class="default" text-anchor="middle">PV</text> 
+	</g>
+	<g class="bbox">
+		<rect x="0" width="31" y="0" height="32"/>
+		<circle cx="16" r="1" cy="16"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,16.0,16.0)">
+		<circle name="north" r="1" cx="16" cy="0"/>
+		<circle name="south" r="1" cx="16" cy="30"/>
+		<circle name="west" r="1" cx="1" cy="16"/>
+		<circle name="east" r="1" cx="32" cy="16"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.SST2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="transformer" class="symbol" xmlns="http://www.w3.org/2000/svg" x="882.0" y="277.0">
+	<g transform="rotate(0.0,27.5,27.5)" state="default">
+		<g class="voltage-7_2kV" name="west" style="fill:none">
+			<path d="M 10.5 0 A 5 5 0 0 1 10.5 13.5"/>
+			<path d="M 10.5 13.5 A 5 5 0 0 1 10.5 27"/>
+			<path d="M 10.5 27 A 5 5 0 0 1 10.5 40.5"/>
+			<path d="M 10.5 40.5 A 5 5 0 0 1 10.5 54"/>
+			<path d="M 23.5 0 L 23.5 54"/>
+		</g>
+		<g class="voltage-277V" name="east" style="fill:none">
+			<path d="M 31.5 0 L 31.5 54"/>
+			<path d="M 44.5 0 A 5 5 0 0 0 44.5 13.5"/>
+			<path d="M 44.5 13.5 A 5 5 0 0 0 44.5 27"/>
+			<path d="M 44.5 27 A 5 5 0 0 0 44.5 40.5"/>
+			<path d="M 44.5 40.5 A 5 5 0 0 0 44.5 54"/>
+		</g>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="55" y="0" height="55"/>
+		<circle cx="27.5" r="1" cy="27.5"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,27.5,27.5)">
+		<circle name="west" r="1" cx="10.5" cy="27.5"/>
+		<circle name="east" r="1" cx="44.5" cy="27.5"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.LoadBus2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="load" class="symbol" xmlns="http://www.w3.org/2000/svg" x="786.0" y="327.0">
+	<g transform="rotate(0.0,12.5,12.5)" state="default">
+		<rect x="1" width="24" height="6" y="9.5"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="25" y="0" height="25"/>
+		<circle cx="12" r="1" cy="12"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,12.5,12.5)">
+		<circle name="east" r="1" cx="0" cy="12"/>
+		<circle name="west" r="1" cx="24" cy="12"/>
+	</g>
+</svg><svg xmlns:svg="http://www.w3.org/2000/svg" contentScriptType="text/ecmascript" zoomAndPan="magnify" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" id="MainSt.GroundBus2" version="1.0" preserveAspectRatio="xMidYMid meet" schematic-type="ground" class="symbol" xmlns="http://www.w3.org/2000/svg" x="816.0" y="367.0">
+	<g transform="rotate(0.0,15.0,15.0)" state="default" stroke="gray">
+		<line y2="6" x1="0" x2="30" y1="6"/>
+		<line y2="15" x1="3.75" x2="26.25" y1="15"/>
+		<line y2="24" x1="11.25" x2="18.75" y1="24"/>
+	</g>
+	<g class="bbox">
+		<rect x="0" width="30" y="0" height="30"/>
+		<circle cx="15" r="1" cy="15"/>
+	</g>
+	<g class="terminal" transform="rotate(0.0,15.0,15.0)">
+		<circle name="north" r="1" cx="15" cy="6"/>
+	</g>
+</svg><g name="MainSt.Substation1" schematic-type="pointgroup"><text x="333.0" name="MainSt.Substation1.kV_a" y="22.0" class="data-label" point-name="MainSt.Substation1.kV_a">xxxxxx uu</text><text x="333.0" name="MainSt.Substation1.kW_a" y="42.0" class="data-label" point-name="MainSt.Substation1.kW_a">xxxxxx uu</text><text x="333.0" name="MainSt.Substation1.kVar_a" y="62.0" class="data-label" point-name="MainSt.Substation1.kVar_a">xxxxxx uu</text><text x="333.0" name="MainSt.Substation1.Frequency" y="82.0" class="data-label" point-name="MainSt.Substation1.Frequency">xxxxxx uu</text></g><g name="MainSt.Bus3" schematic-type="pointgroup"><text x="399.5" name="MainSt.Bus3.kV_a" y="259.0" class="data-label" point-name="MainSt.Bus3.kV_a">xxxxxx uu</text></g><g name="MainSt.SST3" schematic-type="pointgroup"><text x="311.12" name="MainSt.SST3.kW_a" y="322.0" class="data-label" point-name="MainSt.SST3.kW_a">xxxxxx uu</text><text x="311.12" name="MainSt.SST3.kVar_a" y="342.0" class="data-label" point-name="MainSt.SST3.kVar_a">xxxxxx uu</text></g><g name="MainSt.DES3" schematic-type="pointgroup"><text x="216.1" name="MainSt.DES3.kW" y="340.0" class="data-label" point-name="MainSt.DES3.kW">xxxxxx uu</text><text x="216.1" name="MainSt.DES3.kVar" y="360.0" class="data-label" point-name="MainSt.DES3.kVar">xxxxxx uu</text><text x="216.1" name="MainSt.DES3.%SOC" y="380.0" class="data-label" point-name="MainSt.DES3.%SOC">xxxxxx uu</text></g><g name="MainSt.PV3" schematic-type="pointgroup"><text x="224.85" name="MainSt.PV3.kV" y="259.0" class="data-label" point-name="MainSt.PV3.kV">xxxxxx uu</text></g><g name="MainSt.PV3" schematic-type="pointgroup"><text x="106.35" name="MainSt.PV3.kW" y="239.0" class="data-label" point-name="MainSt.PV3.kW">xxxxxx uu</text><text x="106.35" name="MainSt.PV3.kVar" y="259.0" class="data-label" point-name="MainSt.PV3.kVar">xxxxxx uu</text></g><g name="MainSt.Bus1" schematic-type="pointgroup"><text x="788.0" name="MainSt.Bus1.kV_a" y="82.0" class="data-label" point-name="MainSt.Bus1.kV_a">xxxxxx uu</text></g><g name="MainSt.SST1" schematic-type="pointgroup"><text x="891.0" name="MainSt.SST1.kW_a" y="145.0" class="data-label" point-name="MainSt.SST1.kW_a">xxxxxx uu</text><text x="891.0" name="MainSt.SST1.kVar_a" y="165.0" class="data-label" point-name="MainSt.SST1.kVar_a">xxxxxx uu</text></g><g name="MainSt.DES1" schematic-type="pointgroup"><text x="1046.0" name="MainSt.DES1.kW" y="163.0" class="data-label" point-name="MainSt.DES1.kW">xxxxxx uu</text><text x="1046.0" name="MainSt.DES1.kVar" y="183.0" class="data-label" point-name="MainSt.DES1.kVar">xxxxxx uu</text><text x="1046.0" name="MainSt.DES1.%SOC" y="203.0" class="data-label" point-name="MainSt.DES1.%SOC">xxxxxx uu</text></g><g name="MainSt.PV1" schematic-type="pointgroup"><text x="1001.0" name="MainSt.PV1.kV" y="82.0" class="data-label" point-name="MainSt.PV1.kV">xxxxxx uu</text></g><g name="MainSt.PV1" schematic-type="pointgroup"><text x="1121.0" name="MainSt.PV1.kW" y="62.0" class="data-label" point-name="MainSt.PV1.kW">xxxxxx uu</text><text x="1121.0" name="RTMainSt.PV1.kVarDS" y="82.0" class="data-label" point-name="MainSt.PV1.kVar">xxxxxx uu</text></g><g name="MainSt.SST2" schematic-type="pointgroup"><text x="861.0" name="MainSt.SST2.kW_a" y="322.0" class="data-label" point-name="MainSt.SST2.kW_a">xxxxxx uu</text><text x="861.0" name="MainSt.SST2.kVar_a" y="342.0" class="data-label" point-name="MainSt.SST2.kVar_a">xxxxxx uu</text></g><g name="MainSt.DES2" schematic-type="pointgroup"><text x="1016.0" name="MainSt.DES2.kW" y="340.0" class="data-label" point-name="MainSt.DES2.kW">xxxxxx uu</text><text x="1016.0" name="MainSt.DES2.kVar" y="360.0" class="data-label" point-name="MainSt.DES2.kVar">xxxxxx uu</text><text x="1016.0" name="MainSt.DES2.%SOC" y="380.0" class="data-label" point-name="MainSt.DES2.%SOC">xxxxxx uu</text></g><g name="MainSt.PV2" schematic-type="pointgroup"><text x="971.0" name="MainSt.PV2.kV" y="259.0" class="data-label" point-name="MainSt.PV2.kV">xxxxxx uu</text></g><g name="MainSt.PV2" schematic-type="pointgroup"><text x="1091.0" name="MainSt.PV2.kW" y="239.0" class="data-label" point-name="MainSt.PV2.kW">xxxxxx uu</text><text x="1091.0" name="MainSt.PV2.kW" y="259.0" class="data-label" point-name="MainSt.PV2.kW">xxxxxx uu</text></g><g name="MainSt.Line1" schematic-type="pointgroup"><text x="591.0" name="MainSt.Line1.Amps" y="85.0" class="data-label" point-name="MainSt.Line1.Amps">xxxxxx uu</text><text x="591.0" name="MainSt.Line1.kW" y="105.0" class="data-label" point-name="MainSt.Line1.kW">xxxxxx uu</text></g><g name="MainSt.Line2" schematic-type="pointgroup"><text x="601.0" name="MainSt.Line2.Amps" y="177.0" class="data-label" point-name="MainSt.Line2.Amps">xxxxxx uu</text><text x="601.0" name="MainSt.Line2.kW" y="197.0" class="data-label" point-name="MainSt.Line2.kW">xxxxxx uu</text></g><g name="MainSt.Line4" schematic-type="pointgroup"><text x="545.0" name="MainSt.Line4.Amps" y="268.0" class="data-label" point-name="MainSt.Line4.Amps">xxxxxx uu</text><text x="545.0" name="MainSt.Line4.kW" y="288.0" class="data-label" point-name="MainSt.Line4.kW">xxxxxx uu</text></g><g name="MainSt.Line3" schematic-type="pointgroup"><text x="526.0" name="MainSt.Line3.Amps" y="131.0" class="data-label" point-name="MainSt.Line3.Amps">xxxxxx uu</text><text x="526.0" name="MainSt.Line3.kW" y="151.0" class="data-label" point-name="MainSt.Line3.kW">xxxxxx uu</text></g><g name="oneline:mainStreet" schematic-type="label"><text x="5.0" y="5.0" text-decoration="underline" uri="" destination="oneline-mainstreet" class="default clickable" name="oneline:mainStreet">To Main Street</text></g><g name="oneline:residential" schematic-type="label"><text x="5.0" y="50.0" text-decoration="underline" uri="" destination="oneline-residential" class="default clickable" name="oneline:residential">To Residential</text></g><g name="dashboard" schematic-type="label"><text x="5.0" y="100.0" text-decoration="underline" uri="" destination="dashboard" class="default clickable" name="dashboard">To Dashboard</text></g></svg>

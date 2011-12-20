@@ -87,3 +87,29 @@ class ReefLogoutCommand extends ReefCommandSupport {
   }
 }
 
+@Command(scope = "reef", name = "headers", description = "Displays and allows updating of the client headers.")
+class ReefHeadersCommand extends ReefCommandSupport {
+
+  @GogoOption(name = "-l", description = "Change the result limit, (must be greater than 0)")
+  var resultLimit: Int = -1
+
+  @GogoOption(name = "-t", description = "Change the timeout (must be greater than 0, in milliseconds)")
+  var timeout: Long = -1
+
+  @GogoOption(name = "-r", description = "Reset headers to default state.")
+  var reset: Boolean = false
+
+  def doCommand() = {
+    var headers = reefClient.getHeaders
+
+    if (reset) headers = headers.clearResultLimit().clearTimeout()
+    if (resultLimit > 0) headers = headers.setResultLimit(resultLimit)
+    if (timeout > 0) headers = headers.setTimeout(timeout)
+
+    reefClient.setHeaders(headers)
+
+    import presentation.ClientHeadersView
+    ClientHeadersView.displayHeaders(headers)
+  }
+}
+

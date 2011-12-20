@@ -209,7 +209,7 @@ public class TestEntityService extends ReefConnectionTestBase
             Relationship r = e.getRelations( 0 );
             assertEquals( "feedback", r.getRelationship() );
             assertFalse( r.getDescendantOf() );
-            assertEquals( 1, r.getEntitiesCount() );
+            assertTrue( 1 >= r.getEntitiesCount() );
             assertTrue( r.getEntities( 0 ).getTypesList().contains( "Point" ) );
 
         }
@@ -265,7 +265,7 @@ public class TestEntityService extends ReefConnectionTestBase
                 }
             }
         }
-        assertEquals( cmdCount, 3 );
+        assertEquals( cmdCount, 4 );
 
     }
 

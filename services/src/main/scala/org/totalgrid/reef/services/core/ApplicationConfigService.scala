@@ -91,6 +91,8 @@ trait ApplicationConfigConversion
 
   val table = ApplicationSchema.apps
 
+  def sortResults(list: List[ApplicationConfig]) = list.sortBy(_.getInstanceName)
+
   def getRoutingKey(proto: ApplicationConfig) = ProtoRoutingKeys.generateRoutingKey {
     proto.uuid.value :: proto.instanceName :: Nil
   }

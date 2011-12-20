@@ -46,4 +46,9 @@ object UserCommandRequestBuilders {
     UserCommandRequest.newBuilder.setCommandRequest(cr).build
   }
 
+  def executeSetpoint(command: Command, value: String): UserCommandRequest = {
+    val cr = CommandRequest.newBuilder.setCommand(command).setType(CommandRequest.ValType.STRING).setStringVal(value)
+    UserCommandRequest.newBuilder.setCommandRequest(cr).build
+  }
+
 }

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <oneline xmlns='http://www.totalgrid.org/oneline' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
-	<!-- Overview oneline -->
+	<!-- MainSt oneline -->
 
 	<voltages>
 		<nominalVoltage value="22kV" color="#ef2929"/>
@@ -12,16 +12,27 @@
 	</voltages>
 
 	<devices>
-		<device xsi:type="GridTiePoint" name="MainSt.Grid" label="nolabel" nominalVoltage="22kV">
-			<coordinate x="140" y="100"/>
+		<device xsi:type="Recloser" name="MainSt.Grid" label="Reclosed">
+			<coordinate x="140" y="0"/>
 		</device>
-
+		<device xsi:type="Switch" name="MainSt.Switch" initialState="OPEN" rotate="90">
+			<coordinate x="140" y="75"/>
+		</device>
+		<device xsi:type="Switch" name="MainSt.Fuse" initialState="OPEN" rotate="0">
+			<coordinate x="185" y="150"/>
+		</device>
+		<device xsi:type="Regulator" name="MainSt-Grid:2" label="Regulated">
+			<coordinate x="40" y="0"/>
+		</device>
+		<!--device xsi:type="GridTiePoint" name="MainSt.Grid" label="nolabel" nominalVoltage="22kV">
+			<coordinate x="140" y="100"/>
+		</device-->
 		<device xsi:type="Transformer" name="MainSt.Substation1" label="SST" type="SOLID_STATE" rating="" westNominalVoltage="22kV"
 						eastNominalVoltage="7.2kV">
 			<coordinate x="300" y="100"/>
 		</device>
 
-		<device xsi:type="BusBar" name="MainSt.NONAME" label="" nominalVoltage="7.2kV" height="107">
+		<device xsi:type="BusBar" name="MainSt.NONAME" label="" nominalVoltage="7.2kV" length="107">
 			<coordinate x="430" y="95"/>
 		</device>
 
@@ -33,7 +44,7 @@
 			<coordinate x="476" y="127"/>
 		</device>
 
-		<device xsi:type="BusBar" name="MainSt.Bus3" label="" nominalVoltage="7.2kV" height="150">
+		<device xsi:type="BusBar" name="MainSt.Bus3" label="" nominalVoltage="7.2kV" length="150">
 			<coordinate x="466.5" y="277"/>
 		</device>
 
@@ -49,7 +60,7 @@
 			<coordinate x="103.09999811649323" y="277"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.Load3" layoutDirection="VERTICAL">
+		<device xsi:type="Load" name="MainSt.Load3" rotate="90">
 			<coordinate x="103.09999811649323" y="327"/>
 		</device>
 
@@ -65,7 +76,7 @@
 			<coordinate x="332.19999623298645" y="277"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.LoadBus3" layoutDirection="HORIZONTAL">
+		<device xsi:type="Load" name="MainSt.LoadBus3" rotate="0">
 			<coordinate x="427" y="327"/>
 		</device>
 
@@ -81,7 +92,7 @@
 			<coordinate x="716" y="127"/>
 		</device>
 
-		<device xsi:type="BusBar" name="MainSt.Bus1" label="" nominalVoltage="7.2kV" height="150">
+		<device xsi:type="BusBar" name="MainSt.Bus1" label="" nominalVoltage="7.2kV" length="150">
 			<coordinate x="776" y="100"/>
 		</device>
 
@@ -97,7 +108,7 @@
 			<coordinate x="1164.0000019073486" y="100"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.Load1" layoutDirection="VERTICAL">
+		<device xsi:type="Load" name="MainSt.Load1" rotate="90">
 			<coordinate x="1164.0000019073486" y="150"/>
 		</device>
 
@@ -109,11 +120,11 @@
 			<coordinate x="1224.0000019073486" y="100"/>
 		</device>
 
-		<device xsi:type="Transformer" name="MainSt.SST1" label="SST1" type="SOLID_STATE" rating="" westNominalVoltage="277V" eastNominalVoltage="7.2kV">
+		<device xsi:type="Transformer" name="MainSt.SST1" label="SST1" type="SOLID_STATE" rating="" eastNominalVoltage="277V" westNominalVoltage="7.2kV">
 			<coordinate x="912.0000038146973" y="100"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.LoadBus1" layoutDirection="HORIZONTAL">
+		<device xsi:type="Load" name="MainSt.LoadBus1" rotate="0">
 			<coordinate x="816" y="150"/>
 		</device>
 
@@ -121,7 +132,7 @@
 			<coordinate x="846" y="190"/>
 		</device>
 
-		<device xsi:type="BusBar" name="MainSt.Bus2" label="" nominalVoltage="7.2kV" height="150">
+		<device xsi:type="BusBar" name="MainSt.Bus2" label="" nominalVoltage="7.2kV" length="150">
 			<coordinate x="746" y="277"/>
 		</device>
 
@@ -137,7 +148,7 @@
 			<coordinate x="1134.0000019073486" y="277"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.Load2" layoutDirection="VERTICAL">
+		<device xsi:type="Load" name="MainSt.Load2" rotate="90">
 			<coordinate x="1134.0000019073486" y="327"/>
 		</device>
 
@@ -149,11 +160,11 @@
 			<coordinate x="1194.0000019073486" y="277"/>
 		</device>
 
-		<device xsi:type="Transformer" name="MainSt.SST2" label="SST2" type="SOLID_STATE" rating="" westNominalVoltage="277V" eastNominalVoltage="7.2kV">
+		<device xsi:type="Transformer" name="MainSt.SST2" label="SST2" type="SOLID_STATE" rating="" eastNominalVoltage="277V" westNominalVoltage="7.2kV">
 			<coordinate x="882.0000038146973" y="277"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.LoadBus2" layoutDirection="HORIZONTAL">
+		<device xsi:type="Load" name="MainSt.LoadBus2" rotate="0">
 			<coordinate x="786" y="327"/>
 		</device>
 
@@ -164,7 +175,16 @@
 
 	<connections>
 		<connection nominalVoltage="22kV">
-			<startTerminal equipmentName="MainSt.Grid" orientation="EAST"/>
+			<startTerminal equipmentName="MainSt.Grid" orientation="SOUTH"/>
+			<endTerminal equipmentName="MainSt.Switch" orientation="NORTH"/>
+		</connection>
+		<connection nominalVoltage="22kV">
+			<startTerminal equipmentName="MainSt.Switch" orientation="SOUTH"/>
+			<endTerminal equipmentName="MainSt.Fuse" orientation="WEST"/>
+		</connection>
+
+		<connection nominalVoltage="22kV">
+			<startTerminal equipmentName="MainSt.Fuse" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.Substation1" orientation="WEST"/>
 		</connection>
 
@@ -461,46 +481,9 @@
 	</navigationDestinations>
 
 	<navigationAreas>
-		<area name="oneline-mainstreet" destination="oneline-mainstreet">
-			<coordinate x="100" y="100"/>
-			<coordinate x="200" y="100"/>
-			<coordinate x="200" y="200"/>
-			<coordinate x="100" y="200"/>
-		</area>
-		<area name="oneline-residential" destination="oneline-residential">
-			<coordinate x="300" y="100"/>
-			<coordinate x="400" y="100"/>
-			<coordinate x="400" y="200"/>
-			<coordinate x="100" y="300"/>
-		</area>
 	</navigationAreas>
 
 	<labels>
-		<label xsi:type='NavigationLabel' name='oneline:mainStreet' label='To Main Street' destination="oneline-mainstreet">
-			<coordinate x='5' y='5'/>
-		</label>
-
-		<label xsi:type='NavigationLabel' name='oneline:residential' label='To Residential' destination="oneline-residential">
-			<coordinate x='5' y='50'/>
-		</label>
-
-		<label xsi:type='NavigationLabel' name='dashboard' label='To Dashboard' destination='dashboard'>
-			<coordinate x='5' y='100'/>
-		</label>
 	</labels>
-	<rects>
-                <rect xsi:type="Rect"  height="50" width="5">
-                        <coordinate x="200" y="4"/>
-                </rect>
-                <rect xsi:type="Rect"  height="50" width="5">
-                        <coordinate x="245" y="4"/>
-                </rect>
-                <rect xsi:type="Rect"  height="5" width="50">
-                        <coordinate x="200" y="50"/>
-                </rect>
-                <rect xsi:type="Rect"  height="5" width="50">
-                        <coordinate x="200" y="4"/>
-                </rect>
-        </rects>
-
+	<rects></rects>
 </oneline>

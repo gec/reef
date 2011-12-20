@@ -43,7 +43,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   addServiceInfo(BuiltInDescriptors.batchServiceRequestServiceInfo)
 
   conn.declareExchange("amq.direct")
-  private val correlator = new ResponseCorrelator
+  private val correlator = new ResponseCorrelator(executor)
   private val subscription = conn.listen().start(correlator)
   conn.bindQueue(subscription.getQueue, "amq.direct", subscription.getQueue)
   conn.addListener(this)
@@ -55,7 +55,6 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   }
 
   private def handleDisconnect(expected: Boolean) {
-    subscription.close()
     conn.removeListener(this)
     correlator.close()
     this.notifyListenersOfClose(expected)
@@ -65,6 +64,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   def disconnect() = {
     val currentlyConnected = conn.isConnected()
     logger.info("disconnect called, connected: " + currentlyConnected)
+    subscription.close()
     if (currentlyConnected) {
       handleDisconnect(true)
       conn.disconnect()
@@ -95,9 +95,9 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     client
   }
 
-  def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, executor: Executor): Future[Response[A]] = {
+  def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): Future[Response[A]] = {
 
-    val future = executor.future[Response[A]]
+    val future = requestExecutor.future[Response[A]]
 
     def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) = result match {
       case Left(response) => future.set(response)
@@ -109,7 +109,8 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
       val timeout = headers.getTimeout.getOrElse(timeoutms)
       val descriptor = info.getDescriptor
 
-      val uuid = correlator.register(executor, timeout.milliseconds, onResponse(descriptor))
+      // timeout callback will come in on a random executor thread and be marshalled correctly by future
+      val uuid = correlator.register(timeout.milliseconds, onResponse(descriptor))
       try {
         val request = RestHelpers.buildServiceRequest(verb, payload, descriptor, uuid, headers)
         val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))

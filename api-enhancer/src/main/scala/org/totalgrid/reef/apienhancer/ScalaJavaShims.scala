@@ -31,12 +31,12 @@ import java.io.{ PrintStream, File }
  */
 class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFunctions {
 
-  val exName = if (isFuture) "FuturesJavaShim" else "JavaShim"
-  val japiPackage = if (isFuture) "japiF." else ""
-  val targetEx = if (isFuture) "Futures" else ""
+  val exName = if (isFuture) "AsyncJavaShim" else "JavaShim"
+  val japiPackage = if (isFuture) "async." else ""
+  val targetEx = if (isFuture) "Async" else ""
 
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
-    getFileStream(packageStr, rootDir, sourceFile, ".client.service.impl", true, c.name + exName) { (stream, javaPackage) =>
+    getFileStream(packageStr, rootDir, sourceFile, ".client.service." + japiPackage + "impl", true, c.name + exName) { (stream, javaPackage) =>
       javaShimClass(c, stream, javaPackage)
     }
   }
@@ -48,17 +48,21 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
     stream.println("import scala.collection.JavaConversions._")
     stream.println("import org.totalgrid.reef.client.sapi.client.rpc.framework.Converters._")
     stream.println("import org.totalgrid.reef.client.service." + japiPackage + "{" + c.name + targetEx + "=> JInterface }")
-    stream.println("import org.totalgrid.reef.client.sapi.rpc.AllScadaService")
 
-    if (isFuture) stream.println("import org.totalgrid.reef.client.Promise")
+    if (isFuture) {
+      stream.println("import org.totalgrid.reef.client.Promise")
+      stream.println("import org.totalgrid.reef.client.javaimpl.PromiseWrapper")
+    }
 
     stream.println("trait " + c.name + exName + " extends JInterface{")
 
-    stream.println("\tdef service: AllScadaService")
+    stream.println("\tdef service: org.totalgrid.reef.client.sapi.rpc." + c.name)
 
     c.methods.toList.foreach { m =>
 
-      var msg = "\t" + "override def " + m.name + "("
+      val typAnnotation = typeAnnotation(m, false)
+
+      var msg = "\t" + "override def " + m.name + typAnnotation + "("
       msg += m.parameters().toList.map { p =>
         p.name + ": " + javaAsScalaTypeString(p.`type`)
       }.mkString(", ")
@@ -78,12 +82,16 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
         else p.name
       }.mkString(", ")
       implCall += ")"
+
+      if ((m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List") implCall = implCall + ".map(a => convert(a))"
+      else if (m.returnType.simpleTypeName() == "SubscriptionResult") implCall = implCall + ".map(a => convert(a))"
+      else if (m.returnType.simpleTypeName() == "List") implCall = implCall + ".map(a => seqAsJavaList(a))"
+      else if (m.returnType.simpleTypeName() == "Boolean") implCall = implCall + ".map(a => convert(a))"
+
       if (!isFuture) implCall += ".await"
 
-      if ((m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List") implCall = "convert(" + implCall + ")"
-      else if (m.returnType.simpleTypeName() == "SubscriptionResult") implCall = "convert(" + implCall + ")"
-
-      msg += implCall
+      if (!isFuture) msg += implCall
+      else msg += "new PromiseWrapper(" + implCall + ")"
 
       stream.println(msg)
     }

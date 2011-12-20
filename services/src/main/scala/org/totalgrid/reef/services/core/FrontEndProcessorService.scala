@@ -75,6 +75,8 @@ trait FrontEndProcessorConversion
 
   val table = ApplicationSchema.apps
 
+  def sortResults(list: List[FrontEndProcessor]) = list.sortBy(_.getAppConfig.getInstanceName)
+
   def getRoutingKey(req: FrontEndProcessor) = ProtoRoutingKeys.generateRoutingKey {
     req.uuid.value :: Nil
   }

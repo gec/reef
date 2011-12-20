@@ -61,6 +61,12 @@ trait ServiceModel[MessageType, ModelType]
    * @return      List of model entries that much request
    */
   def findRecords(context: RequestContext, req: MessageType): List[ModelType]
+
+  /**
+   * before returning the results to the user we need to make sure they are sorted
+   * into a stable and sensible order.
+   */
+  def sortResults(list: List[MessageType]): List[MessageType]
 }
 
 /**

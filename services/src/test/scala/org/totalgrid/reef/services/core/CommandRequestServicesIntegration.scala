@@ -161,7 +161,7 @@ class CommandRequestServicesIntegration
       val descriptor = Descriptors.userCommandRequest
 
       override def put(req: UserCommandRequest, env: BasicRequestHeaders): Response[UserCommandRequest] =
-        Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).build :: Nil)
+        Response(Envelope.Status.OK, UserCommandRequest.newBuilder(req).setStatus(CommandStatus.SUCCESS).setErrorMessage("RunNum: " + runNum).build :: Nil)
     }
 
     val conn = fixture.frontEndConnection.get(EndpointConnection.newBuilder.setId("*").build).expectOne()
@@ -184,6 +184,7 @@ class CommandRequestServicesIntegration
     // make sure if we ask for the result of the command later it is correctly set
     val storedResults = fixture.commandRequest.get(cmdReq).expectMany(runNum + 1)
     storedResults.foreach { _.getStatus should equal(CommandStatus.SUCCESS) }
+    storedResults.foreach { _.getErrorMessage should include("RunNum: ") }
 
     fixture.access.delete(selectResult).expectOne()
   }

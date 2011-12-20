@@ -123,6 +123,8 @@ class ConfigFileServiceModel
 
 trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigFile] {
 
+  def sortResults(list: List[ConfigProto]) = list.sortBy(_.getName)
+
   def getRoutingKey(configFileProto: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
     configFileProto.uuid.value :: configFileProto.name :: configFileProto.mimeType :: Nil
   }
@@ -167,7 +169,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
       .setMimeType(entry.mimeType)
       .setFile(entry.file)
 
-    entry.owners.value.foreach(e => configProtoBuilder.addEntities(EntityQueryManager.entityToProto(e)))
+    entry.owners.value.sortBy(_.name).foreach(e => configProtoBuilder.addEntities(EntityQueryManager.entityToProto(e)))
 
     configProtoBuilder.build
   }

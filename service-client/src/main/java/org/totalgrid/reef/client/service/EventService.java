@@ -48,7 +48,7 @@ public interface EventService extends SubscriptionCreator
      *
      * @param limit the number of incoming events
      */
-    List<Event> getRecentEvents( int limit );
+    List<Event> getRecentEvents( int limit ) throws ReefServiceException;
 
     /**
      * get the most recent events and setup a subscription to all future events

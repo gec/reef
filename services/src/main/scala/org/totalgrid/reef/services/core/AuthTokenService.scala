@@ -132,6 +132,8 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
 
   val table = ApplicationSchema.authTokens
 
+  def sortResults(list: List[AuthToken]) = list.sortBy(_.getExpirationTime)
+
   def getRoutingKey(req: AuthToken) = ProtoRoutingKeys.generateRoutingKey {
     req.loginLocation :: req.agent.name :: Nil
   }
@@ -232,8 +234,7 @@ class AuthTokenServiceModel
       // link the token to all of the permisisonsSet they have checked out access to
       permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, newAuthToken.id)))
 
-      postSystemEvent(context, EventType.System.UserLogin)
-
+      postSystemEvent(context, EventType.System.UserLogin, args = List("user" -> agent.entity.value.name))
       newAuthToken
     }
 

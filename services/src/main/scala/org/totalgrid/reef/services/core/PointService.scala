@@ -105,6 +105,8 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
   import org.squeryl.PrimitiveTypeMode._
   import SquerylModel._
 
+  def sortResults(list: List[PointProto]) = list.sortBy(_.getName)
+
   val table = ApplicationSchema.points
 
   /**

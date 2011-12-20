@@ -40,9 +40,21 @@
  * 
  * 	optional org.totalgrid.reef.client.service.proto.Model.ReefID         id             = 1;
  * 	optional CommandRequest command_request = 2;
+ * 	// TODO: remove status and error_message in 0.5.0
  * 	optional CommandStatus  status          = 3;
+ * 	optional string         error_message   = 6;
  * 	optional string         user            = 4;
  * 	optional int32          timeout_ms      = 5 [default = 5000];
+ * 	optional CommandResult  result          = 7;
+ * }
+ * 
+ * /**
+ *   CommandResult, encapsulates the result of the command and any error message associated with the
+ *   result.
+ * -/
+ * message CommandResult{
+ *     optional CommandStatus  status          = 1;
+ * 	optional string         error_message   = 2;
  * }
  * 
  * /*
@@ -94,6 +106,7 @@
  * 		INT = 1;
  * 		DOUBLE = 2;
  * 		NONE = 3;
+ * 		STRING = 4;
  * 	}
  * 	
  * 	// unique name of the control in the system. Whomever executes the control knows protocol specific details (if necessary)
@@ -106,6 +119,7 @@
  * 	optional ValType type = 3;
  * 	optional int32   int_val = 4;
  * 	optional double  double_val = 5;
+ * 	optional string  string_val = 6;
  * }
  * 
  * /*

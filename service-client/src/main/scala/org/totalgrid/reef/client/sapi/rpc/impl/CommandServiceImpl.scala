@@ -57,24 +57,30 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     _.delete(CommandLockRequestBuilders.getAll).map(_.many)
   }
 
-  override def executeCommandAsControl(id: Command) = ops.operation("Couldn't execute control: " + id) {
-    _.put(UserCommandRequestBuilders.executeControl(id)).map(_.one.map(_.getStatus))
+  override def executeCommandAsControl(id: Command) = ops.operation("Couldn't execute control: " + id.getName) {
+    _.put(UserCommandRequestBuilders.executeControl(id)).map(_.one.map(_.getResult))
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Double) = {
-    ops.operation("Couldn't execute setpoint: " + id + " with double value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getStatus))
+    ops.operation("Couldn't execute setpoint: " + id.getName + " with double value: " + value) {
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
     }
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Int) = {
-    ops.operation("Couldn't execute setpoint: " + id + " with integer value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getStatus))
+    ops.operation("Couldn't execute setpoint: " + id.getName + " with integer value: " + value) {
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
+    }
+  }
+
+  override def executeCommandAsSetpoint(id: Command, value: String) = {
+    ops.operation("Couldn't execute setpoint: " + id.getName + " with string value: " + value) {
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
     }
   }
 
   override def createCommandDenialLock(ids: List[Command]) = {
-    ops.operation("Couldn't create denial lock on ids: " + ids) {
+    ops.operation("Couldn't create denial lock on ids: " + ids.map { _.getName }) {
       _.put(CommandLockRequestBuilders.blockAccessForCommands(ids)).map(_.one)
     }
   }
@@ -88,13 +94,13 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def findCommandLockOnCommand(id: Command) = {
-    ops.operation("couldn't find command lock for command: " + id) {
+    ops.operation("couldn't find command lock for command: " + id.getName) {
       _.get(CommandLockRequestBuilders.getByCommand(id)).map { _.oneOrNone }
     }
   }
 
   override def getCommandLocksOnCommands(ids: List[Command]) = {
-    ops.operation("Couldn't get command locks for: " + ids) {
+    ops.operation("Couldn't get command locks for: " + ids.map { _.getName }) {
       _.get(CommandLockRequestBuilders.getByCommands(ids)).map(_.many)
     }
   }
@@ -145,14 +151,18 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
       import org.totalgrid.reef.client.AddressableDestination
       import net.agileautomata.executor4s._
 
-      // TODO: reimplement with flatMap once strand/await/flatMap is sorted out
-      val connection = session.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build).map(_.one).await.get
-      val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
-      val service = new EndpointCommandHandlerImpl(handler)
+      val connectionFuture = session.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build)
 
-      val f2 = client.future[Result[Cancelable]]
-      f2.set(Success(client.bindService(service, client, destination, false)))
-      f2
+      connectionFuture.flatMap {
+        _.one match {
+          case Success(connection) =>
+            val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
+            val service = new EndpointCommandHandlerImpl(handler)
+            connectionFuture.replicate[Result[Cancelable]](Success(client.bindService(service, client, destination, false)))
+          case fail: Failure =>
+            connectionFuture.asInstanceOf[Future[Result[Cancelable]]]
+        }
+      }
     }
   }
 }

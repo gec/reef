@@ -51,7 +51,7 @@ public class TestCommandHandler extends ReefConnectionTestBase
         LoaderServices loader = client.getService( LoaderServices.class );
         try
         {
-            cmd = Command.newBuilder().setName( "test.command" ).setDisplayName( "test.command" ).setType( CommandType.SETPOINT_INT ).build();
+            cmd = Command.newBuilder().setName( "test.command" ).setDisplayName( "test.command" ).setType( CommandType.SETPOINT_STRING ).build();
 
             EndpointOwnership owners = EndpointOwnership.newBuilder().addCommands( "test.command" ).build();
             Endpoint newEndpoint = Endpoint.newBuilder().setName( "Test.Endpoint" ).setProtocol( "null" ).setOwnerships( owners ).build();
@@ -96,7 +96,8 @@ public class TestCommandHandler extends ReefConnectionTestBase
 
                 public void handleCommandRequest( Commands.CommandRequest cmdRequest, CommandResultCallback resultCallback )
                 {
-                    resultCallback.setCommandResult( Commands.CommandStatus.TOO_MANY_OPS );
+                    assertEquals( cmdRequest.getStringVal(), "TestString" );
+                    resultCallback.setCommandResult( Commands.CommandStatus.TOO_MANY_OPS, "Extra Error Message" );
                 }
             };
 
@@ -104,12 +105,14 @@ public class TestCommandHandler extends ReefConnectionTestBase
 
             access = helpers.createCommandExecutionLock( cmd );
 
-            Commands.CommandStatus status = helpers.executeCommandAsSetpoint( cmd, 100 );
+            Commands.CommandResult status = helpers.executeCommandAsSetpoint( cmd, "TestString" );
 
-            assertEquals( status, Commands.CommandStatus.TOO_MANY_OPS );
+            assertEquals( Commands.CommandStatus.TOO_MANY_OPS, status.getStatus() );
 
             List<Commands.UserCommandRequest> commands = helpers.getCommandHistory( cmd );
-            assertEquals( commands.get( 0 ).getStatus(), Commands.CommandStatus.TOO_MANY_OPS );
+            Commands.CommandResult result = commands.get( 0 ).getResult();
+            assertEquals( Commands.CommandStatus.TOO_MANY_OPS, result.getStatus() );
+            assertEquals( "Extra Error Message", result.getErrorMessage() );
         }
         finally
         {

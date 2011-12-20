@@ -101,7 +101,7 @@ trait HasRead extends CanAuthorizeRead with HasAllTypes {
   }
 
   protected def performRead(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ServiceType] = {
-    model.findRecords(context, request).map(model.convertToProto(_))
+    model.sortResults(model.findRecords(context, request).map(model.convertToProto(_)))
   }
 }
 
@@ -189,7 +189,7 @@ trait HasDelete extends CanAuthorizeDelete with HasAllTypes {
     val validated = preDelete(context, request)
     val authorized = authorizeDelete(context, validated)
     val existing = performDelete(context, model, authorized)
-    postDelete(context, existing.map(model.convertToProto(_)))
+    postDelete(context, model.sortResults(existing.map(model.convertToProto(_))))
   }
 
   protected def performDelete(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ModelType] = {

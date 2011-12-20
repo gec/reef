@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef</artifactId>
-        <version>0.4.0</version>
+        <version>0.4.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -58,6 +58,12 @@
             <groupId>org.apache.qpid</groupId>
             <artifactId>qpid-client</artifactId>
             <version>0.10</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.qpid</groupId>

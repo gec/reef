@@ -143,15 +143,11 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     logger.trace("load equipment: " + name + " commands")
     controls.map { c =>
       processCommand(childPrefix, c, entity, CommandTypeProto.CONTROL)
-      //val display = Option(c.getDisplayName) getOrElse c.getName
-      //processCommand(childPrefix + c.getName, display, "Control" :: getTypeList(c.getType), entity)
     }
 
     setpoints.map { c =>
-      // TODO: loader needs to handle setpoint int
-      processCommand(childPrefix, c, entity, CommandTypeProto.SETPOINT_DOUBLE)
-      //val display = Option(c.getDisplayName) getOrElse c.getName
-      //processCommand(childPrefix + c.getName, display, "Setpoint" :: getTypeList(c.getType), entity)
+      val commandType = convertSetpointTypeToCommandType(c.getSetpointType)
+      processCommand(childPrefix, c, entity, commandType)
     }
 
     // Points
@@ -345,5 +341,13 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     builder.build
   }
 
+  private def convertSetpointTypeToCommandType(setpointType: SetpointType): CommandTypeProto = {
+    setpointType match {
+      case SetpointType.DOUBLE => CommandTypeProto.SETPOINT_DOUBLE
+      case SetpointType.STRING => CommandTypeProto.SETPOINT_STRING
+      case SetpointType.INTEGER => CommandTypeProto.SETPOINT_INT
+      case _ => throw new LoadingException("Unknown setpointType: " + setpointType)
+    }
+  }
 }
 

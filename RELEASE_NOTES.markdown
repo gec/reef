@@ -9,6 +9,51 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.1
+==============
+
+Update focused on stability improvements and command service updates. It is recommend that all applications
+update to get important threading related bug fixes. This upgrade is considered very-low risk, the main change
+that may affect applications is the order of returned results has been made explicit which might affect tests
+that assume a particular result will be first/last. Before this version the result order was loosely based on
+insertion order.
+
+### Major Features:
+
+* Command requests can carry a String value REEF-199
+* Command results can include an error string REEF-200
+* New RestOperations service level API to implement custom REST queries
+* Results to most service queries are sorted by name (entity isn't sorted yet) REEF-203
+* Added *ServiceAsync APIs that return Promise wrapped values for event driven applications.
+
+### Shell Commands:
+
+* reef:headers that displays and allows updating of the client request headers
+* reef:unload deletes all event-configs to reset them to defaults
+
+### Service/API Updates:
+
+* Added CommandService.executeCommandAsSetpoint(command, String)
+* Added CommandResultCallback.setCommandResult overload that takes an error string
+
+### Breaking Changes:
+
+* MeasurementService.publishMeasurements functions return Boolean object, instead of boolean primitive.
+* CommandService.executeCommand* functions return CommandResult instead of CommandStatus. CommandResult includes
+  command status (.getStatus) and error string (.getErrorMessage) for non-successful commands.
+* Added missing "throws ReefServiceException" on EventService.getRecentEvents
+* Database schema has changed requiring a "reef:resetdb" (Server side)
+
+### Bug Fixes:
+
+* Fixed await() deadlock inside subscription callback
+* Removed compile-time slf4j-simple dependency.
+* Remote CLI correctly handles broker disconnect events. REEF-195
+
+### Reef Internals:
+
+* Updated to executor4s 0.1.9-RC5
+
 Version 0.4.0
 ==============
 

@@ -128,6 +128,8 @@ trait CommunicationEndpointConnectionConversion
 
   val table = ApplicationSchema.frontEndAssignments
 
+  def sortResults(list: List[ConnProto]) = list.sortBy(f => (f.frontEnd.appConfig.instanceName, f.getEndpoint.getName))
+
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
     req.frontEnd.uuid.value :: req.id.value :: Nil
   }

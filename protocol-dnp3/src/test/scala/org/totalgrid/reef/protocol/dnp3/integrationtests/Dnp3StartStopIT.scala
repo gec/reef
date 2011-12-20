@@ -30,7 +30,7 @@ import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.Model.{ CommandType, ReefUUID }
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
@@ -108,6 +108,25 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
 
       waitForRepublishedMeasurement()
       println("COMMS_UP to first measurement roundtripped in: " + (System.currentTimeMillis() - enabled))
+    }
+  }
+
+  test("Issue Commands") {
+    val endpoint = services.getEndpointByName("DNPInput").await
+    val commands = services.getCommandsBelongingToEndpoint(endpoint.getUuid).await.toList
+
+    val lock = services.createCommandExecutionLock(commands).await
+    try {
+      commands.foreach { cmd =>
+        cmd.getType match {
+          case CommandType.CONTROL => services.executeCommandAsControl(cmd)
+          case CommandType.SETPOINT_DOUBLE => services.executeCommandAsSetpoint(cmd, 55.55)
+          case CommandType.SETPOINT_INT => services.executeCommandAsSetpoint(cmd, 100)
+          case CommandType.SETPOINT_STRING => services.executeCommandAsSetpoint(cmd, "TestString")
+        }
+      }
+    } finally {
+      services.deleteCommandLock(lock)
     }
   }
 

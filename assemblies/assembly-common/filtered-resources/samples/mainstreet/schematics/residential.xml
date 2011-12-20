@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <oneline xmlns='http://www.totalgrid.org/oneline' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
-	<!-- MainSt oneline -->
+	<!-- Residential oneline -->
 
 	<voltages>
 		<nominalVoltage value="22kV" color="#ef2929"/>
@@ -21,7 +21,7 @@
 			<coordinate x="300" y="100"/>
 		</device>
 
-		<device xsi:type="BusBar" name="MainSt.NONAME" label="" nominalVoltage="7.2kV" height="107">
+		<device xsi:type="BusBar" name="MainSt.NONAME" label="" nominalVoltage="7.2kV" length="107">
 			<coordinate x="430" y="95"/>
 		</device>
 
@@ -33,7 +33,7 @@
 			<coordinate x="476" y="127"/>
 		</device>
 
-		<device xsi:type="BusBar" name="MainSt.Bus3" label="" nominalVoltage="7.2kV" height="150">
+		<device xsi:type="BusBar" name="MainSt.Bus3" label="" nominalVoltage="7.2kV" length="150">
 			<coordinate x="466.5" y="277"/>
 		</device>
 
@@ -49,7 +49,7 @@
 			<coordinate x="103.09999811649323" y="277"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.Load3" layoutDirection="VERTICAL">
+		<device xsi:type="Load" name="MainSt.Load3" rotate="90">
 			<coordinate x="103.09999811649323" y="327"/>
 		</device>
 
@@ -65,7 +65,7 @@
 			<coordinate x="332.19999623298645" y="277"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.LoadBus3" layoutDirection="HORIZONTAL">
+		<device xsi:type="Load" name="MainSt.LoadBus3" rotate="0">
 			<coordinate x="427" y="327"/>
 		</device>
 
@@ -81,7 +81,7 @@
 			<coordinate x="716" y="127"/>
 		</device>
 
-		<device xsi:type="BusBar" name="MainSt.Bus1" label="" nominalVoltage="7.2kV" height="150">
+		<device xsi:type="BusBar" name="MainSt.Bus1" label="" nominalVoltage="7.2kV" length="150">
 			<coordinate x="776" y="100"/>
 		</device>
 
@@ -97,7 +97,7 @@
 			<coordinate x="1164.0000019073486" y="100"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.Load1" layoutDirection="VERTICAL">
+		<device xsi:type="Load" name="MainSt.Load1" rotate="90">
 			<coordinate x="1164.0000019073486" y="150"/>
 		</device>
 
@@ -109,11 +109,11 @@
 			<coordinate x="1224.0000019073486" y="100"/>
 		</device>
 
-		<device xsi:type="Transformer" name="MainSt.SST1" label="SST1" type="SOLID_STATE" rating="" westNominalVoltage="277V" eastNominalVoltage="7.2kV">
+		<device xsi:type="Transformer" name="MainSt.SST1" label="SST1" type="SOLID_STATE" rating="" eastNominalVoltage="277V" westNominalVoltage="7.2kV">
 			<coordinate x="912.0000038146973" y="100"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.LoadBus1" layoutDirection="HORIZONTAL">
+		<device xsi:type="Load" name="MainSt.LoadBus1" rotate="0">
 			<coordinate x="816" y="150"/>
 		</device>
 
@@ -121,7 +121,7 @@
 			<coordinate x="846" y="190"/>
 		</device>
 
-		<device xsi:type="BusBar" name="MainSt.Bus2" label="" nominalVoltage="7.2kV" height="150">
+		<device xsi:type="BusBar" name="MainSt.Bus2" label="" nominalVoltage="7.2kV" length="150">
 			<coordinate x="746" y="277"/>
 		</device>
 
@@ -137,7 +137,7 @@
 			<coordinate x="1134.0000019073486" y="277"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.Load2" layoutDirection="VERTICAL">
+		<device xsi:type="Load" name="MainSt.Load2" rotate="90">
 			<coordinate x="1134.0000019073486" y="327"/>
 		</device>
 
@@ -149,11 +149,11 @@
 			<coordinate x="1194.0000019073486" y="277"/>
 		</device>
 
-		<device xsi:type="Transformer" name="MainSt.SST2" label="SST2" type="SOLID_STATE" rating="" westNominalVoltage="277V" eastNominalVoltage="7.2kV">
+		<device xsi:type="Transformer" name="MainSt.SST2" label="SST2" type="SOLID_STATE" rating="" eastNominalVoltage="277V" westNominalVoltage="7.2kV">
 			<coordinate x="882.0000038146973" y="277"/>
 		</device>
 
-		<device xsi:type="Load" name="MainSt.LoadBus2" layoutDirection="HORIZONTAL">
+		<device xsi:type="Load" name="MainSt.LoadBus2" rotate="0">
 			<coordinate x="786" y="327"/>
 		</device>
 
@@ -167,182 +167,146 @@
 			<startTerminal equipmentName="MainSt.Grid" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.Substation1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Substation1" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.NONAME" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.NONAME" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.FID1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.NONAME" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.FID2" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Bus3" orientation="WEST"/>
 			<endTerminal equipmentName="MainSt.SST3" orientation="EAST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.SST3" orientation="WEST"/>
 			<endTerminal equipmentName="MainSt.LC_DES3" orientation="EAST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC_DES3" orientation="WEST"/>
 			<endTerminal equipmentName="MainSt.LC3" orientation="EAST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC3" orientation="WEST"/>
 			<endTerminal equipmentName="MainSt.PV3" orientation="EAST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC_DES3" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.DES3" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC3" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.Load3" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.Load3" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.GroundPv3" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Bus3" orientation="WEST"/>
 			<endTerminal equipmentName="MainSt.LoadBus3" orientation="EAST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.LoadBus3" orientation="WEST"/>
 			<endTerminal equipmentName="MainSt.GroundBus3" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Bus3" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.FID2" orientation="EAST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Bus3" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.FID4" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Bus1" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.SST1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.SST1" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.LC_DES1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC_DES1" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.LC1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC1" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.PV1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC_DES1" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.DES1" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC1" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.Load1" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.Load1" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.GroundPv1" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Bus1" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.LoadBus1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.LoadBus1" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.GroundBus1" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.FID1" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.Bus1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.FID3" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.Bus1" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Bus2" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.SST2" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.SST2" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.LC_DES2" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC_DES2" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.LC2" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC2" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.PV2" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC_DES2" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.DES2" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.LC2" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.Load2" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="240V">
 			<startTerminal equipmentName="MainSt.Load2" orientation="SOUTH"/>
 			<endTerminal equipmentName="MainSt.GroundPv2" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.Bus2" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.LoadBus2" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.LoadBus2" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.GroundBus2" orientation="NORTH"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.FID3" orientation="WEST"/>
 			<endTerminal equipmentName="MainSt.Bus2" orientation="WEST"/>
 		</connection>
-
 		<connection nominalVoltage="7.2kV">
 			<startTerminal equipmentName="MainSt.FID4" orientation="EAST"/>
 			<endTerminal equipmentName="MainSt.Bus2" orientation="WEST"/>
@@ -380,60 +344,72 @@
 			<coordinate x="224.85" y="259"/>
 			<point name="MainSt.PV3.kV" pointName="MainSt.PV3.kV"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.PV3">
 			<coordinate x="106.35" y="239"/>
 			<point name="MainSt.PV3.kW" pointName="MainSt.PV3.kW"/>
 			<point name="MainSt.PV3.kVar" pointName="MainSt.PV3.kVar"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.Bus1">
 			<coordinate x="788" y="82"/>
 			<point name="MainSt.Bus1.kV_a" pointName="MainSt.Bus1.kV_a"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.SST1">
 			<coordinate x="891" y="145"/>
 			<point name="MainSt.SST1.kW_a" pointName="MainSt.SST1.kW_a"/>
 			<point name="MainSt.SST1.kVar_a" pointName="MainSt.SST1.kVar_a"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.DES1">
 			<coordinate x="1046" y="163"/>
 			<point name="MainSt.DES1.kW" pointName="MainSt.DES1.kW"/>
 			<point name="MainSt.DES1.kVar" pointName="MainSt.DES1.kVar"/>
 			<point name="MainSt.DES1.%SOC" pointName="MainSt.DES1.%SOC"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.PV1">
 			<coordinate x="1001" y="82"/>
 			<point name="MainSt.PV1.kV" pointName="MainSt.PV1.kV"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.PV1">
 			<coordinate x="1121" y="62"/>
 			<point name="MainSt.PV1.kW" pointName="MainSt.PV1.kW"/>
 			<point name="RTMainSt.PV1.kVarDS" pointName="MainSt.PV1.kVar"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.SST2">
 			<coordinate x="861" y="322"/>
 			<point name="MainSt.SST2.kW_a" pointName="MainSt.SST2.kW_a"/>
 			<point name="MainSt.SST2.kVar_a" pointName="MainSt.SST2.kVar_a"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.DES2">
 			<coordinate x="1016" y="340"/>
 			<point name="MainSt.DES2.kW" pointName="MainSt.DES2.kW"/>
 			<point name="MainSt.DES2.kVar" pointName="MainSt.DES2.kVar"/>
 			<point name="MainSt.DES2.%SOC" pointName="MainSt.DES2.%SOC"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.PV2">
 			<coordinate x="971" y="259"/>
 			<point name="MainSt.PV2.kV" pointName="MainSt.PV2.kV"/>
 		</pointGroup>
-		<pointGroup name="MainSt.PV2">
+
+			<pointGroup name="MainSt.PV2">
 			<coordinate x="1091" y="239"/>
 			<point name="MainSt.PV2.kW" pointName="MainSt.PV2.kW"/>
 			<point name="MainSt.PV2.kW" pointName="MainSt.PV2.kW"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.Line1">
 			<coordinate x="591" y="85"/>
 			<point name="MainSt.Line1.Amps" pointName="MainSt.Line1.Amps"/>
 			<point name="MainSt.Line1.kW" pointName="MainSt.Line1.kW"/>
 		</pointGroup>
+
 		<pointGroup name="MainSt.Line2">
 			<coordinate x="601" y="177"/>
 			<point name="MainSt.Line2.Amps" pointName="MainSt.Line2.Amps"/>
@@ -451,7 +427,6 @@
 			<point name="MainSt.Line3.Amps" pointName="MainSt.Line3.Amps"/>
 			<point name="MainSt.Line3.kW" pointName="MainSt.Line3.kW"/>
 		</pointGroup>
-
 	</pointGroups>
 
 	<navigationDestinations>

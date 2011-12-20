@@ -6,13 +6,13 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4.0</version>
+	<version>0.4.1</version>
 
 	<properties>
-		<reef.version>0.4.0</reef.version>
+		<reef.version>0.4.1</reef.version>
 		<mavenBundleVersion>2.1.0</mavenBundleVersion>
 		<felixCoreVersion>1.4.0</felixCoreVersion>
-        <executor4s.version>0.1.9-RC3</executor4s.version>
+        <executor4s.version>0.1.9-RC5</executor4s.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -316,6 +316,12 @@
 			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.6.1</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 </project>

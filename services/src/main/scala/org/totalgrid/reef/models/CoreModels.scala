@@ -76,10 +76,11 @@ object Command {
   def newInstance(name: String, displayName: String, _type: Model.CommandType, uuid: Option[UUID]) = {
     val baseType = _type match {
       case Model.CommandType.CONTROL => "Control"
-      case Model.CommandType.SETPOINT_DOUBLE | Model.CommandType.SETPOINT_INT => "Setpoint"
+      case Model.CommandType.SETPOINT_DOUBLE | Model.CommandType.SETPOINT_INT |
+        Model.CommandType.SETPOINT_STRING => "Setpoint"
     }
     val ent = EntityQueryManager.findOrCreateEntity(name, "Command" :: baseType :: Nil, uuid)
-    val c = new Command(ent.id, displayName, _type.getNumber, false, None, None)
+    val c = new Command(ent.id, displayName, _type.getNumber, None, None)
     c.entity.value = ent
     c
   }
@@ -96,11 +97,10 @@ case class Command(
     _entityId: UUID,
     val displayName: String,
     val commandType: Int,
-    var connected: Boolean,
     var lastSelectId: Option[Long],
     var triggerId: Option[Long]) extends EntityBasedModel(_entityId) {
 
-  def this() = this(new UUID(0, 0), "", -1, false, Some(0), Some(0))
+  def this() = this(new UUID(0, 0), "", -1, Some(0), Some(0))
 
   val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
 

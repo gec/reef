@@ -20,9 +20,9 @@ package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.client.service.proto.Model.Command
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandLock, UserCommandRequest }
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.util.Table
+import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus, CommandLock, UserCommandRequest }
 
 object CommandView {
 
@@ -47,12 +47,16 @@ object CommandView {
     val rows = ("ID: " :: "[" + resp.getId + "]" :: Nil) ::
       ("Command:" :: resp.commandRequest.command.name.getOrElse("unknown") :: Nil) ::
       ("User:" :: resp.getUser :: Nil) ::
-      ("Status:" :: resp.getStatus.toString :: Nil) :: Nil
+      ("Status:" :: resp.getStatus.toString :: Nil) ::
+      ("Message:" :: resp.getErrorMessage :: Nil) :: Nil
 
     Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
   }
-  def commandResponse(resp: CommandStatus) = {
-    val rows = ("Status:" :: resp.toString :: Nil) :: Nil
+  def commandResponse(resp: CommandResult) = {
+
+    val msgEntries = resp.errorMessage.map { msg: String => List(" ErrorMessage: ", msg) }.getOrElse(List.empty[String])
+
+    val rows = ("Status:" :: resp.getStatus.toString :: msgEntries) :: Nil
 
     Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
   }
@@ -112,13 +116,14 @@ object CommandView {
   }
 
   def historyHeader = {
-    "Id" :: "Command" :: "Status" :: "User" :: "Type" :: Nil
+    "Id" :: "Command" :: "Status" :: "Message" :: "User" :: "Type" :: Nil
   }
 
   def historyRow(a: UserCommandRequest) = {
     a.id.value.getOrElse("unknown") ::
       a.commandRequest.command.name.getOrElse("unknown") ::
       a.status.map { _.toString }.getOrElse("unknown") ::
+      a.errorMessage.getOrElse("") ::
       a.user.getOrElse("unknown") ::
       a.commandRequest._type.toString ::
       Nil

@@ -28,7 +28,8 @@ case class UserCommandModel(
     val agent: String,
     var status: Int,
     val expireTime: Long,
-    val commandProto: Array[Byte]) extends ModelWithId {
+    val commandProto: Array[Byte],
+    val errorMessage: Option[String]) extends ModelWithId {
 
   def command = hasOne(ApplicationSchema.commands, commandId)
 }

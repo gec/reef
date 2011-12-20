@@ -120,6 +120,8 @@ trait ProcessStatusConversion
 
   val table = ApplicationSchema.heartbeats
 
+  def sortResults(list: List[StatusSnapshot]) = list.sortBy(_.getInstanceName)
+
   def getRoutingKey(req: StatusSnapshot) = ProtoRoutingKeys.generateRoutingKey {
     req.instanceName :: Nil
   }
