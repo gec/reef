@@ -221,8 +221,8 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     val req = Entity.newBuilder
       .addTypes("EquipmentGroup")
       .addRelations(
-      Relationship.newBuilder
-        .setDistance(1))
+        Relationship.newBuilder
+          .setDistance(1))
 
     val env = BasicRequestHeaders.empty
     val list = service.get(req.build, env.setResultLimit(1)).expectMany(1)

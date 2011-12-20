@@ -429,7 +429,6 @@ object EntityQuery extends Logging {
     protos.map { findEntity(_) }.flatten
   }
 
-
   // Main entry point for requests in the form of protos
   def fullQuery(proto: EntityProto): List[EntityProto] = {
     if (proto.hasUuid && proto.getUuid.getValue == "*") {
@@ -553,27 +552,24 @@ object EntityQuery extends Logging {
     }
   }
 
-
   def findEdge(proto: EntityEdgeProto): Option[Edge] = {
     proto.uuid.value.flatMap { v =>
       returnSingleOption(edges.where(t => t.id === v.toInt).toList, "Entity Edge")
     }
   }
 
-  def findEdges(proto: EntityEdgeProto): List[Edge] ={
+  def findEdges(proto: EntityEdgeProto): List[Edge] = {
     if (proto.hasUuid && proto.getUuid.getValue == "*") {
       edges.where(t => true === true).toList
     } else if (proto.hasUuid) {
       edges.where(t => t.id === proto.getUuid.getValue.toInt).toList
     } else {
 
-
-
       def expr(t: Edge) = {
         proto.child.uuid.value.map(v => t.parentId === UUID.fromString(v)) ::
           proto.parent.uuid.value.map(v => t.childId === UUID.fromString(v)) ::
           proto.relationship.map(t.relationship === _) ::
-        Nil
+          Nil
       }
 
       edges.where(expr(_).flatten).toList
