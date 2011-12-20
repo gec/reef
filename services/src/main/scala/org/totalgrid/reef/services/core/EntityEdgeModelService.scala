@@ -18,13 +18,16 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, EntityEdge => EntityEdgeProto }
 import java.util.UUID
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models._
+
+import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.client.service.proto.Model.{ReefUUID, Entity => EntityProto, EntityEdge => EntityEdgeProto}
+
 
 class EntityEdgeModelService(protected val model: EntityEdgeServiceModel)
     extends SyncModeledServiceBase[EntityEdgeProto, EntityEdge, EntityEdgeServiceModel]
@@ -39,11 +42,39 @@ class EntityEdgeServiceModel
 
   val table = ApplicationSchema.edges
 
+
   def findRecord(context: RequestContext, req: EntityEdgeProto): Option[EntityEdge] = {
-    EntityQuery.findEdges(req) match {
-      case List(head, _) => None
-      case List(head) => Some(head)
-      case Nil => None
+    def uniquePossible(edge: EntityEdgeProto) = {
+      (edge.parent.uuid.value.isDefined || edge.parent.name.isDefined) &&
+        (edge.child.uuid.value.isDefined || edge.child.name.isDefined) &&
+        edge.hasRelationship
+    }
+
+    def entQuery(proto: EntityProto) = {
+      proto.uuid.value match {
+        case Some(uuid) =>
+          from(ApplicationSchema.entities)(ent => where(ent.id === UUID.fromString(uuid)) select(ent.id))
+        case None =>
+          from(ApplicationSchema.entities)(ent => where(ent.name === proto.getName) select(ent.id))
+      }
+    }
+    
+    if (uniquePossible(req)) {
+      
+      val query =
+        from(table)(edge =>
+        where((edge.parentId in entQuery(req.getParent)) and
+          (edge.childId in entQuery(req.getChild)) and
+          (edge.relationship === req.getRelationship))
+        select(edge))
+
+      query.toList match {
+        case List(head, _) => None
+        case List(head) => Some(head)
+        case Nil => None
+      }
+    } else {
+      None
     }
   }
 
@@ -93,12 +124,14 @@ class EntityEdgeServiceModel
   }
 
   def convertToProto(entry: EntityEdge): EntityEdgeProto = {
-    val b = EntityEdgeProto.newBuilder()
     import org.totalgrid.reef.services.framework.SquerylModel._
-    b.setParent(EntityProto.newBuilder.setUuid(makeUuid(entry.parentId)))
-    b.setChild(EntityProto.newBuilder.setUuid(makeUuid(entry.childId)))
-    b.setRelationship(entry.relationship)
-    b.build
+
+    EntityEdgeProto.newBuilder()
+      .setUuid(ReefUUID.newBuilder.setValue(entry.id.toString))
+      .setParent(EntityProto.newBuilder.setUuid(makeUuid(entry.parentId)))
+      .setChild(EntityProto.newBuilder.setUuid(makeUuid(entry.childId)))
+      .setRelationship(entry.relationship)
+      .build
   }
 
   def isModified(entry: EntityEdge, previous: EntityEdge): Boolean = {

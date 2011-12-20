@@ -12,6 +12,8 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.exception.{BadRequestException, ReefServiceException}
 
+import org.squeryl.PrimitiveTypeMode._
+
 @RunWith(classOf[JUnitRunner])
 class EntityEdgeServiceTest extends DatabaseUsingTestBase {
 
@@ -89,6 +91,37 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
     }
   }
 
+  test("Put to nonexistent entity") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+
+    val edge = buildEdge("Reg", "Wrong", "owns")
+
+    intercept[BadRequestException] {
+      service.put(edge)
+    }
+  }
+
+  test("Put to nonexistent entity partial match possible") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+
+    val edge = buildEdge("Reg", "Sub", "owns")
+
+    val result = service.put(edge).expectOne(Status.CREATED)
+
+    val uuid = result.getUuid.getValue
+    result.getRelationship should equal("owns")
+    result.getParent.getUuid.getValue should equal (reg.id.toString)
+    result.getChild.getUuid.getValue should equal (sub.id.toString)
+
+    val partial = buildEdge("Reg", "Wrong", "owns")
+
+    intercept[BadRequestException] {
+      service.put(partial)
+    }
+  }
+
   test("Put duplicate") {
     val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
     val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
@@ -133,22 +166,30 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
     val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val dev = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
 
-    val initial = buildEdge("Reg", "Sub", "owns")
-
-    val result = service.put(initial).expectOne(Status.CREATED)
+    val result = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     result.getRelationship should equal("owns")
     result.getParent.getUuid.getValue should equal (reg.id.toString)
     result.getChild.getUuid.getValue should equal (sub.id.toString)
-
-    val second = buildEdge("Sub", "Breaker", "owns")
     
-    val secondResult = service.put(second).expectOne(Status.CREATED)
+    val secondResult = service.put(buildEdge("Sub", "Bkr", "owns")).expectOne(Status.CREATED)
 
-    result.getRelationship should equal("owns")
-    result.getParent.getUuid.getValue should equal (sub.id.toString)
-    result.getChild.getUuid.getValue should equal (dev.id.toString)
+    secondResult.getRelationship should equal("owns")
+    secondResult.getParent.getUuid.getValue should equal (sub.id.toString)
+    secondResult.getChild.getUuid.getValue should equal (dev.id.toString)
 
-    edges.where(t => true === true).toList.size should equal(3)
+    val edgeList = edges.where(t => true === true).toList
+    edgeList.size should equal(3)
+
+    val (topList, rest) = edgeList.partition(_.id == result.getUuid.getValue.toInt)
+    val top = topList.head
+
+    val (bottomList, last) = rest.partition(_.id == secondResult.getUuid.getValue.toInt)
+    val bottom = bottomList.head
+
+    val multi = last.head
+    multi.parentId should equal(reg.id)
+    multi.childId should equal(dev.id)
+
   }
 }
