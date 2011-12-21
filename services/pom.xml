@@ -64,8 +64,22 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-measurementstore-api</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <!-- TODO: only needed for the ServiceEntryPoint class, should move into seperate project-->
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-measurementstore-squeryl</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-processing</artifactId>
             <version>${reef.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
@@ -74,16 +88,11 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.configadmin</artifactId>
-            <version>1.2.8</version>
-        </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-memory-broker</artifactId>
             <version>${reef.version}</version>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
@@ -95,7 +104,7 @@
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-test-util</artifactId>
             <version>${reef.version}</version>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>

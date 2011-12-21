@@ -61,7 +61,7 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-measurementstore-squeryl</artifactId>
+            <artifactId>reef-measurementstore-api</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
