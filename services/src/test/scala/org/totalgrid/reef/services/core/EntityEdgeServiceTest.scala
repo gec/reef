@@ -1,3 +1,21 @@
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the GNU Affero General Public License
+ * Version 3.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.totalgrid.reef.services.core
 
 import java.util.UUID
@@ -10,7 +28,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ Relationship, Entity => E
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.client.exception.{BadRequestException, ReefServiceException}
+import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -20,7 +38,6 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   import ApplicationSchema._
 
   val service = new EntityEdgeModelService(new EntityEdgeServiceModel)
-
 
   def buildEdge(parent: String, child: String, rel: String) = {
     EntityEdgeProto.newBuilder()
@@ -33,7 +50,7 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
     val b = EntityEdgeProto.newBuilder()
 
     parent.foreach(par => b.setParent(EntityProto.newBuilder().setName(par)))
-    child.foreach(ch => b.setChild(EntityProto.newBuilder().setName(ch)))  
+    child.foreach(ch => b.setChild(EntityProto.newBuilder().setName(ch)))
     rel.foreach(relate => b.setRelationship(relate))
 
     b.build
@@ -46,10 +63,10 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
     val edge = buildEdge("Reg", "Sub", "owns")
 
     val result = service.put(edge).expectOne(Status.CREATED)
-    
+
     result.getRelationship should equal("owns")
-    result.getParent.getUuid.getValue should equal (reg.id.toString)
-    result.getChild.getUuid.getValue should equal (sub.id.toString)
+    result.getParent.getUuid.getValue should equal(reg.id.toString)
+    result.getChild.getUuid.getValue should equal(sub.id.toString)
   }
 
   test("Put with missing properties") {
@@ -110,8 +127,6 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
     }
   }
 
-
-
   test("Put to nonexistent entity partial match possible") {
     val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
     val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
@@ -122,8 +137,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
 
     val uuid = result.getUuid.getValue
     result.getRelationship should equal("owns")
-    result.getParent.getUuid.getValue should equal (reg.id.toString)
-    result.getChild.getUuid.getValue should equal (sub.id.toString)
+    result.getParent.getUuid.getValue should equal(reg.id.toString)
+    result.getChild.getUuid.getValue should equal(sub.id.toString)
 
     val partial = buildEdge("Reg", "Wrong", "owns")
 
@@ -142,8 +157,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
 
     val uuid = result.getUuid.getValue
     result.getRelationship should equal("owns")
-    result.getParent.getUuid.getValue should equal (reg.id.toString)
-    result.getChild.getUuid.getValue should equal (sub.id.toString)
+    result.getParent.getUuid.getValue should equal(reg.id.toString)
+    result.getChild.getUuid.getValue should equal(sub.id.toString)
 
     val second = service.put(edge).expectOne(Status.NOT_MODIFIED)
     second.getUuid.getValue should equal(uuid)
@@ -159,17 +174,16 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
 
     val uuid = result.getUuid.getValue
     result.getRelationship should equal("owns")
-    result.getParent.getUuid.getValue should equal (reg.id.toString)
-    result.getChild.getUuid.getValue should equal (sub.id.toString)
+    result.getParent.getUuid.getValue should equal(reg.id.toString)
+    result.getChild.getUuid.getValue should equal(sub.id.toString)
 
     val two = buildEdge("Reg", "Sub", "relates")
 
     val second = service.put(two).expectOne(Status.CREATED)
     second.getRelationship should equal("relates")
-    second.getParent.getUuid.getValue should equal (reg.id.toString)
-    second.getChild.getUuid.getValue should equal (sub.id.toString)
+    second.getParent.getUuid.getValue should equal(reg.id.toString)
+    second.getChild.getUuid.getValue should equal(sub.id.toString)
   }
-
 
   test("Put multi-level") {
     val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
@@ -179,14 +193,14 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
     val result = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     result.getRelationship should equal("owns")
-    result.getParent.getUuid.getValue should equal (reg.id.toString)
-    result.getChild.getUuid.getValue should equal (sub.id.toString)
-    
+    result.getParent.getUuid.getValue should equal(reg.id.toString)
+    result.getChild.getUuid.getValue should equal(sub.id.toString)
+
     val secondResult = service.put(buildEdge("Sub", "Bkr", "owns")).expectOne(Status.CREATED)
 
     secondResult.getRelationship should equal("owns")
-    secondResult.getParent.getUuid.getValue should equal (sub.id.toString)
-    secondResult.getChild.getUuid.getValue should equal (dev.id.toString)
+    secondResult.getParent.getUuid.getValue should equal(sub.id.toString)
+    secondResult.getChild.getUuid.getValue should equal(dev.id.toString)
 
     val edgeList = edges.where(t => true === true).toList
     edgeList.size should equal(3)
@@ -255,10 +269,10 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
     val results = service.get(buildEdge(Some("Reg"), None, None)).expectMany(2)
 
     val topGot = results.find(r => r.getUuid.getValue == top.getUuid.getValue)
-    topGot should not equal(None)
+    topGot should not equal (None)
 
     val depthGot = results.find(r => r.getChild.getUuid.getValue == dev.id.toString)
-    depthGot should not equal(None)
+    depthGot should not equal (None)
   }
 
   test("Get wrong parent") {

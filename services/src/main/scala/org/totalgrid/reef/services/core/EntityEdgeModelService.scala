@@ -25,11 +25,9 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models._
 
-
 import SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.client.service.proto.Model.{ReefUUID, Entity => EntityProto, EntityEdge => EntityEdgeProto}
-
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, EntityEdge => EntityEdgeProto }
 
 class EntityEdgeModelService(protected val model: EntityEdgeServiceModel)
     extends SyncModeledServiceBase[EntityEdgeProto, EntityEdge, EntityEdgeServiceModel]
@@ -43,7 +41,6 @@ class EntityEdgeServiceModel
     with EventedServiceModel[EntityEdgeProto, EntityEdge] {
 
   val table = ApplicationSchema.edges
-
 
   def findRecord(context: RequestContext, req: EntityEdgeProto): Option[EntityEdge] = {
     findRecords(context, req) match {
@@ -68,14 +65,14 @@ class EntityEdgeServiceModel
       }
 
       def edgeExpr(edge: EntityEdge, proto: EntityEdgeProto) = {
-        proto.parent.map(entProto => edge.parentId in from(entities)(ent => where(entExpr(ent, entProto).flatten) select(ent.id))) ::
-          proto.child.map(entProto => edge.childId in from(entities)(ent => where(entExpr(ent, entProto).flatten) select(ent.id))) ::
+        proto.parent.map(entProto => edge.parentId in from(entities)(ent => where(entExpr(ent, entProto).flatten) select (ent.id))) ::
+          proto.child.map(entProto => edge.childId in from(entities)(ent => where(entExpr(ent, entProto).flatten) select (ent.id))) ::
           proto.relationship.map(rel => edge.relationship === rel) :: Nil
       }
 
-      from(edges) (edge =>
+      from(edges)(edge =>
         where(edgeExpr(edge, req).flatten)
-        select(edge)).toList
+          select (edge)).toList
     }
   }
 
