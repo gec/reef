@@ -244,10 +244,10 @@ object EntityQuery extends Logging {
    * @param rootSet Entities from root query
    * @return Result tree root nodes (maps to rootSet) filled out by query
    */
-  def resultsForQuery(queries: List[QueryNode], rootSet: List[Entity]): List[ResultNode] = {
+  /*def resultsForQuery(queries: List[QueryNode], rootSet: List[Entity]): List[ResultNode] = {
     val select = from(entities)(t => where(t.id in rootSet.map(_.id)) select (t))
     resultsForQuery(queries, rootSet, select)
-  }
+  }*/
 
   /**
    * Executes a recursive search to go from a set of query trees to a set of result trees.

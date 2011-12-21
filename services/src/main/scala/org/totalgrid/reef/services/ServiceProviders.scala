@@ -63,8 +63,9 @@ class ServiceProviders(
     new AuthTokenService(modelFac.authTokens))
 
   private var crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
-    new EntityEdgeService,
+    //new EntityEdgeService,
     //new EntityService,
+    new EntityEdgeModelService(modelFac.edges),
     new EntityModelService(modelFac.entities),
     new EntityAttributesService,
     new MeasurementHistoryService(wrappedHistorian),
