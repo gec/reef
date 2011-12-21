@@ -19,7 +19,6 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
 
   import ApplicationSchema._
 
-  //val service = new EntityService
   val service = new EntityEdgeModelService(new EntityEdgeServiceModel)
 
 
@@ -30,18 +29,14 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
       .setRelationship(rel)
       .build
   }
+  def buildEdge(parent: Option[String], child: Option[String], rel: Option[String]) = {
+    val b = EntityEdgeProto.newBuilder()
 
-  test("Put and get wrong name") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    parent.foreach(par => b.setParent(EntityProto.newBuilder().setName(par)))
+    child.foreach(ch => b.setChild(EntityProto.newBuilder().setName(ch)))  
+    rel.foreach(relate => b.setRelationship(relate))
 
-    val edge = buildEdge("Reg", "Sub", "owns")
-
-    val result = service.put(edge).expectOne(Status.CREATED)
-
-    val partial = buildEdge("Reg", "Wrong", "owns")
-
-    service.get(partial).expectNone()
+    b.build
   }
 
   test("Put single") {
@@ -206,5 +201,115 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
     multi.parentId should equal(reg.id)
     multi.childId should equal(dev.id)
 
+    val derivedList = derivedEdges.where(t => true === true).toList
+
+    derivedList.size should equal(1)
+    val derived = derivedList.head
+    derived.edgeId should equal(bottom.id)
+    derived.parentEdgeId should equal(multi.id)
+  }
+
+  test("Get") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+
+    val result = service.get(buildEdge("Reg", "Sub", "owns")).expectOne()
+    result.getUuid.getValue should equal(upload.getUuid.getValue)
+  }
+
+  test("Get partial: parent") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+
+    val result = service.get(buildEdge(Some("Reg"), None, None)).expectOne()
+    result.getUuid.getValue should equal(upload.getUuid.getValue)
+  }
+
+  test("Get partial: child") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+
+    val result = service.get(buildEdge(None, Some("Sub"), None)).expectOne()
+    result.getUuid.getValue should equal(upload.getUuid.getValue)
+  }
+
+  test("Get partial: relationship") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+
+    val result = service.get(buildEdge(None, None, Some("owns"))).expectOne()
+    result.getUuid.getValue should equal(upload.getUuid.getValue)
+  }
+
+  test("Get multiple") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val dev = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val top = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+    val bottom = service.put(buildEdge("Sub", "Bkr", "owns")).expectOne(Status.CREATED)
+
+    val results = service.get(buildEdge(Some("Reg"), None, None)).expectMany(2)
+
+    val topGot = results.find(r => r.getUuid.getValue == top.getUuid.getValue)
+    topGot should not equal(None)
+
+    val depthGot = results.find(r => r.getChild.getUuid.getValue == dev.id.toString)
+    depthGot should not equal(None)
+  }
+
+  test("Get wrong parent") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+
+    service.get(buildEdge("Wrong", "Sub", "owns")).expectNone()
+  }
+  test("Get wrong child") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+
+    service.get(buildEdge("Reg", "Wrong", "owns")).expectNone()
+  }
+  test("Get wrong relationship") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+
+    service.get(buildEdge("Reg", "Sub", "Wrong")).expectNone()
+  }
+
+  test("Delete") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+
+    edges.where(t => true === true).toList.size should equal(1)
+
+    val result = service.delete(buildEdge("Reg", "Sub", "owns")).expectOne()
+    result.getUuid.getValue should equal(upload.getUuid.getValue)
+
+    edges.where(t => true === true).toList.size should equal(0)
+  }
+
+  test("Delete Multi") {
+    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val dev = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val top = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+    val bottom = service.put(buildEdge("Sub", "Bkr", "owns")).expectOne(Status.CREATED)
+
+    edges.where(t => true === true).toList.size should equal(3)
+    derivedEdges.where(t => true === true).toList.size should equal(1)
+
+    val result = service.delete(buildEdge("Sub", "Bkr", "owns")).expectOne()
+    result.getUuid.getValue should equal(bottom.getUuid.getValue)
+
+    edges.where(t => true === true).toList.size should equal(1)
+    derivedEdges.where(t => true === true).toList.size should equal(0)
   }
 }

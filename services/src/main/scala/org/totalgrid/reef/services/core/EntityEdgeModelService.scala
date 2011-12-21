@@ -135,7 +135,14 @@ class EntityEdgeServiceModel
     false
   }
 
-  /*override protected def postDelete(context: RequestContext, previous: EntityEdge) {
-    null
-  }*/
+  override protected def postDelete(context: RequestContext, previous: EntityEdge) {
+
+    val derivedIds = ApplicationSchema.derivedEdges.where(_.edgeId === previous.id).map(_.parentEdgeId)
+
+    ApplicationSchema.derivedEdges.deleteWhere(_.edgeId === previous.id)
+
+    val otherEdges = ApplicationSchema.edges.where(_.id in derivedIds)
+
+    otherEdges.foreach(e => delete(context, e))
+  }
 }
