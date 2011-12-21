@@ -23,9 +23,10 @@ import org.totalgrid.reef.client.service.proto.{ SimMapping, Model, Commands }
 import org.totalgrid.reef.protocol.api._
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.service.proto.SimMapping.SimulatorMapping
-import org.totalgrid.reef.client.service.proto.FEP.CommChannel
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 
 /**
  * Protocol implementation that creates and manages simulators to test system behavior
@@ -33,11 +34,9 @@ import org.totalgrid.reef.client.sapi.client.rest.Client
  */
 class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logging {
 
-  import Protocol._
-
   final override def name: String = "benchmark"
 
-  case class PluginRecord(endpoint: String, mapping: SimulatorMapping, publisher: BatchPublisher, current: Option[SimulatorPlugin])
+  case class PluginRecord(endpoint: String, mapping: SimulatorMapping, publisher: Publisher[MeasurementBatch], current: Option[SimulatorPlugin])
 
   private val mutex = new Object
   private var endpoints = Map.empty[String, PluginRecord]
@@ -47,8 +46,8 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
     endpoint: String,
     channel: String,
     files: List[Model.ConfigFile],
-    batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher,
+    batchPublisher: Publisher[MeasurementBatch],
+    endpointPublisher: Publisher[EndpointConnection.State],
     client: Client): CommandHandler = mutex.synchronized {
 
     endpoints.get(endpoint) match {
@@ -76,7 +75,7 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
 
   class EndpointCommandHandler(endpoint: String) extends CommandHandler {
 
-    def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher): Unit = mutex.synchronized {
+    def issue(cmd: Commands.CommandRequest, publisher: Publisher[Commands.CommandStatus]): Unit = mutex.synchronized {
       endpoints.get(endpoint) match {
         case Some(record) =>
           val status = record.current match {
@@ -103,7 +102,7 @@ class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logg
       case Some(current) => if (current.level >= x.level) best else Some(x)
     }
 
-    def add(endpoint: String, executor: Executor, publisher: BatchPublisher, mapping: SimulatorMapping, factory: SimulatorPluginFactory) = {
+    def add(endpoint: String, executor: Executor, publisher: Publisher[MeasurementBatch], mapping: SimulatorMapping, factory: SimulatorPluginFactory) = {
       val simulator = factory.create(endpoint, Strand(executor), publisher, mapping)
       logger.info("Adding simulator for endpoint " + endpoint + " of type " + simulator.getClass.getName)
       endpoints += endpoint -> PluginRecord(endpoint, mapping, publisher, Some(simulator))

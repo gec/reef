@@ -31,8 +31,9 @@ import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.service.command.{ CommandResultCallback, CommandRequestHandler }
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest }
-import org.totalgrid.reef.protocol.api.{ CommandHandler, Protocol }
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler, Protocol }
+import org.totalgrid.reef.client.service.proto.Commands
 
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServices, client: Client) extends KeyedMap[EndpointConnection] {
@@ -102,7 +103,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
 
   // TODO -fail the process if we can't publish measurements or state?
 
-  private def newMeasBatchPublisher(routingKey: String) = new Protocol.BatchPublisher {
+  private def newMeasBatchPublisher(routingKey: String) = new Publisher[MeasurementBatch] {
     def publish(value: MeasurementBatch) = {
       services.publishMeasurements(value, new AddressableDestination(routingKey)).extract match {
         case Success(x) => logger.debug("Published a measurement batch of size: " + value.getMeasCount)
@@ -111,7 +112,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
     }
   }
 
-  private def newEndpointStatePublisher(connectionId: ReefID, endpointName: String) = new Protocol.EndpointPublisher {
+  private def newEndpointStatePublisher(connectionId: ReefID, endpointName: String) = new Publisher[EndpointConnection.State] {
     def publish(state: EndpointConnection.State) = {
       services.alterEndpointConnectionState(connectionId, state).extract match {
         case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
@@ -120,7 +121,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
     }
   }
 
-  private def newChannelStatePublisher(channelUuid: ReefUUID, channelName: String) = new Protocol.ChannelPublisher {
+  private def newChannelStatePublisher(channelUuid: ReefUUID, channelName: String) = new Publisher[CommChannel.State] {
     def publish(state: CommChannel.State) = {
       services.alterCommunicationChannelState(channelUuid, state).extract match {
         case Success(x) => logger.info("Updated channel state: " + x.getName + " state: " + x.getState)
@@ -131,7 +132,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
 
   private def createCommandRequestHandler(cmdHandler: CommandHandler) = new CommandRequestHandler {
     def handleCommandRequest(cmdRequest: CommandRequest, resultCallback: CommandResultCallback) {
-      cmdHandler.issue(cmdRequest, new Protocol.ResponsePublisher {
+      cmdHandler.issue(cmdRequest, new Publisher[Commands.CommandStatus] {
         def publish(value: CommandStatus) {
           resultCallback.setCommandResult(value)
         }

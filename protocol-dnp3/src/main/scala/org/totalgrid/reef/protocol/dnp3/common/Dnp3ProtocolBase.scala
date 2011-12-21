@@ -27,10 +27,10 @@ import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, EndpointConnection }
 
 abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol with Logging {
 
-  import Protocol._
   import XmlToProtoTranslations._
 
   final override def requiresChannel = true
@@ -49,7 +49,7 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
 
   final def Shutdown() = dnp3.Shutdown()
 
-  override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher, client: Client) = {
+  override def addChannel(p: FEP.CommChannel, publisher: Publisher[CommChannel.State], client: Client) = {
 
     val physMonitor = createChannelObserver(p.getName, publisher)
 
@@ -95,7 +95,7 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
     Mapping.IndexMapping.parseFrom(configFile.getFile)
   }
 
-  protected def createStackObserver(endpointPublisher: EndpointPublisher) = {
+  protected def createStackObserver(endpointPublisher: Publisher[EndpointConnection.State]) = {
     new IStackObserver {
       override def OnStateChange(state: StackStates) = {
         endpointPublisher.publish(translateStackState(state))
@@ -103,7 +103,7 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
     }
   }
 
-  protected def createChannelObserver(channelName: String, publisher: ChannelPublisher) = {
+  protected def createChannelObserver(channelName: String, publisher: Publisher[CommChannel.State]) = {
     new IPhysicalLayerObserver {
       override def OnStateChange(state: PhysicalLayerState) = {
         logger.error("Channel " + channelName + " transitioned to state: " + state)

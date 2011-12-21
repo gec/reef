@@ -21,19 +21,19 @@ package org.totalgrid.reef.protocol.api
 import org.totalgrid.reef.client.service.proto.{ Model, FEP }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 
 trait EndpointAlwaysOnline extends Protocol with Logging {
 
-  import Protocol._
-
-  private val endpointMap = scala.collection.mutable.Map.empty[String, EndpointPublisher]
+  private val endpointMap = scala.collection.mutable.Map.empty[String, Publisher[EndpointConnection.State]]
 
   abstract override def addEndpoint(
     endpoint: String,
     channel: String,
     config: List[Model.ConfigFile],
-    batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher,
+    batchPublisher: Publisher[MeasurementBatch],
+    endpointPublisher: Publisher[EndpointConnection.State],
     client: Client): CommandHandler = {
 
     val ret = super.addEndpoint(endpoint, channel, config, batchPublisher, endpointPublisher, client)

@@ -20,12 +20,12 @@ package org.totalgrid.reef.protocol.dnp3.master
 
 import org.totalgrid.reef.protocol.dnp3.common.Dnp3ProtocolBase
 import org.totalgrid.reef.client.service.proto.Model
-import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.protocol.dnp3.IStackObserver
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 
 case class MasterObjectsContainer(dataObserver: MeasAdapter, stackObserver: IStackObserver,
   batchPublisher: Publisher[MeasurementBatch], commandAdapter: CommandAdapter)
@@ -40,8 +40,8 @@ class Dnp3MasterProtocol extends Dnp3ProtocolBase[MasterObjectsContainer] {
   override def addEndpoint(endpointName: String,
     channelName: String,
     files: List[Model.ConfigFile],
-    batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher,
+    batchPublisher: Publisher[MeasurementBatch],
+    endpointPublisher: Publisher[EndpointConnection.State],
     client: Client): ProtocolCommandHandler = {
 
     logger.info("Adding device with id: " + endpointName + " onto channel " + channelName)
