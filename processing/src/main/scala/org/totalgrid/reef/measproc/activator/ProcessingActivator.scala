@@ -72,6 +72,8 @@ class ProcessingActivator extends ExecutorBundleActivator with Logging {
 
     val measStore = MeasurementStoreFinder.getInstance(context)
 
+    measStore.connect()
+
     manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 
     manager.get.addConsumer(ProcessingActivator.createMeasProcessor(userSettings, nodeSettings, measStore))

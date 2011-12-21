@@ -87,4 +87,6 @@ class InMemoryMeasurementStore extends MeasurementStore {
   def allCurrent(): Seq[Meas] = {
     values.map { x => x._2.currentValue }.toList
   }
+
+  def connect() = {}
 }

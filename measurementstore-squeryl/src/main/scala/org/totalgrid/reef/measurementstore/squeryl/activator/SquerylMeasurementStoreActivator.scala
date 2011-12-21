@@ -25,15 +25,18 @@ import org.totalgrid.reef.measurementstore.squeryl.SqlMeasurementStore
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
-class Activator extends BundleActivator {
+class SquerylMeasurementStoreActivator extends BundleActivator {
 
   def start(context: BundleContext) {
 
     // initialize the connection, expecting that the DbConnector is already registered
-    val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
-    DbConnector.connect(sql, context)
+    def connectFunction = {
+      val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
+      DbConnector.connect(sql, context)
+    }
+    val sqlMeasurementStore = new SqlMeasurementStore(connectFunction _)
 
-    context.createService(SqlMeasurementStore, "org.totalgrid.reef.mstore" -> "sql", interface[MeasurementStore])
+    context.createService(sqlMeasurementStore, "org.totalgrid.reef.mstore" -> "sql", interface[MeasurementStore])
   }
 
   def stop(context: BundleContext) {}

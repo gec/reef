@@ -32,4 +32,6 @@ class MockMeasurementStore extends MeasurementStore {
   def getInRange(name: String, begin: Long, end: Long, max: Int, ascending: Boolean) = Nil
   def numValues(name: String) = 0
   def remove(names: Seq[String]) {}
+
+  def connect() {}
 }

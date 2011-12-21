@@ -25,34 +25,30 @@ import org.totalgrid.reef.measurementstore.MeasurementStoreTest
 import org.totalgrid.reef.measurementstore.RTDatabaseReadPerformanceTestBase
 
 import org.totalgrid.reef.persistence.squeryl._
-import org.squeryl.PrimitiveTypeMode._
 import postgresql.PostgresqlReset
 
-@RunWith(classOf[JUnitRunner])
-class SqlMeasTest extends MeasurementStoreTest {
+trait SqlMeasStoreTestFixture {
   def connect() = {
-
-    val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
-    val connection = DbConnector.connect(conn_info)
+    val store = new SqlMeasurementStore {
+      val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
+      DbConnector.connect(conn_info)
+    }
+    store.connect()
     PostgresqlReset.reset()
-    transaction { SqlMeasurementStoreSchema.reset() }
-    SqlMeasurementStore
+    store.reset()
+    store
   }
+}
+
+@RunWith(classOf[JUnitRunner])
+class SqlMeasTest extends MeasurementStoreTest with SqlMeasStoreTestFixture {
+
   lazy val cm = connect()
 }
 
 @RunWith(classOf[JUnitRunner])
-class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTestBase {
+class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTestBase with SqlMeasStoreTestFixture {
 
-  def connect() = {
-    import org.totalgrid.reef.persistence.squeryl._
-    val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
-    val connection = DbConnector.connect(conn_info)
-    PostgresqlReset.reset()
-    val store = SqlMeasurementStore
-    store.reset
-    store
-  }
   lazy val cm = connect()
   def fname = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg").dbType + ".plt"
 }

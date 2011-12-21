@@ -62,6 +62,8 @@ object ServiceFactory {
         val mgr = new LifecycleManager
         val measStore = modules.getMeasStore()
 
+        measStore.connect()
+
         val client = connection.login(authToken).getRpcInterface(classOf[AllScadaService])
         val heartbeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg, exe)
         val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, metricsHolder, authToken)

@@ -41,6 +41,11 @@ trait MeasurementStore extends Historian with RTDatabase with MeasSink {
   val supportsOutOfOrderInsertion = false
 
   /**
+   * blocks until connected to the measurement store server, throw an exception if cant connect
+   */
+  def connect()
+
+  /**
    *   tell the measurement store that it can (if it chooses) move measurements before end
    * to a slower secondary storage
    * @return whether archiving is supported
