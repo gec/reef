@@ -390,7 +390,7 @@ object EntityQuery extends Logging {
   }
 
   // Find list of Entities matching type/name, no relationships
-  def nameTypeQuery(name: Option[String], types: Option[List[String]]): List[Entity] = {
+  /*def nameTypeQuery(name: Option[String], types: Option[List[String]]): List[Entity] = {
     import SquerylModel._
 
     from(entities)(t =>
@@ -398,7 +398,7 @@ object EntityQuery extends Logging {
         name.map(t.name === _),
         types.map(t.id in entityIdsFromTypes(_))).flatten)
         select (t)).distinct.toList
-  }
+  }*/
 
   def entityIdsFromTypes(types: List[String]) = {
     from(entityTypes)(typ =>
@@ -613,7 +613,7 @@ object EntityQuery extends Logging {
     derivedEdge
   }
 
-  def findOrCreateEntity(name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
+  /*def findOrCreateEntity(name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
     val list = nameTypeQuery(Some(name), None)
     if (list.size > 1) throw new Exception("more than one entity matched: " + name)
     if (list.size == 1) {
@@ -628,7 +628,7 @@ object EntityQuery extends Logging {
       logger.debug("creating entity: name: " + name + ", types: " + entityTypes)
       addEntity(name, entityTypes, uuid)
     }
-  }
+  }*/
 
   def findEntitiesByName(names: List[String]) = {
     from(entities)(ent => where(ent.name in names) select (ent))

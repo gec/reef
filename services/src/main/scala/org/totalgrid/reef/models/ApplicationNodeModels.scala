@@ -31,15 +31,6 @@ case class ApplicationCapability(
   val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 }
 
-object ApplicationInstance {
-  def newInstance(instanceName: String, userName: String, location: String, network: String) = {
-    val ent = EntityQuery.findOrCreateEntity(instanceName, "Application" :: Nil, None)
-    val a = new ApplicationInstance(ent.id, instanceName, userName, location, network)
-    a.entity.value = ent
-    a
-  }
-}
-
 case class ApplicationInstance(
     _entityId: UUID,
     val instanceName: String,

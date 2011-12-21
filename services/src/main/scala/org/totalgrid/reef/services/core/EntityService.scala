@@ -60,6 +60,13 @@ class EntityServiceModel
 
   val table = ApplicationSchema.entities
 
+  def findOrCreate(context: RequestContext, name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
+    findRecord(context, req) match {
+      case None => createEntity(context, name, entityTypes, uuid)
+      case Some(existing) => updateEntity(context, name, entityTypes, existing)
+    }
+  }
+
   def findRecord(context: RequestContext, req: EntityProto): Option[Entity] = {
     EntityQuery.findEntity(req)
   }
@@ -85,13 +92,19 @@ class EntityServiceModel
     val name = req.getName
     val uuid = req.uuid.map(v => UUID.fromString(v.getValue))
 
+    createEntity(context, name, types, uuid)
+  }
+
+  private def createEntity(context: RequestContext, name: String, types: List[String], uuid: Option[UUID]): Entity = {
+    import ApplicationSchema.{ entityTypes, entities }
+
     val entityModel = new Entity(name)
     uuid.foreach { id =>
-      // if we are given a UUID it probably means we are importing uuids from another system.
-      // we check that the uuids are unique not because we don't believe in uuids working in
-      // theory, we just want to make sure to catch errors where the user code is giving us
-      // the same uuid everytime
-      // TODO: checks unnecessary?
+    // if we are given a UUID it probably means we are importing uuids from another system.
+    // we check that the uuids are unique not because we don't believe in uuids working in
+    // theory, we just want to make sure to catch errors where the user code is giving us
+    // the same uuid everytime
+    // TODO: checks unnecessary?
       val existing = from(entities)(e => where(e.id === id) select (e)).toList
       if (!existing.isEmpty) throw new BadRequestException("UUID already in system with name: " + existing.head.name)
       entityModel.id = id
@@ -102,10 +115,26 @@ class EntityServiceModel
     ent
   }
 
+
   override def updateFromProto(context: RequestContext, proto: EntityProto, existing: Entity): (Entity, Boolean) = {
     val types = proto.getTypesList.toList
 
-    if (proto.getName != existing.name) throw new BadRequestException("UUID already in system with name: " + existing.name)
+    updateEntity(context, proto.getName, types, existing)
+
+    /*if (proto.getName != existing.name) throw new BadRequestException("UUID already in system with name: " + existing.name)
+
+    val additionalTypes = types.diff(existing.types.value)
+
+    if (!additionalTypes.isEmpty) {
+      val ent = EntityQuery.addTypesToEntity(existing, additionalTypes)
+      (ent, true)
+    } else {
+      (existing, false)
+    }*/
+  }
+
+  private def updateEntity(context: RequestContext, name: String, types: List[String], existing: Entity): (Entity, Boolean) = {
+    if (name != existing.name) throw new BadRequestException("UUID already in system with name: " + existing.name)
 
     val additionalTypes = types.diff(existing.types.value)
 

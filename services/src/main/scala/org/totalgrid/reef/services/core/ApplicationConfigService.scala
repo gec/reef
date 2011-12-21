@@ -46,6 +46,15 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     with EventedServiceModel[ApplicationConfig, ApplicationInstance]
     with ApplicationConfigConversion {
 
+  val entityModel = new EntityServiceModel
+
+  private def createModelEntry(context: RequestContext, proto: ApplicationConfig, userName: String): ApplicationInstance = {
+    val ent = entityModel.findOrCreate(proto.getInstanceName, "Application" :: Nil, None) //EntityQuery.findOrCreateEntity(proto.getInstanceName, "Application" :: Nil, None)
+    val a = new ApplicationInstance(ent.id, proto.getInstanceName, userName, proto.getLocation, proto.getNetwork)
+    a.entity.value = ent
+    a
+  }
+
   override def createFromProto(context: RequestContext, req: ApplicationConfig): ApplicationInstance = {
     val sql = create(context, createModelEntry(req, context.getHeaders.userName.get))
 
@@ -110,14 +119,6 @@ trait ApplicationConfigConversion
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
     entry.location != existing.location || entry.network != existing.network
-  }
-
-  def createModelEntry(proto: ApplicationConfig, userName: String): ApplicationInstance = {
-    ApplicationInstance.newInstance(
-      proto.getInstanceName,
-      userName,
-      proto.getLocation,
-      proto.getNetwork)
   }
 
   def convertToProto(entry: ApplicationInstance): ApplicationConfig = {
