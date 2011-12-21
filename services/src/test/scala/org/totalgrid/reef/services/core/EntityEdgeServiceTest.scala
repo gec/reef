@@ -57,8 +57,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put single") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
 
     val edge = buildEdge("Reg", "Sub", "owns")
 
@@ -70,8 +70,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put with missing properties") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
 
     {
       val edge = EntityEdgeProto.newBuilder()
@@ -106,8 +106,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put same entity") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
 
     val edge = buildEdge("Reg", "Reg", "owns")
 
@@ -117,8 +117,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put to nonexistent entity") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
 
     val edge = buildEdge("Reg", "Wrong", "owns")
 
@@ -128,8 +128,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put to nonexistent entity partial match possible") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
 
     val edge = buildEdge("Reg", "Sub", "owns")
 
@@ -148,8 +148,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put duplicate") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
 
     val edge = buildEdge("Reg", "Sub", "owns")
 
@@ -165,8 +165,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put second with different relationship") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
 
     val edge = buildEdge("Reg", "Sub", "owns")
 
@@ -186,9 +186,9 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Put multi-level") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
-    val dev = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val dev = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
 
     val result = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
@@ -224,8 +224,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     val result = service.get(buildEdge("Reg", "Sub", "owns")).expectOne()
@@ -233,8 +233,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get partial: parent") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     val result = service.get(buildEdge(Some("Reg"), None, None)).expectOne()
@@ -242,8 +242,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get partial: child") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     val result = service.get(buildEdge(None, Some("Sub"), None)).expectOne()
@@ -251,8 +251,8 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get partial: relationship") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     val result = service.get(buildEdge(None, None, Some("owns"))).expectOne()
@@ -260,9 +260,9 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get multiple") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
-    val dev = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val dev = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
     val top = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
     val bottom = service.put(buildEdge("Sub", "Bkr", "owns")).expectOne(Status.CREATED)
 
@@ -276,30 +276,30 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get wrong parent") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     service.get(buildEdge("Wrong", "Sub", "owns")).expectNone()
   }
   test("Get wrong child") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     service.get(buildEdge("Reg", "Wrong", "owns")).expectNone()
   }
   test("Get wrong relationship") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     service.get(buildEdge("Reg", "Sub", "Wrong")).expectNone()
   }
 
   test("Delete") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     val upload = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
 
     edges.where(t => true === true).toList.size should equal(1)
@@ -311,9 +311,9 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Delete Multi") {
-    val reg = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val sub = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
-    val dev = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val dev = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
     val top = service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
     val bottom = service.put(buildEdge("Sub", "Bkr", "owns")).expectOne(Status.CREATED)
 

@@ -132,7 +132,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
 
     // when searching we go through all the entities in the proto constucting the intersection of the used config files
-    val entities = EntityQuery.findEntities { proto.getEntitiesList.toList }
+    val entities = proto.getEntitiesList.toList.map { EntityQuery.findEntity(_) }.flatten
     val configEntityIds = entities.map { e => EntityQuery.getChildrenOfType(e.id, "uses", "ConfigurationFile").map { _.id } }.flatten
     // if we have specified entities only return matching config files they own (which will be zero if configEntityIds.size == 0)
     val query = if (entities.isEmpty) Nil else Some(sql.entityId in configEntityIds) :: Nil

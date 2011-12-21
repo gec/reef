@@ -40,7 +40,7 @@ import java.util.UUID
 class EntityAttributesServiceTest extends DatabaseUsingTestBase {
 
   def seedEntity(name: String, typ: String) = {
-    ReefUUID.newBuilder.setValue(EntityQuery.addEntity(name, typ).id.toString).build
+    ReefUUID.newBuilder.setValue(EntityTestSeed.addEntity(name, typ).id.toString).build
   }
 
   protected val service = SyncService(new EntityAttributesService)
@@ -86,8 +86,8 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def simpleGetScenario = {
-    val id = EntityQuery.addEntity("ent01", "entType1").id
-    EntityQuery.addEntity("ent02", "entType2")
+    val id = EntityTestSeed.addEntity("ent01", "entType1").id
+    EntityTestSeed.addEntity("ent02", "entType2")
 
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
     ReefUUID.newBuilder.setValue(id.toString).build
@@ -188,8 +188,8 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Get multiple") {
-    val entId1 = EntityQuery.addEntity("ent01", "entType1").id
-    val entId2 = EntityQuery.addEntity("ent02", "entType2").id
+    val entId1 = EntityTestSeed.addEntity("ent01", "entType1").id
+    val entId2 = EntityTestSeed.addEntity("ent02", "entType2").id
 
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
@@ -265,7 +265,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
   }
 
   def deleteScenario = {
-    val entId1 = EntityQuery.addEntity("ent01", "entType1").id
+    val entId1 = EntityTestSeed.addEntity("ent01", "entType1").id
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr01", Some("hello"), None, None, None, None))
     ApplicationSchema.entityAttributes.insert(new EntityAttribute(entId1, "attr02", Some("again"), None, None, None, None))
     ReefUUID.newBuilder.setValue(entId1.toString).build

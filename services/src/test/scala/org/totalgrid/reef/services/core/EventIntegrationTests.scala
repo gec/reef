@@ -61,21 +61,21 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
       seed("SubA")
       seed("SubB")
 
-      EntityQuery.addEntity("Orphan", "Orphan")
+      EntityTestSeed.addEntity("Orphan", "Orphan")
     }
     def seed(name: String) {
-      val subId = EntityQuery.addEntity(name, "Substation" :: "EquipmentGroup" :: Nil)
+      val subId = EntityTestSeed.addEntity(name, "Substation" :: "EquipmentGroup" :: Nil)
       seedDevice(subId, name + "-DeviceA", "Line")
       seedDevice(subId, name + "-DeviceB", "Line")
     }
     def seedDevice(subId: Entity, name: String, typ: String) {
-      val devId = EntityQuery.addEntity(name, typ :: "Equipment" :: Nil)
+      val devId = EntityTestSeed.addEntity(name, typ :: "Equipment" :: Nil)
       val toSubId = EntityQuery.addEdge(subId, devId, "owns")
       seedPoint(subId, devId, name + "-PointA", "owns")
       seedPoint(subId, devId, name + "-PointB", "owns")
     }
     def seedPoint(subId: Entity, devId: Entity, name: String, rel: String) {
-      val pointId = EntityQuery.addEntity(name, "Point")
+      val pointId = EntityTestSeed.addEntity(name, "Point")
       val toDevId = EntityQuery.addEdge(devId, pointId, rel)
     }
 

@@ -338,7 +338,7 @@ object EntityQuery extends Logging {
    * go through the request recursivley and check that every type is a valid
    * and expected type
    */
-  def checkAllTypesInSystem(proto: EntityProto) {
+  /*def checkAllTypesInSystem(proto: EntityProto) {
     // recusivley collect all types asked for in the request
     def getTypes(e: EntityProto): List[String] = {
       e.getTypesList.toList :::
@@ -354,7 +354,7 @@ object EntityQuery extends Logging {
       val missing = requestTypes.diff(inSystemTypes)
       if (!missing.isEmpty) throw new BadRequestException("Retreived no results and requested unknown entity types: " + missing)
     }
-  }
+  }*/
 
   /**
    * Return all ids of a certain entity type retrieved by an entity query.
@@ -425,29 +425,20 @@ object EntityQuery extends Logging {
     }
   }
 
-  def findEntities(protos: List[EntityProto]): List[Entity] = {
+  /*def findEntities(protos: List[EntityProto]): List[Entity] = {
     protos.map { findEntity(_) }.flatten
-  }
+  }*/
 
-  // Main entry point for requests in the form of protos
-  def fullQuery(proto: EntityProto): List[EntityProto] = {
-    if (proto.hasUuid && proto.getUuid.getValue == "*") {
-      allQuery.map(entityToProto(_).build).toList
-    } else {
-      protoTreeQuery(proto).map(_.toProto)
-    }
-  }
-
-  def fullQueryAsModels(proto: EntityProto): List[Entity] = {
+  /*def fullQueryAsModels(proto: EntityProto): List[Entity] = {
     if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allQuery
     } else {
       protoTreeQuery(proto).map { _.flatEntites }.flatten
     }
-  }
+  }*/
 
   // Attaches ResultNode to Entity and returns the list of Entitys
-  def fullModelQuery(proto: EntityProto): List[Entity] = {
+  /*def fullModelQuery(proto: EntityProto): List[Entity] = {
     if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allQuery
     } else {
@@ -456,7 +447,7 @@ object EntityQuery extends Logging {
         resultNode.ent
       }
     }
-  }
+  }*/
 
   def getChildren(rootId: UUID, relation: String) = {
     from(entities)(ent =>

@@ -90,10 +90,10 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   test("Complicated Delete") {
 
-    val regId = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val subId = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val regId = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     EntityQuery.addEdge(regId, subId, "owns")
-    val devId = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val devId = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
     EntityQuery.addEdge(subId, devId, "owns")
 
     val edges = ApplicationSchema.edges
@@ -118,10 +118,10 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   test("Get multi level") {
 
-    val regId = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val subId = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val regId = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     EntityQuery.addEdge(regId, subId, "owns")
-    val devId = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val devId = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
     EntityQuery.addEdge(subId, devId, "owns")
 
     val req = Entity.newBuilder
@@ -143,10 +143,10 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   test("Get single level") {
 
-    val regId = EntityQuery.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
-    val subId = EntityQuery.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val regId = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     EntityQuery.addEdge(regId, subId, "owns")
-    val devId = EntityQuery.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val devId = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
     EntityQuery.addEdge(subId, devId, "owns")
 
     val req = Entity.newBuilder
@@ -160,10 +160,10 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   test("Get sorted") {
 
-    val regId = EntityQuery.addEntity("B", "Region" :: "EquipmentGroup" :: Nil)
-    val subId = EntityQuery.addEntity("a", "Substation" :: "EquipmentGroup" :: Nil)
+    val regId = EntityTestSeed.addEntity("B", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityTestSeed.addEntity("a", "Substation" :: "EquipmentGroup" :: Nil)
     EntityQuery.addEdge(regId, subId, "owns")
-    val devId = EntityQuery.addEntity("c", "Breaker" :: "Equipment" :: Nil)
+    val devId = EntityTestSeed.addEntity("c", "Breaker" :: "Equipment" :: Nil)
     EntityQuery.addEdge(subId, devId, "owns")
 
     val req = Entity.newBuilder.setUuid(ReefUUID.newBuilder().setValue("*"))
@@ -177,10 +177,10 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   test("Get result limit: all") {
 
-    val regId = EntityQuery.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
-    val subId = EntityQuery.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
+    val regId = EntityTestSeed.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityTestSeed.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
     EntityQuery.addEdge(regId, subId, "owns")
-    val devId = EntityQuery.addEntity("c", "Breaker" :: "Equipment" :: Nil)
+    val devId = EntityTestSeed.addEntity("c", "Breaker" :: "Equipment" :: Nil)
     EntityQuery.addEdge(subId, devId, "owns")
 
     val req = Entity.newBuilder.setUuid(ReefUUID.newBuilder().setValue("*"))
@@ -194,10 +194,10 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   test("Get result limit: types") {
 
-    val regId = EntityQuery.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
-    val subId = EntityQuery.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
+    val regId = EntityTestSeed.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityTestSeed.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
     EntityQuery.addEdge(regId, subId, "owns")
-    val devId = EntityQuery.addEntity("c", "Breaker" :: "Equipment" :: Nil)
+    val devId = EntityTestSeed.addEntity("c", "Breaker" :: "Equipment" :: Nil)
     EntityQuery.addEdge(subId, devId, "owns")
 
     val req = Entity.newBuilder.addTypes("EquipmentGroup")
@@ -211,10 +211,10 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   test("Get result limit: tree") {
 
-    val regId = EntityQuery.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
-    val subId = EntityQuery.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
+    val regId = EntityTestSeed.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
+    val subId = EntityTestSeed.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
     EntityQuery.addEdge(regId, subId, "owns")
-    val devId = EntityQuery.addEntity("c", "Breaker" :: "Equipment" :: Nil)
+    val devId = EntityTestSeed.addEntity("c", "Breaker" :: "Equipment" :: Nil)
     EntityQuery.addEdge(subId, devId, "owns")
 
     val req = Entity.newBuilder

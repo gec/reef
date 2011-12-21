@@ -65,8 +65,17 @@ class EntityServiceModel
   }
 
   def findRecords(context: RequestContext, req: EntityProto): List[Entity] = {
-    // TODO: Make this non-superficial
-    EntityQuery.fullModelQuery(req).take(context.getHeaders.getResultLimit().getOrElse(100))
+    val results = if (req.hasUuid && req.getUuid.getValue == "*") {
+      EntityQuery.allQuery
+    } else {
+      EntityQuery.protoTreeQuery(req).map { resultNode =>
+        resultNode.ent.resultNode = Some(resultNode)
+        resultNode.ent
+      }
+    }
+
+    // TODO: Make limits non-superficial
+    results.take(context.getHeaders.getResultLimit().getOrElse(100))
   }
 
   def createFromProto(context: RequestContext, req: EntityProto): Entity = {
