@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import MeasSink.Meas
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.TreeMap

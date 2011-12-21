@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import MeasSink._
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 
 class MockMeasurementStore extends MeasurementStore {
 
