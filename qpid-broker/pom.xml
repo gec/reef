@@ -9,7 +9,7 @@
         <relativePath>../scala-base</relativePath>
     </parent>
 
-    <artifactId>reef-broker</artifactId>
+    <artifactId>reef-qpid-broker</artifactId>
     <packaging>bundle</packaging>
 
 
@@ -30,9 +30,9 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Broker Adapters</Bundle-Name>
+                        <Bundle-Name>Reef Qpid Broker Binding</Bundle-Name>
                         <Export-Package>
-                            org.totalgrid.reef.broker
+                            org.totalgrid.reef.broker.qpid.*
                         </Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
@@ -46,32 +46,57 @@
                     <header>../APACHE_FILE_HEADER</header>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <dependencies>
 		<dependency>
-            <groupId>net.agile-automata.nio4s</groupId>
-            <artifactId>commons_2.9.0-1</artifactId>
-            <version>${executor4s.version}</version>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-broker</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-broker</artifactId>
+            <version>${reef.version}</version>
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-client-common</artifactId>
-            <version>${reef.version}</version>
-            <scope>compile</scope>
+            <groupId>backport-util-concurrent</groupId>
+            <artifactId>backport-util-concurrent</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-core</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-filter-ssl</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jms_1.1_spec</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.qpid</groupId>
+            <artifactId>qpid-client</artifactId>
+            <version>0.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.qpid</groupId>
+            <artifactId>qpid-common</artifactId>
+            <version>0.10</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

@@ -83,9 +83,19 @@
             <artifactId>reef-broker</artifactId>
             <version>${reef.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-client-common</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-qpid-broker</artifactId>
             <version>${reef.version}</version>
         </dependency>
         <dependency>

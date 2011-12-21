@@ -70,6 +70,13 @@
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-broker</artifactId>
+            <version>${reef.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
