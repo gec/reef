@@ -37,7 +37,7 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
 
   import ApplicationSchema._
 
-  val service = new EntityEdgeModelService(new EntityEdgeServiceModel)
+  val service = new EntityEdgeService(new EntityEdgeServiceModel)
 
   def buildEdge(parent: String, child: String, rel: String) = {
     EntityEdgeProto.newBuilder()

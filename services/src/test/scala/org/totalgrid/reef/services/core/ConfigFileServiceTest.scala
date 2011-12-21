@@ -86,7 +86,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test EntityOwnerShip") {
-    val es = new EntityService()
+    val es = new EntityService(new EntityServiceModel)
 
     val s = new ConfigFileService(new ConfigFileServiceModel)
 
@@ -103,7 +103,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test add config file without name") {
-    val es = new EntityService()
+    val es = new EntityService(new EntityServiceModel)
 
     val s = new ConfigFileService(new ConfigFileServiceModel)
 
@@ -119,7 +119,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Shared Entity Ownership") {
-    val es = new EntityService()
+    val es = new EntityService(new EntityServiceModel)
 
     val s = new ConfigFileService(new ConfigFileServiceModel)
 

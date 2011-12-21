@@ -29,7 +29,7 @@ import SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, EntityEdge => EntityEdgeProto }
 
-class EntityEdgeModelService(protected val model: EntityEdgeServiceModel)
+class EntityEdgeService(protected val model: EntityEdgeServiceModel)
     extends SyncModeledServiceBase[EntityEdgeProto, EntityEdge, EntityEdgeServiceModel]
     with DefaultSyncBehaviors {
 

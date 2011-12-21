@@ -33,8 +33,7 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 @RunWith(classOf[JUnitRunner])
 class EntityServiceTest extends DatabaseUsingTestBase {
 
-  //val service = new EntityService
-  val service = new EntityModelService(new EntityServiceModel)
+  val service = new EntityService(new EntityServiceModel)
 
   test("Put Entity with predetermined UUID") {
 
