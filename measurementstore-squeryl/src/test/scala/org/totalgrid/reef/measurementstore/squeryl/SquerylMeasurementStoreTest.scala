@@ -21,18 +21,16 @@ package org.totalgrid.reef.measurementstore.squeryl
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.measurementstore.MeasurementStoreTest
-import org.totalgrid.reef.measurementstore.RTDatabaseReadPerformanceTestBase
-
 import org.totalgrid.reef.persistence.squeryl._
 import postgresql.PostgresqlReset
+import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MixedMeasurementStore, MeasurementStoreTest, RTDatabaseReadPerformanceTestBase }
 
 trait SqlMeasStoreTestFixture {
-  def connect() = {
-    val store = new SqlMeasurementStore {
+  def connect(includeHistory: Boolean) = {
+    val store = new SqlMeasurementStore({
       val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
       DbConnector.connect(conn_info)
-    }
+    }, includeHistory)
     store.connect()
     PostgresqlReset.reset()
     store.reset()
@@ -43,12 +41,18 @@ trait SqlMeasStoreTestFixture {
 @RunWith(classOf[JUnitRunner])
 class SqlMeasTest extends MeasurementStoreTest with SqlMeasStoreTestFixture {
 
-  lazy val cm = connect()
+  lazy val cm = connect(true)
 }
 
 @RunWith(classOf[JUnitRunner])
 class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTestBase with SqlMeasStoreTestFixture {
 
-  lazy val cm = connect()
+  lazy val cm = connect(true)
   def fname = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg").dbType + ".plt"
+}
+
+@RunWith(classOf[JUnitRunner])
+class SqlMixedMeasTest extends MeasurementStoreTest with SqlMeasStoreTestFixture {
+
+  lazy val cm = new MixedMeasurementStore(new InMemoryMeasurementStore(false), connect(false))
 }
