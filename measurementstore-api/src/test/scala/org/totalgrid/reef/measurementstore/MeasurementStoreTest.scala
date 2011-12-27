@@ -34,6 +34,13 @@ class InMemoryMeasurementStoreTest extends MeasurementStoreTest {
   val cm = new InMemoryMeasurementStore()
 }
 
+@RunWith(classOf[JUnitRunner])
+class MixedMemoryMeasStoreTest extends MeasurementStoreTest {
+  val currentMeas = new InMemoryMeasurementStore(true)
+  val historian = new InMemoryMeasurementStore(false)
+  val cm = new MixedMeasurementStore(historian, currentMeas)
+}
+
 abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
   val cm: MeasurementStore
