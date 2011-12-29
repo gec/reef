@@ -38,6 +38,8 @@ class Connector extends DbConnectorBase with Logging {
     pool.setUrl(url)
     pool.setUsername(dbInfo.user)
     pool.setPassword(dbInfo.password)
+    // TODO: fix the pooling in meas proc with squeryl 0.9.6
+    pool.setMaxActive(50)
 
     logger.info("Connecting to Database: " + url)
 
