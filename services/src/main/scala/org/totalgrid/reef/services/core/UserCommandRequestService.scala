@@ -73,23 +73,30 @@ class UserCommandRequestService(
 
   private def requestCommand(client: Client, request: UserCommandRequest, address: Routable, contextSource: RequestContextSource, callback: Response[UserCommandRequest] => Unit) {
     client.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
-      contextSource.transaction { context =>
-        model.findRecord(context, request) match {
-          case Some(record) =>
-            val (updatedStatus, errorMessage) = if (response.success) {
-              val commandResponse = response.list.head
-              import org.totalgrid.reef.client.service.proto.OptionalProtos._
-              (commandResponse.getStatus, commandResponse.errorMessage)
-            } else {
-              logger.warn { "Got non successful response to command request: " + request + " dest: " + address + " response: " + response }
-              (CommandStatus.UNDEFINED, Some(response.error))
-            }
-            model.update(context, record.copy(status = updatedStatus.getNumber, errorMessage = errorMessage), record)
-          case None =>
-            logger.warn { "Couldn't find command request record to update" }
+      try {
+        contextSource.transaction { context =>
+          model.findRecord(context, request) match {
+            case Some(record) =>
+              val (updatedStatus, errorMessage) = if (response.success) {
+                val commandResponse = response.list.head
+                import org.totalgrid.reef.client.service.proto.OptionalProtos._
+                (commandResponse.getStatus, commandResponse.errorMessage)
+              } else {
+                val msg = "Got non successful response to command request: " + request + " dest: " + address + " status: " + response.status + " error: " + response.error
+                logger.warn { msg }
+                (CommandStatus.UNDEFINED, Some(msg))
+              }
+              model.update(context, record.copy(status = updatedStatus.getNumber, errorMessage = errorMessage), record)
+            case None =>
+              logger.warn { "Couldn't find command request record to update" }
+          }
         }
+      } catch {
+        case ex: Exception =>
+          logger.error("Error handling command response callback: " + ex.getMessage, ex)
+      } finally {
+        callback(response)
       }
-      callback(response)
     }
   }
 }
