@@ -20,7 +20,55 @@
 
 -->
 <settings>
+    <!-- /home/teamcity/.BuildServer/config/reef-metrics/plugin-settings.xml -->
 	<custom-graphs>
+        <graph title="Number of Objects in the system">
+			<valueType key="allPointsvalueaverage" title="Points" buildTypeId="bt45"/>
+			<valueType key="allCommandsvalueaverage" title="Commands" buildTypeId="bt45"/>
+			<valueType key="allEntitiesvalueaverage" title="Entities" buildTypeId="bt45"/>
+            <valueType key="allEndpointsvalueaverage" title="Endpoints" buildTypeId="bt45"/>
+            <valueType key="allApplicationsvalueaverage" title="Applications" buildTypeId="bt45"/>
+		</graph>
+        <graph title="Get allXxxxx request times">
+			<valueType key="requesttimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="requesttimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="requesttimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+        <graph title="Measurements per Point">
+			<valueType key="totalMeasvaluemin" title="min" buildTypeId="bt45"/>
+			<valueType key="totalMeasvaluemax" title="max" buildTypeId="bt45"/>
+			<valueType key="totalMeasvalueaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+        <graph title="Oldest measurement per Point (seconds)">
+			<valueType key="oldestMeasvaluemin" title="min" buildTypeId="bt45"/>
+			<valueType key="oldestMeasvaluemax" title="max" buildTypeId="bt45"/>
+			<valueType key="oldestMeasvalueaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+        <graph title="Retrieving oldest 10 measurements">
+			<valueType key="oldest10Meastimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="oldest10Meastimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="oldest10Meastimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+        <graph title="Retrieving oldest 1000 measurements">
+			<valueType key="oldest1000Meastimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="oldest1000Meastimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="oldest1000Meastimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+        <graph title="Retrieving newest 10 measurements">
+			<valueType key="newest10Meastimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="newest10Meastimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="newest10Meastimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+        <graph title="Retrieving newest 1000 measurements">
+			<valueType key="newest1000Meastimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="newest1000Meastimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="newest1000Meastimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
+        <graph title="Retrieving all measurements (up to 10000 limit)">
+			<valueType key="allMeastimemin" title="min" buildTypeId="bt45"/>
+			<valueType key="allMeastimemax" title="max" buildTypeId="bt45"/>
+			<valueType key="allMeastimeaverage" title="average" buildTypeId="bt45"/>
+		</graph>
 		<graph title="Publishing 10 measurements through proxy (milliseconds)">
 			<valueType key="false10publishingTimemin" title="min" buildTypeId="bt45"/>
 			<valueType key="false10publishingTimemax" title="max" buildTypeId="bt45"/>
