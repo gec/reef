@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.benchmarks
 
-class Histogram(input: List[Any], val parameters: List[Any], val fieldName: String) extends BenchmarkReading {
+class Histogram(inputs: List[Any], val parameters: List[Any], val fieldName: String) extends BenchmarkReading {
 
   def csvName = parameters.mkString(",") + "," + fieldName
 
@@ -27,22 +27,19 @@ class Histogram(input: List[Any], val parameters: List[Any], val fieldName: Stri
   def testParameterNames = List("FieldName")
   def testParameters = List(csvName)
 
-  private val longValues: List[Long] = input.map { getLong(_) }
+  private val longValues: List[Long] = inputs.map { Histogram.getLong(_) }.flatten
   lazy val min = longValues.min
   lazy val max = longValues.max
   lazy val sum = longValues.sum
   lazy val count = longValues.size
   lazy val average = if (count > 0) sum / count else 0
 
-  private def getLong(obj: Any): Long = obj match {
-    case n: Number => n.longValue
-    case b: Boolean => if (b) 1L else 0L
-    case s: String if s.length != 0 && s != "null" => s.toLong
-    case _ => throw new Exception
-  }
 }
 
 object Histogram {
+  /**
+   * get histograms for all output parameters that are convertible to longs, ignores string parameters
+   */
   def getHistograms(results: List[BenchmarkReading]): List[Histogram] = {
     results.groupBy(_.testParameters).map {
       case (parameters, resultsWithSameParameters) =>
@@ -51,8 +48,16 @@ object Histogram {
         val fieldNames = resultsWithSameParameters.head.testOutputNames
         readings.map {
           case (rs, index) =>
-            new Histogram(rs, parameters, fieldNames(index))
-        }.toList
+            if (getLong(rs.apply(0)).isDefined) Some(new Histogram(rs, parameters, fieldNames(index)))
+            else None
+        }.flatten.toList
     }.toList.flatten
+
+  }
+
+  def getLong(obj: Any): Option[Long] = obj match {
+    case n: Number => Some(n.longValue)
+    case b: Boolean => Some(if (b) 1L else 0L)
+    case _ => None
   }
 }

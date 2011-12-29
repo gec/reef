@@ -34,13 +34,13 @@ class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int
     def csvName = "measurementPublishing"
 
     def testParameterNames = "directPublishing" :: "numberOfMeasurements" :: Nil
-    def testOutputNames = "publishingTime" :: "firstMessageTime" :: "lastMessageTime" :: Nil
+    def testOutputNames = "endpointName" :: "publishingTime" :: "firstMessageTime" :: "lastMessageTime" :: Nil
 
     def testParameters: List[Any] = {
       direct :: measurements :: Nil
     }
     def testOutputs: List[Any] = {
-      publishTime :: firstMessageTime :: roundtripTime :: Nil
+      endpointName :: publishTime :: firstMessageTime :: roundtripTime :: Nil
     }
   }
 
