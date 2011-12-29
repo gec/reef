@@ -22,10 +22,11 @@ import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.benchmarks.measurements.MeasurementPublishingBenchmark
+import org.totalgrid.reef.benchmarks.measurements._
 import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
 import org.totalgrid.reef.client.service.list.ReefServices
+import org.totalgrid.reef.benchmarks.system.SystemStateBenchmark
 
 object AllBenchmarksEntryPoint {
   def main(args: Array[String]) {
@@ -42,20 +43,27 @@ object AllBenchmarksEntryPoint {
       val connection = factory.connect()
 
       val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
-      client.getHeaders.setTimeout(20000)
+      client.setHeaders(client.getHeaders.setTimeout(20000))
+      client.setHeaders(client.getHeaders.setResultLimit(10000))
       val services = client.getRpcInterface(classOf[AllScadaService])
 
       val stream = Some(Console.out)
 
-      val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark").map { _.getName }
+      val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark")
 
       if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
 
+      val endpointNames = endpoints.map { _.getName }
+      val points = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten
+
       val tests = List(
-        new MeasurementPublishingBenchmark(endpoints, 1000, 5, false),
-        new MeasurementPublishingBenchmark(endpoints, 10, 5, false),
-        new MeasurementPublishingBenchmark(endpoints, 10, 5, true),
-        new EndpointManagementBenchmark(endpoints, 5))
+        new SystemStateBenchmark(5),
+        new MeasurementPublishingBenchmark(endpointNames, 1000, 5, false),
+        new MeasurementPublishingBenchmark(endpointNames, 10, 5, false),
+        new MeasurementPublishingBenchmark(endpointNames, 10, 5, true),
+        new MeasurementStatBenchmark(points),
+        new MeasurementHistoryBenchmark(points, List(1, 10, 100, 1000), true),
+        new EndpointManagementBenchmark(endpointNames, 5))
 
       val allResults = tests.map(_.runTest(services, stream)).flatten
       outputResults(allResults)
