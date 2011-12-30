@@ -40,7 +40,7 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
     val config = getConnectionProto(true, Some("routing"))
     val client = Mockito.mock(classOf[FrontEndProviderServices], new MockitoStubbedOnly)
     val rawClient = Mockito.mock(classOf[Client])
-    val cancelable = new MockCancelable
+    val cancelable = new MockSubscription
     val commandBinding = new FixedPromise(Success(cancelable))
     Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config.getEndpoint.getUuid), Matchers.any(classOf[CommandRequestHandler]))
 

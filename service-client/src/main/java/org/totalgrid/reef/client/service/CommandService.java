@@ -20,6 +20,7 @@ package org.totalgrid.reef.client.service;
 
 import java.util.List;
 
+import org.totalgrid.reef.client.SubscriptionBinding;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.proto.Commands.CommandLock;
 import org.totalgrid.reef.client.service.proto.Commands.CommandResult;
@@ -27,7 +28,6 @@ import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest;
 import org.totalgrid.reef.client.service.proto.Model.Command;
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
 import org.totalgrid.reef.client.service.proto.Model.ReefID;
-import net.agileautomata.executor4s.Cancelable;
 import org.totalgrid.reef.client.service.command.CommandRequestHandler;
 
 /**
@@ -341,8 +341,8 @@ public interface CommandService
      * @param endpointUuid uuid of the endpoint to handle all commands
      * @param handler an application controled object that
      * @return a cancelable that should be canceled when the application is done being a command handler for
-     *         the endpoint
+     *         the endpoint. If you are using a SubscriptionCreationListener you can ignore this binding
      */
-    Cancelable bindCommandHandler( ReefUUID endpointUuid, CommandRequestHandler handler ) throws ReefServiceException;
+    SubscriptionBinding bindCommandHandler( ReefUUID endpointUuid, CommandRequestHandler handler ) throws ReefServiceException;
 
 }

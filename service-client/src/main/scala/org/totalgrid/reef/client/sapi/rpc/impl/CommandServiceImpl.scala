@@ -25,6 +25,7 @@ import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
+import org.totalgrid.reef.client.SubscriptionBinding
 
 trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
@@ -158,9 +159,9 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
           case Success(connection) =>
             val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
             val service = new EndpointCommandHandlerImpl(handler)
-            connectionFuture.replicate[Result[Cancelable]](Success(client.bindService(service, client, destination, false)))
+            connectionFuture.replicate[Result[SubscriptionBinding]](Success(client.bindService(service, client, destination, false)))
           case fail: Failure =>
-            connectionFuture.asInstanceOf[Future[Result[Cancelable]]]
+            connectionFuture.asInstanceOf[Future[Result[SubscriptionBinding]]]
         }
       }
     }

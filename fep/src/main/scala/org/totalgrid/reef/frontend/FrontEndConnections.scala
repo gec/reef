@@ -24,8 +24,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 
 import org.totalgrid.reef.app.KeyedMap
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
-import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.client.AddressableDestination
+import org.totalgrid.reef.client.{ SubscriptionBinding, AddressableDestination }
 
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
@@ -38,7 +37,7 @@ import org.totalgrid.reef.client.service.proto.Commands
 // Data structure for handling the life cycle of connections
 class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServices, client: Client) extends KeyedMap[EndpointConnection] {
 
-  case class EndpointComponent(commandAdapter: Cancelable)
+  case class EndpointComponent(commandAdapter: SubscriptionBinding)
 
   var endpointComponents = Map.empty[String, EndpointComponent]
 
