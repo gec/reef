@@ -33,8 +33,6 @@ abstract class Dnp3ProtocolBase[ObjectContainer <: Cancelable] extends Protocol 
 
   import XmlToProtoTranslations._
 
-  final override def requiresChannel = true
-
   // There's some kind of problem with swig directors. This MeasAdapter is
   // getting garbage collected since the C++ world is the only thing holding onto
   // this object. Keep a map of meas adapters around by name to prevent this.

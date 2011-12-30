@@ -44,7 +44,7 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
     val commandBinding = new FixedPromise(Success(cancelable))
     Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config.getEndpoint.getUuid), Matchers.any(classOf[CommandRequestHandler]))
 
-    val mp = new NullProtocol("mock") with RecordingProtocol { override def requiresChannel = true }
+    val mp = new NullProtocol("mock") with RecordingProtocol
 
     val channelName = config.getEndpoint.getChannel.getName
     val endpointName = config.getEndpoint.getName

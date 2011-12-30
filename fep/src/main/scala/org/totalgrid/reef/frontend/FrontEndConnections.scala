@@ -60,17 +60,22 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
 
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     val endpoint = c.getEndpoint
-    val port = c.getEndpoint.getChannel
 
     val endpointName = c.getEndpoint.getName
 
     val batchPublisher = newMeasBatchPublisher(c.getRouting.getServiceRoutingKey)
-    val channelListener = newChannelStatePublisher(port.getUuid, port.getName)
     val endpointListener = newEndpointStatePublisher(c.getId, endpointName)
 
+    val channelName = if (c.getEndpoint.hasChannel) {
+      val port = c.getEndpoint.getChannel
+      val channelListener = newChannelStatePublisher(port.getUuid, port.getName)
+      protocol.addChannel(port, channelListener, client)
+      port.getName
+    } else {
+      ""
+    }
     // add the device, get the command issuer callback
-    if (protocol.requiresChannel) protocol.addChannel(port, channelListener, client)
-    val cmdHandler = protocol.addEndpoint(endpointName, port.getName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener, client)
+    val cmdHandler = protocol.addEndpoint(endpointName, channelName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener, client)
 
     val service = services.bindCommandHandler(c.getEndpoint.getUuid, createCommandRequestHandler(cmdHandler)).await
     endpointComponents += endpointName -> EndpointComponent(service)
@@ -92,7 +97,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
     endpointComponents.get(endpointName).foreach { _.commandAdapter.cancel() }
 
     protocol.removeEndpoint(endpointName)
-    if (protocol.requiresChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
+    if (c.getEndpoint.hasChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
 
     endpointComponents -= endpointName
     logger.info("Removed endpoint: " + endpointName + " on protocol: " + protocol.name)

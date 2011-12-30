@@ -74,8 +74,6 @@ trait Protocol {
    */
   def name: String
 
-  def requiresChannel: Boolean
-
   def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: Publisher[MeasurementBatch],
     endpointPublisher: Publisher[EndpointConnection.State], client: Client): CommandHandler
 
@@ -88,8 +86,6 @@ trait Protocol {
 }
 
 trait ChannelIgnoringProtocol extends Protocol {
-
-  final override def requiresChannel = false
 
   def addChannel(channel: FEP.CommChannel, channelPublisher: Publisher[CommChannel.State], client: Client): Unit = {}
 

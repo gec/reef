@@ -28,8 +28,6 @@ class NullProtocol(protocolName: String = "NullProtocol") extends Protocol {
 
   final override def name = protocolName
 
-  override def requiresChannel = false
-
   override def addEndpoint(endpoint: String,
     channelName: String,
     config: List[Model.ConfigFile],
