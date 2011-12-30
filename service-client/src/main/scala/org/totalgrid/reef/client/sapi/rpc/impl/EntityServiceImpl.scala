@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Model.{ EntityAttributes, Entity, ReefUUID }
 import org.totalgrid.reef.client.service.proto.Utils.Attribute
-import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ EntityAttributesBuilders, EntityRequestBuilders }
+import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ MultiRequestHelper, EntityAttributesBuilders, EntityRequestBuilders }
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import net.agileautomata.executor4s.{ Result, Future }
@@ -107,17 +107,26 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
     }
   }
 
-  def getEntityRelations(parent: ReefUUID, relations: List[EntityRelation]) = {
+  override def getEntityRelations(parent: ReefUUID, relations: List[EntityRelation]) = {
     ops.operation("Couldn't get tree for entity: " + parent + " relations: " + relations.mkString(", ")) { session =>
       val request = EntityRequestBuilders.getRelatedEntities(parent, relations)
       flatEntities(session.get(request).map(_.one))
     }
   }
 
-  def getEntityRelationsFromTypeRoots(parentType: String, relations: List[EntityRelation]) = {
+  override def getEntityRelationsFromTypeRoots(parentType: String, relations: List[EntityRelation]) = {
     ops.operation("Couldn't get tree from type roots: " + parentType + " relations: " + relations.mkString(", ")) { session =>
       val request = EntityRequestBuilders.getRelatedEntities(parentType, relations)
       session.get(request).map(_.many)
+    }
+  }
+
+  override def getEntityRelationsForParents(parents: List[ReefUUID], relations: List[EntityRelation]) = {
+    ops.operation("Couldn't get tree for parents: " + parents.size + " relations: " + relations.mkString(", ")) { session =>
+      val requests = parents.map { parentUuid =>
+        session.get(EntityRequestBuilders.getRelatedEntities(parentUuid, relations)).map(_.one)
+      }
+      MultiRequestHelper.gatherResults(requests)
     }
   }
 
