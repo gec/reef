@@ -122,9 +122,14 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def getEntityRelationsForParents(parents: List[ReefUUID], relations: List[EntityRelation]) = {
-    ops.operation("Couldn't get tree for parents: " + parents.size + " relations: " + relations.mkString(", ")) { session =>
-      val requests = parents.map { parentUuid =>
-        session.get(EntityRequestBuilders.getRelatedEntities(parentUuid, relations)).map(_.one)
+    ops.operation("Couldn't get tree for parents: " + parents.size + " relations: " + relations.mkString(", ")) { _ =>
+
+      // do all of queries in a single batch request (instead of N seperate queries which though should actually
+      // be slightly faster it uses much much more server resources)
+      val requests = batch { batchSession =>
+        parents.map { parentUuid =>
+          batchSession.get(EntityRequestBuilders.getRelatedEntities(parentUuid, relations)).map(_.one)
+        }
       }
       MultiRequestHelper.gatherResults(requests)
     }

@@ -43,10 +43,19 @@ object MultiRequestHelper {
    * take the results of an initial query and do a second query for each result
    */
   def scatterGatherQuery[A, B](requests: Future[Result[List[A]]], fun: A => Future[Result[B]]): Future[Result[List[B]]] = {
+    batchScatterGatherQuery(requests, fun, () => {})
+  }
+
+  /**
+   * take the results of an initial query and do a second query for each result, calling flush after all secondary queries
+   * have been made
+   */
+  def batchScatterGatherQuery[A, B](requests: Future[Result[List[A]]], fun: A => Future[Result[B]], flushFunction: () => Unit): Future[Result[List[B]]] = {
     requests.flatMap { r =>
       r match {
         case Success(starts) =>
           val requests: List[Future[Result[B]]] = starts.map { entry => fun(entry) }
+          flushFunction()
           gatherResults(requests)
         case Failure(ex) => requests.replicate[Result[List[B]]]
       }

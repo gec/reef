@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.client.rpc.framework
 
-import org.totalgrid.reef.client.sapi.client.rest.{ BatchOperations, Client, AnnotatedOperations }
+import org.totalgrid.reef.client.sapi.client.rest._
 import org.totalgrid.reef.client.sapi.client.rest.impl.{ BatchServiceRestOperations, DefaultAnnotatedOperations }
 import org.totalgrid.reef.client.{ SubscriptionCreator, SubscriptionCreationListener }
 import org.totalgrid.reef.client.exception.BadRequestException
@@ -28,6 +28,16 @@ import net.agileautomata.executor4s.{ TimeInterval, Executor }
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations
   protected def client: Client
+
+  /**
+   * do a set of operations as a single batch request (not for use for multi-step requests)!
+   */
+  def batch[A](fun: (RestOperations) => A): A = {
+    val batch = new BatchServiceRestOperations(client)
+    val result = fun(batch)
+    batch.flush()
+    result
+  }
 }
 
 /**
