@@ -21,6 +21,7 @@
 -->
 <settings>
     <!-- /home/teamcity/.BuildServer/config/reef-metrics/plugin-settings.xml -->
+    <!-- /home/teamcity/.BuildServer/config/reef/plugin-settings.xml replacing bt45 with bt43 -->
 	<custom-graphs>
         <graph title="Number of Objects in the system">
 			<valueType key="allPointsvalueaverage" title="Points" buildTypeId="bt45"/>

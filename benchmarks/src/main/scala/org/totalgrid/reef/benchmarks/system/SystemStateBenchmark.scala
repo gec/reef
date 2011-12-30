@@ -88,15 +88,15 @@ class SystemStateBenchmark(runs: Int) extends BenchmarkTest {
       time("allEntities") { client.getEntities().await }
       time("allAgents") { client.getAgents().await }
       time("allPermissionSets") { client.getPermissionSets().await }
-      val applications = time("allApplications"){client.getApplications().await}
+      val applications = time("allApplications") { client.getApplications().await }
 
-      applications.groupBy{_.getCapabilites(0)}.foreach{
+      applications.groupBy { _.getCapabilites(0) }.foreach {
         case (capability, apps) =>
           readings.enqueue(new SystemStat("appsCapability" + capability, apps.size))
           readings.enqueue(new SystemStat("appsCapability", apps.size))
       }
-      applications.foreach{app =>
-        readings.enqueue(new SystemStat("appOnline", if(app.getOnline) 1 else 0))
+      applications.foreach { app =>
+        readings.enqueue(new SystemStat("appOnline", if (app.getOnline) 1 else 0))
       }
     }
 
