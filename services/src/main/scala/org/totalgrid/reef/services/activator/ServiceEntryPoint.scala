@@ -46,7 +46,7 @@ object ServiceEntryPoint extends ShutdownHook {
 
     val modules = new ServiceModulesFactory {
       def getDbConnector() = DbConnector.connect(sql)
-      def getMeasStore() = new SqlMeasurementStore({})
+      def getMeasStore() = new SqlMeasurementStore({ () => })
       def publishServices(services: Seq[AsyncService[_]]) = {}
     }
 

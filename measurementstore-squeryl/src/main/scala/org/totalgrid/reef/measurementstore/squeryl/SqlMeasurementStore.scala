@@ -29,11 +29,11 @@ import org.totalgrid.reef.client.exception.InternalServiceException
  * implementation of measurement store that uses SqlMeasurementStoreOperations functions,
  * handles sync/async, opening/closing database transaction and error message generation
  */
-class SqlMeasurementStore(connectFunction: => Unit, includeHistory: Boolean = true) extends MeasurementStore {
+class SqlMeasurementStore(connectFunction: () => Unit, includeHistory: Boolean = true) extends MeasurementStore {
 
   override val supportsTrim = true
 
-  override def connect() = connectFunction
+  override def connect() = connectFunction()
 
   override def reset(): Boolean = attempt("Couldn't reset database")(SqlMeasurementStoreOperations.reset)
 

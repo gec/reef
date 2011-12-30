@@ -27,7 +27,7 @@ import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MixedMeas
 
 trait SqlMeasStoreTestFixture {
   def connect(includeHistory: Boolean) = {
-    val store = new SqlMeasurementStore({
+    val store = new SqlMeasurementStore({ () =>
       val conn_info = DbInfo.loadInfo("../org.totalgrid.reef.test.cfg")
       DbConnector.connect(conn_info)
     }, includeHistory)
