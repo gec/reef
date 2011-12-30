@@ -62,6 +62,8 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
 
         Measurement originalValue = measurementService.getMeasurementByPoint( p );
 
+        MockSubscriptionBindingListener bindings = new MockSubscriptionBindingListener();
+        client.addSubscriptionCreationListener( bindings );
         MockSubscriptionEventAcceptor<Measurement> mock = new MockSubscriptionEventAcceptor<Measurement>( true );
 
         // delete override by point
@@ -74,6 +76,7 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
         assertEquals( result.getResult().size(), 1 );
         result.getSubscription().start( mock );
 
+        assertEquals( bindings.size(), 1 );
 
         Comparator<Measurement> timeStrippedComparer = new Comparator<Measurement>() {
             @Override

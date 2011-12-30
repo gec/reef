@@ -27,8 +27,7 @@ import net.agileautomata.commons.testing._
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.client.AnyNodeDestination
-
+import org.totalgrid.reef.client.{ SubscriptionCreationListener, SubscriptionBinding, AnyNodeDestination }
 import org.totalgrid.reef.client.sapi.client.{ Promise, SuccessResponse, Response }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.rest.fixture._
@@ -44,7 +43,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
 
   def fixture[A](attachService: Boolean)(fun: Client => A) = broker { b =>
     val executor = Executors.newScheduledThreadPool(5)
-    var binding: Option[Cancelable] = None
+    var binding: Option[SubscriptionBinding] = None
     try {
       val conn = new DefaultConnection(b, executor, 100)
       conn.addServiceInfo(ExampleServiceList.info)
@@ -106,21 +105,40 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     }
   }
 
-  test("Subscription calls work") { //subscriptions not currently working with embedded broker
+  test("Subscription calls work") {
     fixture(true) { c =>
       val events = new SynchronizedList[SomeInteger]
-      val sub = c.subscribe(SomeIntegerTypeDescriptor).await.get
+      val bindings = new SynchronizedList[SubscriptionBinding]
+      c.addSubscriptionCreationListener(new SubscriptionCreationListener {
+        def onSubscriptionCreated(binding: SubscriptionBinding) { bindings.append(binding) }
+      })
+      val sub = c.subscribe(SomeIntegerTypeDescriptor)
       c.put(SomeInteger(1), sub).await should equal(SuccessResponse(list = List(SomeInteger(2))))
       sub.start(e => events.append(e.value))
       events shouldBecome SomeInteger(2) within 5000
       sub.cancel()
+
+      bindings.get.size should equal(1)
     }
   }
 
-  test("Events come in right order") { //subscriptions not currently working with embedded broker
+  test("Service bindings work") {
+    fixture(true) { c =>
+      val bindings = new SynchronizedList[SubscriptionBinding]
+      c.addSubscriptionCreationListener(new SubscriptionCreationListener {
+        def onSubscriptionCreated(binding: SubscriptionBinding) { bindings.append(binding) }
+      })
+      val sub = c.bindService(new BlackHoleService(SomeIntegerTypeDescriptor), c, new AnyNodeDestination, true)
+      sub.cancel()
+
+      bindings.get.size should equal(1)
+    }
+  }
+
+  test("Events come in right order") {
     fixture(true) { c =>
       val events = new SynchronizedList[Int]
-      val sub = c.subscribe(SomeIntegerTypeDescriptor).await.get
+      val sub = c.subscribe(SomeIntegerTypeDescriptor)
       c.bindQueueByClass(sub.id(), "#", classOf[SomeInteger])
       sub.start(e => events.append(e.value.num))
 

@@ -37,20 +37,21 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
     future
   }
 
-  final override def subscribe[A](descriptor: TypeDescriptor[A]) =
-    conn.subscribe(strand, descriptor)
+  final override def subscribe[A](descriptor: TypeDescriptor[A]) = {
+    notifySubscriptionCreated(conn.subscribe(strand, descriptor))
+  }
+  final override def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = {
+    notifySubscriptionCreated(conn.bindService(service, dispatcher, destination, competing))
+  }
+  final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
+  final override def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) = conn.publishEvent(typ, value, key)
+  final override def declareEventExchange(klass: Class[_]) = conn.declareEventExchange(klass)
 
   final override def execute(fun: => Unit): Unit = strand.execute(fun)
   final override def attempt[A](fun: => A): Future[Result[A]] = strand.attempt(fun)
   final override def schedule(interval: TimeInterval)(fun: => Unit): Timer = strand.schedule(interval)(fun)
   final override def scheduleWithFixedOffset(initial: TimeInterval, offset: TimeInterval)(fun: => Unit): Timer =
     strand.scheduleWithFixedOffset(initial, offset)(fun)
-
-  final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
-  final override def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) = conn.publishEvent(typ, value, key)
-
-  final override def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = conn.bindService(service, dispatcher, destination, competing)
-  final override def declareEventExchange(klass: Class[_]) = conn.declareEventExchange(klass)
 
   // TODO: clone parent client settings?
   final override def login(authToken: String) = conn.login(authToken)
