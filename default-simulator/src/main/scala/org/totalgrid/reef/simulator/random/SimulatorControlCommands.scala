@@ -62,7 +62,7 @@ class SimulatorList extends OsgiCommandSupport with SimulatorControlCommands {
 @Command(scope = "sim", name = "config", description = "Configure benchmark endpoint simulation properties. Example: sim:config -time 5")
 class SimulatorConfig extends OsgiCommandSupport with SimulatorControlCommands {
 
-  @GogoOption(name = "-time", description = "Configure the time delay (in milliseconds) between generated measurements. If no endpoints are specified, all endpoints are configured. Prefixing the number with '+' or '-' will increase/decrease each endoint's current time delay by that amount.", required = true, multiValued = false)
+  @GogoOption(name = "-time", description = "Configure the time delay (in milliseconds) between generated measurements. If no endpoints are specified, all endpoints are configured.", required = true, multiValued = false)
   var timeDelay: String = null
 
   @Argument(index = 0, name = "endpoints", description = "Optional list of endpoints. Example: sim:config -time 200 substation1", required = false, multiValued = true)
