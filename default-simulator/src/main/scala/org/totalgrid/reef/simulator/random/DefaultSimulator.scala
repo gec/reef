@@ -37,24 +37,28 @@ final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBa
 
   val strand = Strand(exe)
 
+  private var timer = Option.empty[Timer]
+  private var delayMs: Long = config.getDelay
+
   private var state: State = {
     val measurements = config.getMeasurementsList.map(x => x.getName -> MeasRecord(x.getName, x.getUnit, RandomValues(x))).toMap
     val commands = config.getCommandsList.map { x => x.getName -> x.getResponseStatus }.toMap
-    State(measurements, commands, config.getDelay, None)
+    State(measurements, commands)
   }
 
   // do an integrity poll on all values at startup
   strand.execute {
     mutate { state =>
       publish(state.measurements.values.map(_.measurement))
-      state.startTimer()
+      state
     }
+    startTimer()
   }
 
   def shutdown() = {
     strand.terminate {
       parent.remove(this)
-      mutate(_.cancelTimer())
+      cancelTimer()
     }
   }
 
@@ -69,20 +73,7 @@ final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBa
     }
   }
 
-  private case class State(measurements: Map[String, MeasRecord], commands: Map[String, CommandStatus], delayMs: Long, timer: Option[Timer]) {
-
-    def cancelTimer(): State = {
-      timer.foreach(_.cancel())
-      this.copy(timer = None)
-    }
-
-    def startTimer(): State = {
-      if (delayMs > 0) this.copy(timer = Some(strand.schedule(delayMs.milliseconds)(update)))
-      else this
-    }
-
-    def updateDelay(delay: Long): State =
-      this.cancelTimer().copy(delayMs = delay).startTimer()
+  private case class State(measurements: Map[String, MeasRecord], commands: Map[String, CommandStatus]) {
 
     def randomizeMeasurements(): State = {
       val meas = measurements.values.foldLeft(measurements) { (map, record) =>
@@ -100,7 +91,7 @@ final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBa
     val changes = s2.measurements.values.filterNot(r => r.value == state.measurements(r.name).value)
 
     publish(changes.map(_.measurement))
-    s2.startTimer()
+    s2
   }
 
   private def mutate(fun: State => State) = synchronized(state = fun(state))
@@ -129,8 +120,6 @@ final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBa
 
   /* Implement ControllableSimulator */
 
-  override def getRepeatDelay = state.delayMs
-
   override def setChangeProbability(prob: Double) = mutate { state =>
     val meas = state.measurements.values.foldLeft(Map.empty[String, MeasRecord]) { (sum, rec) =>
       sum + (rec.name -> rec.copy(value = rec.value.newChangeProbablity(prob)))
@@ -138,9 +127,21 @@ final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBa
     state.copy(measurements = meas)
   }
 
-  override def setUpdateDelay(newDelay: Long) = mutate { state =>
-    logger.info("Updating parameters for simulator: " + name + ", delay = " + newDelay)
-    state.updateDelay(newDelay)
+  private def cancelTimer() {
+    timer.foreach(_.cancel())
+    timer = None
   }
 
+  private def startTimer() {
+    timer = if (delayMs > 0) Some(strand.scheduleWithFixedOffset(delayMs.milliseconds)(update()))
+    else None
+  }
+
+  override def getRepeatDelay = delayMs
+  override def setUpdateDelay(newDelay: Long) {
+    logger.info("Updating parameters for simulator: " + name + ", delay = " + newDelay)
+    cancelTimer()
+    delayMs = newDelay
+    startTimer()
+  }
 }
