@@ -33,6 +33,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
+import java.util.UUID
 
 class CommandService(protected val model: CommandServiceModel)
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -58,6 +59,8 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
     with EventedServiceModel[CommandProto, Command]
     with SimpleModelEntryCreation[CommandProto, Command]
     with CommandServiceConversion {
+
+  val entityModel = new EntityServiceModel
 
   val table = ApplicationSchema.commands
   def getCommands(names: List[String]): Query[Command] = {
@@ -90,6 +93,22 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
     EntityQuery.deleteEntity(entry.entity.value)
   }
 
+  def createModelEntry(context: RequestContext, proto: CommandProto): Command = {
+    createModelEntry(context, proto.getName, proto.getDisplayName, proto.getType, proto.uuid)
+  }
+
+  def createModelEntry(context: RequestContext, name: String, displayName: String, _type: CommandType, uuid: Option[UUID]): Command = {
+    val baseType = _type match {
+      case CommandType.CONTROL => "Control"
+      case CommandType.SETPOINT_DOUBLE | CommandType.SETPOINT_INT |
+        CommandType.SETPOINT_STRING => "Setpoint"
+    }
+    val ent = entityModel.findOrCreate(context, name, "Command" :: baseType :: Nil, uuid)
+    val c = new Command(ent.id, displayName, _type.getNumber, None, None)
+    c.entity.value = ent
+    c
+  }
+
 }
 
 trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Command] {
@@ -110,10 +129,6 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
 
   def searchQuery(proto: CommandProto, sql: Command) = List(
     proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Command")))
-
-  def createModelEntry(proto: CommandProto): Command = {
-    Command.newInstance(proto.getName, proto.getDisplayName, proto.getType, proto.uuid)
-  }
 
   def isModified(entry: Command, existing: Command) = {
     entry.lastSelectId != existing.lastSelectId || entry.displayName != existing.displayName

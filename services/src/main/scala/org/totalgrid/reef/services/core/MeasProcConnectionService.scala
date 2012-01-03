@@ -65,6 +65,10 @@ class MeasurementProcessingConnectionServiceModel
     update(context, updated, existing)
   }
 
+  def createModelEntry(context: RequestContext, proto: ConnProto): MeasProcAssignment = {
+    throw new Exception("wrong interface")
+  }
+
   override def postUpdate(context: RequestContext, sql: MeasProcAssignment, existing: MeasProcAssignment) {
     coordinator.onMeasProcAssignmentChanged(context, sql)
   }
@@ -94,10 +98,6 @@ trait MeasurementProcessingConnectionConversion
 
   def isModified(entry: MeasProcAssignment, existing: MeasProcAssignment): Boolean = {
     true
-  }
-
-  def createModelEntry(proto: ConnProto): MeasProcAssignment = {
-    throw new Exception("wrong interface")
   }
 
   def convertToProto(entry: MeasProcAssignment): ConnProto = {

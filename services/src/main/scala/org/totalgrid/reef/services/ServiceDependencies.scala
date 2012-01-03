@@ -19,11 +19,11 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.measurementstore.MeasurementStore
-import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection, SubscriptionHandler }
 import org.totalgrid.reef.models.AuthPermission
+import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 
 class ServiceDependencies(
   connection: Connection,
@@ -73,6 +73,13 @@ class DependenciesSource(dependencies: RequestContextDependencies) extends Reque
     val context = new DependenciesRequestContext(dependencies)
     ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
   }
+}
+
+class SilentRequestContext extends RequestContext with HeadersContext with PermissionsContext {
+  def client = throw new Exception("Asked for client in silent request context")
+  def eventSink = new SilentEventSink
+  def operationBuffer = new BasicOperationBuffer
+  def subHandler = new SilentServiceSubscriptionHandler
 }
 
 // TODO: get rid of all uses of NullRequestContext

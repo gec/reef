@@ -67,7 +67,7 @@ trait TriggerSetConversion
     TriggerProto.parseFrom(sql.proto)
   }
 
-  def createModelEntry(rawProto: TriggerProto): TriggerSet = {
+  def createModelEntry(context: RequestContext, rawProto: TriggerProto): TriggerSet = {
     val point = PointTiedModel.lookupPoint(rawProto.getPoint)
     val proto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)).build
     new TriggerSet(

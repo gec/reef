@@ -48,9 +48,11 @@ class CommEndCfgServiceModel(
     with EventedServiceModel[CommEndCfgProto, CommunicationEndpoint]
     with CommEndCfgServiceConversion {
 
+  val entityModel = new EntityServiceModel
+
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
     import org.totalgrid.reef.services.core.util.UUIDConversions._
-    val ent = EntityQuery.findOrCreateEntity(proto.getName, "CommunicationEndpoint" :: "LogicalNode" :: Nil, proto.uuid)
+    val ent = entityModel.findOrCreate(context, proto.getName, "CommunicationEndpoint" :: "LogicalNode" :: Nil, proto.uuid)
     val sql = create(context, createModelEntry(context, proto, ent))
     setLinkedObjects(context, sql, proto, ent)
     coordinator.onEndpointCreated(context, sql)
@@ -78,7 +80,7 @@ class CommEndCfgServiceModel(
   }
 
   override def postDelete(context: RequestContext, sql: CommunicationEndpoint) {
-    EntityQuery.deleteEntity(sql.entity.value) // delete entity which will also sever all "source" and "uses" links
+    entityModel.delete(context, sql.entity.value) // delete entity which will also sever all "source" and "uses" links
   }
 
   private def findEntites(names: List[String], typ: String): List[Entity] = {

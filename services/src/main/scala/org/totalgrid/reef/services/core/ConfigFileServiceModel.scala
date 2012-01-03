@@ -45,6 +45,8 @@ class ConfigFileServiceModel
     with EventedServiceModel[ConfigProto, ConfigFile]
     with ConfigFileConversion {
 
+  val entityModel = new EntityServiceModel
+
   val table = ApplicationSchema.configFiles
 
   def addOwningEntity(context: RequestContext, protos: List[ConfigProto], entity: Entity): Unit = {
@@ -79,7 +81,7 @@ class ConfigFileServiceModel
     }
 
     // make the entity entry for the config file
-    val entity = EntityQuery.findOrCreateEntity(name, "ConfigurationFile" :: Nil, uuid)
+    val entity = entityModel.findOrCreate(context, name, "ConfigurationFile" :: Nil, uuid)
 
     val sql = create(context, createModelEntry(configFileProto, entity))
     updateUsingEntities(context, configFileProto, sql, Nil) // add entity edges

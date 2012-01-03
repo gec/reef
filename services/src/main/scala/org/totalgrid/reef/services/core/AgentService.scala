@@ -28,8 +28,7 @@ import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
-
-import org.totalgrid.reef.models.{ ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
+import org.totalgrid.reef.models.{ SaltedPasswordHelper, ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 
 class AgentService(protected val model: AgentServiceModel)
     extends SyncModeledServiceBase[Agent, AgentModel, AgentServiceModel]
@@ -43,6 +42,18 @@ class AgentServiceModel
     with EventedServiceModel[Agent, AgentModel]
     with AgentConversions {
 
+  val entityModel = new EntityServiceModel
+
+  def createAgentWithPassword(context: RequestContext, name: String, password: String): AgentModel = {
+    import SaltedPasswordHelper._
+
+    val (digest, saltText) = makeDigestAndSalt(password)
+    val entity = entityModel.findOrCreate(context, name, "Agent" :: Nil, None)
+    val agent = new AgentModel(entity.id, enc64(digest), enc64(saltText))
+    agent.entity.value = entity
+    agent
+  }
+
   override def createFromProto(context: RequestContext, req: Agent): AgentModel = {
 
     if (!req.hasName || !req.hasPassword) throw new BadRequestException("Must include name and password when creating an Agent.")
@@ -52,7 +63,7 @@ class AgentServiceModel
 
     val permissionSets = findRequestedPermissionSets(context, req)
 
-    val agent = create(context, AgentModel.createAgentWithPassword(req.getName, req.getPassword))
+    val agent = create(context, createAgentWithPassword(context, req.getName, req.getPassword))
     permissionSets.foreach { p => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(p.id, agent.id)) }
 
     agent

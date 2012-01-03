@@ -27,13 +27,14 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.services.core.util.UUIDConversions._
 
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
+import util.UUIDConversions._
+import java.util.UUID
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -67,6 +68,8 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
     with PointServiceConversion
     with CommunicationEndpointOfflineBehaviors {
 
+  val entityModel = new EntityServiceModel
+
   /**
    * we override this function so we can publish events with the "abnormalUpdated" part of routing
    * key filled out from the transient field on the sql object
@@ -75,6 +78,23 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
     val proto = convertToProto(entry)
     val key = getRoutingKey(proto, entry)
     (proto, key :: Nil)
+  }
+
+  def createModelEntry(context: RequestContext, proto: PointProto): Point = {
+    createModelEntry(context, proto.getName, proto.getType, proto.getUnit, proto.uuid)
+  }
+
+  def createModelEntry(context: RequestContext, name: String, _type: PointType, unit: String, uuid: Option[UUID]): Point = {
+    val baseType = _type match {
+      case PointType.ANALOG => "Analog"
+      case PointType.STATUS => "Status"
+      case PointType.COUNTER => "Counter"
+    }
+    val types = "Point" :: baseType :: Nil
+    val ent = entityModel.findOrCreate(context, name, types, uuid)
+    val p = new Point(ent.id, _type.getNumber, unit, false)
+    p.entity.value = ent
+    p
   }
 
   override def postCreate(context: RequestContext, entry: Point) {
@@ -159,10 +179,6 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     b.setType(PointType.valueOf(sql.pointType))
     b.setUnit(sql.unit)
     b.build
-  }
-
-  def createModelEntry(proto: PointProto): Point = {
-    Point.newInstance(proto.name.get, false, None, proto.getType, proto.getUnit, proto.uuid)
   }
 
 }

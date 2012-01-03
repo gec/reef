@@ -29,19 +29,6 @@ import org.squeryl.Query
 import org.totalgrid.reef.client.service.proto.Model
 
 object Point {
-  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Model.PointType, unit: String, uuid: Option[UUID]) = {
-    val baseType = _type match {
-      case Model.PointType.ANALOG => "Analog"
-      case Model.PointType.STATUS => "Status"
-      case Model.PointType.COUNTER => "Counter"
-    }
-    val types = "Point" :: baseType :: Nil
-    val ent = EntityQuery.findOrCreateEntity(name, types, uuid)
-    val p = new Point(ent.id, _type.getNumber, unit, abnormal)
-    dataSource.foreach(ln => { EntityQuery.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
-    p.entity.value = ent
-    p
-  }
 
   def findByName(name: String) = findByNames(name :: Nil)
   def findByNames(names: List[String]): Query[Point] = {
@@ -73,17 +60,6 @@ case class Point(
 }
 
 object Command {
-  def newInstance(name: String, displayName: String, _type: Model.CommandType, uuid: Option[UUID]) = {
-    val baseType = _type match {
-      case Model.CommandType.CONTROL => "Control"
-      case Model.CommandType.SETPOINT_DOUBLE | Model.CommandType.SETPOINT_INT |
-        Model.CommandType.SETPOINT_STRING => "Setpoint"
-    }
-    val ent = EntityQuery.findOrCreateEntity(name, "Command" :: baseType :: Nil, uuid)
-    val c = new Command(ent.id, displayName, _type.getNumber, None, None)
-    c.entity.value = ent
-    c
-  }
 
   def findByNames(names: List[String]): Query[Command] = {
     ApplicationSchema.commands.where(_.entityId in EntityQuery.findEntityIds(names, List("Command")))
@@ -111,15 +87,6 @@ case class Command(
   val selectHistory = LazyVar(CommandLockModel.selectsForCommands(id :: Nil))
 
   val commandHistory = LazyVar(ApplicationSchema.userRequests.where(u => u.commandId === id).toList)
-}
-
-object FrontEndPort {
-  def newInstance(name: String, network: Option[String], location: Option[String], state: Int, proto: Array[Byte], uuid: Option[UUID]) = {
-    val ent = EntityQuery.findOrCreateEntity(name, "Channel" :: Nil, uuid)
-    val c = new FrontEndPort(ent.id, network, location, state, proto)
-    c.entity.value = ent
-    c
-  }
 }
 
 case class FrontEndPort(

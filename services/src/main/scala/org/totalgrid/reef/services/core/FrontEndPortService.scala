@@ -66,6 +66,8 @@ class FrontEndPortServiceModel
     with SimpleModelEntryCreation[ChannelProto, FrontEndPort]
     with FrontEndPortConversion {
 
+  val entityModel = new EntityServiceModel
+
   override def preDelete(context: RequestContext, sql: FrontEndPort) {
     if (!sql.endpoints.value.isEmpty)
       throw new BadRequestException("Cannot delete communication channel that is used by: " + sql.endpoints.value.map { _.entityName })
@@ -73,6 +75,19 @@ class FrontEndPortServiceModel
 
   override def postDelete(context: RequestContext, sql: FrontEndPort) {
     EntityQuery.deleteEntity(sql.entity.value)
+  }
+
+  def createModelEntry(context: RequestContext, proto: ChannelProto): FrontEndPort = {
+    val name = proto.getName
+    val network = proto.ip.network
+    val location = proto.serial.location
+    val state = proto.getState.getNumber
+    val uuid = proto.uuid
+
+    val ent = entityModel.findOrCreate(context, name, "Channel" :: Nil, uuid)
+    val c = new FrontEndPort(ent.id, network, location, state, proto.toByteString.toByteArray)
+    c.entity.value = ent
+    c
   }
 }
 
@@ -103,10 +118,6 @@ trait FrontEndPortConversion
 
   def isModified(entry: FrontEndPort, existing: FrontEndPort): Boolean = {
     true
-  }
-
-  def createModelEntry(proto: ChannelProto): FrontEndPort = {
-    FrontEndPort.newInstance(proto.getName, proto.ip.network, proto.serial.location, proto.getState.getNumber, proto.toByteString.toByteArray, proto.uuid)
   }
 
   def convertToProto(entry: FrontEndPort): ChannelProto = {

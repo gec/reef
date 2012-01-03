@@ -57,18 +57,6 @@ object SaltedPasswordHelper {
   }
 }
 
-object Agent {
-  import SaltedPasswordHelper._
-
-  def createAgentWithPassword(name: String, password: String): Agent = {
-    val (digest, saltText) = makeDigestAndSalt(password)
-    val entity = EntityQuery.findOrCreateEntity(name, "Agent" :: Nil, None)
-    val agent = new Agent(entity.id, enc64(digest), enc64(saltText))
-    agent.entity.value = entity
-    agent
-  }
-}
-
 // not a case class because we don't want to accidentally print the digest+salt in the logs
 class Agent(
     _entityId: UUID,
@@ -97,15 +85,6 @@ case class AuthPermission(
     val allow: Boolean,
     val resource: String,
     val verb: String) extends ModelWithId {
-}
-
-object PermissionSet {
-  def newInstance(name: String, defaultExpirationTime: Long) = {
-    val entity = EntityQuery.findOrCreateEntity(name, "PermissionSet" :: Nil, None)
-    val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
-    permissionSet.entity.value = entity
-    permissionSet
-  }
 }
 
 case class PermissionSet(

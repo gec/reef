@@ -25,11 +25,11 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTestingHelpers }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.services.{ SilentRequestContext, ServiceDependencies, ServiceResponseTestingHelpers }
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
@@ -41,7 +41,10 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     val service = new PointService(modelFac.points)
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build
-    val device = EntityQuery.findOrCreateEntity(devName, "LogicalNode" :: Nil, None)
+
+    val context = new SilentRequestContext
+
+    val device = modelFac.entities.findOrCreate(context, devName, "LogicalNode" :: Nil, None)
     val pp = Point.newBuilder.setName(pointName).setUnit("raw").setType(PointType.ANALOG).build
 
     val point = service.put(pp).expectOne()

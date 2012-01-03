@@ -26,6 +26,7 @@ import org.totalgrid.reef.client.service.proto.Commands.{ CommandLock => AccessP
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.client.exception.{ BadRequestException, UnauthorizedException }
 import org.totalgrid.reef.client.service.proto.Model
+import org.totalgrid.reef.services.SilentRequestContext
 
 class CommandTestRig {
   val modelFactories = new ModelFactories(new ServiceDependenciesDefaults())
@@ -33,6 +34,8 @@ class CommandTestRig {
   val commands = modelFactories.cmds
   val accesses = modelFactories.accesses
   val userRequests = modelFactories.userRequests
+
+  val context = new SilentRequestContext
 
   def seed(sql: Command): Command = {
     ApplicationSchema.commands.insert(sql)
@@ -42,7 +45,7 @@ class CommandTestRig {
     ApplicationSchema.commandAccess.insert(sql)
   }
   def seed(name: String): Command = {
-    seed(Command.newInstance(name, name, Model.CommandType.CONTROL, None))
+    seed(modelFactories.cmds.createModelEntry(context, name, name, Model.CommandType.CONTROL, None))
   }
 }
 

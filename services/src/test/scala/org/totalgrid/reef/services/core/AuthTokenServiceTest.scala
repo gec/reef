@@ -33,16 +33,16 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.authz.SqlAuthzService
-import org.totalgrid.reef.services.NullRequestContext
 import org.totalgrid.reef.services.framework.AuthorizesEverything
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
+import org.totalgrid.reef.services.{ SilentRequestContext, NullRequestContext }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   override def beforeAll() {
     super.beforeAll()
-    AuthTokenService.seedTesting()
+    AuthTokenService.seedTesting(new SilentRequestContext)
   }
 
   class Fixture {
