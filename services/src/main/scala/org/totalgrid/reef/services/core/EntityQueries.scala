@@ -498,7 +498,7 @@ object EntityQuery extends Logging {
         select (ent))
   }
 
-  def addEntity(name: String, typ: String): Entity = {
+  /*def addEntity(name: String, typ: String): Entity = {
     addEntity(name, typ :: Nil, None)
   }
 
@@ -521,7 +521,7 @@ object EntityQuery extends Logging {
 
   def addTypeToEntity(ent: Entity, typ: String) = {
     addTypesToEntity(ent, typ :: Nil)
-  }
+  }*/
 
   def addTypesToEntity(ent: Entity, types: List[String]) = {
     if (types.isEmpty) {
@@ -567,10 +567,10 @@ object EntityQuery extends Logging {
     }
   }*/
 
-  def findEdge(parent: Entity, child: Entity, relation: String): Option[Edge] = {
+  /*def findEdge(parent: Entity, child: Entity, relation: String): Option[Edge] = {
     val matching = edges.where(r => r.parentId === parent.id and r.childId === child.id and r.relationship === relation and r.distance === 1).toList
     if (matching.size == 1) Some(matching.head) else None
-  }
+  }*/
 
   def addEdge(parent: Entity, child: Entity, relation: String) = {
     val originalEdge = edges.insert(new Edge(parent.id, child.id, relation, 1))
@@ -579,14 +579,14 @@ object EntityQuery extends Logging {
     originalEdge
   }
 
-  def deleteEdge(edge: Edge) = {
+  /*def deleteEdge(edge: Edge) = {
     val deriveds = derivedEdges.where(t => t.parentEdgeId === edge.id).toList
     deriveds.foreach { de =>
       edges.delete(de.edgeId)
       derivedEdges.delete(de.id)
     }
     edges.delete(edge.id)
-  }
+  }*/
 
   def addEdges(parent: Entity, children: List[Entity], relation: String, exclusive: Boolean) {
     val childIds = children.map { _.id }
@@ -630,9 +630,10 @@ object EntityQuery extends Logging {
     }
   }*/
 
-  def findEntitiesByName(names: List[String]) = {
+  /*def findEntitiesByName(names: List[String]) = {
     from(entities)(ent => where(ent.name in names) select (ent))
-  }
+  }*/
+
   def findEntitiesByType(types: List[String]) = {
     from(entities, entityTypes)((ent, typ) =>
       where(typ.entityId === ent.id and (typ.entType in types))
@@ -652,14 +653,14 @@ object EntityQuery extends Logging {
         select (ent.id)).distinct
   }
 
-  def populateRelations(builder: EntityProto.Builder, entity: Entity, relation: String, descendant: Boolean) = {
+  /*def populateRelations(builder: EntityProto.Builder, entity: Entity, relation: String, descendant: Boolean) = {
     val rels = if (descendant) getChildren(entity.id, relation) else getParents(entity.id, relation)
     val relProto = Relationship.newBuilder.setRelationship(relation).setDescendantOf(descendant)
 
     rels.toList.foreach(r => relProto.addEntities(entityToProto(r)))
     builder.addRelations(relProto)
     builder
-  }
+  }*/
 
   def entityIdsFromType(typ: String) = {
     from(entityTypes)(t =>
