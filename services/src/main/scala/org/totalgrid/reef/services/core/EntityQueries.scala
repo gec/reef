@@ -678,12 +678,12 @@ object EntityQuery extends Logging {
     }
   }
 
-  def deleteEntity(entity: Entity) = deleteEntities(entity :: Nil)
+  /*def deleteEntity(entity: Entity) = deleteEntities(entity :: Nil)
 
   def deleteEntities(entities: List[Entity]) = {
     cleanupEntities(entities)
     ApplicationSchema.entities.deleteWhere(_.id in entities.map { _.id })
-  }
+  }*/
 
   def cleanupEntities(entities: List[Entity]) = {
     val entityIds = entities.map { _.id }

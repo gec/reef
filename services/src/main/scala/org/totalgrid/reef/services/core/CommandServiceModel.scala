@@ -90,7 +90,7 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
     selects.foreach(s => commandSelectModel.removeAccess(context, s))
     commandHistory.foreach(s => commandHistoryModel.delete(context, s))
 
-    EntityQuery.deleteEntity(entry.entity.value)
+    entityModel.delete(context, entry.entity.value)
   }
 
   def createModelEntry(context: RequestContext, proto: CommandProto): Command = {

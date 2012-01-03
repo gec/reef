@@ -101,7 +101,7 @@ class ConfigFileServiceModel
   }
 
   override def postDelete(context: RequestContext, sql: ConfigFile) {
-    EntityQuery.deleteEntity(sql.entity.value)
+    entityModel.delete(context, sql.entity.value)
   }
 
   private def updateUsingEntities(context: RequestContext, configFileProto: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {

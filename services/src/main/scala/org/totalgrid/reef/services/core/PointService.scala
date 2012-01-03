@@ -116,7 +116,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
 
     measurementStore.remove(entry.entityName :: Nil)
 
-    EntityQuery.deleteEntity(entry.entity.value)
+    entityModel.delete(context, entry.entity.value)
   }
 }
 
