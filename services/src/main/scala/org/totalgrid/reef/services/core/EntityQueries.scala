@@ -588,7 +588,7 @@ object EntityQuery extends Logging {
     edges.delete(edge.id)
   }*/
 
-  def addEdges(parent: Entity, children: List[Entity], relation: String, exclusive: Boolean) {
+  /*def addEdges(parent: Entity, children: List[Entity], relation: String, exclusive: Boolean) {
     val childIds = children.map { _.id }
     if (exclusive) {
       val oldEdges = edges.where(e => e.distance === 1 and (e.childId in childIds) and e.relationship === relation and (e.parentId <> parent.id)).toList
@@ -604,7 +604,7 @@ object EntityQuery extends Logging {
     val derivedEdgeIds = derivedEdges.where(t => t.parentEdgeId in edgeIds).toList.map { _.id }
     edges.deleteWhere(e => (e.id in edgeIds) or (e.id in derivedEdgeIds))
     derivedEdges.deleteWhere(t => t.parentEdgeId in edgeIds)
-  }
+  }*/
 
   private def addDerivedEdge(parent: Entity, child: Entity, relation: String, depth: Int, sourceEdge: Edge) = {
     assert(depth > 1)

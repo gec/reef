@@ -92,7 +92,18 @@ class EntityEdgeServiceModel
     addEdge(context, parentEntity, childEntity, relationship)
   }
 
-  private def addEdge(context: RequestContext, parent: Entity, child: Entity, relation: String) = {
+  def addEdges(context: RequestContext, parent: Entity, children: List[Entity], relation: String, exclusive: Boolean) {
+    val childIds = children.map { _.id }
+    if (exclusive) {
+      val oldEdges = table.where(e => e.distance === 1 and (e.childId in childIds) and e.relationship === relation and (e.parentId <> parent.id)).toList
+      oldEdges.foreach(old => delete(context, old))
+    }
+    val existingEdges = table.where(e => e.distance === 1 and (e.childId in childIds) and e.relationship === relation and e.parentId === parent.id).toList
+    val childrenNeedingEdges = children.filterNot { child => existingEdges.find(_.childId == child.id).isDefined }
+    childrenNeedingEdges.foreach { child => addEdge(context, parent, child, relation) }
+  }
+
+  def addEdge(context: RequestContext, parent: Entity, child: Entity, relation: String) = {
     val originalEdge = create(context, new EntityEdge(parent.id, child.id, relation, 1))
     EntityQuery.getParentsWithDistance(parent.id, relation).foreach { case (ent, dist) => addDerivedEdge(context, ent, child, relation, dist + 1, originalEdge) }
     EntityQuery.getChildrenWithDistance(child.id, relation).foreach { case (ent, dist) => addDerivedEdge(context, parent, ent, relation, dist + 1, originalEdge) }
