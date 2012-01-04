@@ -20,8 +20,12 @@ package org.totalgrid.reef.services.core
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.models.{ ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived }
+import org.totalgrid.reef.services.SilentRequestContext
 
 object ModelSeed {
+
+  val edgeModel = new EntityEdgeServiceModel
+  val context = new SilentRequestContext
 
   def seed() {
     inTransaction {
@@ -37,7 +41,7 @@ object ModelSeed {
       val nameList = name :: names
       val fullName = nameList.reverse.mkString(".")
       val me = EntityTestSeed.addEntity(fullName, typ)
-      if (ancestors.length > 0) EntityQuery.addEdge(ancestors.head, me, "owns")
+      if (ancestors.length > 0) edgeModel.addEdge(context, ancestors.head, me, "owns")
       subNodes.foreach(node => node.seed(me :: ancestors, nameList))
     }
   }

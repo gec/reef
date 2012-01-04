@@ -46,6 +46,7 @@ class ConfigFileServiceModel
     with ConfigFileConversion {
 
   val entityModel = new EntityServiceModel
+  val edgeModel = new EntityEdgeServiceModel
 
   val table = ApplicationSchema.configFiles
 
@@ -119,7 +120,7 @@ class ConfigFileServiceModel
   }
 
   private def addUserEntity(context: RequestContext, configFile: Entity, user: Entity): Unit = {
-    EntityQuery.addEdge(user, configFile, "uses")
+    edgeModel.addEdge(context, user, configFile, "uses")
   }
 }
 

@@ -36,6 +36,9 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import ServiceResponseTestingHelpers._
 
+  val edgeModel = new EntityEdgeServiceModel
+  val context = new SilentRequestContext
+
   private def addPoint(pointName: String, devName: String): Entity = {
     val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
     val service = new PointService(modelFac.points)
@@ -51,7 +54,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
 
     // TODO: add edge service
     val point_ent = EntityQuery.findEntity(point.getEntity).get
-    EntityQuery.addEdge(device, point_ent, "source")
+    edgeModel.addEdge(context, device, point_ent, "source")
 
     EntityQuery.entityToProto(device).build
   }

@@ -30,10 +30,14 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => Entit
 import java.util.UUID
 import org.totalgrid.reef.client.service.entity.EntityRelation
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
+import org.totalgrid.reef.services.SilentRequestContext
 
 object EntityTestSeed {
 
   import ApplicationSchema._
+
+  val edgeModel = new EntityEdgeServiceModel
+  val context = new SilentRequestContext
 
   def addEntity(name: String, typ: String): Entity = {
     addEntity(name, typ :: Nil, None)
@@ -63,21 +67,21 @@ object EntityTestSeed {
   }
   def seedSub(regId: Entity, name: String) {
     val subId = EntityTestSeed.addEntity(name, "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQuery.addEdge(regId, subId, "owns")
+    edgeModel.addEdge(context, regId, subId, "owns")
     seedDevice(regId, subId, name + "-DeviceA", "Line")
     seedDevice(regId, subId, name + "-DeviceB", "Line")
     seedDevice(regId, subId, name + "-DeviceC", "Breaker")
   }
   def seedDevice(regId: Entity, subId: Entity, name: String, typ: String) {
     val devId = EntityTestSeed.addEntity(name, typ :: "Equipment" :: Nil)
-    val toSubId = EntityQuery.addEdge(subId, devId, "owns")
+    val toSubId = edgeModel.addEdge(context, subId, devId, "owns")
     seedPoint(regId, subId, devId, name + "-PointA", "owns")
     seedPoint(regId, subId, devId, name + "-PointB", "owns")
     seedPoint(regId, subId, devId, name + "-PointC", "refs")
   }
   def seedPoint(regId: Entity, subId: Entity, devId: Entity, name: String, rel: String) {
     val pointId = EntityTestSeed.addEntity(name, "Point")
-    val toDevId = EntityQuery.addEdge(devId, pointId, rel)
+    val toDevId = edgeModel.addEdge(context, devId, pointId, rel)
   }
 }
 

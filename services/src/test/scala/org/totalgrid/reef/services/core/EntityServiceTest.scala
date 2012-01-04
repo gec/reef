@@ -29,11 +29,14 @@ import org.totalgrid.reef.models.{ ApplicationSchema, DatabaseUsingTestBase }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Model.{ Relationship, Entity, ReefUUID }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.services.SilentRequestContext
 
 @RunWith(classOf[JUnitRunner])
 class EntityServiceTest extends DatabaseUsingTestBase {
 
   val service = new EntityService(new EntityServiceModel)
+  val edgeModel = new EntityEdgeServiceModel
+  val context = new SilentRequestContext
 
   test("Put Entity with predetermined UUID") {
 
@@ -92,9 +95,9 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val regId = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
     val subId = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQuery.addEdge(regId, subId, "owns")
+    edgeModel.addEdge(context, regId, subId, "owns")
     val devId = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
-    EntityQuery.addEdge(subId, devId, "owns")
+    edgeModel.addEdge(context, subId, devId, "owns")
 
     val edges = ApplicationSchema.edges
     val deriveds = ApplicationSchema.derivedEdges
@@ -120,9 +123,9 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val regId = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
     val subId = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQuery.addEdge(regId, subId, "owns")
+    edgeModel.addEdge(context, regId, subId, "owns")
     val devId = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
-    EntityQuery.addEdge(subId, devId, "owns")
+    edgeModel.addEdge(context, subId, devId, "owns")
 
     val req = Entity.newBuilder
       .setName("Reg")
@@ -145,9 +148,9 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val regId = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
     val subId = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQuery.addEdge(regId, subId, "owns")
+    edgeModel.addEdge(context, regId, subId, "owns")
     val devId = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
-    EntityQuery.addEdge(subId, devId, "owns")
+    edgeModel.addEdge(context, subId, devId, "owns")
 
     val req = Entity.newBuilder
       .addTypes("Region")
@@ -162,9 +165,9 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val regId = EntityTestSeed.addEntity("B", "Region" :: "EquipmentGroup" :: Nil)
     val subId = EntityTestSeed.addEntity("a", "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQuery.addEdge(regId, subId, "owns")
+    edgeModel.addEdge(context, regId, subId, "owns")
     val devId = EntityTestSeed.addEntity("c", "Breaker" :: "Equipment" :: Nil)
-    EntityQuery.addEdge(subId, devId, "owns")
+    edgeModel.addEdge(context, subId, devId, "owns")
 
     val req = Entity.newBuilder.setUuid(ReefUUID.newBuilder().setValue("*"))
 
@@ -179,9 +182,9 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val regId = EntityTestSeed.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
     val subId = EntityTestSeed.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQuery.addEdge(regId, subId, "owns")
+    edgeModel.addEdge(context, regId, subId, "owns")
     val devId = EntityTestSeed.addEntity("c", "Breaker" :: "Equipment" :: Nil)
-    EntityQuery.addEdge(subId, devId, "owns")
+    edgeModel.addEdge(context, subId, devId, "owns")
 
     val req = Entity.newBuilder.setUuid(ReefUUID.newBuilder().setValue("*"))
 
@@ -196,9 +199,9 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val regId = EntityTestSeed.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
     val subId = EntityTestSeed.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQuery.addEdge(regId, subId, "owns")
+    edgeModel.addEdge(context, regId, subId, "owns")
     val devId = EntityTestSeed.addEntity("c", "Breaker" :: "Equipment" :: Nil)
-    EntityQuery.addEdge(subId, devId, "owns")
+    edgeModel.addEdge(context, subId, devId, "owns")
 
     val req = Entity.newBuilder.addTypes("EquipmentGroup")
 
@@ -213,9 +216,9 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val regId = EntityTestSeed.addEntity("a", "Region" :: "EquipmentGroup" :: Nil)
     val subId = EntityTestSeed.addEntity("b", "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQuery.addEdge(regId, subId, "owns")
+    edgeModel.addEdge(context, regId, subId, "owns")
     val devId = EntityTestSeed.addEntity("c", "Breaker" :: "Equipment" :: Nil)
-    EntityQuery.addEdge(subId, devId, "owns")
+    edgeModel.addEdge(context, subId, devId, "owns")
 
     val req = Entity.newBuilder
       .addTypes("EquipmentGroup")

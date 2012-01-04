@@ -572,12 +572,12 @@ object EntityQuery extends Logging {
     if (matching.size == 1) Some(matching.head) else None
   }*/
 
-  def addEdge(parent: Entity, child: Entity, relation: String) = {
+  /*def addEdge(parent: Entity, child: Entity, relation: String) = {
     val originalEdge = edges.insert(new Edge(parent.id, child.id, relation, 1))
     getParentsWithDistance(parent.id, relation).foreach { case (ent, dist) => addDerivedEdge(ent, child, relation, dist + 1, originalEdge) }
     getChildrenWithDistance(child.id, relation).foreach { case (ent, dist) => addDerivedEdge(parent, ent, relation, dist + 1, originalEdge) }
     originalEdge
-  }
+  }*/
 
   /*def deleteEdge(edge: Edge) = {
     val deriveds = derivedEdges.where(t => t.parentEdgeId === edge.id).toList
@@ -606,12 +606,12 @@ object EntityQuery extends Logging {
     derivedEdges.deleteWhere(t => t.parentEdgeId in edgeIds)
   }*/
 
-  private def addDerivedEdge(parent: Entity, child: Entity, relation: String, depth: Int, sourceEdge: Edge) = {
+  /*private def addDerivedEdge(parent: Entity, child: Entity, relation: String, depth: Int, sourceEdge: Edge) = {
     assert(depth > 1)
     val derivedEdge = edges.insert(new Edge(parent.id, child.id, relation, depth))
     derivedEdges.insert(new Derived(sourceEdge.id, derivedEdge.id))
     derivedEdge
-  }
+  }*/
 
   /*def findOrCreateEntity(name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
     val list = nameTypeQuery(Some(name), None)
