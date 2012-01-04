@@ -115,7 +115,7 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									<finalName>${project.artifactId}-${project.version}</finalName>
 									<tarLongFileMode>gnu</tarLongFileMode>
                                     <archiverConfig>
-                                        <duplicateBehavior>preserve</duplicateBehavior>
+                                        <duplicateBehavior>skip</duplicateBehavior>
                                     </archiverConfig>
                                     <appendAssemblyId>false</appendAssemblyId>
 								</configuration>
@@ -133,7 +133,7 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									</descriptors>
 									<finalName>${project.artifactId}-${project.version}</finalName>
                                     <archiverConfig>
-                                        <duplicateBehavior>preserve</duplicateBehavior>
+                                        <duplicateBehavior>skip</duplicateBehavior>
                                     </archiverConfig>
                                     <appendAssemblyId>false</appendAssemblyId>
 								</configuration>
@@ -294,6 +294,10 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									</descriptors>
 									<finalName>${project.artifactId}-${project.version}</finalName>
 									<tarLongFileMode>gnu</tarLongFileMode>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
 								</configuration>
 							</execution>
 
@@ -308,6 +312,10 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 										<descriptor>src/main/descriptors/windows-bin.xml</descriptor>
 									</descriptors>
 									<finalName>${project.artifactId}-${project.version}</finalName>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
 								</configuration>
 							</execution>
 						</executions>

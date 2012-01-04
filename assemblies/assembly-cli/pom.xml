@@ -266,7 +266,7 @@
                                     <descriptors>
                                         <descriptor>src/main/descriptors/unix-cli-bin.xml</descriptor>
                                     </descriptors>
-                                    <finalName>${project.artifactId}-${project.version}-dev</finalName>
+                                    <finalName>${project.artifactId}-${project.version}</finalName>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                     <archiverConfig>
                                         <duplicateBehavior>skip</duplicateBehavior>
@@ -284,7 +284,7 @@
                                     <descriptors>
                                         <descriptor>src/main/descriptors/windows-cli-bin.xml</descriptor>
                                     </descriptors>
-                                    <finalName>${project.artifactId}-${project.version}-dev</finalName>
+                                    <finalName>${project.artifactId}-${project.version}</finalName>
                                     <archiverConfig>
                                         <duplicateBehavior>skip</duplicateBehavior>
                                     </archiverConfig>
