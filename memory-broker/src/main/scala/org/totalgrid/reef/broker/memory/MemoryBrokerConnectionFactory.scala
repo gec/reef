@@ -31,4 +31,5 @@ final class MemoryBrokerConnectionFactory(exe: Executor) extends BrokerConnectio
 
   def connect = new MemoryBrokerConnection(this, exe)
 
+  override def toString() = "in-memory-broker"
 }
