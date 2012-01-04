@@ -19,10 +19,11 @@
 package org.totalgrid.reef.protocol.api.mock
 
 import org.totalgrid.reef.client.service.proto.{ FEP, Model, Commands }
-import org.totalgrid.reef.protocol.api.Protocol._
-import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler }
 
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.protocol.api.{ Publisher, Protocol, CommandHandler }
+import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, EndpointConnection }
 
 object RecordingProtocol {
 
@@ -31,7 +32,7 @@ object RecordingProtocol {
   case class RemoveChannel(name: String) extends Action
   case class AddEndpoint(endpoint: String, port: String, config: List[Model.ConfigFile]) extends Action
   case class RemoveEndpoint(endpoint: String) extends Action
-  case class Command(request: Commands.CommandRequest, rsp: ResponsePublisher) extends Action
+  case class Command(request: Commands.CommandRequest, rsp: Publisher[Commands.CommandStatus]) extends Action
 
 }
 
@@ -43,7 +44,7 @@ trait RecordingProtocol extends Protocol {
 
   def next(): Option[Action] = if (queue.isEmpty) None else Some(queue.dequeue())
 
-  abstract override def addChannel(channel: FEP.CommChannel, publisher: ChannelPublisher, client: Client): Unit = {
+  abstract override def addChannel(channel: FEP.CommChannel, publisher: Publisher[CommChannel.State], client: Client): Unit = {
     queue.enqueue(AddChannel(channel.getName))
     super.addChannel(channel, publisher, client)
   }
@@ -57,13 +58,13 @@ trait RecordingProtocol extends Protocol {
     endpoint: String,
     channel: String,
     config: List[Model.ConfigFile],
-    batch: BatchPublisher,
-    epPublisher: EndpointPublisher,
+    batch: Publisher[MeasurementBatch],
+    epPublisher: Publisher[EndpointConnection.State],
     client: Client): CommandHandler = {
     queue.enqueue(AddEndpoint(endpoint, channel, config))
     val handler = super.addEndpoint(endpoint, channel, config, batch, epPublisher, client)
     new CommandHandler {
-      def issue(request: Commands.CommandRequest, rspPublisher: ResponsePublisher) = {
+      def issue(request: Commands.CommandRequest, rspPublisher: Publisher[Commands.CommandStatus]) = {
         queue.enqueue(Command(request, rspPublisher))
         handler.issue(request, rspPublisher)
       }

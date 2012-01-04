@@ -24,11 +24,9 @@ import org.totalgrid.reef.client.sapi.client.rest.Client
 
 trait ChannelAlwaysOnline extends Protocol with Logging {
 
-  import Protocol._
+  private val channelMap = scala.collection.mutable.Map.empty[String, Publisher[CommChannel.State]]
 
-  private val channelMap = scala.collection.mutable.Map.empty[String, ChannelPublisher]
-
-  abstract override def addChannel(p: CommChannel, publisher: ChannelPublisher, client: Client): Unit = {
+  abstract override def addChannel(p: CommChannel, publisher: Publisher[CommChannel.State], client: Client): Unit = {
     super.addChannel(p, publisher, client)
     channelMap += p.getName -> publisher
     publisher.publish(CommChannel.State.OPENING)

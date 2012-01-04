@@ -25,7 +25,6 @@ import org.totalgrid.reef.client.service.list.ReefServices;
 import org.totalgrid.reef.client.Client;
 import org.totalgrid.reef.client.Connection;
 import org.totalgrid.reef.client.SubscriptionBinding;
-import org.totalgrid.reef.client.SubscriptionCreationListener;
 import org.totalgrid.reef.client.settings.AmqpSettings;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 
@@ -42,13 +41,15 @@ import java.util.List;
 /**
  * Base class for JUnit based integration tests run against the "live" system
  */
-public class ReefConnectionTestBase implements SubscriptionCreationListener
+public class ReefConnectionTestBase
 {
     private final boolean autoLogon;
 
     protected ReefConnectionFactory factory;
 
     protected Client client;
+
+    protected final MockSubscriptionBindingListener bindingListener = new MockSubscriptionBindingListener();
 
     protected AllScadaService helpers;
 
@@ -99,20 +100,14 @@ public class ReefConnectionTestBase implements SubscriptionCreationListener
             client = connection.createClient( "" );
         }
         LoaderClient.prepareClient( client );
-        client.addSubscriptionCreationListener( this );
+        client.addSubscriptionCreationListener( bindingListener );
         helpers = client.getService( AllScadaService.class );
     }
 
     @After
     public void stopBridge() throws InterruptedException, ReefServiceException
     {
+        bindingListener.cancelAll();
         factory.terminate();
-        for ( SubscriptionBinding binding : subscriptions )
-            binding.cancel();
-    }
-
-    public void onSubscriptionCreated( SubscriptionBinding binding )
-    {
-        subscriptions.add( binding );
     }
 }

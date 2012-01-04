@@ -59,12 +59,11 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
       ExampleServiceList.info.asInstanceOf[ServiceTypeInformation[A, A]]
     }
 
-    override def future[A] = new MockFuture(None)
-
     def subscribe[A](descriptor: TypeDescriptor[A]) = throw new Exception
     def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = throw new Exception
     def addServicesList(servicesList: ServicesList) = throw new Exception
     def addRpcProvider(info: ServiceProviderInfo) = throw new Exception
+    def operationTimeout = throw new Exception
     def attempt[A](fun: => A) = throw new Exception
     def execute(fun: => Unit) = throw new Exception
     def schedule(interval: TimeInterval)(fun: => Unit) = throw new Exception

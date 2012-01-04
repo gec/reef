@@ -16,7 +16,7 @@
     limitations under the License.
 -->
 <assembly>
-    <id></id> <!-- intentionally left blank -> http://jira.codehaus.org/browse/MASSEMBLY-301 -->
+    <id>unix-cli-id</id>
     <formats>
         <!--<format>jar</format>-->
         <format>tar.gz</format>

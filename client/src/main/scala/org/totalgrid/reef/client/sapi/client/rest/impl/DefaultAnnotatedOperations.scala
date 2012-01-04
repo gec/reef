@@ -18,17 +18,20 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
-import net.agileautomata.executor4s.{ Failure, Success, Result, Future }
+import net.agileautomata.executor4s._
 
 import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client.types.TypeDescriptor
 
-import org.totalgrid.reef.client.sapi.client.{ SubscriptionCreatorManager, Subscription, Promise }
+import org.totalgrid.reef.client.sapi.client.{ Subscription, Promise }
 import org.totalgrid.reef.client.sapi.client.rest.{ RestOperations, AnnotatedOperations }
-import org.totalgrid.reef.client.javaimpl.{ SubscriptionResultWrapper, SubscriptionWrapper }
+import org.totalgrid.reef.client.javaimpl.SubscriptionResultWrapper
 import org.totalgrid.reef.client.SubscriptionResult
 
-final class DefaultAnnotatedOperations(client: RestOperations, manager: SubscriptionCreatorManager) extends AnnotatedOperations {
+/**
+ * we only need the executor to create futures for errors correctly
+ */
+final class DefaultAnnotatedOperations(restOps: RestOperations, exe: Executor) extends AnnotatedOperations {
 
   private def renderErrorMsg(errorMsg: => String): String = {
     try {
@@ -50,8 +53,14 @@ final class DefaultAnnotatedOperations(client: RestOperations, manager: Subscrip
       }
     }
 
-    // TODO: need to catch exception thrown out of operation blocks themselves
-    fun(client).map(convert)
+    try {
+      fun(restOps).map(convert)
+    } catch {
+      case rse: ReefServiceException =>
+        definedFuture[Result[A]](Failure(rse))
+      case ex: Exception =>
+        definedFuture[Result[A]](Failure(new InternalClientError("ops() function: unexpected error: " + ex.getMessage, ex)))
+    }
   }
 
   /**
@@ -62,24 +71,26 @@ final class DefaultAnnotatedOperations(client: RestOperations, manager: Subscrip
 
   // TODO - it's probably possible to make SubscriptionResult only polymorphic in one type
   def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]] = {
-    val subscribeFuture = client.subscribe(desc)
-    val future = subscribeFuture.await match {
-      case Success(sub) =>
-        manager.onSubscriptionCreated(new SubscriptionWrapper(sub))
-        val opFuture = opWithFuture(err)(fun(sub, _))
-        def onResult(r: Result[A]) = {
-          if (r.isFailure) sub.cancel()
-        }
-        opFuture.listen(onResult)
-        opFuture.map(_.map(a => subscriptionResult(a, sub)))
-      case Failure(ex) =>
-        subscribeFuture.map { r =>
-          // TODO: make Failure typable
-          Failure("Couldn't create subscribe queue - " + renderErrorMsg(err) + " - " + ex.getMessage).asInstanceOf[Result[SubscriptionResult[A, B]]]
-        }
+    val future: Future[Result[SubscriptionResult[A, B]]] = try {
+      val sub = restOps.subscribe(desc)
+      val opFuture = opWithFuture(err)(fun(sub, _))
+      def onResult(r: Result[A]) = {
+        if (r.isFailure) sub.cancel()
+      }
+      opFuture.listen(onResult)
+      opFuture.map(_.map(a => subscriptionResult(a, sub)))
+    } catch {
+      case ex: Exception =>
+        definedFuture[Result[SubscriptionResult[A, B]]](Failure("Couldn't create subscribe queue - " + renderErrorMsg(err) + " - " + ex.getMessage))
     }
 
     Promise.from(future)
+  }
+
+  private def definedFuture[A](value: A): Future[A] = {
+    val future = exe.future[A]
+    future.set(value)
+    future
   }
 
   private def subscriptionResult[A, B](result: A, subscription: Subscription[B]): SubscriptionResult[A, B] = {

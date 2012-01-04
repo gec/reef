@@ -215,6 +215,15 @@ public interface EntityService
     List<Entity> getEntityRelations( ReefUUID parent, List<EntityRelation> relations ) throws ReefServiceException;
 
     /**
+     * Collect a more interesting tree structure from a list of specific parent nodes
+     * @param parentUuids  list of specific parents we want relations of
+     * @param relations    list of relations we want to use, first entry in the list is relations to
+     * @return  list of entities with of ParentType and their relations below them
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityRelationsForParents( List<ReefUUID> parentUuids, List<EntityRelation> relations ) throws ReefServiceException;
+
+    /**
      * Return a tree of entities based on a complex entity model query. It is usually possible to satisfy most entity requirements
      * with a single call to the Entity service. This is accomplished by building a request entity that has the same
      * tree "shape" as the result you want to display. The entity service will then "fill in" that tree with the matching

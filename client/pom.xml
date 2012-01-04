@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.1</version>
+        <version>0.4.2</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -83,9 +83,19 @@
             <artifactId>reef-broker</artifactId>
             <version>${reef.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-client-common</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-qpid-broker</artifactId>
             <version>${reef.version}</version>
         </dependency>
         <dependency>

@@ -60,6 +60,8 @@ class ResetDatabaseCommand extends ReefCommandSupport {
 
     val mstore = MeasurementStoreFinder.getInstance(bundleContext)
 
+    mstore.connect()
+
     try {
       ServiceBootstrap.resetDb()
       ServiceBootstrap.seed(systemPassword)

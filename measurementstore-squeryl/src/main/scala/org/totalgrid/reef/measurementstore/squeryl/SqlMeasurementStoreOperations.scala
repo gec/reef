@@ -61,7 +61,7 @@ trait SqlMeasurementStoreOperations {
     SqlMeasurementStoreSchema.names.where(t => true === true).toList.map { _.name }
   }
 
-  def set(meas: Seq[Meas]) {
+  def set(meas: Seq[Meas], includeHistory: Boolean) {
     // setup list of all the points we are trying to find ids for
     var insertedMeas: Map[String, Long] = meas.map { _.getName -> (-1: Long) }.toMap
 
@@ -84,9 +84,11 @@ trait SqlMeasurementStoreOperations {
       SqlMeasurementStoreSchema.currentValues.insert(addedCurrentValues)
     }
 
-    // create the list of measurements to upload
-    val toInsert = meas.map { makeUpdate(_, insertedMeas) }.toList
-    SqlMeasurementStoreSchema.updates.insert(toInsert)
+    if (includeHistory) {
+      // create the list of measurements to upload
+      val toInsert = meas.map { makeUpdate(_, insertedMeas) }.toList
+      SqlMeasurementStoreSchema.updates.insert(toInsert)
+    }
 
     val toUpdate = meas.map { makeCurrentValue(_, insertedMeas) }.toList
     SqlMeasurementStoreSchema.currentValues.update(toUpdate)

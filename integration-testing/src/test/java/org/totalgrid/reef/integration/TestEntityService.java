@@ -202,6 +202,8 @@ public class TestEntityService extends ReefConnectionTestBase
 
         List<Entity> result = es.getEntityRelationsFromTypeRoots( "Command", relations );
 
+        List<ReefUUID> commandRoots = new LinkedList<ReefUUID>();
+
         for ( Entity e : result )
         {
             assertTrue( e.getTypesList().contains( "Command" ) );
@@ -211,8 +213,12 @@ public class TestEntityService extends ReefConnectionTestBase
             assertFalse( r.getDescendantOf() );
             assertTrue( 1 >= r.getEntitiesCount() );
             assertTrue( r.getEntities( 0 ).getTypesList().contains( "Point" ) );
-
+            commandRoots.add( e.getUuid() );
         }
+
+        // verify that the EntityRelationsForParents call is equivalent to FromTypeRoots query
+        List<Entity> byParents = es.getEntityRelationsForParents( commandRoots, relations );
+        assertEquals( result, byParents );
     }
 
 

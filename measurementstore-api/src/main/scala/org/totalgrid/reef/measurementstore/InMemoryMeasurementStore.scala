@@ -18,17 +18,18 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import MeasSink.Meas
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.TreeMap
 
-class MeasStorage(var startingValue: Meas) {
+class MeasStorage(var startingValue: Meas, currentValueOnly: Boolean) {
   var historicValues = TreeMap.empty[Long, ListBuffer[Meas]]
 
   addMeas(startingValue)
 
   def addMeas(meas: Meas) {
+    if (currentValueOnly) historicValues = TreeMap.empty[Long, ListBuffer[Meas]]
     historicValues.get(meas.getTime) match {
       case Some(l) => l += meas
       case None => historicValues += (meas.getTime -> ListBuffer(meas))
@@ -52,7 +53,7 @@ class MeasStorage(var startingValue: Meas) {
   }
 }
 
-class InMemoryMeasurementStore extends MeasurementStore {
+class InMemoryMeasurementStore(currentValueOnly: Boolean = false) extends MeasurementStore {
 
   var values = Map.empty[String, MeasStorage]
 
@@ -62,15 +63,17 @@ class InMemoryMeasurementStore extends MeasurementStore {
   def set(meas: Seq[Meas]): Unit = {
     meas.foreach(m => values.get(m.getName) match {
       case Some(hist) => hist.addMeas(m)
-      case None => values = values + (m.getName -> new MeasStorage(m))
+      case None => values = values + (m.getName -> new MeasStorage(m, currentValueOnly))
     })
   }
 
   def getInRange(name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
+    checkHistorian
     values.get(name).map { _.getInRange(begin, end, max, ascending) }.getOrElse(Nil)
   }
 
   def numValues(name: String): Int = {
+    checkHistorian
     values.get(name).map { _.numValues }.getOrElse(0)
   }
 
@@ -87,4 +90,8 @@ class InMemoryMeasurementStore extends MeasurementStore {
   def allCurrent(): Seq[Meas] = {
     values.map { x => x._2.currentValue }.toList
   }
+
+  def connect() = {}
+
+  private def checkHistorian = if (currentValueOnly) throw new Exception("Using currentValue store as historian!")
 }

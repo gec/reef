@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.totalgrid.reef</groupId>
 		<artifactId>reef-assemblies</artifactId>
-		<version>0.4.1</version>
+		<version>0.4.2</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -114,6 +114,10 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									</descriptors>
 									<finalName>${project.artifactId}-${project.version}</finalName>
 									<tarLongFileMode>gnu</tarLongFileMode>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
 								</configuration>
 							</execution>
 
@@ -128,6 +132,10 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 										<descriptor>src/main/descriptors/windows-bin.xml</descriptor>
 									</descriptors>
 									<finalName>${project.artifactId}-${project.version}</finalName>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
 								</configuration>
 							</execution>
 						</executions>
@@ -154,7 +162,8 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									<features>
 										<feature>reef-system-preload</feature>
 									</features>
-
+                                    <!-- intentionally wrong to stop including enterprise descriptors -->
+                                    <karafVersion>9.9.9</karafVersion>
 									<includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
 									<repository>target/system-repo</repository>
 								</configuration>
@@ -176,7 +185,8 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 										<feature>reef</feature>
 										<feature>reef-dnp3</feature>
 									</features>
-
+                                    <!-- intentionally wrong to stop including enterprise descriptors -->
+                                    <karafVersion>9.9.9</karafVersion>
 									<includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
 									<repository>target/reef-repo</repository>
 								</configuration>
@@ -284,6 +294,10 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									</descriptors>
 									<finalName>${project.artifactId}-${project.version}</finalName>
 									<tarLongFileMode>gnu</tarLongFileMode>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
 								</configuration>
 							</execution>
 
@@ -298,6 +312,10 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 										<descriptor>src/main/descriptors/windows-bin.xml</descriptor>
 									</descriptors>
 									<finalName>${project.artifactId}-${project.version}</finalName>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
 								</configuration>
 							</execution>
 						</executions>
@@ -322,6 +340,8 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									<features>
 										<feature>reef-system-preload</feature>
 									</features>
+                                    <!-- intentionally wrong to stop including enterprise descriptors -->
+                                    <karafVersion>9.9.9</karafVersion>
 									<includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
 									<repository>target/system-repo</repository>
 								</configuration>

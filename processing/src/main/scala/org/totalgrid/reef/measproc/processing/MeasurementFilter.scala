@@ -33,7 +33,7 @@ class MeasurementFilter(protected val next: Measurement => Unit, allowedPointNam
   val allowedPointNamesLookup = allowedPointNames.map { name => name -> true }.toMap
   var ignored = Map.empty[String, Boolean]
 
-  private lazy val ignoredMeasurements = valueHook("ignoredMeasurements")
+  private lazy val ignoredMeasurements = counterHook("ignoredMeasurements")
 
   def process(meas: Measurement) {
     allowedPointNamesLookup.get(meas.getName) match {

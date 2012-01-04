@@ -9,6 +9,39 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.2
+==============
+
+Bugfix and stability release. (Requires resetdb on server after upgrade.)
+
+### Service/API Updates:
+
+* Added EntityService.getEntityRelationsForParents command to a "wide request" in a single request
+
+### Breaking Changes:
+
+* CommandService.bindCommandHandler returns SubscriptionBinding instead of Cancelable
+
+### Bug Fixes:
+
+* reef:unload and reef:load got default timeout set to 30 seconds
+* Long command execution error strings caused response timeouts
+* FrontEnd gives all protocol implementations channel if endpoint has channel
+* ServiceBindings (from bindCommandHandler) are correctly passed to SubscriptionCreationListeners
+* Fixed memory leak in DefaultSimulator (benchmark protocol)
+* Fixed measproc.ignoredMeasurements metrics counter
+
+### Reef Internals:
+
+* Can be compiled using FSC in intellij
+* MeasurementStore implementation looks up configuration from etc/org.totalgrid.reef.mstore.cfg
+* Benchmark program collects many more details of the system-under-test.
+* Split Qpid broker implementation out of reef-broker package
+
+### Upstream project versions
+
+* Executor4s : 0.1.9 - upgraded to get exceptions on deadlocks
+
 Version 0.4.1
 ==============
 

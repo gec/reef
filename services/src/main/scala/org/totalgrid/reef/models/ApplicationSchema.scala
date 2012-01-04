@@ -56,6 +56,7 @@ object ApplicationSchema extends Schema {
   val configFiles = table[ConfigFile]
 
   val userRequests = table[UserCommandModel]
+  on(userRequests)(s => declare(s.errorMessage is dbType("TEXT")))
   val commandAccess = table[CommandLockModel]
   val commandToBlocks = table[CommandBlockJoin]
 

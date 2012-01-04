@@ -23,19 +23,19 @@ import scala.collection.immutable
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, EndpointConnection }
 
 trait AddRemoveValidation extends Protocol with Logging {
 
-  import Protocol._
-
-  case class Endpoint(name: String, channel: Option[FEP.CommChannel], config: List[Model.ConfigFile], publisher: EndpointPublisher) /// The issue function and the channel
-  case class Channel(config: FEP.CommChannel, publisher: ChannelPublisher)
+  case class Endpoint(name: String, channel: Option[FEP.CommChannel], config: List[Model.ConfigFile], publisher: Publisher[EndpointConnection.State]) /// The issue function and the channel
+  case class Channel(config: FEP.CommChannel, publisher: Publisher[CommChannel.State])
 
   // only mutable state is current assignment of these variables
   private var endpoints = immutable.Map.empty[String, Endpoint] /// maps uids to a Endpoint
   private var channels = immutable.Map.empty[String, Channel] /// maps uids to a Port
 
-  abstract override def addChannel(p: FEP.CommChannel, publisher: ChannelPublisher, client: Client): Unit = {
+  abstract override def addChannel(p: FEP.CommChannel, publisher: Publisher[CommChannel.State], client: Client): Unit = {
     channels.get(p.getName) match {
       case None =>
         channels = channels + (p.getName -> Channel(p, publisher))
@@ -45,7 +45,7 @@ trait AddRemoveValidation extends Protocol with Logging {
     }
   }
 
-  abstract override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher, endpointPublisher: EndpointPublisher, client: Client): CommandHandler = {
+  abstract override def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: Publisher[MeasurementBatch], endpointPublisher: Publisher[EndpointConnection.State], client: Client): CommandHandler = {
 
     endpoints.get(endpoint) match {
       case Some(x) => throw new IllegalArgumentException("Endpoint already exists: " + endpoint)

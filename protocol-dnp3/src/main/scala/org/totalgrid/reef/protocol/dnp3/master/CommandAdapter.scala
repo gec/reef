@@ -24,9 +24,9 @@ import org.totalgrid.reef.util.SafeExecution
 
 import org.totalgrid.reef.client.service.proto.{ Mapping, Commands }
 
-import org.totalgrid.reef.protocol.api.{ CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.protocol.dnp3._
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler => ProtocolCommandHandler }
 
 /**
  * Command adapter acts as a command response acceptor, forwarding translated responses to an actor
@@ -38,9 +38,7 @@ import com.weiglewilczek.slf4s.Logging
 class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
     extends IResponseAcceptor with ProtocolCommandHandler with Logging with SafeExecution {
 
-  import org.totalgrid.reef.protocol.api.Protocol.ResponsePublisher
-
-  case class ResponseInfo(id: String, publisher: ResponsePublisher, obj: Object)
+  case class ResponseInfo(id: String, publisher: Publisher[Commands.CommandStatus], obj: Object)
 
   private val map = MapGenerator.getCommandMap(cfg)
   private var sequence = 0
@@ -57,7 +55,7 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
     }
   }
 
-  def issue(cr: Commands.CommandRequest, publisher: ResponsePublisher): Unit = safeExecute {
+  def issue(cr: Commands.CommandRequest, publisher: Publisher[Commands.CommandStatus]): Unit = safeExecute {
     map.get(cr.getCommand.getName) match {
       case Some(x) =>
         val index = x.getIndex
@@ -80,7 +78,7 @@ class CommandAdapter(cfg: Mapping.IndexMapping, cmd: ICommandAcceptor)
   }
 
   /// obj is just held to stop garbage collector destroying reference
-  private def nextSeq(id: String, publisher: ResponsePublisher, obj: Object): Int = {
+  private def nextSeq(id: String, publisher: Publisher[Commands.CommandStatus], obj: Object): Int = {
     sequence += 1
     idMap.put(sequence, ResponseInfo(id, publisher, obj))
     sequence

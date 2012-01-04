@@ -18,12 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import org.totalgrid.reef.client.service.proto.Measurements
-
-object MeasSink {
-  type Meas = Measurements.Measurement
-}
-import MeasSink._
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 
 /// A wide interface for reading/writing historical data
 trait MeasSink {

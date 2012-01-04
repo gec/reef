@@ -86,7 +86,7 @@ trait ConnectionShutdownTests extends BrokerTestFixture with FunSuite with Shoul
     fixture() { (c, conn) =>
       conn.disconnect()
       intercept[ServiceIOException] {
-        c.subscribe(SomeIntegerTypeDescriptor).await.get
+        c.subscribe(SomeIntegerTypeDescriptor)
       }
     }
   }

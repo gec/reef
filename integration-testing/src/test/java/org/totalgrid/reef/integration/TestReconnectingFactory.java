@@ -32,6 +32,7 @@ import org.totalgrid.reef.client.settings.util.PropertyReader;
 import org.totalgrid.reef.util.EmptySyncVar;
 import org.totalgrid.reef.util.SyncVar;
 
+@SuppressWarnings("unchecked")
 public class TestReconnectingFactory
 {
 

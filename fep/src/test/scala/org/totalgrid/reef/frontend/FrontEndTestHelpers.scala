@@ -53,11 +53,6 @@ object FrontEndTestHelpers {
     }
   }
 
-  class MockCancelable extends net.agileautomata.executor4s.Cancelable {
-    var canceled = false
-    def cancel() = canceled = true
-  }
-
   class MockSubscription[A](val id: String = "queue") extends Subscription[A] {
     def getId = id
     var canceled = false

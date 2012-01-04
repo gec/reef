@@ -24,6 +24,7 @@ import org.totalgrid.reef.client.sapi.rpc.PointService
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rest.impl.BatchServiceRestOperations
 
 trait PointServiceImpl extends HasAnnotatedOperations with PointService {
 
@@ -56,13 +57,14 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
   }
 
   override def getPointsThatFeedbackForCommand(commandUuid: ReefUUID) = {
-    ops.operation("Couldn't find points that are feedback to endpoint: " + commandUuid.getValue) { client =>
+    ops.operation("Couldn't find points that are feedback to endpoint: " + commandUuid.getValue) { session =>
 
       val entity = EntityRequestBuilders.getCommandsFeedbackPoints(commandUuid)
-      val entityList = client.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
+      val entityList = session.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
 
-      def getPointWithUuid(uuid: ReefUUID) = client.get(PointRequestBuilders.getById(uuid)).map(_.one)
-      MultiRequestHelper.scatterGatherQuery(entityList, getPointWithUuid _)
+      val batchClient = new BatchServiceRestOperations(client)
+      def getPointWithUuid(uuid: ReefUUID) = batchClient.get(PointRequestBuilders.getById(uuid)).map(_.one)
+      MultiRequestHelper.batchScatterGatherQuery(entityList, getPointWithUuid _, batchClient.flush _)
     }
   }
 }

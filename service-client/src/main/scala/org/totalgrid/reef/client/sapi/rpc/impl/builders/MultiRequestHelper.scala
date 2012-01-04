@@ -21,9 +21,11 @@ package org.totalgrid.reef.client.sapi.rpc.impl.builders
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.InstantExecutor
 
-// TODO: migrate MultiRequestHelper functionality into executor4s
 object MultiRequestHelper {
-  def gatherResults[A](results: List[Result[A]]): Result[List[A]] = {
+  /**
+   * combine a list of results into a result with a list or a failure if any result is non successful
+   */
+  def combineResults[A](results: List[Result[A]]): Result[List[A]] = {
     val output = results.foldLeft(Success(List.empty[A]): Result[List[A]]) { (res: Result[List[A]], entry: Result[A]) =>
       res match {
         case Success(successfulResponse) =>
@@ -37,17 +39,34 @@ object MultiRequestHelper {
     output.map { _.reverse }
   }
 
+  /**
+   * take the results of an initial query and do a second query for each result
+   */
   def scatterGatherQuery[A, B](requests: Future[Result[List[A]]], fun: A => Future[Result[B]]): Future[Result[List[B]]] = {
+    batchScatterGatherQuery(requests, fun, () => {})
+  }
+
+  /**
+   * take the results of an initial query and do a second query for each result, calling flush after all secondary queries
+   * have been made
+   */
+  def batchScatterGatherQuery[A, B](requests: Future[Result[List[A]]], fun: A => Future[Result[B]], flushFunction: () => Unit): Future[Result[List[B]]] = {
     requests.flatMap { r =>
       r match {
         case Success(starts) =>
           val requests: List[Future[Result[B]]] = starts.map { entry => fun(entry) }
-
-          val result: Future[Result[List[B]]] = Futures.gather(new InstantExecutor, requests).map { l => gatherResults(l.toList) }
-          result
-
+          flushFunction()
+          gatherResults(requests)
         case Failure(ex) => requests.replicate[Result[List[B]]]
       }
     }
+  }
+
+  /**
+   * take a list of future results and turn it into a future of a list or results (making it a failure
+   * if any of the futures failed)
+   */
+  def gatherResults[A](requests: List[Future[Result[A]]]): Future[Result[List[A]]] = {
+    Futures.gather(new InstantExecutor, requests).map { l => combineResults(l.toList) }
   }
 }

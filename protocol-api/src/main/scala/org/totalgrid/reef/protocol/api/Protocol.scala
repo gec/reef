@@ -20,10 +20,10 @@ package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.client.service.proto.{ FEP, Commands, Measurements, Model }
 import Measurements.MeasurementBatch
-import FEP.CommChannel
 import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 
 trait Publisher[A] {
   /**
@@ -34,23 +34,23 @@ trait Publisher[A] {
 
 object Protocol {
 
-  def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile =
-    {
-      files.find {
-        _.getMimeType == mimetype
-      }.getOrElse {
-        throw new Exception("Missing file w/ mime-type: " + mimetype)
-      }
+  def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
+    files.find {
+      _.getMimeType == mimetype
+    }.getOrElse {
+      throw new Exception("Missing file w/ mime-type: " + mimetype)
     }
+  }
 
+  // These types removed, for some reason they conflict with the FSC compiler
   type BatchPublisher = Publisher[MeasurementBatch]
-  type EndpointPublisher = Publisher[FEP.EndpointConnection.State]
+  type EndpointPublisher = Publisher[EndpointConnection.State]
   type ChannelPublisher = Publisher[CommChannel.State]
   type ResponsePublisher = Publisher[Commands.CommandStatus]
 }
 
 trait CommandHandler {
-  def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher)
+  def issue(cmd: Commands.CommandRequest, publisher: Publisher[Commands.CommandStatus])
 }
 
 trait NullPublisher[A] extends Publisher[A] {
@@ -64,11 +64,8 @@ case object NullEndpointPublisher extends NullPublisher[FEP.EndpointConnection.S
 case object NullChannelPublisher extends NullPublisher[CommChannel.State]
 
 case object NullCommandHandler extends CommandHandler {
-  def issue(cmd: Commands.CommandRequest, publisher: Protocol.ResponsePublisher) =
-    {}
+  def issue(cmd: Commands.CommandRequest, publisher: Publisher[Commands.CommandStatus]) = {}
 }
-
-import Protocol._
 
 trait Protocol {
 
@@ -77,14 +74,12 @@ trait Protocol {
    */
   def name: String
 
-  def requiresChannel: Boolean
-
-  def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher, client: Client): CommandHandler
+  def addEndpoint(endpoint: String, channelName: String, config: List[Model.ConfigFile], batchPublisher: Publisher[MeasurementBatch],
+    endpointPublisher: Publisher[EndpointConnection.State], client: Client): CommandHandler
 
   def removeEndpoint(endpoint: String): Unit
 
-  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher, client: Client): Unit
+  def addChannel(channel: FEP.CommChannel, channelPublisher: Publisher[CommChannel.State], client: Client): Unit
 
   def removeChannel(channel: String): Unit
 
@@ -92,18 +87,14 @@ trait Protocol {
 
 trait ChannelIgnoringProtocol extends Protocol {
 
-  final override def requiresChannel = false
+  def addChannel(channel: FEP.CommChannel, channelPublisher: Publisher[CommChannel.State], client: Client): Unit = {}
 
-  def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher, client: Client): Unit =
-    {}
-
-  def removeChannel(channel: String): Unit =
-    {}
+  def removeChannel(channel: String): Unit = {}
 }
 
 trait LoggingProtocol extends Protocol with Logging {
 
-  abstract override def addChannel(channel: CommChannel, channelPublisher: Protocol.ChannelPublisher, client: Client) {
+  abstract override def addChannel(channel: CommChannel, channelPublisher: Publisher[CommChannel.State], client: Client) {
     logger.info("protocol: " + name + ": adding channel: " + channel + ", channelPublisher: " + channelPublisher)
     super.addChannel(channel, channelPublisher, client)
   }
@@ -113,8 +104,8 @@ trait LoggingProtocol extends Protocol with Logging {
     super.removeChannel(channel)
   }
 
-  abstract override def addEndpoint(endpointName: String, channelName: String, config: List[ConfigFile], batchPublisher: Protocol.BatchPublisher,
-    endpointPublisher: Protocol.EndpointPublisher, client: Client) = {
+  abstract override def addEndpoint(endpointName: String, channelName: String, config: List[ConfigFile], batchPublisher: Publisher[MeasurementBatch],
+    endpointPublisher: Publisher[EndpointConnection.State], client: Client) = {
     logger.info("protocol: " + name + ": adding endpoint: " + endpointName + ", channelName: " + channelName);
     super.addEndpoint(endpointName, channelName, config, batchPublisher, endpointPublisher, client)
   }

@@ -18,11 +18,12 @@
  */
 package org.totalgrid.reef.integration;
 
-import net.agileautomata.executor4s.Cancelable;
 import org.junit.Test;
+import org.totalgrid.reef.client.SubscriptionBinding;
 import org.totalgrid.reef.client.service.command.CommandRequestHandler;
 import org.totalgrid.reef.client.service.command.CommandResultCallback;
 import org.totalgrid.reef.client.exception.ExpectationException;
+import org.totalgrid.reef.integration.helpers.MockSubscriptionBindingListener;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 import org.totalgrid.reef.loader.commons.LoaderServices;
 import org.totalgrid.reef.client.service.proto.Commands;
@@ -47,6 +48,9 @@ public class TestCommandHandler extends ReefConnectionTestBase
         Command cmd = null;
         Endpoint endpoint = null;
         FEP.EndpointConnection conn = null;
+
+        MockSubscriptionBindingListener bindings = new MockSubscriptionBindingListener();
+        client.addSubscriptionCreationListener( bindings );
 
         LoaderServices loader = client.getService( LoaderServices.class );
         try
@@ -84,11 +88,12 @@ public class TestCommandHandler extends ReefConnectionTestBase
             if ( cmd != null )
                 loader.delete( cmd ).await();
         }
+        assertEquals( 1, bindings.size() );
     }
 
     private void doCommandRequest( Command cmd, Model.ReefUUID endpointUuid ) throws Exception
     {
-        Cancelable cancelable = null;
+        SubscriptionBinding cancelable = null;
         Commands.CommandLock access = null;
         try
         {

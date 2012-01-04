@@ -28,13 +28,12 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.protocol.dnp3.mock.MockCommandAcceptor
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.client.service.proto.Model.Command
+import org.totalgrid.reef.protocol.api.Publisher
 
 @RunWith(classOf[JUnitRunner])
 class CommandAdapterTests extends Suite with ShouldMatchers {
 
-  import org.totalgrid.reef.protocol.api.Protocol._
-
-  class MockResponseHandler extends ResponsePublisher {
+  class MockResponseHandler extends Publisher[Commands.CommandStatus] {
     val responses = new mutable.Queue[Commands.CommandStatus]
     final override def publish(rsp: Commands.CommandStatus) = {
       responses += rsp

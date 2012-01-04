@@ -16,36 +16,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.broker.qpid
+package org.totalgrid.reef.broker
+
+import org.totalgrid.reef.client.exception.ServiceIOException
+
+import net.agileautomata.commons.testing._
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 
-import org.totalgrid.reef.broker._
-import net.agileautomata.commons.testing._
-import org.totalgrid.reef.client.settings.AmqpSettings
-import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.client.exception.ServiceIOException
+abstract class BrokerConnectionTestBase extends FunSuite with ShouldMatchers {
 
-@RunWith(classOf[JUnitRunner])
-class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
+  /**
+   * should be implemented by a broker test suite package
+   */
+  def testConnection(test: BrokerConnection => Unit)
 
-  val defaults = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"));
   val defaultTimeout = 5000
-  def fixture(config: AmqpSettings)(test: BrokerConnection => Unit): Unit = {
-    val factory = new QpidBrokerConnectionFactory(config)
-    val conn = factory.connect
-    try {
-      test(conn)
-    } finally {
-      conn.disconnect()
-    }
-  }
 
-  test("Qpid disconnect events") {
-    fixture(defaults) { conn =>
+  test("Disconnect events are fired") {
+    testConnection { conn =>
       var list = List.empty[Boolean]
       val listener = new BrokerConnectionListener {
         def onDisconnect(expected: Boolean) = list ::= expected
@@ -56,33 +46,8 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("Connection Timeout") {
-    val config = new AmqpSettings("127.0.0.1", 10000, "", "", "", 30)
-    intercept[ServiceIOException](fixture(config) { conn => })
-  }
-
-  test("Bad Ssl configuration") {
-    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, 30, true, "badFileName", "")
-    val ex = intercept[ServiceIOException](fixture(config) { conn => })
-    ex.getMessage should include("badFileName")
-  }
-
-  test("Bad Ssl password") {
-
-    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, 30, true, "src/test/resources/trust-store.jks", "9090909")
-    val ex = intercept[ServiceIOException](fixture(config) { conn => })
-    ex.getMessage should include("SSL Context")
-  }
-
-  test("Valid Ssl configuration against non-ssl server") {
-
-    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, 30, true, "src/test/resources/trust-store.jks", "jjjjjjj")
-    val ex = intercept[ServiceIOException](fixture(config) { conn => })
-    ex.getMessage should include("SSLReceiver")
-  }
-
-  test("Qpid subscriptions work") {
-    fixture(defaults) { broker =>
+  test("Subscriptions work") {
+    testConnection { broker =>
 
       val list = new SynchronizedList[Int]
       val consumer = new BrokerMessageConsumer {
@@ -101,7 +66,7 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
   }
 
   test("Messages arrive in order") {
-    fixture(defaults) { broker =>
+    testConnection { broker =>
 
       val list = new SynchronizedList[Int]
       val consumer = new BrokerMessageConsumer {
@@ -121,8 +86,8 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("Qpid subscriptions throw correct exception on close") {
-    fixture(defaults) { broker =>
+  test("Subscriptions throw correct exception on close") {
+    testConnection { broker =>
       val consumer = new BrokerMessageConsumer {
         def onMessage(msg: BrokerMessage) = {}
       }
@@ -136,8 +101,8 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  test("Qpid subscriptions are only closed once") {
-    fixture(defaults) { broker =>
+  test("Subscriptions are only closed once") {
+    testConnection { broker =>
       val consumer = new BrokerMessageConsumer {
         def onMessage(msg: BrokerMessage) = {}
       }
@@ -148,7 +113,7 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
   }
 
   test("Throwing exception out of onMessage block") {
-    fixture(defaults) { broker =>
+    testConnection { broker =>
 
       var explode = false
       val list = new SynchronizedList[Int]
@@ -179,7 +144,7 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
   }
 
   test("Routing keys work as expected") {
-    fixture(defaults) { broker =>
+    testConnection { broker =>
 
       val list1 = new SynchronizedList[String]
       val consumer1 = new BrokerMessageConsumer {
@@ -206,5 +171,67 @@ class QpidBrokerConnectionTest extends FunSuite with ShouldMatchers {
 
     }
   }
-}
 
+  class MockConsumer extends BrokerMessageConsumer {
+    val messages = new SynchronizedList[List[Byte]]
+    def onMessage(msg: BrokerMessage) = messages.append(msg.bytes.toList)
+  }
+
+  val r = new java.util.Random
+  def randomBytes(count: Int) = {
+    val arr = new Array[Byte](count)
+    r.nextBytes(arr)
+    arr
+  }
+
+  val testBytes: List[Byte] = randomBytes(100).toList
+
+  test("Queue rotates consumers") {
+    testConnection { conn =>
+      val queue = conn.declareQueue(exclusive = false)
+      conn.declareExchange("ex1")
+      conn.bindQueue(queue, "ex1", "#")
+      val mc1 = new MockConsumer
+      val mc2 = new MockConsumer
+      conn.listen(queue).start(mc1)
+      conn.listen(queue).start(mc2)
+      2.times(conn.publish("ex1", "foobar", testBytes.toArray, None))
+
+      mc1.messages shouldBecome testBytes within 5000
+      mc2.messages shouldBecome testBytes within 5000
+    }
+  }
+
+  test("Exchange replicates messages") {
+    testConnection { conn =>
+      val mc1 = new MockConsumer
+      val mc2 = new MockConsumer
+      val sub1 = conn.listen().start(mc1)
+      val sub2 = conn.listen().start(mc2)
+      conn.declareExchange("ex1")
+      conn.bindQueue(sub1.getQueue, "ex1", "#")
+      conn.bindQueue(sub2.getQueue, "ex1", "#")
+      conn.publish("ex1", "foobar", testBytes.toArray, None)
+
+      mc1.messages shouldBecome testBytes within 5000
+      mc2.messages shouldBecome testBytes within 5000
+    }
+  }
+
+  test("All messages are received when connection is used concurrently") {
+    testConnection { conn =>
+      val count = new SynchronizedVariable[Int](0)
+      val mc = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = count.modify(_ + 1)
+      }
+      conn.declareExchange("ex")
+      val sub = conn.listen().start(mc)
+      conn.bindQueue(sub.getQueue, "ex", "#")
+      val bytes = 100.create(randomBytes(1))
+      bytes.foreach(arr => onAnotherThread(conn.publish("ex", "foo", arr, None)))
+
+      count shouldBecome 100 within 5000
+      count shouldRemain 100 during 500
+    }
+  }
+}

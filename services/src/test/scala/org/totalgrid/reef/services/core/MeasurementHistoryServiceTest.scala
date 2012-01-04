@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.measurementstore.Historian
-import org.totalgrid.reef.measurementstore.MeasSink.Meas
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 import org.totalgrid.reef.client.service.proto.Measurements
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory
 

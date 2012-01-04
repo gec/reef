@@ -49,6 +49,7 @@ class LoadConfigCommand extends ReefCommandSupport {
   override def doCommand(): Unit = {
     val loaderServices = new LoaderServicesImpl(reefClient)
 
+    reefClient.setHeaders(reefClient.getHeaders.setTimeout(30000))
     LoadManager.loadFile(loaderServices, configFile, benchmark, dryRun, ignoreWarnings, batchSize)
   }
 }
@@ -62,6 +63,7 @@ class UnloadConfigCommand extends ReefCommandSupport {
   override def doCommand(): Unit = {
     val loaderServices = new LoaderServicesImpl(reefClient)
 
+    reefClient.setHeaders(reefClient.getHeaders.setTimeout(30000))
     ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out), batchSize)
   }
 

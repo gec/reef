@@ -20,6 +20,7 @@ package org.totalgrid.reef.client.factory;
 
 import net.agileautomata.executor4s.ExecutorService;
 import net.agileautomata.executor4s.Executors;
+import net.agileautomata.executor4s.Minutes;
 import org.totalgrid.reef.broker.BrokerConnection;
 import org.totalgrid.reef.broker.BrokerConnectionFactory;
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;
@@ -57,7 +58,7 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory, o
     public ReefReconnectingFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
     {
         brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
-        exe = Executors.newScheduledThreadPool( 5 );
+        exe = Executors.newResizingThreadPool( new Minutes( 1 ) );
         servicesList = list;
         factory = new DefaultReconnectingFactory( brokerConnectionFactory, exe, startDelayMs, maxDelayMs );
         factory.addConnectionWatcher( this );

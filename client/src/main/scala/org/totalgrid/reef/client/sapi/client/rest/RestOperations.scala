@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.sapi.client._
 import org.totalgrid.reef.client.proto.Envelope.Verb
 import org.totalgrid.reef.client.types.TypeDescriptor
 
-import net.agileautomata.executor4s.{ Result, Future }
+import net.agileautomata.executor4s.Future
 
 trait RestOperations {
 
@@ -43,5 +43,5 @@ trait RestOperations {
    * returned as a future so a client who wants to listen to the SubscriptionResult will get the event
    * on the same dispatcher as the result would come on
    */
-  def subscribe[A](descriptor: TypeDescriptor[A]): Future[Result[Subscription[A]]]
+  def subscribe[A](descriptor: TypeDescriptor[A]): Subscription[A]
 }

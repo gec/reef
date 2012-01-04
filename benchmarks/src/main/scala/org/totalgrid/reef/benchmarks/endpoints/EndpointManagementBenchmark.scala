@@ -26,9 +26,9 @@ import org.totalgrid.reef.benchmarks.{ BenchmarkReading, FailedBenchmarkExceptio
 case class EndpointCycleReading(endpointName: String, protocol: String, finalState: State, stateTransitionTime: Long) extends BenchmarkReading {
   def csvName = "endpoint"
 
-  def testOutputNames = "StateTransmissionTime" :: Nil
+  def testOutputNames = "EndpointName" :: "StateTransmissionTime" :: Nil
 
-  def testOutputs = stateTransitionTime :: Nil
+  def testOutputs = endpointName :: stateTransitionTime :: Nil
 
   def testParameterNames = "protocol" :: "finalState" :: Nil
 
@@ -37,6 +37,8 @@ case class EndpointCycleReading(endpointName: String, protocol: String, finalSta
 
 class EndpointManagementBenchmark(endpointNames: List[String], cycles: Int) extends BenchmarkTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
+    stream.foreach(_.println("Cycling " + endpointNames.size + " endpoints"))
+
     val endpoints = endpointNames.map { client.getEndpointByName(_).await }
 
     if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints to cycle")
@@ -54,12 +56,14 @@ class EndpointManagementBenchmark(endpointNames: List[String], cycles: Int) exte
       endpoints.map { e => client.disableEndpointConnection(e.getUuid) }.foreach { _.await }
 
       map.checkAllState(false, State.COMMS_DOWN)
+      stream.foreach(_.println("Endpoints COMMS_DOWN."))
       val results = map.getStateReadings
 
       map.start
       endpoints.map { e => client.enableEndpointConnection(e.getUuid) }.foreach { _.await }
 
       map.checkAllState(true, State.COMMS_UP)
+      stream.foreach(_.println("Endpoints COMMS_UP."))
 
       results ::: map.getStateReadings
     }.toList.flatten

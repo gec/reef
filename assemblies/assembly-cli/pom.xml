@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-assemblies</artifactId>
-        <version>0.4.1</version>
+        <version>0.4.2</version>
         <relativePath>../</relativePath>
     </parent>
     <artifactId>totalgrid-reef-cli</artifactId>
@@ -105,6 +105,10 @@
                                     </descriptors>
                                     <finalName>${project.artifactId}-${project.version}</finalName>
                                     <tarLongFileMode>gnu</tarLongFileMode>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
                                 </configuration>
                             </execution>
                             <execution>
@@ -118,6 +122,10 @@
                                         <descriptor>src/main/descriptors/windows-cli-bin.xml</descriptor>
                                     </descriptors>
                                     <finalName>${project.artifactId}-${project.version}</finalName>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
                                 </configuration>
                             </execution>
                         </executions>
@@ -140,6 +148,8 @@
                                     <features>
                                         <feature>reef-system-preload</feature>
                                     </features>
+                                    <!-- intentionally wrong to stop including enterprise descriptors -->
+                                    <karafVersion>9.9.9</karafVersion>
                                     <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
                                     <repository>target/system-repo</repository>
                                 </configuration>
@@ -157,6 +167,8 @@
                                     <features>
                                         <feature>reef-remote-shell</feature>
                                     </features>
+                                    <!-- intentionally wrong to stop including enterprise descriptors -->
+                                    <karafVersion>9.9.9</karafVersion>
                                     <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
                                     <repository>target/reef-cli-repo</repository>
                                 </configuration>
@@ -256,6 +268,10 @@
                                     </descriptors>
                                     <finalName>${project.artifactId}-${project.version}</finalName>
                                     <tarLongFileMode>gnu</tarLongFileMode>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
                                 </configuration>
                             </execution>
                             <execution>
@@ -269,6 +285,10 @@
                                         <descriptor>src/main/descriptors/windows-cli-bin.xml</descriptor>
                                     </descriptors>
                                     <finalName>${project.artifactId}-${project.version}</finalName>
+                                    <archiverConfig>
+                                        <duplicateBehavior>skip</duplicateBehavior>
+                                    </archiverConfig>
+                                    <appendAssemblyId>false</appendAssemblyId>
                                 </configuration>
                             </execution>
                         </executions>
@@ -291,6 +311,8 @@
                                     <features>
                                         <feature>reef-system-preload</feature>
                                     </features>
+                                    <!-- intentionally wrong to stop including enterprise descriptors -->
+                                    <karafVersion>9.9.9</karafVersion>
                                     <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
                                     <repository>target/system-repo</repository>
                                 </configuration>

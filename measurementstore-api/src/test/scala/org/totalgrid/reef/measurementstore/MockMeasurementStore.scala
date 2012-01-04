@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import MeasSink._
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 
 class MockMeasurementStore extends MeasurementStore {
 
@@ -32,4 +32,6 @@ class MockMeasurementStore extends MeasurementStore {
   def getInRange(name: String, begin: Long, end: Long, max: Int, ascending: Boolean) = Nil
   def numValues(name: String) = 0
   def remove(names: Seq[String]) {}
+
+  def connect() {}
 }

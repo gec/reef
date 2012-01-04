@@ -27,6 +27,8 @@ trait SubscriptionCreatorManager extends SubscriptionCreator {
   def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = this.synchronized(listeners += listener)
   def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = this.synchronized(listeners -= listener)
 
-  // TODO: this should be protected for use by defaultAnnotatedOperations only
-  def onSubscriptionCreated(binding: SubscriptionBinding) = listeners.foreach { _.onSubscriptionCreated(binding) }
+  protected def notifySubscriptionCreated[A <: SubscriptionBinding](binding: A): A = {
+    listeners.foreach { _.onSubscriptionCreated(binding) }
+    binding
+  }
 }

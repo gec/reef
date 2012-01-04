@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest
 
-import net.agileautomata.executor4s.{ Cancelable, Executor }
-import org.totalgrid.reef.client.Routable
+import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.client.{ SubscriptionBinding, Routable }
 
 import org.totalgrid.reef.client.sapi.service.AsyncService
 
 trait Bindable {
 
-  def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean): Cancelable
+  def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean): SubscriptionBinding
 
 }

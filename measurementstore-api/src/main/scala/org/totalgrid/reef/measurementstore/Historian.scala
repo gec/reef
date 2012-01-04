@@ -18,9 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import org.totalgrid.reef.client.service.proto.Measurements
-
-import MeasSink.Meas
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 
 /// A wide interface for reading/writing historical data
 trait Historian {

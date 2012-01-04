@@ -18,27 +18,26 @@
  */
 package org.totalgrid.reef.protocol.api.mock
 
-import org.totalgrid.reef.protocol.api.Protocol._
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.client.service.proto.{ FEP, Model }
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, EndpointConnection }
 
 class NullProtocol(protocolName: String = "NullProtocol") extends Protocol {
 
   final override def name = protocolName
 
-  override def requiresChannel = false
-
   override def addEndpoint(endpoint: String,
     channelName: String,
     config: List[Model.ConfigFile],
-    batchPublisher: BatchPublisher,
-    endpointPublisher: EndpointPublisher,
+    batchPublisher: Publisher[MeasurementBatch],
+    endpointPublisher: Publisher[EndpointConnection.State],
     client: Client): CommandHandler = NullCommandHandler
 
   override def removeEndpoint(endpoint: String) = {}
 
-  override def addChannel(channel: FEP.CommChannel, channelPublisher: ChannelPublisher, client: Client) = {}
+  override def addChannel(channel: FEP.CommChannel, channelPublisher: Publisher[CommChannel.State], client: Client) = {}
 
   override def removeChannel(channel: String) = {}
 
