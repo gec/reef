@@ -25,8 +25,8 @@ import java.util.UUID
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.{ EntityToTypeJoins, ApplicationSchema, Entity }
 import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.models.{ EntityTypeMetaModel, EntityToTypeJoins, ApplicationSchema, Entity }
 
 object EntityService {
   def seed() {
@@ -111,7 +111,7 @@ class EntityServiceModel
       entityModel.id = id
     }
     val ent = create(context, entityModel)
-    EntityQuery.addEntityTypes(types.toList)
+    addEntityTypes(types.toList)
     types.foreach(t => entityTypes.insert(new EntityToTypeJoins(ent.id, t)))
     ent
   }
@@ -128,10 +128,30 @@ class EntityServiceModel
     val additionalTypes = types.diff(existing.types.value)
 
     if (!additionalTypes.isEmpty) {
-      val ent = EntityQuery.addTypesToEntity(existing, additionalTypes)
+      val ent = addTypesToEntity(existing, additionalTypes)
       (ent, true)
     } else {
       (existing, false)
+    }
+  }
+
+  private def addTypesToEntity(ent: Entity, types: List[String]) = {
+    if (types.isEmpty) {
+      ent
+    } else {
+      val distinctTypes = types.distinct.reverse
+      addEntityTypes(distinctTypes)
+      ApplicationSchema.entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
+      table.lookup(ent.id).get
+    }
+  }
+
+  private def addEntityTypes(types: List[String]) {
+    val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
+    if (!customTypes.isEmpty) {
+      val known = from(ApplicationSchema.entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
+      val newTypes = customTypes.diff(known)
+      newTypes.foreach(t => ApplicationSchema.entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
     }
   }
 

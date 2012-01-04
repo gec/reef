@@ -523,7 +523,7 @@ object EntityQuery extends Logging {
     addTypesToEntity(ent, typ :: Nil)
   }*/
 
-  def addTypesToEntity(ent: Entity, types: List[String]) = {
+  /*def addTypesToEntity(ent: Entity, types: List[String]) = {
     if (types.isEmpty) {
       ent
     } else {
@@ -532,16 +532,16 @@ object EntityQuery extends Logging {
       entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
       entities.lookup(ent.id).get
     }
-  }
+  }*/
 
-  def addEntityTypes(types: List[String]) {
+  /*def addEntityTypes(types: List[String]) {
     val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
     if (!customTypes.isEmpty) {
       val known = from(entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
       val newTypes = customTypes.diff(known)
       newTypes.foreach(t => entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
     }
-  }
+  }*/
 
   def findEdge(proto: EntityEdgeProto): Option[Edge] = {
     proto.uuid.value.flatMap { v =>

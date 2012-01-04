@@ -25,12 +25,12 @@ import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity, EntityToTypeJoins }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
 import java.util.UUID
 import org.totalgrid.reef.client.service.entity.EntityRelation
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
 import org.totalgrid.reef.services.SilentRequestContext
+import org.totalgrid.reef.models._
 
 object EntityTestSeed {
 
@@ -55,9 +55,29 @@ object EntityTestSeed {
       entityModel.id = id
     }
     val ent = entities.insert(entityModel)
-    EntityQuery.addEntityTypes(types.toList)
+    addEntityTypes(types.toList)
     types.foreach(t => entityTypes.insert(new EntityToTypeJoins(ent.id, t)))
     ent
+  }
+
+  def addTypesToEntity(ent: Entity, types: List[String]) = {
+    if (types.isEmpty) {
+      ent
+    } else {
+      val distinctTypes = types.distinct.reverse
+      addEntityTypes(distinctTypes)
+      ApplicationSchema.entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
+      ApplicationSchema.entities.lookup(ent.id).get
+    }
+  }
+
+  private def addEntityTypes(types: List[String]) {
+    val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
+    if (!customTypes.isEmpty) {
+      val known = from(ApplicationSchema.entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
+      val newTypes = customTypes.diff(known)
+      newTypes.foreach(t => ApplicationSchema.entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
+    }
   }
 
   def seed {
