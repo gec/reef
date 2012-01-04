@@ -12,7 +12,7 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 Version 0.4.2
 ==============
 
-Bugfix and stability release.
+Bugfix and stability release. (Requires resetdb on server after upgrade.)
 
 ### Service/API Updates:
 
@@ -29,6 +29,7 @@ Bugfix and stability release.
 * FrontEnd gives all protocol implementations channel if endpoint has channel
 * ServiceBindings (from bindCommandHandler) are correctly passed to SubscriptionCreationListeners
 * Fixed memory leak in DefaultSimulator (benchmark protocol)
+* Fixed measproc.ignoredMeasurements metrics counter
 
 ### Reef Internals:
 
@@ -36,6 +37,10 @@ Bugfix and stability release.
 * MeasurementStore implementation looks up configuration from etc/org.totalgrid.reef.mstore.cfg
 * Benchmark program collects many more details of the system-under-test.
 * Split Qpid broker implementation out of reef-broker package
+
+### Upstream project versions
+
+* Executor4s : 0.1.9 - upgraded to get exceptions on deadlocks
 
 Version 0.4.1
 ==============

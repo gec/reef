@@ -13,16 +13,16 @@ here and in the change log.
 
 <table>
   <tr>
-    <th>Client/Server</th><th>0.3.x</th><th>0.4.0</th><th>0.4.1</th>
+    <th>Client/Server</th><th>0.3.x</th><th>0.4.0</th><th>0.4.1</th><th>0.4.2</th>
   </tr>
   <tr>
-    <td>0.3.x</td><td>OK</td><td>-</td><td>-</td>
+    <td>0.3.x</td><td>OK</td><td>-</td><td>-</td><td>-</td>
   </tr>
   <tr>
-    <td>0.4.0</td><td>-</td><td>OK</td><td>OK</td>
+    <td>0.4.0</td><td>-</td><td>OK</td><td>OK</td><td>OK</td>
   </tr>
   <tr>
-    <td>0.4.1</td><td>-</td><td>OK*1</td><td>OK</td>
+    <td>0.4.1</td><td>-</td><td>OK*1</td><td>OK</td><td>OK</td>
   </tr>
 </table>
 
