@@ -60,6 +60,11 @@ class EntityServiceModel
 
   val table = ApplicationSchema.entities
 
+  val edgeModel = new EntityEdgeServiceModel
+  val alarmModel = new AlarmServiceModel
+  val eventModel = new EventServiceModel(new EventConfigServiceModel, alarmModel)
+  alarmModel.eventModel = Some(eventModel)
+
   def findOrCreate(context: RequestContext, name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
 
     val current = EntityQuery.returnSingleOption(table.where(t => t.name === name).toList, "Entity")
@@ -176,28 +181,21 @@ class EntityServiceModel
       entry.types.value.diff(previous.types.value) == Nil
   }
 
-  override protected def postDelete(context: RequestContext, previous: Entity) {
-    cleanupEntities(List(previous))
+  override protected def preDelete(context: RequestContext, previous: Entity) {
+    val events = ApplicationSchema.events.where(e => e.entityId in List(previous.id)).toList
+    val alarms = ApplicationSchema.alarms.where(a => a.eventId in events.map(_.id)).toList
+
+    alarms.foreach(a => alarmModel.delete(context, a))
+    events.foreach(e => eventModel.delete(context, e))
   }
 
-  private def cleanupEntities(entities: List[Entity]) = {
-    val entityIds = entities.map { _.id }
+  override protected def postDelete(context: RequestContext, previous: Entity) {
 
-    val edges = ApplicationSchema.edges.where(e => (e.parentId in entityIds) or (e.childId in entityIds))
+    val edges = ApplicationSchema.edges.where(e => (e.parentId === previous.id) or (e.childId === previous.id))
 
-    val edgeIds = edges.map { _.id }
+    edges.foreach(edge => edgeModel.delete(context, edge))
 
-    val derivedEdgeIds = ApplicationSchema.derivedEdges.where(_.edgeId in edgeIds).map { _.parentEdgeId }
-    ApplicationSchema.derivedEdges.deleteWhere(_.edgeId in edgeIds)
-    ApplicationSchema.edges.deleteWhere(_.id in derivedEdgeIds)
-    ApplicationSchema.edges.deleteWhere(_.id in edgeIds)
-
-    // TODO: evaluate if we should be deleting events when entities get deleted
-    val events = ApplicationSchema.events.where(e => e.entityId in entityIds)
-    ApplicationSchema.alarms.deleteWhere(a => a.eventId in events.map { _.id })
-    ApplicationSchema.events.deleteWhere(e => e.entityId in entityIds)
-
-    ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId in entityIds)
-    ApplicationSchema.entityTypes.deleteWhere(et => et.entityId in entityIds)
+    ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId === previous.id)
+    ApplicationSchema.entityTypes.deleteWhere(et => et.entityId === previous.id)
   }
 }

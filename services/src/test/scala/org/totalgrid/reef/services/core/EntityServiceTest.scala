@@ -24,21 +24,23 @@ import SyncServiceShims._
 import org.totalgrid.reef.client.exception.ReefServiceException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.models.{ ApplicationSchema, DatabaseUsingTestBase }
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.service.proto.Model.{ Relationship, Entity, ReefUUID }
+import org.totalgrid.reef.client.service.proto.Model.{ Relationship, Entity, ReefUUID, EntityEdge }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
 import org.totalgrid.reef.client.proto.Envelope.{ SubscriptionEventType, Status }
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext, SilentRequestContext }
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.models.{ EventConfigStore, ApplicationSchema, DatabaseUsingTestBase }
+import org.totalgrid.reef.client.service.proto.Alarms.Alarm
+import org.totalgrid.reef.client.service.proto.Events.Event
 
 @RunWith(classOf[JUnitRunner])
 class EntityServiceTest extends DatabaseUsingTestBase {
 
   object QueueingEventSink {
-    case class SubEvent(typ: SubscriptionEventType, value: Any, key: String)
+    case class SubEvent(typ: SubscriptionEventType, value: AnyRef, key: String)
   }
   class QueueingEventSink extends SubscriptionHandler {
     import QueueingEventSink.SubEvent
@@ -47,7 +49,7 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     def events = received.reverse
 
     def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) {
-      received ::= SubEvent(typ, value, key)
+      received ::= SubEvent(typ, value.asInstanceOf[AnyRef], key)
     }
 
     def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
@@ -254,12 +256,12 @@ class EntityServiceTest extends DatabaseUsingTestBase {
   test("Delete Entity") {
 
     val upload = Entity.newBuilder.setName("MagicTestObject").addTypes("TestType").build
-
     val created = service.put(upload).expectOne(Status.CREATED)
 
     val deleteEnt = Entity.newBuilder().setUuid(created.getUuid).build()
-
     val deleted = service.delete(deleteEnt).expectOne(Status.DELETED)
+
+    events.map(_.typ) should equal(List(ADDED, REMOVED))
   }
 
   import org.squeryl.PrimitiveTypeMode._
@@ -290,15 +292,49 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     val postDeriveds = deriveds.where(e => true === true).toList
     postDeriveds should equal(Nil)
+
+    val eventList = List(
+      (REMOVED, classOf[Entity]),
+      (REMOVED, classOf[EntityEdge]),
+      (REMOVED, classOf[EntityEdge]),
+      (REMOVED, classOf[EntityEdge]))
+
+    events.map(s => (s.typ, s.value.getClass)) should equal(eventList)
   }
 
   test("Multi-model Delete") {
 
-    val upload = Entity.newBuilder.setName("MagicTestObject").addTypes("TestType").build
-    val created = service.put(upload).expectOne(Status.CREATED)
+    val dev = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    edgeModel.addEdge(silentContext, dev, sub, "owns")
 
-    val deleteEnt = Entity.newBuilder().setUuid(created.getUuid).build()
+    val eventConfigModel = new EventConfigServiceModel
+    val alarmModel = new AlarmServiceModel
+    val eventModel = new EventServiceModel(eventConfigModel, alarmModel)
+    alarmModel.eventModel = Some(eventModel)
+
+    val req = Event.newBuilder.build
+
+    eventModel.makeEvent(silentContext, EventConfigStore.ALARM, req, 8, Some(sub), "rendered", "user", Alarm.State.UNACK_SILENT.getNumber)
+    ApplicationSchema.events.where(t => true === true).toList.size should equal(1)
+    ApplicationSchema.alarms.where(t => true === true).toList.size should equal(1)
+
+    val deleteEnt = Entity.newBuilder().setName("Sub").build()
     val deleted = service.delete(deleteEnt).expectOne(Status.DELETED)
+
+    ApplicationSchema.events.where(t => true === true).toList.size should equal(0)
+    ApplicationSchema.alarms.where(t => true === true).toList.size should equal(0)
+
+    // multiple events due to multi-level subscriptions
+    val eventList = List(
+      (REMOVED, classOf[Alarm]),
+      (REMOVED, classOf[Alarm]),
+      (REMOVED, classOf[Event]),
+      (REMOVED, classOf[Event]),
+      (REMOVED, classOf[Entity]),
+      (REMOVED, classOf[EntityEdge]))
+
+    events.map(s => (s.typ, s.value.getClass)) should equal(eventList)
   }
 
   /*test("Create Cause Event") {
