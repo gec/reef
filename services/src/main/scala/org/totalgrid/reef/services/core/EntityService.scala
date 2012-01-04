@@ -129,6 +129,7 @@ class EntityServiceModel
 
     if (!additionalTypes.isEmpty) {
       val ent = addTypesToEntity(existing, additionalTypes)
+      onUpdated(context, ent)
       (ent, true)
     } else {
       (existing, false)
@@ -176,6 +177,27 @@ class EntityServiceModel
   }
 
   override protected def postDelete(context: RequestContext, previous: Entity) {
-    EntityQuery.cleanupEntities(List(previous))
+    cleanupEntities(List(previous))
+  }
+
+  private def cleanupEntities(entities: List[Entity]) = {
+    val entityIds = entities.map { _.id }
+
+    val edges = ApplicationSchema.edges.where(e => (e.parentId in entityIds) or (e.childId in entityIds))
+
+    val edgeIds = edges.map { _.id }
+
+    val derivedEdgeIds = ApplicationSchema.derivedEdges.where(_.edgeId in edgeIds).map { _.parentEdgeId }
+    ApplicationSchema.derivedEdges.deleteWhere(_.edgeId in edgeIds)
+    ApplicationSchema.edges.deleteWhere(_.id in derivedEdgeIds)
+    ApplicationSchema.edges.deleteWhere(_.id in edgeIds)
+
+    // TODO: evaluate if we should be deleting events when entities get deleted
+    val events = ApplicationSchema.events.where(e => e.entityId in entityIds)
+    ApplicationSchema.alarms.deleteWhere(a => a.eventId in events.map { _.id })
+    ApplicationSchema.events.deleteWhere(e => e.entityId in entityIds)
+
+    ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId in entityIds)
+    ApplicationSchema.entityTypes.deleteWhere(et => et.entityId in entityIds)
   }
 }

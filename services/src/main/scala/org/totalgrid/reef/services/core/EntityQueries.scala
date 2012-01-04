@@ -686,7 +686,7 @@ object EntityQuery extends Logging {
     ApplicationSchema.entities.deleteWhere(_.id in entities.map { _.id })
   }*/
 
-  def cleanupEntities(entities: List[Entity]) = {
+  /*def cleanupEntities(entities: List[Entity]) = {
     val entityIds = entities.map { _.id }
 
     val edges = ApplicationSchema.edges.where(e => (e.parentId in entityIds) or (e.childId in entityIds))
@@ -705,7 +705,7 @@ object EntityQuery extends Logging {
 
     ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId in entityIds)
     ApplicationSchema.entityTypes.deleteWhere(et => et.entityId in entityIds)
-  }
+  }*/
 }
 
 trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
