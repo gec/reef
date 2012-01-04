@@ -12,7 +12,7 @@
 		<reef.version>0.4.2-SNAPSHOT</reef.version>
 		<mavenBundleVersion>2.1.0</mavenBundleVersion>
 		<felixCoreVersion>1.4.0</felixCoreVersion>
-        <executor4s.version>0.1.9-RC5</executor4s.version>
+        <executor4s.version>0.1.9</executor4s.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 

@@ -16,17 +16,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.executor
+package org.totalgrid.reef.client.sapi.client.rest.impl
 
-import org.osgi.framework.{ BundleActivator, BundleContext }
-import com.weiglewilczek.scalamodules._
 import net.agileautomata.executor4s._
 
-final class Activator extends BundleActivator {
+/**
+ * implements the Executor interface by passing all calls through to real executor
+ */
+trait ExecutorDelegate extends Executor {
+  protected def executor: Executor
 
-  val exe = Executors.newResizingThreadPool(1.minutes)
-
-  def start(context: BundleContext) = context.createService(exe, interface1 = interface[Executor])
-
-  def stop(context: BundleContext) = exe.terminate()
+  final override def operationTimeout = executor.operationTimeout
+  final override def execute(fun: => Unit): Unit = executor.execute(fun)
+  final override def attempt[A](fun: => A): Future[Result[A]] = executor.attempt(fun)
+  final override def schedule(interval: TimeInterval)(fun: => Unit): Timer = executor.schedule(interval)(fun)
+  final override def scheduleWithFixedOffset(initial: TimeInterval, offset: TimeInterval)(fun: => Unit): Timer =
+    executor.scheduleWithFixedOffset(initial, offset)(fun)
 }

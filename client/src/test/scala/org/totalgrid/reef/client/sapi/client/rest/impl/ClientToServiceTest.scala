@@ -42,7 +42,7 @@ class MemoryClientToService extends ClientToServiceTest with MemoryBrokerTestFix
 trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
 
   def fixture[A](attachService: Boolean)(fun: Client => A) = broker { b =>
-    val executor = Executors.newScheduledThreadPool(5)
+    val executor = Executors.newResizingThreadPool(1.minutes)
     var binding: Option[SubscriptionBinding] = None
     try {
       val conn = new DefaultConnection(b, executor, 100)

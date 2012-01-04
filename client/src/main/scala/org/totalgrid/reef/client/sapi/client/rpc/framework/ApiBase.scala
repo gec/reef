@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.client.rpc.framework
 
 import org.totalgrid.reef.client.sapi.client.rest._
-import org.totalgrid.reef.client.sapi.client.rest.impl.{ BatchServiceRestOperations, DefaultAnnotatedOperations }
+import org.totalgrid.reef.client.sapi.client.rest.impl.{ ExecutorDelegate, BatchServiceRestOperations, DefaultAnnotatedOperations }
 import org.totalgrid.reef.client.{ SubscriptionCreator, SubscriptionCreationListener }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client._
@@ -46,7 +46,7 @@ trait HasAnnotatedOperations {
  */
 trait ClientOperations extends SubscriptionCreator with RequestSpyManager with HasHeaders with Executor with BatchOperations
 
-abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperations with ClientOperations {
+abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperations with ClientOperations with ExecutorDelegate {
 
   private var currentOpsMode = new DefaultAnnotatedOperations(client, client)
   private var flushableOps = Option.empty[BatchServiceRestOperations[_]]
@@ -77,10 +77,8 @@ abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperati
   override def setHeaders(headers: BasicRequestHeaders) = client.setHeaders(headers)
   override def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders) = client.modifyHeaders(modify)
 
-  def attempt[A](fun: => A) = client.attempt(fun)
-  def execute(fun: => Unit) = client.execute(fun)
-  def schedule(interval: TimeInterval)(fun: => Unit) = client.schedule(interval)(fun)
-  def scheduleWithFixedOffset(initial: TimeInterval, offset: TimeInterval)(fun: => Unit) =
-    client.scheduleWithFixedOffset(initial, offset)(fun)
+  // for ExecutorDelegate
+  protected def executor = client
+
 }
 

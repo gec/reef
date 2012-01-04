@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.client.factory
 
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.settings.AmqpSettings
-import net.agileautomata.executor4s.Executors
+import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
@@ -33,7 +33,7 @@ import org.totalgrid.reef.client.ServicesList
  */
 class ReefFactory(amqpSettings: AmqpSettings, servicesList: ServicesList) {
   private val factory = new QpidBrokerConnectionFactory(amqpSettings)
-  private val exe = Executors.newScheduledThreadPool(5)
+  private val exe = Executors.newResizingThreadPool(1.minutes)
 
   private var broker = Option.empty[BrokerConnection]
   private var connection = Option.empty[Connection]
