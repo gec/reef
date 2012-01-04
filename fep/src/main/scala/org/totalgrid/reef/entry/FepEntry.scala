@@ -34,6 +34,45 @@ import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSett
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 
+object FepEntry {
+  def startFepNode(client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
+    val services = new FrontEndProviderServicesImpl(client)
+
+    val frontEndConnections = new FrontEndConnections(protocols, services, client)
+    val populator = new EndpointConnectionPopulatorAction(services)
+    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client)
+
+    // the manager does all the work of announcing the system, retrieving resources and starting/stopping
+    // protocol masters in response to events
+    val fem = new FrontEndManager(
+      services,
+      services,
+      connectionContext,
+      appConfig,
+      protocols.map { _.name }.toList,
+      5000)
+
+    fem.start
+    new Cancelable {
+      def cancel() {
+        fem.stop
+      }
+    }
+  }
+
+  def createFepConsumer(userSettings: UserSettings, nodeSettings: NodeSettings, p: Protocol) = {
+    val appConfigConsumer = new AppEnrollerConsumer {
+      // Downside of using classes not functions, we can't partially evalute
+      def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
+        startFepNode(client, services, appConfig, List(p))
+      }
+    }
+    val appInstanceName = nodeSettings.getDefaultNodeName + "-FEP-" + p.name
+    val appEnroller = new ApplicationEnrollerEx(nodeSettings, appInstanceName, List("FEP"), appConfigConsumer)
+    new UserLogin(userSettings, appEnroller)
+  }
+}
+
 final class FepActivator extends ExecutorBundleActivator with Logging {
 
   private var map = Map.empty[Protocol, ConnectionConsumer]
@@ -67,17 +106,10 @@ final class FepActivator extends ExecutorBundleActivator with Logging {
     map.get(p) match {
       case Some(x) => logger.info("Protocol already added: " + p.name)
       case None =>
-        val appConfigConsumer = new AppEnrollerConsumer {
-          // Downside of using classes not functions, we can't partially evalute
-          def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
-            create(client, services, appConfig, List(p))
-          }
-        }
-        val appEnroller = new ApplicationEnrollerEx(nodeSettings, "FEP-" + p.name, List("FEP"), appConfigConsumer)
-        val userLogin = new UserLogin(userSettings, appEnroller)
+        val consumer = FepEntry.createFepConsumer(userSettings, nodeSettings, p)
 
-        map = map + (p -> userLogin)
-        manager.foreach { _.addConsumer(userLogin) }
+        map = map + (p -> consumer)
+        manager.foreach { _.addConsumer(consumer) }
     }
   }
 
@@ -90,28 +122,4 @@ final class FepActivator extends ExecutorBundleActivator with Logging {
     }
   }
 
-  private def create(client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
-    val services = new FrontEndProviderServicesImpl(client)
-
-    val frontEndConnections = new FrontEndConnections(protocols, services, client)
-    val populator = new EndpointConnectionPopulatorAction(services)
-    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client)
-
-    // the manager does all the work of announcing the system, retrieving resources and starting/stopping
-    // protocol masters in response to events
-    val fem = new FrontEndManager(
-      services,
-      services,
-      connectionContext,
-      appConfig,
-      protocols.map { _.name }.toList,
-      5000)
-
-    fem.start
-    new Cancelable {
-      def cancel() {
-        fem.stop
-      }
-    }
-  }
 }
