@@ -37,7 +37,7 @@ class TriggerSetService(protected val model: TriggerSetServiceModel)
 }
 
 class TriggerSetServiceModel
-  extends SquerylServiceModel[TriggerProto, TriggerSet]
+  extends SquerylServiceModel[Long, TriggerProto, TriggerSet]
   with EventedServiceModel[TriggerProto, TriggerSet]
   with SimpleModelEntryCreation[TriggerProto, TriggerSet]
   with TriggerSetConversion {}
@@ -67,7 +67,7 @@ trait TriggerSetConversion
     TriggerProto.parseFrom(sql.proto)
   }
 
-  def createModelEntry(rawProto: TriggerProto): TriggerSet = {
+  def createModelEntry(context: RequestContext, rawProto: TriggerProto): TriggerSet = {
     val point = PointTiedModel.lookupPoint(rawProto.getPoint)
     val proto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)).build
     new TriggerSet(

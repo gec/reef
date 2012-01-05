@@ -151,16 +151,16 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
     ss.getOnline should equal(true)
     val failsAt = ss.getTime
 
-    fix.eventSink.waitForNEvents(2)
+    fix.eventSink.waitForNEvents(3)
     fix.eventSink.lastEvent should equal(Some(Envelope.SubscriptionEventType.ADDED))
 
     // hasn't timeout out yet, no failure, no new events
     fix.coord.checkTimeouts(failsAt - 1)
-    fix.eventSink.waitForNEvents(2)
+    fix.eventSink.waitForNEvents(3)
 
     // check again, just after the timeout
     fix.coord.checkTimeouts(failsAt + 10)
-    fix.eventSink.waitForNEvents(3)
+    fix.eventSink.waitForNEvents(4)
     fix.eventSink.lastEvent should equal(Some(Envelope.SubscriptionEventType.MODIFIED))
 
     val ss2 = fix.service.get(fix.namedProto.build).expectOne()

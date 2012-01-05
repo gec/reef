@@ -25,43 +25,93 @@ import org.squeryl.PrimitiveTypeMode._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.{ DatabaseUsingTestBase, RunTestsInsideTransaction, ApplicationSchema, Entity }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, Relationship }
 import java.util.UUID
 import org.totalgrid.reef.client.service.entity.EntityRelation
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
+import org.totalgrid.reef.services.SilentRequestContext
+import org.totalgrid.reef.models._
 
-@RunWith(classOf[JUnitRunner])
-class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
-  import EntityQueryManager._
+object EntityTestSeed {
 
-  override def beforeAll() {
-    super.beforeAll
-    transaction { seed }
+  import ApplicationSchema._
+
+  val edgeModel = new EntityEdgeServiceModel
+  val context = new SilentRequestContext
+
+  def addEntity(name: String, typ: String): Entity = {
+    addEntity(name, typ :: Nil, None)
+  }
+
+  def addEntity(name: String, types: List[String], uuid: Option[UUID] = None): Entity = {
+    val entityModel = new Entity(name)
+    uuid.foreach { id =>
+      // if we are given a UUID it probably means we are importing uuids from another system.
+      // we check that the uuids are unique not because we don't believe in uuids working in
+      // theory, we just want to make sure to catch errors where the user code is giving us
+      // the same uuid everytime
+      val existing = from(entities)(e => where(e.id === id) select (e)).toList
+      if (!existing.isEmpty) throw new BadRequestException("UUID already in system with name: " + existing.head.name)
+      entityModel.id = id
+    }
+    val ent = entities.insert(entityModel)
+    addEntityTypes(types.toList)
+    types.foreach(t => entityTypes.insert(new EntityToTypeJoins(ent.id, t)))
+    ent
+  }
+
+  def addTypesToEntity(ent: Entity, types: List[String]) = {
+    if (types.isEmpty) {
+      ent
+    } else {
+      val distinctTypes = types.distinct.reverse
+      addEntityTypes(distinctTypes)
+      ApplicationSchema.entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
+      ApplicationSchema.entities.lookup(ent.id).get
+    }
+  }
+
+  private def addEntityTypes(types: List[String]) {
+    val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
+    if (!customTypes.isEmpty) {
+      val known = from(ApplicationSchema.entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
+      val newTypes = customTypes.diff(known)
+      newTypes.foreach(t => ApplicationSchema.entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
+    }
   }
 
   def seed {
-    val regId = EntityQueryManager.addEntity("RegA", "Region" :: "EquipmentGroup" :: Nil)
+    val regId = EntityTestSeed.addEntity("RegA", "Region" :: "EquipmentGroup" :: Nil)
     seedSub(regId, "RegA-SubA")
     seedSub(regId, "RegA-SubB")
   }
   def seedSub(regId: Entity, name: String) {
-    val subId = EntityQueryManager.addEntity(name, "Substation" :: "EquipmentGroup" :: Nil)
-    EntityQueryManager.addEdge(regId, subId, "owns")
+    val subId = EntityTestSeed.addEntity(name, "Substation" :: "EquipmentGroup" :: Nil)
+    edgeModel.addEdge(context, regId, subId, "owns")
     seedDevice(regId, subId, name + "-DeviceA", "Line")
     seedDevice(regId, subId, name + "-DeviceB", "Line")
     seedDevice(regId, subId, name + "-DeviceC", "Breaker")
   }
   def seedDevice(regId: Entity, subId: Entity, name: String, typ: String) {
-    val devId = EntityQueryManager.addEntity(name, typ :: "Equipment" :: Nil)
-    val toSubId = EntityQueryManager.addEdge(subId, devId, "owns")
+    val devId = EntityTestSeed.addEntity(name, typ :: "Equipment" :: Nil)
+    val toSubId = edgeModel.addEdge(context, subId, devId, "owns")
     seedPoint(regId, subId, devId, name + "-PointA", "owns")
     seedPoint(regId, subId, devId, name + "-PointB", "owns")
     seedPoint(regId, subId, devId, name + "-PointC", "refs")
   }
   def seedPoint(regId: Entity, subId: Entity, devId: Entity, name: String, rel: String) {
-    val pointId = EntityQueryManager.addEntity(name, "Point")
-    val toDevId = EntityQueryManager.addEdge(devId, pointId, rel)
+    val pointId = EntityTestSeed.addEntity(name, "Point")
+    val toDevId = edgeModel.addEdge(context, devId, pointId, rel)
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+  import EntityQuery._
+
+  override def beforeAll() {
+    super.beforeAll
+    transaction { EntityTestSeed.seed }
   }
 
   class EdgeString(me: String) {
@@ -71,6 +121,15 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   implicit def strToEdge(str: String): EdgeString = new EdgeString(str)
 
   case class EdgeResult(parent: String, rel: String, child: String)
+
+  // Main entry point for requests in the form of protos
+  def fullQuery(proto: EntityProto): List[EntityProto] = {
+    if (proto.hasUuid && proto.getUuid.getValue == "*") {
+      allQuery.map(entityToProto(_).build).toList
+    } else {
+      protoTreeQuery(proto).map(_.toProto)
+    }
+  }
 
   def parseTree(proto: EntityProto): List[EdgeResult] = {
     proto.getRelationsList.flatMap { rel =>
@@ -92,7 +151,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   def checkNames(req: EntityProto.Builder, desc: List[String]) = {
-    val results = EntityQueryManager.fullQuery(req.build)
+    val results = fullQuery(req.build)
     val names = results.map(_.getName).toList
 
     checkResults(names, desc)
@@ -390,7 +449,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   test("Query branching on relation") {
-    val entRoot = EntityQueryManager.entities.where(t => t.name === "RegA-SubA")
+    val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA")
 
     val req = new QueryNode(Some("owns"), Some(true), None, Some("RegA-SubA-DeviceA"), Nil,
       List(new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil),
@@ -409,7 +468,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
   }
 
   test("Query branching on type") {
-    val entRoot = EntityQueryManager.entities.where(t => t.name === "RegA")
+    val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA")
 
     val req = new QueryNode(Some("owns"), Some(true), None, Some("RegA-SubA"), Nil,
       List(new QueryNode(Some("owns"), Some(true), None, None, List("Line"), Nil),
@@ -494,7 +553,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
             EntityProto.newBuilder
               .addTypes("Equipment"))).build
 
-    val results = EntityQueryManager.fullQuery(req)
+    val results = fullQuery(req)
     results.length should equal(1)
   }
 
@@ -519,11 +578,11 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
     checkResults(spec, names)
   }
 
-  test("Asking for unknown Type") {
+  /*test("Asking for unknown Type") {
     val req = EntityProto.newBuilder.addTypes("ShouldHaveBeenSubstation")
 
     intercept[BadRequestException] {
-      EntityQueryManager.checkAllTypesInSystem(req.build)
+      EntityQuery.checkAllTypesInSystem(req.build)
     }
   }
 
@@ -537,9 +596,9 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
             EntityProto.newBuilder.addTypes("ShouldHaveBeenEquipment")))
 
     intercept[BadRequestException] {
-      EntityQueryManager.checkAllTypesInSystem(req.build)
+      EntityQuery.checkAllTypesInSystem(req.build)
     }
-  }
+  }*/
 
   test("Shortcircuit query, no roots") {
 
@@ -547,7 +606,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
 
     val request = EntityRequestBuilders.getRelatedEntities("magic", relations)
 
-    EntityQueryManager.protoTreeQuery(request)
+    EntityQuery.protoTreeQuery(request)
   }
 
   test("Shortcircuit query, some children") {
@@ -556,7 +615,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
 
     val request = EntityRequestBuilders.getRelatedEntities("Equipment", relations)
 
-    EntityQueryManager.protoTreeQuery(request)
+    EntityQuery.protoTreeQuery(request)
   }
 
 }

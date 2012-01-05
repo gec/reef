@@ -25,32 +25,38 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.services.{ ServiceDependencies, ServiceResponseTestingHelpers }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point, Entity }
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.services.{ SilentRequestContext, ServiceDependencies, ServiceResponseTestingHelpers }
 
 @RunWith(classOf[JUnitRunner])
 class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import ServiceResponseTestingHelpers._
 
+  val edgeModel = new EntityEdgeServiceModel
+  val context = new SilentRequestContext
+
   private def addPoint(pointName: String, devName: String): Entity = {
     val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
     val service = new PointService(modelFac.points)
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build
-    val device = EntityQueryManager.findOrCreateEntity(devName, "LogicalNode" :: Nil, None)
+
+    val context = new SilentRequestContext
+
+    val device = modelFac.entities.findOrCreate(context, devName, "LogicalNode" :: Nil, None)
     val pp = Point.newBuilder.setName(pointName).setUnit("raw").setType(PointType.ANALOG).build
 
     val point = service.put(pp).expectOne()
 
     // TODO: add edge service
-    val point_ent = EntityQueryManager.findEntity(point.getEntity).get
-    EntityQueryManager.addEdge(device, point_ent, "source")
+    val point_ent = EntityQuery.findEntity(point.getEntity).get
+    edgeModel.addEdge(context, device, point_ent, "source")
 
-    EntityQueryManager.entityToProto(device).build
+    EntityQuery.entityToProto(device).build
   }
 
   // TODO: reenable trigger tests

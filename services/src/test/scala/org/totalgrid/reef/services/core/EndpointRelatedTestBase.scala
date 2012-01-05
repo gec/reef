@@ -123,7 +123,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     val frontendService = new SyncService(new FrontEndProcessorService(modelFac.fep), contextSource)
     val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
     val commEndpointService = new SyncService(new CommunicationEndpointService(modelFac.endpoints), contextSource)
-    val entityService = new EntityService
+    val entityService = new EntityService(modelFac.entities)
     val pointService = new SyncService(new PointService(modelFac.points), contextSource)
     val commandService = new SyncService(new CommandService(modelFac.cmds), contextSource)
     val frontEndConnection = new SyncService(new CommunicationEndpointConnectionService(modelFac.fepConn), contextSource)

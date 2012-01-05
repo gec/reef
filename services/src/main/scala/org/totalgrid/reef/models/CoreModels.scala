@@ -19,7 +19,7 @@
 package org.totalgrid.reef.models
 
 import org.totalgrid.reef.util.LazyVar
-import org.totalgrid.reef.services.core.EntityQueryManager
+import org.totalgrid.reef.services.core.EntityQuery
 
 import org.squeryl.annotations.Transient
 import org.squeryl.PrimitiveTypeMode._
@@ -29,23 +29,10 @@ import org.squeryl.Query
 import org.totalgrid.reef.client.service.proto.Model
 
 object Point {
-  def newInstance(name: String, abnormal: Boolean, dataSource: Option[Entity], _type: Model.PointType, unit: String, uuid: Option[UUID]) = {
-    val baseType = _type match {
-      case Model.PointType.ANALOG => "Analog"
-      case Model.PointType.STATUS => "Status"
-      case Model.PointType.COUNTER => "Counter"
-    }
-    val types = "Point" :: baseType :: Nil
-    val ent = EntityQueryManager.findOrCreateEntity(name, types, uuid)
-    val p = new Point(ent.id, _type.getNumber, unit, abnormal)
-    dataSource.foreach(ln => { EntityQueryManager.addEdge(ln, ent, "source"); p.logicalNode.value = Some(ln) })
-    p.entity.value = ent
-    p
-  }
 
   def findByName(name: String) = findByNames(name :: Nil)
   def findByNames(names: List[String]): Query[Point] = {
-    ApplicationSchema.points.where(_.entityId in EntityQueryManager.findEntityIds(names, List("Point")))
+    ApplicationSchema.points.where(_.entityId in EntityQuery.findEntityIds(names, List("Point")))
   }
 }
 
@@ -55,7 +42,7 @@ case class Point(
     unit: String,
     var abnormal: Boolean) extends EntityBasedModel(_entityId) {
 
-  val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
+  val logicalNode = LazyVar(mayHaveOne(EntityQuery.getParentOfType(entityId, "source", "LogicalNode")))
 
   /**
    * updated when the abnormal state is changed so we can "tunnel" this update through
@@ -73,23 +60,12 @@ case class Point(
 }
 
 object Command {
-  def newInstance(name: String, displayName: String, _type: Model.CommandType, uuid: Option[UUID]) = {
-    val baseType = _type match {
-      case Model.CommandType.CONTROL => "Control"
-      case Model.CommandType.SETPOINT_DOUBLE | Model.CommandType.SETPOINT_INT |
-        Model.CommandType.SETPOINT_STRING => "Setpoint"
-    }
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Command" :: baseType :: Nil, uuid)
-    val c = new Command(ent.id, displayName, _type.getNumber, None, None)
-    c.entity.value = ent
-    c
-  }
 
   def findByNames(names: List[String]): Query[Command] = {
-    ApplicationSchema.commands.where(_.entityId in EntityQueryManager.findEntityIds(names, List("Command")))
+    ApplicationSchema.commands.where(_.entityId in EntityQuery.findEntityIds(names, List("Command")))
   }
   def findIdsByNames(names: List[String]): Query[Long] = {
-    from(ApplicationSchema.commands)(c => where(c.entityId in EntityQueryManager.findEntityIds(names, List("Command"))) select (&(c.id)))
+    from(ApplicationSchema.commands)(c => where(c.entityId in EntityQuery.findEntityIds(names, List("Command"))) select (&(c.id)))
   }
 }
 
@@ -102,7 +78,7 @@ case class Command(
 
   def this() = this(new UUID(0, 0), "", -1, Some(0), Some(0))
 
-  val logicalNode = LazyVar(mayHaveOne(EntityQueryManager.getParentOfType(entityId, "source", "LogicalNode")))
+  val logicalNode = LazyVar(mayHaveOne(EntityQuery.getParentOfType(entityId, "source", "LogicalNode")))
 
   val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
 
@@ -111,15 +87,6 @@ case class Command(
   val selectHistory = LazyVar(CommandLockModel.selectsForCommands(id :: Nil))
 
   val commandHistory = LazyVar(ApplicationSchema.userRequests.where(u => u.commandId === id).toList)
-}
-
-object FrontEndPort {
-  def newInstance(name: String, network: Option[String], location: Option[String], state: Int, proto: Array[Byte], uuid: Option[UUID]) = {
-    val ent = EntityQueryManager.findOrCreateEntity(name, "Channel" :: Nil, uuid)
-    val c = new FrontEndPort(ent.id, network, location, state, proto)
-    c.entity.value = ent
-    c
-  }
 }
 
 case class FrontEndPort(
@@ -139,7 +106,7 @@ case class ConfigFile(
     val mimeType: String,
     var file: Array[Byte]) extends EntityBasedModel(_entityId) {
 
-  val owners = LazyVar(EntityQueryManager.getParents(entity.value.id, "uses").toList)
+  val owners = LazyVar(EntityQuery.getParents(entity.value.id, "uses").toList)
 
   /// this flag allows us to tell if we have modified
   @Transient
@@ -160,13 +127,13 @@ case class CommunicationEndpoint(
   val measProcAssignment = LazyVar(ApplicationSchema.measProcAssignments.where(p => p.endpointId === id).single)
 
   val configFiles = LazyVar(Entity
-    .asType(ApplicationSchema.configFiles, EntityQueryManager.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList,
+    .asType(ApplicationSchema.configFiles, EntityQuery.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList,
       Some("ConfigurationFile")))
 
   def relationship = if (dataSource) "source" else "sink"
 
   val points = LazyVar(
-    Entity.asType(ApplicationSchema.points, EntityQueryManager.getChildrenOfType(entity.value.id, relationship, "Point").toList, Some("Point")))
+    Entity.asType(ApplicationSchema.points, EntityQuery.getChildrenOfType(entity.value.id, relationship, "Point").toList, Some("Point")))
   val commands = LazyVar(
-    Entity.asType(ApplicationSchema.commands, EntityQueryManager.getChildrenOfType(entity.value.id, relationship, "Command").toList, Some("Command")))
+    Entity.asType(ApplicationSchema.commands, EntityQuery.getChildrenOfType(entity.value.id, relationship, "Command").toList, Some("Command")))
 }

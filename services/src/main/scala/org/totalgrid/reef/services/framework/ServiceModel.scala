@@ -76,17 +76,17 @@ trait ServiceModel[MessageType, ModelType]
 trait SimpleModelEntryCreation[MessageType, ModelType] extends ServiceModel[MessageType, ModelType] {
 
   def createFromProto(context: RequestContext, req: MessageType): ModelType =
-    create(context, createModelEntry(req))
+    create(context, createModelEntry(context, req))
 
   override def updateFromProto(context: RequestContext, proto: MessageType, existing: ModelType): (ModelType, Boolean) =
-    update(context, updateModelEntry(proto, existing), existing)
+    update(context, updateModelEntry(context, proto, existing), existing)
 
   /**
    * Convert message type to model type when creating
    * @param proto   Message type
    * @return        Model type
    */
-  def createModelEntry(proto: MessageType): ModelType
+  def createModelEntry(context: RequestContext, proto: MessageType): ModelType
 
   /**
    * Create a modified model type using message type and existing model type
@@ -94,8 +94,8 @@ trait SimpleModelEntryCreation[MessageType, ModelType] extends ServiceModel[Mess
    * @param existing  Existing model entry
    * @return          Updated model entry
    */
-  def updateModelEntry(proto: MessageType, existing: ModelType): ModelType =
-    createModelEntry(proto)
+  def updateModelEntry(context: RequestContext, proto: MessageType, existing: ModelType): ModelType =
+    createModelEntry(context, proto)
 }
 
 /**

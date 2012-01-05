@@ -39,9 +39,18 @@ class PermissionSetService(protected val model: PermissionSetServiceModel)
 }
 
 class PermissionSetServiceModel
-    extends SquerylServiceModel[PermissionSetProto, PermissionSet]
+    extends SquerylServiceModel[Long, PermissionSetProto, PermissionSet]
     with EventedServiceModel[PermissionSetProto, PermissionSet]
     with PermissionSetConversions {
+
+  val entityModel = new EntityServiceModel
+
+  private def createSet(context: RequestContext, name: String, defaultExpirationTime: Long) = {
+    val entity = entityModel.findOrCreate(context, name, "PermissionSet" :: Nil, None)
+    val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
+    permissionSet.entity.value = entity
+    permissionSet
+  }
 
   override def createFromProto(context: RequestContext, req: PermissionSetProto): PermissionSet = {
 
@@ -54,7 +63,8 @@ class PermissionSetServiceModel
     } else {
       18144000000L // one month
     }
-    val permissionSet = create(context, PermissionSet.newInstance(req.getName, expirationTime))
+
+    val permissionSet = create(context, createSet(context, req.getName, expirationTime))
 
     createPermissions(context, req, permissionSet)
 

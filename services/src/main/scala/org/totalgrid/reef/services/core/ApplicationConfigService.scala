@@ -42,12 +42,21 @@ class ApplicationConfigService(val model: ApplicationConfigServiceModel)
 }
 
 class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
-    extends SquerylServiceModel[ApplicationConfig, ApplicationInstance]
+    extends SquerylServiceModel[Long, ApplicationConfig, ApplicationInstance]
     with EventedServiceModel[ApplicationConfig, ApplicationInstance]
     with ApplicationConfigConversion {
 
+  val entityModel = new EntityServiceModel
+
+  private def createModelEntry(context: RequestContext, proto: ApplicationConfig, userName: String): ApplicationInstance = {
+    val ent = entityModel.findOrCreate(context, proto.getInstanceName, "Application" :: Nil, None) //EntityQuery.findOrCreateEntity(proto.getInstanceName, "Application" :: Nil, None)
+    val a = new ApplicationInstance(ent.id, proto.getInstanceName, userName, proto.getLocation, proto.getNetwork)
+    a.entity.value = ent
+    a
+  }
+
   override def createFromProto(context: RequestContext, req: ApplicationConfig): ApplicationInstance = {
-    val sql = create(context, createModelEntry(req, context.getHeaders.userName.get))
+    val sql = create(context, createModelEntry(context: RequestContext, req, context.getHeaders.userName.get))
 
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })
@@ -62,7 +71,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   override def updateFromProto(context: RequestContext, req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
 
     val username = context.getHeaders.userName.getOrElse(throw new BadRequestException("No username in headers"))
-    val (sql, updated) = update(context, createModelEntry(req, username), existing)
+    val (sql, updated) = update(context, createModelEntry(context, req, username), existing)
 
     val newCaps: List[String] = req.getCapabilitesList.toList
     val oldCaps: List[String] = sql.capabilities.value.toList.map { _.capability }
@@ -110,14 +119,6 @@ trait ApplicationConfigConversion
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
     entry.location != existing.location || entry.network != existing.network
-  }
-
-  def createModelEntry(proto: ApplicationConfig, userName: String): ApplicationInstance = {
-    ApplicationInstance.newInstance(
-      proto.getInstanceName,
-      userName,
-      proto.getLocation,
-      proto.getNetwork)
   }
 
   def convertToProto(entry: ApplicationInstance): ApplicationConfig = {

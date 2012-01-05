@@ -42,7 +42,7 @@ class MeasurementProcessingConnectionService(protected val model: MeasurementPro
 }
 
 class MeasurementProcessingConnectionServiceModel
-    extends SquerylServiceModel[ConnProto, MeasProcAssignment]
+    extends SquerylServiceModel[Long, ConnProto, MeasProcAssignment]
     with EventedServiceModel[ConnProto, MeasProcAssignment]
     with SimpleModelEntryCreation[ConnProto, MeasProcAssignment]
     with MeasurementProcessingConnectionConversion {
@@ -63,6 +63,10 @@ class MeasurementProcessingConnectionServiceModel
 
     val updated = existing.copy(readyTime = Some(proto.getReadyTime))
     update(context, updated, existing)
+  }
+
+  def createModelEntry(context: RequestContext, proto: ConnProto): MeasProcAssignment = {
+    throw new Exception("wrong interface")
   }
 
   override def postUpdate(context: RequestContext, sql: MeasProcAssignment, existing: MeasProcAssignment) {
@@ -96,15 +100,11 @@ trait MeasurementProcessingConnectionConversion
     true
   }
 
-  def createModelEntry(proto: ConnProto): MeasProcAssignment = {
-    throw new Exception("wrong interface")
-  }
-
   def convertToProto(entry: MeasProcAssignment): ConnProto = {
 
     val b = ConnProto.newBuilder.setId(makeId(entry))
 
-    entry.endpoint.value.foreach(endpoint => b.setLogicalNode(EntityQueryManager.entityToProto(endpoint.entity.value)))
+    entry.endpoint.value.foreach(endpoint => b.setLogicalNode(EntityQuery.entityToProto(endpoint.entity.value)))
     entry.application.value.map(app => b.setMeasProc(ApplicationConfig.newBuilder.setUuid(makeUuid(app))))
     entry.serviceRoutingKey.foreach(k => {
       val r = MeasurementProcessingRouting.newBuilder

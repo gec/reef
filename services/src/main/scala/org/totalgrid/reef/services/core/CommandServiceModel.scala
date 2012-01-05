@@ -33,6 +33,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
+import java.util.UUID
 
 class CommandService(protected val model: CommandServiceModel)
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -54,10 +55,12 @@ class CommandService(protected val model: CommandServiceModel)
 
 class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
   commandSelectModel: CommandLockServiceModel)
-    extends SquerylServiceModel[CommandProto, Command]
+    extends SquerylServiceModel[Long, CommandProto, Command]
     with EventedServiceModel[CommandProto, Command]
     with SimpleModelEntryCreation[CommandProto, Command]
     with CommandServiceConversion {
+
+  val entityModel = new EntityServiceModel
 
   val table = ApplicationSchema.commands
   def getCommands(names: List[String]): Query[Command] = {
@@ -87,7 +90,23 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
     selects.foreach(s => commandSelectModel.removeAccess(context, s))
     commandHistory.foreach(s => commandHistoryModel.delete(context, s))
 
-    EntityQueryManager.deleteEntity(entry.entity.value)
+    entityModel.delete(context, entry.entity.value)
+  }
+
+  def createModelEntry(context: RequestContext, proto: CommandProto): Command = {
+    createModelEntry(context, proto.getName, proto.getDisplayName, proto.getType, proto.uuid)
+  }
+
+  def createModelEntry(context: RequestContext, name: String, displayName: String, _type: CommandType, uuid: Option[UUID]): Command = {
+    val baseType = _type match {
+      case CommandType.CONTROL => "Control"
+      case CommandType.SETPOINT_DOUBLE | CommandType.SETPOINT_INT |
+        CommandType.SETPOINT_STRING => "Setpoint"
+    }
+    val ent = entityModel.findOrCreate(context, name, "Command" :: baseType :: Nil, uuid)
+    val c = new Command(ent.id, displayName, _type.getNumber, None, None)
+    c.entity.value = ent
+    c
   }
 
 }
@@ -105,15 +124,11 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))
     List(
       esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
-      proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Command")))
+      proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Command")))
   }
 
   def searchQuery(proto: CommandProto, sql: Command) = List(
-    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Command")))
-
-  def createModelEntry(proto: CommandProto): Command = {
-    Command.newInstance(proto.getName, proto.getDisplayName, proto.getType, proto.uuid)
-  }
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def isModified(entry: Command, existing: Command) = {
     entry.lastSelectId != existing.lastSelectId || entry.displayName != existing.displayName
@@ -127,12 +142,12 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
 
     //sql.entity.asOption.foreach(e => b.setEntity(EQ.entityToProto(e)))
     sql.entity.asOption match {
-      case Some(e) => b.setEntity(EntityQueryManager.entityToProto(e))
+      case Some(e) => b.setEntity(EntityQuery.entityToProto(e))
       case None => b.setEntity(EntityProto.newBuilder.setUuid(makeUuid(sql.entityId)))
     }
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQuery.minimalEntityToProto(ln).build) } }
     b.setType(CommandType.valueOf(sql.commandType))
     b.build
   }

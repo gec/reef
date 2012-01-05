@@ -21,25 +21,32 @@ package org.totalgrid.reef.services.core
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.client.service.proto.Model.{ Point, PointType }
+import org.totalgrid.reef.client.service.proto.Model.{ Point, PointType, Entity }
 import org.totalgrid.reef.client.service.proto.Processing.{ MeasOverride, TriggerSet }
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
 
 @RunWith(classOf[JUnitRunner])
 class PointServiceTest extends DatabaseUsingTestBase {
 
+  import SubscriptionTools._
+
   class Fixture {
     val fakeDatabase = new InMemoryMeasurementStore
 
+    val contextSource = new MockContextSource
+
     val modelFactories = new ModelFactories(new ServiceDependenciesDefaults(cm = fakeDatabase))
-    val pointService = new PointService(modelFactories.points)
-    val triggerService = new TriggerSetService(modelFactories.triggerSets)
-    val overrideService = new OverrideConfigService(modelFactories.overrides)
+    val pointService = new SyncService(new PointService(modelFactories.points), contextSource)
+    val triggerService = new SyncService(new TriggerSetService(modelFactories.triggerSets), contextSource)
+    val overrideService = new SyncService(new OverrideConfigService(modelFactories.overrides), contextSource)
+
+    val entityService = new SyncService(new EntityService(modelFactories.entities), contextSource)
 
     def addPoint(name: String = "point01", unit: String = "amps", typ: PointType = PointType.ANALOG) = {
       val p = Point.newBuilder.setName(name).setUnit(unit).setType(typ)
@@ -73,10 +80,17 @@ class PointServiceTest extends DatabaseUsingTestBase {
       overrideService.get(o.build).expectMany()
     }
 
+    def getEntity(name: String = "point01") = {
+      val e = Entity.newBuilder.setName(name).build
+      entityService.get(e).expectOneOrNone()
+    }
+
     def deletePoint(name: String = "point01") = {
       val p = Point.newBuilder.setName(name)
-      pointService.delete(p.build).expectOne
+      pointService.delete(p.build)
     }
+
+    def events = contextSource.sink.events
   }
 
   test("Creating point creates offline measurement") {
@@ -99,6 +113,7 @@ class PointServiceTest extends DatabaseUsingTestBase {
     f.getTriggers() should equal(Nil)
     f.getOverrides() should equal(Nil)
     f.getMeasurement() should equal(None)
+    f.getEntity() should equal(None)
 
     val point = f.addPoint()
     f.getPoints() should equal(point :: Nil)
@@ -111,12 +126,27 @@ class PointServiceTest extends DatabaseUsingTestBase {
     val overrid = f.addOverride()
     f.getOverrides() should equal(overrid :: Nil)
 
+    f.getEntity().isEmpty should equal(false)
+
     f.deletePoint()
 
     f.getPoints() should equal(Nil)
     f.getTriggers() should equal(Nil)
     f.getOverrides() should equal(Nil)
     f.getMeasurement() should equal(None)
+    f.getEntity() should equal(None)
+
+    val eventList = List(
+      (ADDED, classOf[Entity]),
+      (ADDED, classOf[Point]),
+      (ADDED, classOf[TriggerSet]),
+      (ADDED, classOf[MeasOverride]),
+      (REMOVED, classOf[Point]),
+      (REMOVED, classOf[TriggerSet]),
+      (REMOVED, classOf[MeasOverride]),
+      (REMOVED, classOf[Entity]))
+
+    f.events.map(s => (s.typ, s.value.getClass)) should equal(eventList)
   }
 
 }

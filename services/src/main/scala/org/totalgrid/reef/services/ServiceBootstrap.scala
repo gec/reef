@@ -91,9 +91,11 @@ object ServiceBootstrap {
    * sets up the default users and low level configurations for the system
    */
   def seed(systemPassword: String) {
+    val context = new SilentRequestContext
+
     core.EventConfigService.seed()
     core.EntityService.seed()
-    core.AuthTokenService.seed(systemPassword)
+    core.AuthTokenService.seed(context, systemPassword)
   }
 
   /**

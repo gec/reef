@@ -18,17 +18,15 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.services.core.util.UUIDConversions._
-
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.sapi.client.Response
-import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.client.proto.Envelope.Status
-import org.totalgrid.reef.models.Entity
+import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.framework._
+import java.util.UUID
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
+import org.totalgrid.reef.models.{ EntityTypeMetaModel, EntityToTypeJoins, ApplicationSchema, Entity }
 
 object EntityService {
   def seed() {
@@ -49,130 +47,155 @@ object EntityService {
   val allKnownTypes = builtInTypes ::: wellKnownTypes
 }
 
-class EntityService extends ServiceEntryPoint[EntityProto] with AuthorizesEverything {
+class EntityService(protected val model: EntityServiceModel)
+    extends SyncModeledServiceBase[EntityProto, Entity, EntityServiceModel]
+    with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.entity
-
-  override def putAsync(source: RequestContextSource, req: EntityProto)(callback: (Response[EntityProto]) => Unit) {
-    callback(source.transaction { context =>
-      if (!req.hasName || req.getTypesCount == 0) {
-        throw new BadRequestException("Must include name and atleast one entity type to create entity.")
-      }
-
-      authorizeRead(context, req)
-      val types = req.getTypesList.toList
-      val name = req.getName
-      val list = EntityQueryManager.nameTypeQuery(Some(name), None)
-
-      var (status, ent) = list match {
-        case List(ent, _) => throw new BadRequestException("more than one entity matched: " + name + " types:" + types)
-        case List(ent) => (Status.NOT_MODIFIED, list.head)
-        case Nil =>
-          authorizeCreate(context, req)
-          (Status.CREATED, EntityQueryManager.addEntity(name, types, req.uuid))
-      }
-
-      val additionalTypes = types.diff(ent.types.value)
-
-      if (!additionalTypes.isEmpty) {
-        authorizeUpdate(context, req)
-        ent = EntityQueryManager.addTypesToEntity(ent, additionalTypes)
-        if (status == Status.NOT_MODIFIED) status = Status.UPDATED
-      }
-      Response(status, EntityQueryManager.entityToProto(ent).build :: Nil)
-    })
-  }
-
-  override def getAsync(source: RequestContextSource, req: EntityProto)(callback: (Response[EntityProto]) => Unit) {
-    callback(source.transaction { context =>
-      authorizeRead(context, req)
-      val result = EntityQueryManager.fullQuery(req)
-      if (result.size == 0) {
-        EntityQueryManager.checkAllTypesInSystem(req)
-      }
-      Response(Status.OK, result)
-    })
-  }
-
-  override def deleteAsync(source: RequestContextSource, req: EntityProto)(callback: (Response[EntityProto]) => Unit) {
-    callback(source.transaction { context =>
-      authorizeRead(context, req)
-      authorizeDelete(context, req)
-      val entities = EntityQueryManager.fullQueryAsModels(req);
-
-      val (results, status) = entities match {
-        case Nil => (req :: Nil, Status.NOT_MODIFIED)
-        case l: List[Entity] =>
-          EntityQueryManager.deleteEntities(entities)
-          (entities.map { EntityQueryManager.entityToProto(_).build }, Status.DELETED)
-      }
-      Response(status, results)
-    })
-  }
 }
 
-import org.totalgrid.reef.client.service.proto.Model.{ EntityEdge => EntityEdgeProto }
-import org.totalgrid.reef.models.{ EntityEdge }
+class EntityServiceModel
+    extends SquerylServiceModel[UUID, EntityProto, Entity]
+    with EventedServiceModel[EntityProto, Entity] {
 
-class EntityEdgeService extends ServiceEntryPoint[EntityEdgeProto] with AuthorizesCreate with AuthorizesUpdate with AuthorizesDelete with AuthorizesRead {
+  val table = ApplicationSchema.entities
 
-  override val descriptor = Descriptors.entityEdge
+  val edgeModel = new EntityEdgeServiceModel
+  val alarmModel = new AlarmServiceModel
+  val eventModel = new EventServiceModel(new EventConfigServiceModel, alarmModel)
+  alarmModel.eventModel = Some(eventModel)
 
-  def convertToProto(entry: EntityEdge): EntityEdgeProto = {
-    val b = EntityEdgeProto.newBuilder()
-    import org.totalgrid.reef.services.framework.SquerylModel._
-    b.setParent(EntityProto.newBuilder.setUuid(makeUuid(entry.parentId)))
-    b.setChild(EntityProto.newBuilder.setUuid(makeUuid(entry.childId)))
-    b.setRelationship(entry.relationship)
-    b.build
+  def findOrCreate(context: RequestContext, name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
+
+    val current = EntityQuery.returnSingleOption(table.where(t => t.name === name).toList, "Entity")
+    current match {
+      case None => createEntity(context, name, entityTypes, uuid)
+      case Some(existing) => updateEntity(context, name, entityTypes, existing)._1
+    }
   }
 
-  override def putAsync(source: RequestContextSource, req: EntityEdgeProto)(callback: (Response[EntityEdgeProto]) => Unit) {
-    callback(source.transaction { context =>
-      authorizeRead(context, req)
-
-      val parentEntity = EntityQueryManager.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent: " + req.getParent))
-      val childEntity = EntityQueryManager.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child: " + req.getChild))
-      val existingEdge = EntityQueryManager.findEdge(parentEntity, childEntity, req.getRelationship)
-
-      val (edge, status) = existingEdge match {
-        case Some(edge) => (edge, Status.NOT_MODIFIED)
-        case None =>
-          authorizeCreate(context, req)
-          (EntityQueryManager.addEdge(parentEntity, childEntity, req.getRelationship), Status.CREATED)
-      }
-      val proto = convertToProto(edge)
-      Response(status, proto :: Nil)
-    })
+  def findRecord(context: RequestContext, req: EntityProto): Option[Entity] = {
+    EntityQuery.findEntity(req)
   }
 
-  override def deleteAsync(source: RequestContextSource, req: EntityEdgeProto)(callback: (Response[EntityEdgeProto]) => Unit) {
-    callback(source.transaction { context =>
-      authorizeRead(context, req)
-      authorizeDelete(context, req)
-      val existingEdge: Option[EntityEdge] = EntityQueryManager.findEntity(req.getParent).flatMap { parent =>
-        EntityQueryManager.findEntity(req.getChild).flatMap { child =>
-          EntityQueryManager.findEdge(parent, child, req.getRelationship)
-        }
+  def findRecords(context: RequestContext, req: EntityProto): List[Entity] = {
+    val results = if (req.hasUuid && req.getUuid.getValue == "*") {
+      EntityQuery.allQuery
+    } else {
+      EntityQuery.protoTreeQuery(req).map { resultNode =>
+        resultNode.ent.resultNode = Some(resultNode)
+        resultNode.ent
       }
+    }
 
-      val (proto, status) = existingEdge match {
-        case Some(edge) =>
-          EntityQueryManager.deleteEdge(edge)
-          (convertToProto(edge), Status.DELETED)
-        case None => (req, Status.NOT_MODIFIED)
-      }
-      Response(status, proto :: Nil)
-    })
+    // TODO: Make limits non-superficial
+    results.take(context.getHeaders.getResultLimit().getOrElse(100))
   }
 
-  override def getAsync(source: RequestContextSource, req: EntityEdgeProto)(callback: (Response[EntityEdgeProto]) => Unit) {
-    callback(source.transaction { context =>
-      authorizeRead(context, req)
-      // TODO: add edge searching
-      import org.squeryl.PrimitiveTypeMode._
-      val edges = EntityQueryManager.edges.where(t => true === true).toList
-      Response(Status.OK, edges.map { convertToProto(_) })
-    })
+  def createFromProto(context: RequestContext, req: EntityProto): Entity = {
+
+    val types = req.getTypesList.toList
+    val name = req.getName
+    val uuid = req.uuid.map(v => UUID.fromString(v.getValue))
+
+    createEntity(context, name, types, uuid)
+  }
+
+  private def createEntity(context: RequestContext, name: String, types: List[String], uuid: Option[UUID]): Entity = {
+    import ApplicationSchema.{ entityTypes, entities }
+
+    val entityModel = new Entity(name)
+    uuid.foreach { id =>
+      // if we are given a UUID it probably means we are importing uuids from another system.
+      // we check that the uuids are unique not because we don't believe in uuids working in
+      // theory, we just want to make sure to catch errors where the user code is giving us
+      // the same uuid everytime
+      // TODO: checks unnecessary?
+      val existing = from(entities)(e => where(e.id === id) select (e)).toList
+      if (!existing.isEmpty) throw new BadRequestException("UUID already in system with name: " + existing.head.name)
+      entityModel.id = id
+    }
+    val ent = create(context, entityModel)
+    addEntityTypes(types.toList)
+    types.foreach(t => entityTypes.insert(new EntityToTypeJoins(ent.id, t)))
+    ent
+  }
+
+  override def updateFromProto(context: RequestContext, proto: EntityProto, existing: Entity): (Entity, Boolean) = {
+    val types = proto.getTypesList.toList
+
+    updateEntity(context, proto.getName, types, existing)
+  }
+
+  private def updateEntity(context: RequestContext, name: String, types: List[String], existing: Entity): (Entity, Boolean) = {
+    if (name != existing.name) throw new BadRequestException("UUID already in system with name: " + existing.name)
+
+    val additionalTypes = types.diff(existing.types.value)
+
+    if (!additionalTypes.isEmpty) {
+      val ent = addTypesToEntity(existing, additionalTypes)
+      onUpdated(context, ent)
+      (ent, true)
+    } else {
+      (existing, false)
+    }
+  }
+
+  private def addTypesToEntity(ent: Entity, types: List[String]) = {
+    if (types.isEmpty) {
+      ent
+    } else {
+      val distinctTypes = types.distinct.reverse
+      addEntityTypes(distinctTypes)
+      ApplicationSchema.entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
+      table.lookup(ent.id).get
+    }
+  }
+
+  private def addEntityTypes(types: List[String]) {
+    val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
+    if (!customTypes.isEmpty) {
+      val known = from(ApplicationSchema.entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
+      val newTypes = customTypes.diff(known)
+      newTypes.foreach(t => ApplicationSchema.entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
+    }
+  }
+
+  def sortResults(list: List[EntityProto]): List[EntityProto] = {
+    list.sortWith { (a, b) => a.getName.toLowerCase.compareTo(b.getName.toLowerCase) < 0 }
+  }
+
+  def getRoutingKey(req: EntityProto): String = ProtoRoutingKeys.generateRoutingKey {
+    req.uuid.value :: req.name :: Nil
+  }
+
+  def convertToProto(entry: Entity): EntityProto = {
+    entry.resultNode match {
+      case None => EntityQuery.entityToProto(entry).build
+      case Some(result) => result.toProto
+    }
+  }
+
+  def isModified(entry: Entity, previous: Entity): Boolean = {
+    entry.name.compareTo(previous.name) != 0 ||
+      entry.types.value.diff(previous.types.value) == Nil
+  }
+
+  override protected def preDelete(context: RequestContext, previous: Entity) {
+    val events = ApplicationSchema.events.where(e => e.entityId in List(previous.id)).toList
+    val alarms = ApplicationSchema.alarms.where(a => a.eventId in events.map(_.id)).toList
+
+    alarms.foreach(a => alarmModel.delete(context, a))
+    events.foreach(e => eventModel.delete(context, e))
+  }
+
+  override protected def postDelete(context: RequestContext, previous: Entity) {
+
+    val edges = ApplicationSchema.edges.where(e => (e.parentId === previous.id) or (e.childId === previous.id))
+
+    edges.foreach(edge => edgeModel.delete(context, edge))
+
+    ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId === previous.id)
+    ApplicationSchema.entityTypes.deleteWhere(et => et.entityId === previous.id)
   }
 }
