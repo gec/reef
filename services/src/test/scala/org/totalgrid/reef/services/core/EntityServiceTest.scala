@@ -27,10 +27,8 @@ import org.scalatest.junit.JUnitRunner
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Model.{ Relationship, Entity, ReefUUID, EntityEdge }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
 import org.totalgrid.reef.client.proto.Envelope.{ SubscriptionEventType, Status }
-import org.totalgrid.reef.event.SilentEventSink
-import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext, SilentRequestContext }
+import org.totalgrid.reef.services.SilentRequestContext
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.models.{ EventConfigStore, ApplicationSchema, DatabaseUsingTestBase }
 import org.totalgrid.reef.client.service.proto.Alarms.Alarm
@@ -39,40 +37,7 @@ import org.totalgrid.reef.client.service.proto.Events.Event
 @RunWith(classOf[JUnitRunner])
 class EntityServiceTest extends DatabaseUsingTestBase {
 
-  object QueueingEventSink {
-    case class SubEvent(typ: SubscriptionEventType, value: AnyRef, key: String)
-  }
-  class QueueingEventSink extends SubscriptionHandler {
-    import QueueingEventSink.SubEvent
-
-    private var received = List.empty[SubEvent]
-    def events = received.reverse
-
-    def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) {
-      received ::= SubEvent(typ, value.asInstanceOf[AnyRef], key)
-    }
-
-    def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
-  }
-
-  class QueueingRequestContext extends RequestContext with HeadersContext with PermissionsContext {
-    def client = throw new Exception("Asked for client in silent request context")
-    val eventSink = new SilentEventSink
-    val operationBuffer = new BasicOperationBuffer
-    val subHandler = new QueueingEventSink
-  }
-
-  class MockContextSource extends RequestContextSource {
-    private var context = new QueueingRequestContext
-    def reset() {
-      context = new QueueingRequestContext
-    }
-    def sink = context.subHandler
-
-    def transaction[A](f: (RequestContext) => A): A = {
-      ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
-    }
-  }
+  import SubscriptionTools._
 
   val contextSource = new MockContextSource
 
