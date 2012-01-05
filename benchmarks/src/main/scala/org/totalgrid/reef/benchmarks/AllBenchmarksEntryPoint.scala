@@ -27,8 +27,10 @@ import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.benchmarks.system.SystemStateBenchmark
+import org.totalgrid.reef.client.sapi.client.rest.Connection
 
 object AllBenchmarksEntryPoint {
+
   def main(args: Array[String]) {
 
     val properties = PropertyReader.readFromFile("benchmarksTarget.cfg")
@@ -42,35 +44,39 @@ object AllBenchmarksEntryPoint {
 
       val connection = factory.connect()
 
-      val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
-      client.setHeaders(client.getHeaders.setTimeout(20000))
-      client.setHeaders(client.getHeaders.setResultLimit(10000))
-      val services = client.getRpcInterface(classOf[AllScadaService])
-
-      val stream = Some(Console.out)
-
-      val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark")
-
-      if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
-
-      val endpointNames = endpoints.map { _.getName }
-      val points = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten
-
-      val tests = List(
-        new SystemStateBenchmark(5),
-        new MeasurementPublishingBenchmark(endpointNames, 1000, 5, false),
-        new MeasurementPublishingBenchmark(endpointNames, 10, 5, false),
-        new MeasurementPublishingBenchmark(endpointNames, 10, 5, true),
-        new MeasurementStatBenchmark(points),
-        new MeasurementHistoryBenchmark(points, List(1, 10, 100, 1000), true),
-        new EndpointManagementBenchmark(endpointNames, 5))
-
-      val allResults = tests.map(_.runTest(services, stream)).flatten
-      outputResults(allResults)
+      runAllTests(connection, userSettings)
 
     } finally {
       factory.terminate()
     }
+  }
+
+  def runAllTests(connection: Connection, userSettings: UserSettings) {
+    val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+    client.setHeaders(client.getHeaders.setTimeout(20000))
+    client.setHeaders(client.getHeaders.setResultLimit(10000))
+    val services = client.getRpcInterface(classOf[AllScadaService])
+
+    val stream = Some(Console.out)
+
+    val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark")
+
+    if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
+
+    val endpointNames = endpoints.map { _.getName }
+    val points = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten
+
+    val tests = List(
+      new SystemStateBenchmark(5),
+      new MeasurementPublishingBenchmark(endpointNames, 1000, 5, false),
+      new MeasurementPublishingBenchmark(endpointNames, 10, 5, false),
+      new MeasurementPublishingBenchmark(endpointNames, 10, 5, true),
+      new MeasurementStatBenchmark(points),
+      new MeasurementHistoryBenchmark(points, List(1, 10, 100, 1000), true),
+      new EndpointManagementBenchmark(endpointNames, 5))
+
+    val allResults = tests.map(_.runTest(services, stream)).flatten
+    outputResults(allResults)
   }
 
   def outputResults(allResults: List[BenchmarkReading]) {

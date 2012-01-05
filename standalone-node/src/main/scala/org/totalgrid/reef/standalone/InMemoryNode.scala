@@ -34,6 +34,7 @@ object InMemoryNode {
 
     def terminate() {}
   }
+  lazy val userSettings = systemOption.get.userSettings
 
   private var systemOption = Option.empty[IntegratedSystem]
   private var delayedShutdown = Option.empty[Timer]
