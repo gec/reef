@@ -18,23 +18,17 @@
  */
 package org.totalgrid.reef.standalone
 
-import net.agileautomata.executor4s._
+import org.totalgrid.reef.broker.BrokerConnectionFactory
+import net.agileautomata.executor4s.{ Cancelable, Executor }
+import org.totalgrid.reef.app.{ ConnectionConsumer, ConnectionProvider }
 
-object MultiNodeEntryPoint {
-
-  def main(args: Array[String]) = {
-    val exe = Executors.newResizingThreadPool(1.minutes)
-    val system = new IntegratedSystem(exe, "standalone-node.cfg", 1, 3, true)
-
-    try {
-      system.start()
-
-      system.runTerminal()
-
-      system.stop()
-    } finally {
-      exe.terminate()
-    }
-
+class SimpleConnectionProvider(brokerConnection: BrokerConnectionFactory, exe: Executor) extends ConnectionProvider {
+  var cancelables = List.empty[Cancelable]
+  def addConsumer(consumer: ConnectionConsumer) {
+    cancelables ::= consumer.newConnection(brokerConnection.connect, exe)
   }
+  def removeConsumer(consumer: ConnectionConsumer) {}
+
+  def start() = {}
+  def stop() = cancelables.foreach { _.cancel() }
 }
