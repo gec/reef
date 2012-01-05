@@ -59,12 +59,14 @@ object InMemoryNode {
 
   def startShutdown() {
     delayedShutdown.foreach { _.cancel }
-    delayedShutdown = Some(exeOption.get.schedule(10000.milliseconds) {
-      try {
-        systemOption.get.stop()
-      } finally {
-        exeOption.get.shutdown()
-      }
-    })
+    exeOption.foreach { exe =>
+      delayedShutdown = Some(exe.schedule(10000.milliseconds) {
+        try {
+          systemOption.foreach { _.stop() }
+        } finally {
+          exeOption.foreach { _.shutdown() }
+        }
+      })
+    }
   }
 }
