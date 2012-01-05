@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.settings.NodeSettings
@@ -27,7 +27,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.service.proto.Application.HeartbeatConfig
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationManagementTest extends ClientSessionSuite("Application.xml", "Application", <div></div>) {
+class ApplicationManagementTest extends ServiceClientSuite {
 
   val nodeSettings = new NodeSettings("testNode", "testServer", "testNetwork")
 

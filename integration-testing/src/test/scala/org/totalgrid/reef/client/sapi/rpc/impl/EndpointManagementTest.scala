@@ -30,26 +30,17 @@ import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 import EndpointConnection.State._
 import org.totalgrid.reef.client.SubscriptionResult
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ClientSessionSuite }
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ServiceClientSuite }
 
 @RunWith(classOf[JUnitRunner])
-class EndpointManagementTest
-    extends ClientSessionSuite("EndpointManagement.xml", "EndpointManagement",
-      <div>
-        <p>
-          The EndpointManagement service provides hooks to view and edit communication endpoints.
-        </p>
-      </div>)
-    with ShouldMatchers {
+class EndpointManagementTest extends ServiceClientSuite {
 
   test("Endpoint operations") {
 
-    recorder.addExplanation("Get all endpoints", "")
     val endpoints = client.getEndpoints().await.toList
 
     endpoints.isEmpty should equal(false)
 
-    recorder.addExplanation("Get all endpoint connections", "")
     val result = client.subscribeToEndpointConnections().await
 
     val map = new EndpointConnectionStateMap(result)

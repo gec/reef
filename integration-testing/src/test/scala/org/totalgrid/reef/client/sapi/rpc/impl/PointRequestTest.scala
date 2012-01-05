@@ -18,59 +18,22 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 @RunWith(classOf[JUnitRunner])
-class PointRequestTest
-    extends ClientSessionSuite("Point.xml", "Point",
-      <div>
-        <p>
-          A Point represents a configured input point for data acquisition. Measurements associated with
-      this point all use the point name.
-        </p>
-        <p>
-          Every Point is associated with an Entity of type "Point". The point's location in the system
-      model is determined by this entity. Points are also associated with entities designated as
-      "logical nodes", which represent the communications interface/source.
-        </p>
-      </div>)
-    with ShouldMatchers {
+class PointRequestTest extends ServiceClientSuite {
 
   test("Simple gets") {
 
-    recorder.addExplanation("Get all", "Get all Points")
     // keep list of all points so we can use them for id and name queries
-    val allResp = client.getPoints
+    val allResp = client.getPoints().await
 
-    recorder.addExplanation("Get by UID", "Get point that matches a certain UID.")
-    client.getPointByUuid(allResp.await.head.getUuid)
+    client.getPointByUuid(allResp.head.getUuid).await should equal(allResp.head)
 
-    recorder.addExplanation("Get by name", "Get point that matches a certain name.")
-    client.getPointByName(allResp.await.head.getName)
+    client.getPointByName(allResp.head.getName).await should equal(allResp.head)
   }
 
-  test("Entity tree query") {
-
-    val desc = <div>
-                 Search for points using an entity tree query. The entity field can be any entity query; any entities of
-      type "Point" that are found will have their corresponding Point objects added to the result set.
-               </div>
-
-    val entity = client.getEntityByName("StaticSubstation.Breaker02").await
-
-    recorder.addExplanation("Get points owned by equipment", desc)
-    client.getPointsOwnedByEntity(entity)
-  }
-
-  /*test("Abnormal") {
-    val putReq = Point.newBuilder.setName("StaticSubstation.Breaker02.Bkr").setAbnormal(true).build
-    val putResp = client.putOneOrThrow(putReq)
-
-    doc.addCase("Set to abnormal", "Put", "Mark a point as being in an abnormal state.", putReq, putResp)
-
-  }*/
 }

@@ -51,7 +51,7 @@ class SubscriptionCanceler extends SubscriptionCreationListener {
 abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {
 
   // name of the model file to initialize the system with
-  def modelFile: String
+  def modelFile: String = "../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
 
   // we use options so we can avoid starting the factories until the test is actually run
   private var factoryOption = Option.empty[ReefFactory]
@@ -91,29 +91,6 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
   override def afterAll() {
     canceler.cancel()
     factoryOption.foreach(_.terminate())
-  }
-
-}
-
-// TODO: port all xml documentation to other places and remove ClientSessionSuite
-abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends ServiceClientSuite {
-
-  def modelFile = "../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
-
-  def this(file: String, title: String, desc: String) = {
-    this(file, title, <div>{ desc }</div>)
-  }
-
-  val recorder = new InteractionRecorder {}
-
-  override def beforeAll() {
-    super.beforeAll()
-    client.addRequestSpy(recorder)
-  }
-
-  override def afterAll() {
-    recorder.save(file, title, desc)
-    super.afterAll()
   }
 
 }

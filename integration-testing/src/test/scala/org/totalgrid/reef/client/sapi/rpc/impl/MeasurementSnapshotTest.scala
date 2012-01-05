@@ -18,44 +18,24 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.client.exception.{ BadRequestException, ExpectationException }
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementSnapshotTest
-    extends ClientSessionSuite("MeasurementSnapshot.xml", "MeasurementSnapshot",
-      <div>
-        <p>
-          The MeasurementSnapshot service provides the current state of measurements. The request contains the
-          list of measurement names, the response contains the requested measurement objects.
-        </p>
-      </div>)
-    with ShouldMatchers {
-
-  test("Simple gets") {
-
-    val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
-
-    recorder.addExplanation("Get single measurement", "Get the current state of a single measurement.")
-    client.getMeasurementsByNames(names.slice(0, 1))
-
-    recorder.addExplanation("Get multiple measurements", "Get the current state of multiple measurements. Notice that they are all returned wrapped in a single parent object.")
-    client.getMeasurementsByNames(names)
-  }
+class MeasurementSnapshotTest extends ServiceClientSuite {
 
   test("Non existant measurement get") {
 
     intercept[BadRequestException] {
-      recorder.addExplanation("Get non-existant measurement", "If we ask for the current value of a measurement that should return error code.")
+      // "If we ask for the current value of a measurement that should return error code.")
       client.getMeasurementsByNames("UnknownPoint" :: Nil).await
     }
 
     intercept[ExpectationException] {
-      recorder.addExplanation("Get non-existant point", "Asking for a non-existant point fails localy because we don't get the one we asked for.")
+      // "Asking for a non-existant point fails localy because we don't get the one we asked for.")
       client.getPointByName("UnknownPoint").await
     }
   }

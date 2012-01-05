@@ -22,20 +22,11 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.client.service.proto.Commands.CommandStatus
 
 @RunWith(classOf[JUnitRunner])
-class UserCommandRequestTest
-    extends ClientSessionSuite("UserCommandRequest.xml", "UserCommandRequest",
-      <div>
-        <p>
-          Clients use UserCommandRequest to issue a command. The CommandRequest object describes the command
-        to be executed, and timeout can be specified by the client code.
-        </p>
-        <p>Status and user are not specified in put. User is identified from the request header.</p>
-      </div>)
-    with ShouldMatchers {
+class UserCommandRequestTest extends ServiceClientSuite {
 
   test("Issue command") {
 
@@ -44,7 +35,6 @@ class UserCommandRequestTest
 
     val lock = client.createCommandExecutionLock(cmd).await
     try {
-      recorder.addExplanation("UserCommandRequestBuilders.executeCommand", "Issue a command request for the specified point.")
       val commandStatus = client.executeCommandAsControl(cmd).await
 
       commandStatus.getStatus should equal(CommandStatus.SUCCESS)

@@ -27,21 +27,13 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementRequestBuilders
 
 import org.totalgrid.reef.benchmarks.measurements.MeasurementRoundtripTimer
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 import org.totalgrid.reef.util.{ SyncVar, Timing }
 import org.totalgrid.reef.client._
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementBatchTest
-    extends ClientSessionSuite("MeasurementBatch.xml", "MeasurementBatch",
-      <div>
-        <p>
-          The MeasurementSnapshot service provides the current state of measurements. The request contains the
-          list of measurement names, the response contains the requested measurement objects.
-        </p>
-      </div>)
-    with ShouldMatchers {
+class MeasurementBatchTest extends ServiceClientSuite {
 
   def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil).await
   def putAll(m: List[Measurement]) = client.publishMeasurements(m).await
@@ -50,8 +42,6 @@ class MeasurementBatchTest
     val pointName = "StaticSubstation.Line02.Current"
     // read the current value so we can edit it
     val original = client.getMeasurementByName(pointName).await
-
-    recorder.addExplanation("Put measurement", "Put a single new measurement.")
 
     // double the value and post it
     val updated = original.toBuilder.setDoubleVal(original.getDoubleVal * 2).setTime(System.currentTimeMillis).build
@@ -66,7 +56,6 @@ class MeasurementBatchTest
 
     val updated = updateMeasurements(originals.toList, System.currentTimeMillis())
 
-    recorder.addExplanation("Put multiple measurements", "Put multiple new measurements in a single MeasurementBatch.")
     putAll(updated)
 
     val reverted = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }.toList

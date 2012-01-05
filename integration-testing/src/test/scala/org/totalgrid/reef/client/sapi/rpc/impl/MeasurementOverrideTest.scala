@@ -23,43 +23,29 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.PointRequestBuilders
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementOverrideTest
-    extends ClientSessionSuite("MeasurementOverride.xml", "MeasurementOverride",
-      <div>
-        <p>
-          The MeasurementOverride service.
-        </p>
-      </div>)
-    with ShouldMatchers {
+class MeasurementOverrideTest extends ServiceClientSuite {
 
   test("Demonstrate Overrides") {
     val point = PointRequestBuilders.getByName("StaticSubstation.Line02.Current")
 
-    recorder.addExplanation("Clear old overrides", "Removed any leftover overrides from previous tests.")
     client.clearMeasurementOverridesOnPoint(point).await
 
-    recorder.addExplanation("Read Original Value", "Get current value for the point")
     val originalMeas = client.getMeasurementByPoint(point).await
 
-    recorder.addExplanation("Mark Point NIS", "Creating an override with no overriding measurement attached implies NIS.")
     val nis = client.setPointOutOfService(point).await
 
-    recorder.addExplanation("Read NIS value", "Check that value is marked appropriately.")
     val nised = client.getMeasurementByPoint(point).await
 
-    recorder.addExplanation("Override point", "Override the value to 100. Notice the id is the same as for the NIS.")
     val over = client.setPointOverride(point, originalMeas.toBuilder.setDoubleVal(100).setTime(System.currentTimeMillis).build).await
 
     // TODO: add id to measurement override - backlog-63
     //over.getId should equal(nis.getId)
 
-    recorder.addExplanation("Read Overriden Value", "Check that value is marked appropriately.")
     val overriden = client.getMeasurementByPoint(point).await
 
-    recorder.addExplanation("Delete Override", "Clear the override we set (could have cleared)")
     client.deleteMeasurementOverride(over).await
 
     //    // TODO: fix overrides time ordering reef-23

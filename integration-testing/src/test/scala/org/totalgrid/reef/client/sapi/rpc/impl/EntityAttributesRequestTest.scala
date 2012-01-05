@@ -18,76 +18,29 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.service.proto.Model.{ Entity }
 import org.totalgrid.reef.client.service.proto.Utils.{ Attribute }
 
-import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityAttributesBuilders
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 @RunWith(classOf[JUnitRunner])
-class EntityAttributesRequestTest
-    extends ClientSessionSuite("EntityAttributes.xml", "EntityAttributes",
-      <div>
-        <p>
-          Attributes can be attached to entities to provide extra information (i.e. location, display name).
-        </p>
-      </div>)
-    with ShouldMatchers {
-
-  import EntityAttributesBuilders._
+class EntityAttributesRequestTest extends ServiceClientSuite {
 
   test("Puts") {
-    val ent = session.get(Entity.newBuilder.setName("StaticSubstation").build).await.expectOne
+    val ent = client.getEntityByName("StaticSubstation").await
+    val entUuid = ent.getUuid
 
-    recorder.addExplanation("Put by entity id", "Creates or replaces an attribute for the specified entity (selected by id).")
-    val resp1 = session.put(
-      EntityAttributesBuilders.putAttributesToEntityId(
-        ent.getUuid,
-        List(Attribute.newBuilder.setName("subName").setVtype(Attribute.Type.STRING).setValueString("Apex").build))).await.expectOne
-
+    val resp1 = client.setEntityAttribute(entUuid, "subName", "Apex").await
     resp1.getAttributesCount should equal(1)
 
-    recorder.addExplanation("Put by entity name", "Creates or replaces two attributes for the specified entity (selected by name).")
-    val resp2 = session.put(
-      EntityAttributesBuilders.putAttributesToEntityName(
-        "StaticSubstation",
-        List(Attribute.newBuilder.setName("gisLat").setVtype(Attribute.Type.DOUBLE).setValueDouble(41.663).build,
-          Attribute.newBuilder.setName("gisLong").setVtype(Attribute.Type.DOUBLE).setValueDouble(84.99).build))).await.expectOne
-
+    val resp2 = client.setEntityAttribute(entUuid, "gisLat", 41.663).await
     resp2.getAttributesCount should equal(2)
 
-    {
-      recorder.addExplanation("Get by entity id", "Finds the attributes associated with a particular entity.")
-      val resp = session.get(getForEntityId(ent.getUuid)).await.expectOne
-      resp.getAttributesCount should equal(2)
-    }
-    {
-      recorder.addExplanation("Get by entity name", "Finds the attributes associated with a particular entity.")
-      val resp = session.get(getForEntityName("StaticSubstation")).await.expectOne
-      resp.getAttributesCount should equal(2)
-    }
+    val resp = client.getEntityAttributes(entUuid).await
+    resp.getAttributesCount should equal(2)
 
-    {
-      recorder.addExplanation("Delete by entity id", "Deletes the attributes associated with a particular entity.")
-      val resp = session.delete(getForEntityId(ent.getUuid)).await.expectOne
-      resp.getAttributesCount should equal(2)
-    }
-
-    {
-      session.put(
-        EntityAttributesBuilders.putAttributesToEntityName(
-          "StaticSubstation",
-          List(Attribute.newBuilder.setName("gisLat").setVtype(Attribute.Type.DOUBLE).setValueDouble(41.663).build,
-            Attribute.newBuilder.setName("gisLong").setVtype(Attribute.Type.DOUBLE).setValueDouble(84.99).build))).await.expectOne
-
-      recorder.addExplanation("Delete by entity name", "Deletes the attributes associated with a particular entity.")
-      val resp = session.delete(getForEntityName(ent.getName)).await.expectOne
-      resp.getAttributesCount should equal(2)
-    }
+    client.clearEntityAttributes(entUuid)
   }
 
   test("API") {

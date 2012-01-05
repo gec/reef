@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -31,7 +31,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measureme
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, EndpointOwnership, Endpoint }
 
 @RunWith(classOf[JUnitRunner])
-class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete", <div></div>) {
+class PointDeleteTest extends ServiceClientSuite {
 
   val numberOfPoints = 10
   val multiplier = 1000

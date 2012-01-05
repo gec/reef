@@ -23,19 +23,12 @@ import scala.collection.JavaConversions._
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.client.exception.UnauthorizedException
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 @RunWith(classOf[JUnitRunner])
-class UserAuthorizationTest
-    extends ClientSessionSuite("UserAuthorization.xml", "UserAuthorization",
-      <div>
-        <p>
-          Users can have different permissions and abilities in the system.
-        </p>
-      </div>)
-    with ShouldMatchers {
+class UserAuthorizationTest extends ServiceClientSuite {
 
   private def asGuestUser(name: String, password: String, permission: String = "read_only")(fun: (Client, AllScadaService) => Unit) = {
     val agent = client.createNewAgent(name, password, List(permission)).await

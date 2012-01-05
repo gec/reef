@@ -23,12 +23,12 @@ import org.totalgrid.reef.loader.LoadManager
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.loader.commons.{ LoaderServices, ModelDeleter }
 import org.totalgrid.reef.util.Timing
 
 @RunWith(classOf[JUnitRunner])
-class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></div>) {
+class ModelSetup extends ServiceClientSuite {
 
   test("Delete model") {
 

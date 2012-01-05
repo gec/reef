@@ -37,8 +37,6 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
 
   val dnp3ModelFile = "../protocol-dnp3/src/test/resources/sample-model.xml"
 
-  def modelFile = "../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
-
   val stream = Some(Console.out)
 
   def loaderServices = session.getRpcInterface(classOf[LoaderServices])
