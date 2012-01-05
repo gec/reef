@@ -107,6 +107,11 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
 
     // reload the standard model for other tests
     LoadManager.loadFile(loaderServices, modelFile, false, false, false)
+
+    // wait for all endpoints to be up before continuing
+    val result = client.subscribeToEndpointConnections().await
+    val map = new EndpointConnectionStateMap(result)
+    map.checkAllState(true, EndpointConnection.State.COMMS_UP)
   }
 
   def waitForRepublishedMeasurement() {

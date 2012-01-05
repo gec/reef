@@ -23,9 +23,11 @@ import org.totalgrid.reef.loader.LoadManager
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.loader.commons.{ LoaderServices, ModelDeleter }
 import org.totalgrid.reef.util.Timing
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{ EndpointConnectionStateMap, ServiceClientSuite }
 
 @RunWith(classOf[JUnitRunner])
 class ModelSetup extends ServiceClientSuite {
@@ -71,5 +73,13 @@ class ModelSetup extends ServiceClientSuite {
     Timing.time("25 entry batch") {
       LoadManager.loadFile(loaderServices, fileName, false, false, false, 25)
     }
+  }
+
+  test("Wait for Endpoints online") {
+    val result = client.subscribeToEndpointConnections().await
+
+    val map = new EndpointConnectionStateMap(result)
+
+    map.checkAllState(true, EndpointConnection.State.COMMS_UP)
   }
 }

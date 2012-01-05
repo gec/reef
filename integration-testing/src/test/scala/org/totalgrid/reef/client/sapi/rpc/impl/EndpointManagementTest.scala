@@ -18,19 +18,12 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
-import org.totalgrid.reef.util.SyncVar
-import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
 
-import EndpointConnection.State._
-import org.totalgrid.reef.client.SubscriptionResult
-
-import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ServiceClientSuite }
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{ EndpointConnectionStateMap, ServiceClientSuite }
 
 @RunWith(classOf[JUnitRunner])
 class EndpointManagementTest extends ServiceClientSuite {
@@ -125,23 +118,4 @@ class EndpointManagementTest extends ServiceClientSuite {
     postMap.checkAllState(true, COMMS_UP)
   }
 
-  class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnection], EndpointConnection]) {
-
-    private def makeEntry(e: EndpointConnection) = {
-      //println(e.getEndpointByUuid.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
-      e.getEndpoint.getUuid -> e
-    }
-
-    val endpointStateMap = result.getResult.map { makeEntry(_) }.toMap
-    val syncVar = new SyncVar(endpointStateMap)
-
-    result.getSubscription.start(new SubscriptionEventAcceptorShim(ea => syncVar.atomic(m => m + makeEntry(ea.getValue))))
-
-    def checkAllState(enabled: Boolean, state: EndpointConnection.State) {
-      syncVar.waitFor(x => x.values.forall(e => e.getEnabled == enabled && e.getState == state), 20000)
-    }
-    def checkState(uuid: ReefUUID, enabled: Boolean, state: EndpointConnection.State) {
-      syncVar.waitFor(x => x.get(uuid).map(e => e.getEnabled == enabled && e.getState == state).getOrElse(false), 20000)
-    }
-  }
 }
