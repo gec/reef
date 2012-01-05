@@ -51,6 +51,7 @@
 		<module>protocol-dnp3</module>
 		<module>services</module>
 		<module>admin-shell</module>
+        <module>standalone-node</module>
 		<module>branding</module>
 		<module>dependencies</module>
 		<module>assemblies</module>

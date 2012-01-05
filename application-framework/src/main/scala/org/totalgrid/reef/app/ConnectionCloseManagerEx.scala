@@ -33,6 +33,7 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
  */
 class ConnectionCloseManagerEx(broker: BrokerConnectionFactory, exe: Executor)
     extends ConnectionWatcher
+    with ConnectionProvider
     with Lifecycle
     with Logging {
 
