@@ -93,19 +93,6 @@ object EntityQuery extends Logging {
     }
 
     /**
-     * Traverses tree for a flat list of all ids of entities of a certain type.
-     */
-    /*def idsForType(typ: String): List[UUID] = {
-      val subIds = for ((rel, nodes) <- subNodes; node <- nodes) yield node.idsForType(typ)
-      val list = subIds.toList.flatten
-
-      if (types.contains(typ))
-        id :: list
-      else
-        list
-    }*/
-
-    /**
      * Traverses tree to create Entity/Relationship proto tree.
      */
     def toProto: EntityProto = {
@@ -241,18 +228,6 @@ object EntityQuery extends Logging {
    * Executes a recursive search to go from a set of query trees to a set of result trees.
    *
    * @param queries Query tree root nodes
-   * @param rootSet Entities from root query
-   * @return Result tree root nodes (maps to rootSet) filled out by query
-   */
-  /*def resultsForQuery(queries: List[QueryNode], rootSet: List[Entity]): List[ResultNode] = {
-    val select = from(entities)(t => where(t.id in rootSet.map(_.id)) select (t))
-    resultsForQuery(queries, rootSet, select)
-  }*/
-
-  /**
-   * Executes a recursive search to go from a set of query trees to a set of result trees.
-   *
-   * @param queries Query tree root nodes
    * @param rootSelect Squeryl/sql select that represents the root set
    * @return Result tree root nodes (maps to rootSet) filled out by query
    */
@@ -335,28 +310,6 @@ object EntityQuery extends Logging {
   }
 
   /**
-   * go through the request recursivley and check that every type is a valid
-   * and expected type
-   */
-  /*def checkAllTypesInSystem(proto: EntityProto) {
-    // recusivley collect all types asked for in the request
-    def getTypes(e: EntityProto): List[String] = {
-      e.getTypesList.toList :::
-        e.getRelationsList.toList.map { rel => rel.getEntitiesList.toList.map { getTypes(_) }.flatten }.flatten
-    }
-
-    val requestTypes = getTypes(proto).distinct.sorted
-    if (!requestTypes.isEmpty) {
-      val inSystemTypes = from(entityTypeMetaModel)(et =>
-        where(et.id in requestTypes)
-          select (et.entType)).distinct.toList.sorted
-
-      val missing = requestTypes.diff(inSystemTypes)
-      if (!missing.isEmpty) throw new BadRequestException("Retreived no results and requested unknown entity types: " + missing)
-    }
-  }*/
-
-  /**
    * Return all ids of a certain entity type retrieved by an entity query.
    *
    * @param proto Proto representation of a entity tree query
@@ -389,17 +342,6 @@ object EntityQuery extends Logging {
     entities.where(t => true === true).toList
   }
 
-  // Find list of Entities matching type/name, no relationships
-  /*def nameTypeQuery(name: Option[String], types: Option[List[String]]): List[Entity] = {
-    import SquerylModel._
-
-    from(entities)(t =>
-      where(List(
-        name.map(t.name === _),
-        types.map(t.id in entityIdsFromTypes(_))).flatten)
-        select (t)).distinct.toList
-  }*/
-
   def entityIdsFromTypes(types: List[String]) = {
     from(entityTypes)(typ =>
       where(typ.entType in types)
@@ -424,30 +366,6 @@ object EntityQuery extends Logging {
       throw new Exception("Not valid query")
     }
   }
-
-  /*def findEntities(protos: List[EntityProto]): List[Entity] = {
-    protos.map { findEntity(_) }.flatten
-  }*/
-
-  /*def fullQueryAsModels(proto: EntityProto): List[Entity] = {
-    if (proto.hasUuid && proto.getUuid.getValue == "*") {
-      allQuery
-    } else {
-      protoTreeQuery(proto).map { _.flatEntites }.flatten
-    }
-  }*/
-
-  // Attaches ResultNode to Entity and returns the list of Entitys
-  /*def fullModelQuery(proto: EntityProto): List[Entity] = {
-    if (proto.hasUuid && proto.getUuid.getValue == "*") {
-      allQuery
-    } else {
-      protoTreeQuery(proto).map { resultNode =>
-        resultNode.ent.resultNode = Some(resultNode)
-        resultNode.ent
-      }
-    }
-  }*/
 
   def getChildren(rootId: UUID, relation: String) = {
     from(entities)(ent =>
@@ -498,141 +416,11 @@ object EntityQuery extends Logging {
         select (ent))
   }
 
-  /*def addEntity(name: String, typ: String): Entity = {
-    addEntity(name, typ :: Nil, None)
-  }
-
-  def addEntity(name: String, types: List[String], uuid: Option[UUID] = None): Entity = {
-    val entityModel = new Entity(name)
-    uuid.foreach { id =>
-      // if we are given a UUID it probably means we are importing uuids from another system.
-      // we check that the uuids are unique not because we don't believe in uuids working in
-      // theory, we just want to make sure to catch errors where the user code is giving us
-      // the same uuid everytime
-      val existing = from(entities)(e => where(e.id === id) select (e)).toList
-      if (!existing.isEmpty) throw new BadRequestException("UUID already in system with name: " + existing.head.name)
-      entityModel.id = id
-    }
-    val ent = entities.insert(entityModel)
-    addEntityTypes(types.toList)
-    types.foreach(t => entityTypes.insert(new EntityToTypeJoins(ent.id, t)))
-    ent
-  }
-
-  def addTypeToEntity(ent: Entity, typ: String) = {
-    addTypesToEntity(ent, typ :: Nil)
-  }*/
-
-  /*def addTypesToEntity(ent: Entity, types: List[String]) = {
-    if (types.isEmpty) {
-      ent
-    } else {
-      val distinctTypes = types.distinct.reverse
-      addEntityTypes(distinctTypes)
-      entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
-      entities.lookup(ent.id).get
-    }
-  }*/
-
-  /*def addEntityTypes(types: List[String]) {
-    val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
-    if (!customTypes.isEmpty) {
-      val known = from(entityTypeMetaModel)(et => where(et.id in customTypes) select (et.id)).toList
-      val newTypes = customTypes.diff(known)
-      newTypes.foreach(t => entityTypeMetaModel.insert(new EntityTypeMetaModel(t)))
-    }
-  }*/
-
   def findEdge(proto: EntityEdgeProto): Option[Edge] = {
     proto.uuid.value.flatMap { v =>
       returnSingleOption(edges.where(t => t.id === v.toInt).toList, "Entity Edge")
     }
   }
-
-  /*def findEdges(proto: EntityEdgeProto): List[Edge] = {
-    if (proto.hasUuid && proto.getUuid.getValue == "*") {
-      edges.where(t => true === true).toList
-    } else if (proto.hasUuid) {
-      edges.where(t => t.id === proto.getUuid.getValue.toInt).toList
-    } else {
-
-      def expr(t: Edge) = {
-        proto.child.uuid.value.map(v => t.parentId === UUID.fromString(v)) ::
-          proto.parent.uuid.value.map(v => t.childId === UUID.fromString(v)) ::
-          proto.relationship.map(t.relationship === _) ::
-          Nil
-      }
-
-      edges.where(expr(_).flatten).toList
-    }
-  }*/
-
-  /*def findEdge(parent: Entity, child: Entity, relation: String): Option[Edge] = {
-    val matching = edges.where(r => r.parentId === parent.id and r.childId === child.id and r.relationship === relation and r.distance === 1).toList
-    if (matching.size == 1) Some(matching.head) else None
-  }*/
-
-  /*def addEdge(parent: Entity, child: Entity, relation: String) = {
-    val originalEdge = edges.insert(new Edge(parent.id, child.id, relation, 1))
-    getParentsWithDistance(parent.id, relation).foreach { case (ent, dist) => addDerivedEdge(ent, child, relation, dist + 1, originalEdge) }
-    getChildrenWithDistance(child.id, relation).foreach { case (ent, dist) => addDerivedEdge(parent, ent, relation, dist + 1, originalEdge) }
-    originalEdge
-  }*/
-
-  /*def deleteEdge(edge: Edge) = {
-    val deriveds = derivedEdges.where(t => t.parentEdgeId === edge.id).toList
-    deriveds.foreach { de =>
-      edges.delete(de.edgeId)
-      derivedEdges.delete(de.id)
-    }
-    edges.delete(edge.id)
-  }*/
-
-  /*def addEdges(parent: Entity, children: List[Entity], relation: String, exclusive: Boolean) {
-    val childIds = children.map { _.id }
-    if (exclusive) {
-      val oldEdges = edges.where(e => e.distance === 1 and (e.childId in childIds) and e.relationship === relation and (e.parentId <> parent.id)).toList
-      deleteEdges(oldEdges)
-    }
-    val existingEdges = edges.where(e => e.distance === 1 and (e.childId in childIds) and e.relationship === relation and e.parentId === parent.id).toList
-    val childrenNeedingEdges = children.filterNot { child => existingEdges.find(_.childId == child.id).isDefined }
-    childrenNeedingEdges.foreach { child => addEdge(parent, child, relation) }
-  }
-
-  def deleteEdges(edgeList: List[Edge]) = {
-    val edgeIds = edgeList.map { _.id }
-    val derivedEdgeIds = derivedEdges.where(t => t.parentEdgeId in edgeIds).toList.map { _.id }
-    edges.deleteWhere(e => (e.id in edgeIds) or (e.id in derivedEdgeIds))
-    derivedEdges.deleteWhere(t => t.parentEdgeId in edgeIds)
-  }*/
-
-  /*private def addDerivedEdge(parent: Entity, child: Entity, relation: String, depth: Int, sourceEdge: Edge) = {
-    assert(depth > 1)
-    val derivedEdge = edges.insert(new Edge(parent.id, child.id, relation, depth))
-    derivedEdges.insert(new Derived(sourceEdge.id, derivedEdge.id))
-    derivedEdge
-  }*/
-
-  /*def findOrCreateEntity(name: String, entityTypes: List[String], uuid: Option[UUID]): Entity = {
-    val list = nameTypeQuery(Some(name), None)
-    if (list.size > 1) throw new Exception("more than one entity matched: " + name)
-    if (list.size == 1) {
-      val entity = list.head
-      uuid.foreach { u =>
-        if (entity.id != u)
-          throw new Exception("Entity with name: " + name + " already has uuid different than we requested.")
-      }
-      val newTypes = entityTypes.diff(entity.types.value)
-      addTypesToEntity(entity, newTypes)
-    } else {
-      logger.debug("creating entity: name: " + name + ", types: " + entityTypes)
-      addEntity(name, entityTypes, uuid)
-    }
-  }*/
-
-  /*def findEntitiesByName(names: List[String]) = {
-    from(entities)(ent => where(ent.name in names) select (ent))
-  }*/
 
   def findEntitiesByType(types: List[String]) = {
     from(entities, entityTypes)((ent, typ) =>
@@ -653,15 +441,6 @@ object EntityQuery extends Logging {
         select (ent.id)).distinct
   }
 
-  /*def populateRelations(builder: EntityProto.Builder, entity: Entity, relation: String, descendant: Boolean) = {
-    val rels = if (descendant) getChildren(entity.id, relation) else getParents(entity.id, relation)
-    val relProto = Relationship.newBuilder.setRelationship(relation).setDescendantOf(descendant)
-
-    rels.toList.foreach(r => relProto.addEntities(entityToProto(r)))
-    builder.addRelations(relProto)
-    builder
-  }*/
-
   def entityIdsFromType(typ: String) = {
     from(entityTypes)(t =>
       where(t.entType === typ)
@@ -679,33 +458,6 @@ object EntityQuery extends Logging {
     }
   }
 
-  /*def deleteEntity(entity: Entity) = deleteEntities(entity :: Nil)
-
-  def deleteEntities(entities: List[Entity]) = {
-    cleanupEntities(entities)
-    ApplicationSchema.entities.deleteWhere(_.id in entities.map { _.id })
-  }*/
-
-  /*def cleanupEntities(entities: List[Entity]) = {
-    val entityIds = entities.map { _.id }
-
-    val edges = ApplicationSchema.edges.where(e => (e.parentId in entityIds) or (e.childId in entityIds))
-
-    val edgeIds = edges.map { _.id }
-
-    val derivedEdgeIds = ApplicationSchema.derivedEdges.where(_.edgeId in edgeIds).map { _.parentEdgeId }
-    ApplicationSchema.derivedEdges.deleteWhere(_.edgeId in edgeIds)
-    ApplicationSchema.edges.deleteWhere(_.id in derivedEdgeIds)
-    ApplicationSchema.edges.deleteWhere(_.id in edgeIds)
-
-    // TODO: evaluate if we should be deleting events when entities get deleted
-    val events = ApplicationSchema.events.where(e => e.entityId in entityIds)
-    ApplicationSchema.alarms.deleteWhere(a => a.eventId in events.map { _.id })
-    ApplicationSchema.events.deleteWhere(e => e.entityId in entityIds)
-
-    ApplicationSchema.entityAttributes.deleteWhere(et => et.entityId in entityIds)
-    ApplicationSchema.entityTypes.deleteWhere(et => et.entityId in entityIds)
-  }*/
 }
 
 trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
