@@ -26,6 +26,14 @@ import org.totalgrid.reef.services.framework._
 
 object SubscriptionTools {
 
+  trait SubscriptionTesting {
+    val contextSource = new MockContextSource
+
+    def events = contextSource.sink.events
+
+    def eventCheck = events.map(s => (s.typ, s.value.getClass))
+  }
+
   case class SubEvent(typ: SubscriptionEventType, value: AnyRef, key: String)
   class QueueingEventSink extends SubscriptionHandler {
 

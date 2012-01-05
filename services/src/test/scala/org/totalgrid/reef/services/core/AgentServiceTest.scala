@@ -21,12 +21,15 @@ package org.totalgrid.reef.services.core
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet, Agent }
+import org.totalgrid.reef.client.service.proto.Model.Entity
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.ApplicationSchema
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
+import org.totalgrid.reef.models.ApplicationSchema
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 @RunWith(classOf[JUnitRunner])
 class AgentServiceTest extends AuthSystemTestBase {
@@ -82,6 +85,14 @@ class AgentServiceTest extends AuthSystemTestBase {
     intercept[BadRequestException] {
       fix.login("Nate", "password")
     }
+
+    val eventList = List(
+      (ADDED, classOf[Entity]),
+      (ADDED, classOf[Agent]),
+      (REMOVED, classOf[Agent]),
+      (REMOVED, classOf[Entity]))
+
+    fix.eventCheck should equal(eventList)
   }
 
   test("Update Agent Password") {
@@ -98,6 +109,13 @@ class AgentServiceTest extends AuthSystemTestBase {
     }
 
     fix.login("Nate", "newPassword")
+
+    val eventList = List(
+      (ADDED, classOf[Entity]),
+      (ADDED, classOf[Agent]),
+      (MODIFIED, classOf[Agent]))
+
+    fix.eventCheck should equal(eventList)
   }
 
   test("Update Agent Permissions") {
@@ -111,6 +129,14 @@ class AgentServiceTest extends AuthSystemTestBase {
 
     val agent3 = fix.agentService.put(makeAgent(permissionSetNames = List("all", "read_only"))).expectOne()
     agent3.getPermissionSetsList.toList.map { _.getName }.sorted should equal(List("all", "read_only"))
+
+    val eventList = List(
+      (ADDED, classOf[Entity]),
+      (ADDED, classOf[Agent]),
+      (MODIFIED, classOf[Agent]),
+      (MODIFIED, classOf[Agent]))
+
+    fix.eventCheck should equal(eventList)
   }
 
   test("Cannot update both password and permissions") {
@@ -120,6 +146,7 @@ class AgentServiceTest extends AuthSystemTestBase {
     intercept[BadRequestException] {
       fix.agentService.put(makeAgent(password = Some("newPassword"), permissionSetNames = List("read_only"))).expectOne()
     }
+    fix.eventCheck should equal((ADDED, classOf[Entity]) :: (ADDED, classOf[Agent]) :: Nil)
   }
 
   test("Deleting Agent invalidates AuthTokens") {

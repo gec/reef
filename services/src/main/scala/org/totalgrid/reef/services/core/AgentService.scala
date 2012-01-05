@@ -99,6 +99,8 @@ class AgentServiceModel
       if (removed.size > 0 || added.size > 0) {
         added.foreach { p => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(p.id, existing.id)) }
         ApplicationSchema.agentSetJoins.deleteWhere(join => join.permissionSetId in removed.map { _.id } and join.agentId === existing.id)
+
+        onUpdated(context, existing)
         (existing, true)
       } else {
         (existing, false)
@@ -110,6 +112,10 @@ class AgentServiceModel
     if (entry.authTokens.value.size > 0) {
       ApplicationSchema.authTokens.deleteWhere(at => at.id in entry.authTokens.value.map(_.id))
     }
+  }
+
+  override def postDelete(context: RequestContext, entry: AgentModel) {
+    entityModel.delete(context, entry.entity.value)
   }
 
   private def validatePassword(password: String) {

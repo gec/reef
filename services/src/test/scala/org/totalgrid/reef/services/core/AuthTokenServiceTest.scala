@@ -45,12 +45,16 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
     AuthTokenService.seedTesting(new SilentRequestContext)
   }
 
-  class Fixture {
-    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
-    val authService = new AuthTokenService(modelFac.authTokens)
+  class Fixture extends SubscriptionTools.SubscriptionTesting {
 
-    val agentService = new AgentService(modelFac.agents)
-    val permissionSetService = new PermissionSetService(modelFac.permissionSets)
+    import SubscriptionTools._
+
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
+
+    val authService = new SyncService(new AuthTokenService(modelFac.authTokens), contextSource)
+
+    val agentService = new SyncService(new AgentService(modelFac.agents), contextSource)
+    val permissionSetService = new SyncService(new PermissionSetService(modelFac.permissionSets), contextSource)
 
     def loginFrom(user: String, location: String) = {
       login(user, user, None, None, location)
