@@ -26,17 +26,14 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
-import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, EndpointOwnership, Endpoint }
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointOwnership, Endpoint }
 
 @RunWith(classOf[JUnitRunner])
 class PointDeleteTest extends ServiceClientSuite {
 
   val numberOfPoints = 10
-  val multiplier = 1000
 
-  test("Add " + numberOfPoints + " points") {
+  test("Add " + numberOfPoints + " points on test endpoint") {
 
     client.setHeaders(client.getHeaders.setTimeout(100000))
 
@@ -63,24 +60,10 @@ class PointDeleteTest extends ServiceClientSuite {
     }
     connection.getRouting.getServiceRoutingKey should not equal ("")
 
-    (0 to numberOfPoints).map { i =>
-      val measPublished = i * multiplier
-      Timing.time("publish: " + measPublished) {
-        publishNMeasurements(measPublished, names.get(i))
-      }
-    }
-
     client.disableEndpointConnection(endpoint.getUuid).await
     loaderServices.delete(endpoint).await
 
-    (0 to numberOfPoints).foreach { i => Timing.time("delete: " + (i * multiplier)) { loaderServices.delete(points.get(i).toBuilder.clearEndpoint.build).await } }
+    (0 to numberOfPoints).foreach { i => loaderServices.delete(points.get(i).toBuilder.clearEndpoint.build).await }
   }
 
-  private def publishNMeasurements(numMeas: Int, name: String) {
-    if (numMeas > 0) {
-      def makeMeas(value: Double) = Measurement.newBuilder.setName(name).setType(Measurement.Type.DOUBLE).setUnit("raw").setDoubleVal(value).setQuality(Quality.newBuilder).build
-      val meases = (1 to numMeas).map { i => makeMeas(i.toDouble) }.toList
-      client.publishMeasurements(meases).await
-    }
-  }
 }
