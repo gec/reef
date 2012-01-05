@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.loader.commons.{ LoaderClient, LoaderServices, ModelDeleter }
+import org.totalgrid.reef.loader.commons.{ LoaderServicesList, LoaderServices, ModelDeleter }
 import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
@@ -60,7 +60,7 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     val connection = factoryOption.get.connect()
     val c = connection.login(user.getUserName, user.getUserPassword).await
 
-    LoaderClient.prepareClient(c)
+    c.addServicesList(new LoaderServicesList())
 
     c.setHeaders(c.getHeaders.setTimeout(50000))
 
