@@ -16,67 +16,40 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.integrationtests
+package org.totalgrid.reef.protocol.integration.dnp3
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
-import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.loader.commons.{ LoaderServicesList, LoaderServices, ModelDeleter }
+import org.totalgrid.reef.loader.commons.{ LoaderServices, ModelDeleter }
 import org.totalgrid.reef.loader.LoadManager
-import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
-import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.client.service.proto.Model.{ CommandType, ReefUUID }
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
-import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
-import org.totalgrid.reef.client.service.list.ReefServices
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 @RunWith(classOf[JUnitRunner])
-class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {
+class Dnp3ProtocolTest extends ServiceClientSuite {
+
+  val dnp3ModelFile = "../protocol-dnp3/src/test/resources/sample-model.xml"
+
+  def modelFile = "../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
 
   val stream = Some(Console.out)
 
-  var factoryOption = Option.empty[ReefFactory]
-  var clientOption = Option.empty[Client]
-  def client = clientOption.get
-  def loaderServices = client.getRpcInterface(classOf[LoaderServices])
-  def services = client.getRpcInterface(classOf[AllScadaService])
-
-  override def beforeAll() {
-    val props = PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg")
-    val amqp = new AmqpSettings(props)
-    val user = new UserSettings(props)
-
-    factoryOption = Some(new ReefFactory(amqp, new ReefServices))
-
-    val connection = factoryOption.get.connect()
-    val c = connection.login(user.getUserName, user.getUserPassword).await
-
-    c.addServicesList(new LoaderServicesList())
-
-    c.setHeaders(c.getHeaders.setTimeout(50000))
-
-    clientOption = Some(c)
-  }
-
-  override def afterAll() {
-    factoryOption.foreach { _.terminate() }
-  }
+  def loaderServices = session.getRpcInterface(classOf[LoaderServices])
+  def services = session.getRpcInterface(classOf[AllScadaService])
 
   test("Clear system") {
     ModelDeleter.deleteEverything(loaderServices, false, stream)
   }
 
   test("Load dnp3 model") {
-    LoadManager.loadFile(loaderServices, "src/test/resources/sample-model.xml", false, false, false)
+    LoadManager.loadFile(loaderServices, dnp3ModelFile, false, false, false)
   }
 
   test("Cycle endpoints") {
@@ -128,6 +101,14 @@ class Dnp3StartStopIT extends FunSuite with ShouldMatchers with BeforeAndAfterAl
     } finally {
       services.deleteCommandLock(lock)
     }
+  }
+
+  test("Reset system") {
+    // test that we can remove the dnp3 endpoint configuration
+    ModelDeleter.deleteEverything(loaderServices, false, stream)
+
+    // reload the standard model for other tests
+    LoadManager.loadFile(loaderServices, modelFile, false, false, false)
   }
 
   def waitForRepublishedMeasurement() {

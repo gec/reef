@@ -34,17 +34,21 @@ public class TestServiceClientExceptionBehavior extends ReefConnectionTestBase
     @Test
     public void getAllEntities()
     {
-        factory.terminate();
+        // only test terminate functionality when running a remote-test
+        if ( System.getProperty( "remote-test" ) != null )
+        {
+            factory.terminate();
 
-        try
-        {
-            helpers.getApplications();
-            fail( "Closed client should throw exception" );
-        }
-        catch ( Exception ex )
-        {
-            // TODO: throw ServiceIOException if factory has been terminated
-            assertTrue( true );
+            try
+            {
+                helpers.getApplications();
+                fail( "Closed client should throw exception" );
+            }
+            catch ( Exception ex )
+            {
+                // TODO: throw ServiceIOException if factory has been terminated
+                assertTrue( true );
+            }
         }
     }
 

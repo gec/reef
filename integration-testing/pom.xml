@@ -32,10 +32,6 @@
 		<profiles>
 		<profile>
 			<id>no_integration_testing</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
 			<build>
 				<plugins>
 					<plugin>
@@ -53,40 +49,16 @@
 
 		<profile>
 			<id>test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 			<build>
 				<plugins>
 					<plugin>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<includes>
-								<include>**/ModelSetup*.java</include>
-							</includes>
-						</configuration>
 						<executions>
 							<execution>
 								<id>test</id>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<version>2.10</version>
-						<configuration>
-							<includes>
-								<include>**/*.java</include>
-							</includes>
-							<excludes>
-								<exclude>**/ModelSetup*.java</exclude>
-							</excludes>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>test</phase>
-								<goals>
-									<goal>integration-test</goal>
-                                    <goal>verify</goal>
-								</goals>
 							</execution>
 						</executions>
 					</plugin>
@@ -166,6 +138,12 @@
             <artifactId>reef-benchmarks</artifactId>
             <version>${reef.version}</version>
 			<scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-standalone-node</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

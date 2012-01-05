@@ -28,6 +28,7 @@ import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionCreationListener, SubscriptionEvent, SubscriptionEventAcceptor }
 import org.totalgrid.reef.client.service.list.ReefServices
+import org.totalgrid.reef.standalone.InMemoryNode
 import org.totalgrid.reef.loader.commons.LoaderServicesList
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
@@ -47,18 +48,16 @@ class SubscriptionCanceler extends SubscriptionCreationListener {
   }
 }
 
-abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {
+abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {
 
-  def this(file: String, title: String, desc: String) = {
-    this(file, title, <div>{ desc }</div>)
-  }
+  // name of the model file to initialize the system with
+  def modelFile: String
 
   // we use options so we can avoid starting the factories until the test is actually run
   private var factoryOption = Option.empty[ReefFactory]
   private var sessionOption = Option.empty[Client]
   private var clientOption = Option.empty[AllScadaService]
 
-  val recorder = new InteractionRecorder {}
   val canceler = new SubscriptionCanceler
 
   def session = sessionOption.get
@@ -66,26 +65,55 @@ abstract class ClientSessionSuite(file: String, title: String, desc: Node) exten
 
   override def beforeAll() {
     // gets default connection settings or overrides using system properties
-
     val props = PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg")
-
-    val config = new AmqpSettings(props)
     val userConfig = new UserSettings(props)
-    factoryOption = Some(new ReefFactory(config, new ReefServices))
-    val conn = factoryOption.get.connect()
 
+    val conn = if (System.getProperty("remote-test") != null) {
+
+      val config = new AmqpSettings(props)
+
+      factoryOption = Some(new ReefFactory(config, new ReefServices))
+      factoryOption.get.connect()
+    } else {
+      InMemoryNode.initialize("../standalone-node.cfg", true, modelFile)
+      InMemoryNode.connection
+    }
     conn.addServicesList(new LoaderServicesList)
+    conn.addServicesList(new ReefServices)
 
     sessionOption = Some(conn.login(userConfig.getUserName, userConfig.getUserPassword).await)
     clientOption = Some(session.getRpcInterface(classOf[AllScadaService]))
-    client.addRequestSpy(recorder)
     client.addSubscriptionCreationListener(canceler)
+
+    client.setHeaders(client.getHeaders.setTimeout(50000))
+  }
+
+  override def afterAll() {
+    canceler.cancel()
+    factoryOption.foreach(_.terminate())
+  }
+
+}
+
+// TODO: port all xml documentation to other places and remove ClientSessionSuite
+abstract class ClientSessionSuite(file: String, title: String, desc: Node) extends ServiceClientSuite {
+
+  def modelFile = "../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
+
+  def this(file: String, title: String, desc: String) = {
+    this(file, title, <div>{ desc }</div>)
+  }
+
+  val recorder = new InteractionRecorder {}
+
+  override def beforeAll() {
+    super.beforeAll()
+    client.addRequestSpy(recorder)
   }
 
   override def afterAll() {
     recorder.save(file, title, desc)
-    canceler.cancel()
-    factoryOption.foreach(_.terminate())
+    super.afterAll()
   }
 
 }
