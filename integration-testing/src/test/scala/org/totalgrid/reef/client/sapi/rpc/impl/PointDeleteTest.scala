@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderClient }
+import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.util.Timing
 import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
@@ -37,7 +37,6 @@ class PointDeleteTest extends ClientSessionSuite("PointDelete.xml", "PointDelete
   val multiplier = 1000
 
   test("Add " + numberOfPoints + " points") {
-    LoaderClient.prepareClient(session)
 
     client.setHeaders(client.getHeaders.setTimeout(100000))
 

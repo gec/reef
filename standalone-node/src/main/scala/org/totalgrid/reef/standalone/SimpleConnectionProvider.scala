@@ -16,20 +16,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.broker.memory
+package org.totalgrid.reef.standalone
 
-import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.broker.BrokerConnectionFactory
+import net.agileautomata.executor4s.{ Cancelable, Executor }
+import org.totalgrid.reef.app.{ ConnectionConsumer, ConnectionProvider }
 
-final class MemoryBrokerConnectionFactory(exe: Executor) extends BrokerConnectionFactory {
+class SimpleConnectionProvider(brokerConnection: BrokerConnectionFactory, exe: Executor) extends ConnectionProvider {
+  var cancelables = List.empty[Cancelable]
+  def addConsumer(consumer: ConnectionConsumer) {
+    cancelables ::= consumer.newConnection(brokerConnection.connect, exe)
+  }
+  def removeConsumer(consumer: ConnectionConsumer) {}
 
-  import MemoryBrokerState._
-  private var state = State()
-
-  def update(fun: MemoryBrokerState.State => MemoryBrokerState.State) = synchronized(state = fun(state))
-  def getState: MemoryBrokerState.State = state
-
-  def connect = new MemoryBrokerConnection(this, exe)
-
-  override def toString() = "in-memory-broker"
+  def start() = {}
+  def stop() = cancelables.foreach { _.cancel() }
 }

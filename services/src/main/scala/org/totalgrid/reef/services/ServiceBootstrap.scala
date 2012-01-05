@@ -74,7 +74,7 @@ object ServiceBootstrap {
     val login = buildLogin(systemUser)
     val authToken = authService.put(contextSource, login).expectOne
 
-    val config = ApplicationConfigBuilders.makeProto(appSettings, appSettings.getDefaultNodeName + "_services", List("Services"))
+    val config = ApplicationConfigBuilders.makeProto(appSettings, appSettings.getDefaultNodeName + "-Services", List("Services"))
     val appConfig = applicationConfigService.put(contextSource, config).expectOne
 
     // the measurement batch service acts as a type of manual FEP

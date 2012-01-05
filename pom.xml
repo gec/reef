@@ -14,6 +14,8 @@
 		<felixCoreVersion>1.4.0</felixCoreVersion>
         <executor4s.version>0.1.9</executor4s.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <karaf.version>2.2.4</karaf.version>
+        <karaf.console.version>${karaf.version}</karaf.console.version>
 	</properties>
 
 	<modules>
@@ -49,6 +51,7 @@
 		<module>protocol-dnp3</module>
 		<module>services</module>
 		<module>admin-shell</module>
+        <module>standalone-node</module>
 		<module>branding</module>
 		<module>dependencies</module>
 		<module>assemblies</module>

@@ -52,7 +52,7 @@ object ProcessingActivator {
         }
       }
     }
-    val appEnroller = new ApplicationEnrollerEx(nodeSettings, "Processing-" + nodeSettings.getDefaultNodeName, List("Processing"), appConfigConsumer)
+    val appEnroller = new ApplicationEnrollerEx(nodeSettings, nodeSettings.getDefaultNodeName + "-Processing", List("Processing"), appConfigConsumer)
     val userLogin = new UserLogin(userSettings, appEnroller)
     userLogin
   }

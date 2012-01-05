@@ -27,7 +27,7 @@ import java.io.{ PrintStream, InputStream }
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.service.AllScadaService
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.service.list.ReefServices
@@ -42,16 +42,26 @@ object ProtoShellApplication {
     val factory = new ReefFactory(connectionInfo, new ReefServices)
 
     val connection = factory.connect()
-
-    val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
-    val services = client.getRpcInterface(classOf[AllScadaService])
-
     val cancel = new Cancelable {
       def cancel() = factory.terminate()
     }
 
-    val app = new ProtoShellApplication(client, services, cancel, userSettings.getUserName, connectionInfo.toString, client.getHeaders.getAuthToken)
-    app.run(Array[String]())
+    runTerminal(connection, userSettings, connectionInfo.toString, cancel)
+    factory.terminate()
+  }
+
+  def runTerminal(connection: Connection, userSettings: UserSettings, context: String, cancelable: Cancelable) {
+    try {
+      val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+      val services = client.getRpcInterface(classOf[AllScadaService])
+
+      val app = new ProtoShellApplication(client, services, cancelable, userSettings.getUserName, context, client.getHeaders.getAuthToken)
+      app.run(Array[String]())
+    } catch {
+      case e: Exception =>
+        cancelable.cancel()
+        throw e
+    }
   }
 }
 
@@ -64,10 +74,6 @@ class ProtoShellApplication(client: Client, services: AllScadaService, cancelabl
 
   protected override def createConsole(commandProcessor: CommandProcessorImpl, in: InputStream, out: PrintStream, err: PrintStream, terminal: Terminal) = {
     new Console(commandProcessor, in, out, err, terminal, null) {
-      protected override def isPrintStackTraces = false
-      protected override def welcome = {
-        session.getConsole().println(">")
-      }
       protected override def setSessionProperties = {
         ReefCommandSupport.setSessionVariables(this.session, client, services, context, cancelable, userName, authToken)
       }

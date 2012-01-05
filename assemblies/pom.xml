@@ -20,7 +20,6 @@
     </modules>
 
     <properties>
-        <karaf.version>2.2.4</karaf.version>
         <karaf.name>apache-karaf-${karaf.version}</karaf.name>
         <reef.default.repository>reef-bundles</reef.default.repository>
         <maven-assembly-plugin.version>2.2.2</maven-assembly-plugin.version>

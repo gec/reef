@@ -16,20 +16,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.broker.memory
+package org.totalgrid.reef.standalone
 
-import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.broker.BrokerConnectionFactory
+import net.agileautomata.executor4s._
 
-final class MemoryBrokerConnectionFactory(exe: Executor) extends BrokerConnectionFactory {
+object MultiNodeEntryPoint {
 
-  import MemoryBrokerState._
-  private var state = State()
+  def main(args: Array[String]) = {
+    val exe = Executors.newResizingThreadPool(1.minutes)
+    val system = new IntegratedSystem(exe, "standalone-node.cfg", 1, 3, true)
 
-  def update(fun: MemoryBrokerState.State => MemoryBrokerState.State) = synchronized(state = fun(state))
-  def getState: MemoryBrokerState.State = state
+    try {
+      system.start()
 
-  def connect = new MemoryBrokerConnection(this, exe)
+      system.runTerminal()
 
-  override def toString() = "in-memory-broker"
+      system.stop()
+    } finally {
+      exe.terminate()
+    }
+
+  }
 }
