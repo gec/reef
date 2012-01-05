@@ -303,7 +303,6 @@ class EntityServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Multi-model Delete") {
-
     val dev = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
     val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
     edgeModel.addEdge(silentContext, dev, sub, "owns")
@@ -336,12 +335,5 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     events.map(s => (s.typ, s.value.getClass)) should equal(eventList)
   }
-
-  /*test("Create Cause Event") {
-
-    val upload = Entity.newBuilder.setName("MagicTestObject").addTypes("TestType").build
-   //val created = service.p(upload).expectOne(Status.CREATED)
-
-  }*/
 
 }

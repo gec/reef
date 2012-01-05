@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.client.service.proto.Model.{ Point, PointType }
+import org.totalgrid.reef.client.service.proto.Model.{ Point, PointType, Entity }
 import org.totalgrid.reef.client.service.proto.Processing.{ MeasOverride, TriggerSet }
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.services.ServiceDependencies
@@ -40,6 +40,8 @@ class PointServiceTest extends DatabaseUsingTestBase {
     val pointService = new PointService(modelFactories.points)
     val triggerService = new TriggerSetService(modelFactories.triggerSets)
     val overrideService = new OverrideConfigService(modelFactories.overrides)
+
+    val entityService = new EntityService(modelFactories.entities)
 
     def addPoint(name: String = "point01", unit: String = "amps", typ: PointType = PointType.ANALOG) = {
       val p = Point.newBuilder.setName(name).setUnit(unit).setType(typ)
@@ -73,9 +75,14 @@ class PointServiceTest extends DatabaseUsingTestBase {
       overrideService.get(o.build).expectMany()
     }
 
+    def getEntity(name: String = "point01") = {
+      val e = Entity.newBuilder.setName(name).build
+      entityService.get(e).expectOneOrNone()
+    }
+
     def deletePoint(name: String = "point01") = {
       val p = Point.newBuilder.setName(name)
-      pointService.delete(p.build).expectOne
+      pointService.delete(p.build)
     }
   }
 
@@ -99,6 +106,7 @@ class PointServiceTest extends DatabaseUsingTestBase {
     f.getTriggers() should equal(Nil)
     f.getOverrides() should equal(Nil)
     f.getMeasurement() should equal(None)
+    f.getEntity() should equal(None)
 
     val point = f.addPoint()
     f.getPoints() should equal(point :: Nil)
@@ -111,12 +119,15 @@ class PointServiceTest extends DatabaseUsingTestBase {
     val overrid = f.addOverride()
     f.getOverrides() should equal(overrid :: Nil)
 
+    f.getEntity().isEmpty should equal(false)
+
     f.deletePoint()
 
     f.getPoints() should equal(Nil)
     f.getTriggers() should equal(Nil)
     f.getOverrides() should equal(Nil)
     f.getMeasurement() should equal(None)
+    f.getEntity() should equal(None)
   }
 
 }
