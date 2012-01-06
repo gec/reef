@@ -81,9 +81,27 @@ class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
 
     val exe = new MockExecutor
     val state = State().declareExchange("ex", "topic").declareQueue("q", exe).bindQueue("q", "ex", "#", false).listen("q", consumer)
-    state.exchanges("ex").bindings(0).queue should equal("q")
+    state.exchanges("ex").bindings.map { _.queue } should equal(List("q"))
     state.publish("ex", "key", testMsg)
     exe.runNextPendingAction()
     msg should equal(Some(testMsg))
+  }
+
+  test("Broker ignores duplicate bindings") {
+
+    val exe = new MockExecutor
+    val setup = State().declareExchange("ex", "topic").declareQueue("q", exe).declareQueue("q2", exe)
+
+    // same queue, same key is ignored
+    val state = setup.bindQueue("q", "ex", "#", false).bindQueue("q", "ex", "#", false)
+    state.exchanges("ex").bindings.map { _.queue } should equal(List("q"))
+
+    // multiple queues to same exchange with same key ok
+    val state2 = setup.bindQueue("q", "ex", "#", false).bindQueue("q2", "ex", "#", false)
+    state2.exchanges("ex").bindings.map { _.queue }.sorted should equal(List("q", "q2"))
+
+    // different keys to same queue ok
+    val state3 = setup.bindQueue("q", "ex", "#", false).bindQueue("q", "ex", "*", false)
+    state3.exchanges("ex").bindings.map { _.queue } should equal(List("q", "q"))
   }
 }

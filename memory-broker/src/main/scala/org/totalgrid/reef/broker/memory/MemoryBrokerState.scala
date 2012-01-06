@@ -101,7 +101,9 @@ object MemoryBrokerState {
       this.copy(bindings = bindings.filterNot(b => (b.key == key) && (b.queue == queue)))
 
     def bindQueue(queue: String, key: String): Exchange = {
-      this.copy(bindings = Binding(key, queue) :: bindings)
+      // remove the identical binding if it exists
+      val unBound = unbindQueue(queue, key)
+      unBound.copy(bindings = Binding(key, queue) :: unBound.bindings)
     }
 
     def dropQueue(queue: String): Exchange = this.copy(bindings = bindings.filterNot(_.queue == queue))
