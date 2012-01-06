@@ -25,6 +25,7 @@ import scala.collection.immutable.TreeMap
 
 class MeasStorage(var startingValue: Meas, currentValueOnly: Boolean) {
   var historicValues = TreeMap.empty[Long, ListBuffer[Meas]]
+  var lastWrittenValue = startingValue
 
   addMeas(startingValue)
 
@@ -34,11 +35,7 @@ class MeasStorage(var startingValue: Meas, currentValueOnly: Boolean) {
       case Some(l) => l += meas
       case None => historicValues += (meas.getTime -> ListBuffer(meas))
     }
-
-  }
-
-  def currentValue: Meas = {
-    historicValues.get(historicValues.lastKey).get.lastOption.get
+    lastWrittenValue = meas
   }
 
   def getInRange(begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
@@ -58,7 +55,7 @@ class InMemoryMeasurementStore(currentValueOnly: Boolean = false) extends Measur
   var values = Map.empty[String, MeasStorage]
 
   def get(names: Seq[String]): Map[String, Meas] = {
-    values.filterKeys(names.contains).map { x => x._1 -> x._2.currentValue }
+    values.filterKeys(names.contains).map { x => x._1 -> x._2.lastWrittenValue }
   }
   def set(meas: Seq[Meas]): Unit = {
     meas.foreach(m => values.get(m.getName) match {
@@ -88,7 +85,7 @@ class InMemoryMeasurementStore(currentValueOnly: Boolean = false) extends Measur
   }
 
   def allCurrent(): Seq[Meas] = {
-    values.map { x => x._2.currentValue }.toList
+    values.map { x => x._2.lastWrittenValue }.toList
   }
 
   def connect() = {}
