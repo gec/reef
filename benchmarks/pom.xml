@@ -3,6 +3,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>reef-benchmarks</artifactId>
+    <packaging>jar</packaging>
 	<parent>
 		<groupId>org.totalgrid.reef</groupId>
 		<artifactId>reef-scala-base</artifactId>
@@ -56,9 +57,6 @@
 	<profiles>
 		<profile>
 			<id>no_integration_testing</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
 
 			<build>
 				<plugins>
@@ -77,6 +75,9 @@
 
 		<profile>
 			<id>test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 			<build>
 				<plugins>
 					<plugin>
