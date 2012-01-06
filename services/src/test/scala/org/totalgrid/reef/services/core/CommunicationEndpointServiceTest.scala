@@ -39,20 +39,25 @@ import org.totalgrid.reef.models.{ FrontEndPort, DatabaseUsingTestBase }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
+import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
-  val rtDb = new InMemoryMeasurementStore()
-  val modelFac = new ModelFactories(new ServiceDependenciesDefaults(cm = rtDb))
+  class Fixture extends SubscriptionTools.SubscriptionTesting {
 
-  val endpointService = new CommunicationEndpointService(modelFac.endpoints)
-  val connectionService = new CommunicationEndpointConnectionService(modelFac.fepConn)
+    val rtDb = new InMemoryMeasurementStore()
+    val modelFac = new ModelFactories(rtDb, contextSource)
 
-  val configFileService = new ConfigFileService(modelFac.configFiles)
-  val pointService = new PointService(modelFac.points)
-  val commandService = new CommandService(modelFac.cmds)
-  val portService = new FrontEndPortService(modelFac.fepPort)
+    val endpointService = new SyncService(new CommunicationEndpointService(modelFac.endpoints), contextSource)
+    val connectionService = new SyncService(new CommunicationEndpointConnectionService(modelFac.fepConn), contextSource)
+
+    val configFileService = new SyncService(new ConfigFileService(modelFac.configFiles), contextSource)
+    val pointService = new SyncService(new PointService(modelFac.points), contextSource)
+    val commandService = new SyncService(new CommandService(modelFac.cmds), contextSource)
+    val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
+  }
 
   val headers = BasicRequestHeaders.empty.setUserName("user")
 
@@ -105,15 +110,16 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Add parts seperatley (id)") {
+    val f = new Fixture
 
-    pointService.put(getPoint().build).expectOne()
-    commandService.put(getCommand().build).expectOne()
-    val cf = configFileService.put(getConfigFile().build).expectOne()
-    val port = portService.put(getIPPort().build).expectOne()
+    f.pointService.put(getPoint().build).expectOne()
+    f.commandService.put(getCommand().build).expectOne()
+    val cf = f.configFileService.put(getConfigFile().build).expectOne()
+    val port = f.portService.put(getIPPort().build).expectOne()
 
     val endpoint = getEndpoint().setChannel(port).addConfigFiles(cf).setOwnerships(getOwnership())
 
-    val returned = endpointService.put(endpoint.build).expectOne()
+    val returned = f.endpointService.put(endpoint.build).expectOne()
 
     returned.getConfigFilesCount should equal(1)
     returned.hasChannel should equal(true)
@@ -124,23 +130,25 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)
 
-    pointService.get(getPoint("*").build).expectOne()
-    commandService.get(getCommand("*").build).expectOne()
+    f.pointService.get(getPoint("*").build).expectOne()
+    f.commandService.get(getCommand("*").build).expectOne()
   }
 
   test("Endpoint put with unkown points/commands fails") {
+    val f = new Fixture
     intercept[BadRequestException] {
       val endpoint = getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
-      endpointService.put(endpoint.build).expectOne()
+      f.endpointService.put(endpoint.build).expectOne()
     }
   }
 
   test("Add with no port") {
-    pointService.put(getPoint().build).expectOne()
-    commandService.put(getCommand().build).expectOne()
+    val f = new Fixture
+    f.pointService.put(getPoint().build).expectOne()
+    f.commandService.put(getCommand().build).expectOne()
     val endpoint = getEndpoint().addConfigFiles(getConfigFile()).setOwnerships(getOwnership())
 
-    val returned = endpointService.put(endpoint.build).expectOne()
+    val returned = f.endpointService.put(endpoint.build).expectOne()
 
     returned.hasChannel should equal(false)
 
@@ -152,33 +160,35 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Config file without needed fields blows up") {
+    val f = new Fixture
     intercept[BadRequestException] {
-      configFileService.put(getConfigFile(Some("test1"), None, None).build)
+      f.configFileService.put(getConfigFile(Some("test1"), None, None).build)
     }
     intercept[BadRequestException] {
-      configFileService.put(getConfigFile(Some("test1"), Some("data"), None).build)
+      f.configFileService.put(getConfigFile(Some("test1"), Some("data"), None).build)
     }
     intercept[BadRequestException] {
-      configFileService.put(getConfigFile(Some("test1"), None, Some("data")).build)
+      f.configFileService.put(getConfigFile(Some("test1"), None, Some("data")).build)
     }
     intercept[BadRequestException] {
-      configFileService.put(getConfigFile(None, Some("data"), Some("data")).build)
+      f.configFileService.put(getConfigFile(None, Some("data"), Some("data")).build)
     }
     intercept[BadRequestException] {
-      endpointService.put(getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile(None, None, None)).build)
+      f.endpointService.put(getEndpoint().setChannel(getIPPort()).addConfigFiles(getConfigFile(None, None, None)).build)
     }
   }
 
   test("Shared Config file") {
-    pointService.put(getPoint("d1.test_point").build).expectOne()
-    pointService.put(getPoint("d2.test_point").build).expectOne()
-    commandService.put(getCommand("d1.test_command").build).expectOne()
-    commandService.put(getCommand("d2.test_command").build).expectOne()
+    val f = new Fixture
+    f.pointService.put(getPoint("d1.test_point").build).expectOne()
+    f.pointService.put(getPoint("d2.test_point").build).expectOne()
+    f.commandService.put(getCommand("d1.test_command").build).expectOne()
+    f.commandService.put(getCommand("d2.test_command").build).expectOne()
     val endpoint1 = getEndpoint("d1").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership("d1"))
     val endpoint2 = getEndpoint("d2").addConfigFiles(getConfigFile(Some("shared"))).setOwnerships(getOwnership("d2"))
 
-    val returned1 = endpointService.put(endpoint1.build).expectOne()
-    val returned2 = endpointService.put(endpoint2.build).expectOne()
+    val returned1 = f.endpointService.put(endpoint1.build).expectOne()
+    val returned2 = f.endpointService.put(endpoint2.build).expectOne()
 
     returned1.getConfigFilesCount should equal(1)
     returned2.getConfigFilesCount should equal(1)
@@ -187,90 +197,114 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Can only delete disabled offline endpoints") {
-    val point = pointService.put(getPoint().build).expectOne()
-    val command = commandService.put(getCommand().build).expectOne()
-    val configFile = configFileService.put(getConfigFile().build).expectOne()
-    val port = portService.put(getIPPort().build).expectOne()
+    val f = new Fixture
+    val point = f.pointService.put(getPoint().build).expectOne()
+    val command = f.commandService.put(getCommand().build).expectOne()
+    val configFile = f.configFileService.put(getConfigFile().build).expectOne()
+    val port = f.portService.put(getIPPort().build).expectOne()
 
-    val endpoint = endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
+    val endpoint = f.endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
 
-    val initialConnectionState = connectionService.get(getConnection().build).expectOne()
+    val initialConnectionState = f.connectionService.get(getConnection().build).expectOne()
     initialConnectionState.getState should equal(EndpointConnection.State.COMMS_DOWN)
     initialConnectionState.getEnabled should equal(true)
 
     // cannot delete enabled endpoints
-    intercept[BadRequestException] { endpointService.delete(endpoint) }
+    intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // cannot delete endpoint because it is "enabled" and "online", would confuse Feps
-    connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build, headers)
-    intercept[BadRequestException] { endpointService.delete(endpoint) }
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build, headers)
+    intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // cannot delete endpoint because even though it has been disabled it is still "online"
-    connectionService.put(getConnection(enabled = Some(false)).build, headers)
-    intercept[BadRequestException] { endpointService.delete(endpoint) }
+    f.connectionService.put(getConnection(enabled = Some(false)).build, headers)
+    intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // we can now delete because endpoint is "disabled" and "offline"
-    connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build, headers)
-    endpointService.delete(endpoint).expectOne(Status.DELETED)
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build, headers)
+    f.endpointService.delete(endpoint).expectOne(Status.DELETED)
   }
 
   test("Can't remove points or commands owned by endpoint") {
-    val point = pointService.put(getPoint().build).expectOne()
-    val command = commandService.put(getCommand().build).expectOne()
-    val configFile = configFileService.put(getConfigFile().build).expectOne()
-    val port = portService.put(getIPPort().build).expectOne()
+    val f = new Fixture
 
-    val endpoint = endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
+    val point = f.pointService.put(getPoint().build).expectOne()
+    val command = f.commandService.put(getCommand().build).expectOne()
+    val configFile = f.configFileService.put(getConfigFile().build).expectOne()
+    val port = f.portService.put(getIPPort().build).expectOne()
+
+    val endpoint = f.endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
 
     // cannot deleted resources used by endpoint
-    intercept[BadRequestException] { pointService.delete(point) }
-    intercept[BadRequestException] { commandService.delete(command) }
-    intercept[BadRequestException] { portService.delete(port) }
+    intercept[BadRequestException] { f.pointService.delete(point) }
+    intercept[BadRequestException] { f.commandService.delete(command) }
+    intercept[BadRequestException] { f.portService.delete(port) }
 
     //intercept[BadRequestException] { configFileService.delete(configFile) }
 
     // we can now delete because endpoint is "disabled" and "offline"
-    connectionService.put(getConnection(enabled = Some(false)).build, headers)
+    f.connectionService.put(getConnection(enabled = Some(false)).build, headers)
 
     // now remove endpoint "unlocking" other resources
-    endpointService.delete(endpoint).expectOne(Status.DELETED)
+    f.endpointService.delete(endpoint).expectOne(Status.DELETED)
 
     // now that the endpoint is deleted we can remove the other objects
-    pointService.delete(point).expectOne(Status.DELETED)
-    commandService.delete(command).expectOne(Status.DELETED)
-    configFileService.delete(configFile).expectOne(Status.DELETED)
-    portService.delete(port).expectOne(Status.DELETED)
+    f.pointService.delete(point).expectOne(Status.DELETED)
+    f.commandService.delete(command).expectOne(Status.DELETED)
+    f.configFileService.delete(configFile).expectOne(Status.DELETED)
+    f.portService.delete(port).expectOne(Status.DELETED)
+
+    val eventList = List(
+      (ADDED, classOf[Entity]),(ADDED, classOf[Point]),
+      (ADDED, classOf[Entity]),(ADDED, classOf[Command]),
+      (ADDED, classOf[Entity]),(ADDED, classOf[ConfigFile]),
+      (ADDED, classOf[Entity]),(ADDED, classOf[CommChannel]),
+      (ADDED, classOf[MeasurementProcessingConnection]),(ADDED, classOf[EndpointConnection]),
+      (ADDED, classOf[Entity]),(ADDED, classOf[Endpoint]),
+      (ADDED, classOf[EntityEdge]),(ADDED, classOf[EntityEdge]),(ADDED, classOf[EntityEdge]),
+      (MODIFIED, classOf[EndpointConnection]),
+      (REMOVED, classOf[MeasurementProcessingConnection]),(REMOVED, classOf[EndpointConnection]),
+      (REMOVED, classOf[Endpoint]),(REMOVED, classOf[Entity]),
+      (REMOVED, classOf[EntityEdge]),(REMOVED, classOf[EntityEdge]),(REMOVED, classOf[EntityEdge]),
+      (REMOVED, classOf[Point]),(REMOVED, classOf[Entity]),
+      (REMOVED, classOf[Command]),(REMOVED, classOf[Entity]),
+      (REMOVED, classOf[ConfigFile]),(REMOVED, classOf[Entity]),
+      (REMOVED, classOf[CommChannel]),(REMOVED, classOf[Entity]))
+    
+    f.eventCheck should equal(eventList)
   }
 
   test("Add parts seperatley pre-configured uuids") {
+    val f = new Fixture
 
     val pointUUID: ReefUUID = UUID.randomUUID
     val commandUUID: ReefUUID = UUID.randomUUID
     val configFileUUID: ReefUUID = UUID.randomUUID
 
-    pointService.put(getPoint().setUuid(pointUUID).build).expectOne()
-    commandService.put(getCommand().setUuid(commandUUID).build).expectOne()
-    val cf = configFileService.put(getConfigFile().setUuid(configFileUUID).build).expectOne()
-    val port = portService.put(getIPPort().build).expectOne()
+    f.pointService.put(getPoint().setUuid(pointUUID).build).expectOne()
+    f.commandService.put(getCommand().setUuid(commandUUID).build).expectOne()
+    val cf = f.configFileService.put(getConfigFile().setUuid(configFileUUID).build).expectOne()
+    val port = f.portService.put(getIPPort().build).expectOne()
 
     val endpoint = getEndpoint().setChannel(port).addConfigFiles(cf).setOwnerships(getOwnership())
 
-    endpointService.put(endpoint.build).expectOne()
+    f.endpointService.put(endpoint.build).expectOne()
 
-    pointService.get(getPoint("*").build).expectOne().getUuid should equal(pointUUID)
-    commandService.get(getCommand("*").build).expectOne().getUuid should equal(commandUUID)
+    f.pointService.get(getPoint("*").build).expectOne().getUuid should equal(pointUUID)
+    f.commandService.get(getCommand("*").build).expectOne().getUuid should equal(commandUUID)
 
-    configFileService.get(getConfigFile(Some("*")).build).expectOne().getUuid should equal(configFileUUID)
+    f.configFileService.get(getConfigFile(Some("*")).build).expectOne().getUuid should equal(configFileUUID)
   }
 
   test("Add Sink Endpoint") {
+    val f = new Fixture
 
-    pointService.put(getPoint().build).expectOne()
-    commandService.put(getCommand().build).expectOne()
+    f.pointService.put(getPoint().build).expectOne()
+    f.commandService.put(getCommand().build).expectOne()
 
     val endpoint = getSinkEndpoint().setOwnerships(getOwnership())
 
-    val returned = endpointService.put(endpoint.build).expectOne()
+    val returned = f.endpointService.put(endpoint.build).expectOne()
 
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)

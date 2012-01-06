@@ -32,6 +32,10 @@ object SubscriptionTools {
     def events = contextSource.sink.events
 
     def eventCheck = events.map(s => (s.typ, s.value.getClass))
+
+    def printEvents() {
+      println(events.map(s => (s.typ, s.value.getClass.getSimpleName)).mkString("\n"))
+    }
   }
 
   case class SubEvent(typ: SubscriptionEventType, value: AnyRef, key: String)
@@ -47,27 +51,28 @@ object SubscriptionTools {
     def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
   }
 
-  class QueueingRequestContext extends RequestContext with HeadersContext with PermissionsContext {
+  class QueueingRequestContext(val subHandler: SubscriptionHandler) extends RequestContext with HeadersContext with PermissionsContext {
     def client = throw new Exception("Asked for client in silent request context")
     val eventSink = new SilentEventSink
     val operationBuffer = new BasicOperationBuffer
-    val subHandler = new QueueingEventSink
+    //val subHandler = new QueueingEventSink
   }
 
   class MockContextSource extends RequestContextSource {
+    private var subHandler = new QueueingEventSink
     private def makeContext = {
-      val context = new QueueingRequestContext
+      val context = new QueueingRequestContext(subHandler)
       context.modifyHeaders(_.setUserName("user"))
       context
     }
 
-    private var context = makeContext
     def reset() {
-      context = makeContext
+      subHandler = new QueueingEventSink
     }
-    def sink = context.subHandler
+    def sink = subHandler
 
     def transaction[A](f: (RequestContext) => A): A = {
+      val context = makeContext
       ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
     }
   }

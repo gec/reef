@@ -74,7 +74,6 @@ class FrontEndPortServiceModel
   }
 
   override def postDelete(context: RequestContext, sql: FrontEndPort) {
-    //EntityQuery.deleteEntity(sql.entity.value)
     entityModel.delete(context, sql.entity.value)
   }
 
