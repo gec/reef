@@ -70,7 +70,8 @@ class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
 
   test("Broker state declares queues") {
     val exe = new MockExecutor()
-    State().declareQueue("queue", exe) should equal(State(queues = Map("queue" -> Queue("queue", exe))))
+    val state = State().declareQueue("queueName", exe)
+    state.queues.keys.toList should equal(List("queueName"))
   }
 
   test("Broker state binds queues") {

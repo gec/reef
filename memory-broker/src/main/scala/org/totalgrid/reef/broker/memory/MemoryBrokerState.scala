@@ -19,7 +19,7 @@
 package org.totalgrid.reef.broker.memory
 
 import collection.immutable.{ Queue => ScalaQueue }
-import net.agileautomata.executor4s.Executor
+import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker._
 
 // classes are 100% immutable and safe to read on multiple threads or to use with STM
@@ -57,7 +57,8 @@ object MemoryBrokerState {
     def declareQueue(name: String, exe: Executor): State = queues.get(name) match {
       case Some(q) =>
         this
-      case None => this.copy(queues = queues + (name -> Queue(name, exe)))
+      case None =>
+        this.copy(queues = queues + (name -> Queue(name, Strand(exe))))
     }
 
     def declareExchange(name: String, typ: String): State = {
@@ -115,7 +116,8 @@ object MemoryBrokerState {
     }
   }
 
-  case class Queue(name: String, exe: Executor, unread: ScalaQueue[BrokerMessage] = ScalaQueue.empty[BrokerMessage], consumers: List[BrokerMessageConsumer] = Nil) {
+  // each queue needs to use a seperate strand so messages arrive in the order they were sent
+  case class Queue(name: String, exe: Strand, unread: ScalaQueue[BrokerMessage] = ScalaQueue.empty[BrokerMessage], consumers: List[BrokerMessageConsumer] = Nil) {
 
     def publish(msg: BrokerMessage): Queue = consumers match {
       case Nil =>
