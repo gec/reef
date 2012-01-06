@@ -34,14 +34,13 @@ class Connector extends DbConnectorBase with Logging {
 
     val pool = new org.apache.commons.dbcp.BasicDataSource
     pool.setDriverClassName("org.postgresql.Driver")
-    val url = "jdbc:postgresql://%s:%s/%s".format(dbInfo.host, dbInfo.port, dbInfo.database)
-    pool.setUrl(url)
+    pool.setUrl(dbInfo.url)
     pool.setUsername(dbInfo.user)
     pool.setPassword(dbInfo.password)
     // TODO: fix the pooling in meas proc with squeryl 0.9.6
     pool.setMaxActive(50)
 
-    logger.info("Connecting to Database: " + url)
+    logger.info("Connecting to Database: " + dbInfo.url)
 
     SessionFactory.concreteFactory = Some(() => {
       Session.create(

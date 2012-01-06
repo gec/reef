@@ -76,12 +76,7 @@ abstract class DbConnectorBase extends DbConnector with Logging {
       Some(connected)
     } catch {
       case e: Exception =>
-        logger.error("got exception trying to connect to database, is it correctly configured?")
-        logger.error("try granting access to db:")
-        logger.error("grant all on %s.* to '%s'@'%%' identified by '%s';".format(dbInfo.database, dbInfo.user, dbInfo.password))
-        logger.error("grant all on %s.* to '%s'@'localhost' identified by '%s';".format(dbInfo.database, dbInfo.user, dbInfo.password))
-        logger.error("create database %s;".format(dbInfo.database))
-        logger.error("Exception connecting", e)
+        logger.error("got exception trying to connect to database: " + dbInfo.toString, e)
         throw e
     }
   }
