@@ -89,9 +89,13 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     (sql, updated)
   }
 
+  override def preDelete(context: RequestContext, sql: ApplicationInstance) {
+    procStatusModel.delete(context, sql.heartbeat.value)
+  }
+
   override def postDelete(context: RequestContext, sql: ApplicationInstance) {
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id)
-    ApplicationSchema.heartbeats.deleteWhere(c => c.applicationId === sql.id)
+    entityModel.delete(context, sql.entity.value)
   }
 }
 

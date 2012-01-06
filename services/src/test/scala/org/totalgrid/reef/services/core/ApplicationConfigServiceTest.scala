@@ -24,18 +24,23 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.client.service.proto.Application._
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
+import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
 
-  test("GetPutDelete") {
+  class Fixture extends SubscriptionTools.SubscriptionTesting {
 
     val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
+    val service = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
+  }
 
-    val service = new ApplicationConfigService(modelFac.appConfig)
+  test("GetPutDelete") {
+    val f = new Fixture
 
     val b = ApplicationConfig.newBuilder
       .setUserName("fep")
@@ -44,20 +49,31 @@ class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
       .setLocation("farm1")
       .addCapabilites("FEP")
 
-    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build).expectNone()
+    f.service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build).expectNone()
 
-    service.put(b.build).expectOne(Status.CREATED)
+    f.service.put(b.build).expectOne(Status.CREATED)
 
-    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build).expectOne()
-    val config1 = service.get(ApplicationConfig.newBuilder().setInstanceName("fep01").build).expectOne()
-    val updated = service.put(config1.toBuilder.setLocation("farm2").build).expectOne(Status.UPDATED)
+    f.service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build).expectOne()
+    val config1 = f.service.get(ApplicationConfig.newBuilder().setInstanceName("fep01").build).expectOne()
+    val updated = f.service.put(config1.toBuilder.setLocation("farm2").build).expectOne(Status.UPDATED)
     updated.getLocation should equal("farm2")
 
-    service.put(updated).expectOne(Status.NOT_MODIFIED)
-    val config2 = service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build).expectOne()
+    f.service.put(updated).expectOne(Status.NOT_MODIFIED)
+    val config2 = f.service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build).expectOne()
     config2.getLocation should equal("farm2")
 
-    service.delete(config2).expectOne(Status.DELETED)
-    service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build).expectNone()
+    f.service.delete(config2).expectOne(Status.DELETED)
+    f.service.get(ApplicationConfig.newBuilder().setUuid(ReefUUID.newBuilder.setValue("*")).build).expectNone()
+
+    val eventList = List(
+      (ADDED, classOf[Entity]),
+      (ADDED, classOf[ApplicationConfig]),
+      (ADDED, classOf[StatusSnapshot]),
+      (MODIFIED, classOf[ApplicationConfig]),
+      (REMOVED, classOf[StatusSnapshot]),
+      (REMOVED, classOf[ApplicationConfig]),
+      (REMOVED, classOf[Entity]))
+
+    f.eventCheck should equal(eventList)
   }
 }
