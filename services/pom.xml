@@ -52,12 +52,6 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-persistence-postgresql</artifactId>
-            <version>${reef.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-application-framework</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
@@ -65,13 +59,6 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-measurementstore-api</artifactId>
-            <version>${reef.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <!-- TODO: only needed for the ServiceEntryPoint class, should move into seperate project-->
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-measurementstore-squeryl</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -111,6 +98,12 @@
             <artifactId>org.osgi.core</artifactId>
             <version>${felixCoreVersion}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-persistence-postgresql</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
