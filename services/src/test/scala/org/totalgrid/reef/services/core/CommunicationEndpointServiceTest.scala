@@ -255,22 +255,22 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     f.portService.delete(port).expectOne(Status.DELETED)
 
     val eventList = List(
-      (ADDED, classOf[Entity]),(ADDED, classOf[Point]),
-      (ADDED, classOf[Entity]),(ADDED, classOf[Command]),
-      (ADDED, classOf[Entity]),(ADDED, classOf[ConfigFile]),
-      (ADDED, classOf[Entity]),(ADDED, classOf[CommChannel]),
-      (ADDED, classOf[MeasurementProcessingConnection]),(ADDED, classOf[EndpointConnection]),
-      (ADDED, classOf[Entity]),(ADDED, classOf[Endpoint]),
-      (ADDED, classOf[EntityEdge]),(ADDED, classOf[EntityEdge]),(ADDED, classOf[EntityEdge]),
+      (ADDED, classOf[Entity]), (ADDED, classOf[Point]),
+      (ADDED, classOf[Entity]), (ADDED, classOf[Command]),
+      (ADDED, classOf[Entity]), (ADDED, classOf[ConfigFile]),
+      (ADDED, classOf[Entity]), (ADDED, classOf[CommChannel]),
+      (ADDED, classOf[MeasurementProcessingConnection]), (ADDED, classOf[EndpointConnection]),
+      (ADDED, classOf[Entity]), (ADDED, classOf[Endpoint]),
+      (ADDED, classOf[EntityEdge]), (ADDED, classOf[EntityEdge]), (ADDED, classOf[EntityEdge]),
       (MODIFIED, classOf[EndpointConnection]),
-      (REMOVED, classOf[MeasurementProcessingConnection]),(REMOVED, classOf[EndpointConnection]),
-      (REMOVED, classOf[Endpoint]),(REMOVED, classOf[Entity]),
-      (REMOVED, classOf[EntityEdge]),(REMOVED, classOf[EntityEdge]),(REMOVED, classOf[EntityEdge]),
-      (REMOVED, classOf[Point]),(REMOVED, classOf[Entity]),
-      (REMOVED, classOf[Command]),(REMOVED, classOf[Entity]),
-      (REMOVED, classOf[ConfigFile]),(REMOVED, classOf[Entity]),
-      (REMOVED, classOf[CommChannel]),(REMOVED, classOf[Entity]))
-    
+      (REMOVED, classOf[MeasurementProcessingConnection]), (REMOVED, classOf[EndpointConnection]),
+      (REMOVED, classOf[Endpoint]), (REMOVED, classOf[Entity]),
+      (REMOVED, classOf[EntityEdge]), (REMOVED, classOf[EntityEdge]), (REMOVED, classOf[EntityEdge]),
+      (REMOVED, classOf[Point]), (REMOVED, classOf[Entity]),
+      (REMOVED, classOf[Command]), (REMOVED, classOf[Entity]),
+      (REMOVED, classOf[ConfigFile]), (REMOVED, classOf[Entity]),
+      (REMOVED, classOf[CommChannel]), (REMOVED, classOf[Entity]))
+
     f.eventCheck should equal(eventList)
   }
 
