@@ -25,9 +25,10 @@ import org.totalgrid.reef.client.service.proto.Auth._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 
 import org.totalgrid.reef.services.core.SyncServiceShims._
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
 
 @RunWith(classOf[JUnitRunner])
 class PermissionSetServiceTest extends AuthSystemTestBase {
@@ -70,6 +71,15 @@ class PermissionSetServiceTest extends AuthSystemTestBase {
 
     fix.permissionSetService.delete(makePermissionSet()).expectOne()
 
+    val eventList = List(
+      (ADDED, classOf[Entity]),
+      (ADDED, classOf[PermissionSet]),
+      (MODIFIED, classOf[PermissionSet]),
+      (MODIFIED, classOf[PermissionSet]),
+      (REMOVED, classOf[PermissionSet]),
+      (REMOVED, classOf[Entity]))
+
+    fix.eventCheck should equal(eventList)
   }
 
   test("PermissionSet View and Cleanup") {

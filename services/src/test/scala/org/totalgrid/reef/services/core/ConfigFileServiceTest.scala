@@ -30,6 +30,8 @@ import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.services.framework.ProtoSerializer.convertStringToByteString
+import org.totalgrid.reef.services.core.SubscriptionTools.MockContextSource
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest extends DatabaseUsingTestBase {
@@ -46,22 +48,38 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
     cfb.build
   }
 
+  class Fixture extends SubscriptionTools.SubscriptionTesting {
+    val s = new SyncService(new ConfigFileService(new ConfigFileServiceModel), contextSource)
+  }
+
   test("Test Status Codes") {
-    val s = new ConfigFileService(new ConfigFileServiceModel)
+    //val s = new ConfigFileService(new ConfigFileServiceModel)
+
+    val f = new Fixture
 
     val configFile = makeConfigFile("testFile1", "text", "blah")
 
-    val result = s.put(configFile).expectOne(Status.CREATED)
+    val result = f.s.put(configFile).expectOne(Status.CREATED)
 
-    s.put(configFile).expectOne(Status.NOT_MODIFIED).getUuid should equal(result.getUuid)
+    f.s.put(configFile).expectOne(Status.NOT_MODIFIED).getUuid should equal(result.getUuid)
 
     val configFileMod = makeConfigFile("testFile1", "text", "im different!")
-    s.put(configFileMod).expectOne(Status.UPDATED).getUuid should equal(result.getUuid)
+    f.s.put(configFileMod).expectOne(Status.UPDATED).getUuid should equal(result.getUuid)
 
     val configFileMod2 = makeConfigFile("testFile1", "mimediff", "im different!")
-    val finalObject = s.put(configFileMod2).expectOne(Status.UPDATED)
+    val finalObject = f.s.put(configFileMod2).expectOne(Status.UPDATED)
 
-    s.delete(finalObject).expectOne(Status.DELETED).getUuid should equal(result.getUuid)
+    f.s.delete(finalObject).expectOne(Status.DELETED).getUuid should equal(result.getUuid)
+
+    val eventList = List(
+      (ADDED, classOf[Entity]),
+      (ADDED, classOf[ConfigFile]),
+      (MODIFIED, classOf[ConfigFile]),
+      (MODIFIED, classOf[ConfigFile]),
+      (REMOVED, classOf[ConfigFile]),
+      (REMOVED, classOf[Entity]))
+
+    f.eventCheck should equal(eventList)
   }
 
   test("Test Searching") {

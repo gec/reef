@@ -97,6 +97,9 @@ class PermissionSetServiceModel
     if (req.hasDefaultExpirationTime && req.getDefaultExpirationTime != existing.defaultExpirationTime) {
       update(context, existing.copy(defaultExpirationTime = req.getDefaultExpirationTime), existing)
     } else {
+      if (updated) {
+        onUpdated(context, existing)
+      }
       (existing, updated)
     }
   }
@@ -105,6 +108,10 @@ class PermissionSetServiceModel
     val currentPermissions = existing.permissions.value.toList
     ApplicationSchema.permissionSetJoins.deleteWhere(_.permissionSetId === existing.id)
     ApplicationSchema.permissions.deleteWhere(_.id in currentPermissions.map { _.id })
+  }
+
+  override def postDelete(context: RequestContext, existing: PermissionSet) {
+    entityModel.delete(context, existing.entity.value)
   }
 
 }
