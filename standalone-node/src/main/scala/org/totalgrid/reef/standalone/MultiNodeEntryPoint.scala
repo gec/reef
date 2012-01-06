@@ -24,7 +24,7 @@ object MultiNodeEntryPoint {
 
   def main(args: Array[String]) = {
     val exe = Executors.newResizingThreadPool(1.minutes)
-    val system = new IntegratedSystem(exe, "standalone-node.cfg", 1, 3, true)
+    val system = new IntegratedSystem(exe, "standalone-node.cfg", true)
 
     try {
       system.start()

@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
 import net.agileautomata.executor4s._
 
 /**
- * a nasty single that
+ * a singleton for keeping an IntegratedSystem running during integration tests
  */
 object InMemoryNode {
 
@@ -44,7 +44,7 @@ object InMemoryNode {
     delayedShutdown.foreach { _.cancel }
     if (systemOption.isEmpty) {
       val exe = Executors.newResizingThreadPool(1.minutes)
-      val system = new IntegratedSystem(exe, configFile, 1, 1, resetFirst)
+      val system = new IntegratedSystem(exe, configFile, resetFirst)
       exeOption = Some(exe)
       systemOption = Some(system)
 

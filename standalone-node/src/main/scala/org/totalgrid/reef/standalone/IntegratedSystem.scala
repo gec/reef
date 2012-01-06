@@ -18,43 +18,35 @@
  */
 package org.totalgrid.reef.standalone
 
-import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.client.settings.{ AmqpSettings, NodeSettings, UserSettings }
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import org.totalgrid.reef.measurementstore.squeryl.SqlMeasurementStore
+import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.services.{ ServiceBootstrap, ServiceOptions }
-import net.agileautomata.executor4s.{ Cancelable, Executor }
+import net.agileautomata.executor4s._
 import org.totalgrid.reef.services.activator.{ ServiceFactory, ServiceModulesFactory }
 import org.totalgrid.reef.measproc.activator.ProcessingActivator
-import org.totalgrid.reef.simulator.random.{ DefaultSimulator, DefaultSimulatorFactory }
-import org.totalgrid.reef.protocol.simulator.SimulatedProtocol
-import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol
-import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, ChannelAlwaysOnline, EndpointAlwaysOnline }
-import org.totalgrid.reef.protocol.dnp3.slave.Dnp3SlaveProtocol
 import org.totalgrid.reef.entry.FepEntry
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.shell.proto.ProtoShellApplication
 import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderServicesList }
+import org.totalgrid.reef.client.settings.util.{ PropertyLoading, PropertyReader }
+import com.weiglewilczek.slf4s.Logging
 
-class IntegratedSystem(exe: Executor, configFile: String, firstNode: Int, lastNode: Int, resetFirst: Boolean) {
+class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
   val properties = PropertyReader.readFromFile(configFile)
 
   val sql = new DbInfo(properties)
   val options = new ServiceOptions(properties)
   val userSettings = new UserSettings(properties)
-  val rootNodeSettings = new NodeSettings(properties)
 
-  val brokerConfig = new AmqpSettings(properties)
-  val brokerConnection = new QpidBrokerConnectionFactory(brokerConfig)
-  // val brokerConnection = new MemoryBrokerConnectionFactory(exe)
+  import ImplLookup._
 
-  val measurementStore = new SqlMeasurementStore({ () => })
-  // val measurementStore = new InMemoryMeasurementStore()
+  val brokerConnection = loadBrokerConnection(properties, exe)
+  val measurementStore = loadMeasurementStore(properties, exe)
+  val nodeSettings = loadNodeSettings()
 
   val modules = new ServiceModulesFactory {
     def getDbConnector() = DbConnector.connect(sql)
@@ -63,41 +55,27 @@ class IntegratedSystem(exe: Executor, configFile: String, firstNode: Int, lastNo
   }
 
   if (resetFirst) {
+    logger.info("Resetting database and measurement store")
     DbConnector.connect(sql)
+    measurementStore.connect()
     ServiceBootstrap.resetDb()
     ServiceBootstrap.seed(userSettings.getUserPassword)
     measurementStore.reset()
   }
-
-  val nodes = (firstNode to lastNode).map { i =>
-    new NodeSettings(rootNodeSettings.getDefaultNodeName.replace("1", i.toString), rootNodeSettings.getLocation, rootNodeSettings.getNetwork)
-  }
-
-  val cancelable = new Cancelable { def cancel() {} }
 
   // we don't use ConnectionCloseManagerEx because it doesn't start things in the order they were added
   // and starts them all one-by-one rather than all at once
   //val manager = new ConnectionCloseManagerEx(brokerConnection, exe)
   val manager = new SimpleConnectionProvider(brokerConnection, exe)
 
-  nodes.foreach { nodeSettings =>
+  nodeSettings.foreach { nodeSettings =>
 
     manager.addConsumer(ServiceFactory.create(options, userSettings, nodeSettings, modules))
 
     manager.addConsumer(ProcessingActivator.createMeasProcessor(userSettings, nodeSettings, measurementStore))
 
-    val simFactory = new DefaultSimulatorFactory({ t: DefaultSimulator => cancelable })
-    val simProtocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
-    simProtocol.addPluginFactory(simFactory)
-
-    System.loadLibrary("dnp3java")
-    System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
-    val masterProtocol = new Dnp3MasterProtocol with AddRemoveValidation
-    val slaveProtocol = new Dnp3SlaveProtocol with AddRemoveValidation
-
-    val protocols = List(simProtocol, masterProtocol, slaveProtocol)
-
-    protocols.foreach { protocol =>
+    // we need to load the protocol separately for each node
+    loadProtocols(properties, exe).foreach { protocol =>
       manager.addConsumer(FepEntry.createFepConsumer(userSettings, nodeSettings, protocol))
     }
   }
@@ -112,7 +90,7 @@ class IntegratedSystem(exe: Executor, configFile: String, firstNode: Int, lastNo
   def runTerminal() {
 
     System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
-    ProtoShellApplication.runTerminal(connection(), userSettings, brokerConnection.toString(), cancelable)
+    ProtoShellApplication.runTerminal(connection(), userSettings, brokerConnection.toString(), NullCancelable)
   }
 
   def loadModel(modelFile: String) {
@@ -125,5 +103,14 @@ class IntegratedSystem(exe: Executor, configFile: String, firstNode: Int, lastNo
   }
   def stop() = {
     manager.stop()
+  }
+
+  private def loadNodeSettings() = {
+    val rootNodeSettings = new NodeSettings(properties)
+    val nodeNames = PropertyLoading.getString("org.totalgrid.reef.nodeNames", properties, "node01").split(",").toList
+    logger.info("Nodes: " + nodeNames)
+    nodeNames.map { nodeName =>
+      new NodeSettings(nodeName, rootNodeSettings.getLocation, rootNodeSettings.getNetwork)
+    }
   }
 }
