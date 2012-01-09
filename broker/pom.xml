@@ -26,7 +26,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>${mavenBundleVersion}</version>
+                <version>${maven-bundle.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -49,7 +49,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.2</version>
+                <version>${maven-jar-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -63,7 +63,7 @@
     <dependencies>
 		<dependency>
             <groupId>net.agile-automata.nio4s</groupId>
-            <artifactId>commons_2.9.0-1</artifactId>
+            <artifactId>commons_${scala.version}</artifactId>
             <version>${executor4s.version}</version>
             <scope>test</scope>
         </dependency>

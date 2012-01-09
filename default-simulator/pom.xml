@@ -22,7 +22,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>${mavenBundleVersion}</version>
+                <version>${maven-bundle.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
-            <version>${felixCoreVersion}</version>
+            <version>${felix-core.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

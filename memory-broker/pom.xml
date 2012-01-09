@@ -25,7 +25,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>${mavenBundleVersion}</version>
+                <version>${maven-bundle.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -49,19 +49,13 @@
     <dependencies>
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>
-            <artifactId>executor4s_2.9.0-1</artifactId>
+            <artifactId>executor4s_${scala.version}</artifactId>
             <version>${executor4s.version}</version>
         </dependency>
         <dependency>
             <groupId>net.agile-automata.nio4s</groupId>
-            <artifactId>commons_2.9.0-1</artifactId>
+            <artifactId>commons_${scala.version}</artifactId>
             <version>${executor4s.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jmock</groupId>
-            <artifactId>jmock</artifactId>
-            <version>2.5.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

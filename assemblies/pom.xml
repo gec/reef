@@ -22,7 +22,7 @@
     <properties>
         <karaf.name>apache-karaf-${karaf.version}</karaf.name>
         <reef.default.repository>reef-bundles</reef.default.repository>
-        <maven-assembly-plugin.version>2.2.2</maven-assembly-plugin.version>
+
         <dist.name>totalgrid-reef</dist.name>
     </properties>
 

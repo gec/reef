@@ -23,7 +23,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>${mavenBundleVersion}</version>
+                <version>${maven-bundle.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -48,23 +48,23 @@
     <dependencies>
         <dependency>
             <groupId>com.weiglewilczek.scalamodules</groupId>
-            <artifactId>scalamodules-core_2.9.0-1</artifactId>
-            <version>2.0.3</version>
+            <artifactId>scalamodules-core_${scala.version}</artifactId>
+            <version>${scalamodules.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.configadmin</artifactId>
-            <version>1.2.8</version>
+            <version>${org.apache.felix.configadmin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
-            <version>${felixCoreVersion}</version>
+            <version>${felix-core.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>
-            <artifactId>executor4s_2.9.0-1</artifactId>
+            <artifactId>executor4s_${scala.version}</artifactId>
             <version>${executor4s.version}</version>
         </dependency>
     </dependencies>
