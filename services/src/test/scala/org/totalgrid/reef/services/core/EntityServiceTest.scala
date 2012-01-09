@@ -53,6 +53,20 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   import SubscriptionEventType._
 
+  test("Put with bad names") {
+    def makeEnt(name: String) = Entity.newBuilder().setName(name).build()
+
+    intercept[ReefServiceException] {
+      service.put(makeEnt("Bad Name")).expectOne
+    }
+    intercept[ReefServiceException] {
+      service.put(makeEnt("*")).expectOne
+    }
+    intercept[ReefServiceException] {
+      service.put(makeEnt("Bad*Name")).expectOne
+    }
+  }
+
   test("Put Entity with predetermined UUID") {
 
     val uuid = UUID.randomUUID.toString
@@ -195,7 +209,6 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     val list = service.get(req.build, env.setResultLimit(1)).expectMany(Status.OK) //.expectMany(1)
 
     list.size() should equal(1)
-    //list.get(0).getName() should equal("a")
   }
 
   test("Get result limit: tree") {

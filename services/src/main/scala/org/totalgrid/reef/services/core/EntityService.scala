@@ -24,9 +24,10 @@ import org.totalgrid.reef.services.framework._
 import java.util.UUID
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.models.{ EntityTypeMetaModel, EntityToTypeJoins, ApplicationSchema, Entity }
+import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 
 object EntityService {
   def seed() {
@@ -38,6 +39,19 @@ object EntityService {
         val metaModels = allKnownTypes.map { new EntityTypeMetaModel(_) }
         ApplicationSchema.entityTypeMetaModel.insert(metaModels)
       }
+    }
+  }
+
+  def isNameValid(name: String) = {
+
+    /*name.foreach { a =>
+      println(a)
+    }
+    true*/
+    !name.exists {
+      case '*' => true
+      case ' ' => true
+      case _ => false
     }
   }
 
@@ -103,6 +117,10 @@ class EntityServiceModel
 
   private def createEntity(context: RequestContext, name: String, types: List[String], uuid: Option[UUID]): Entity = {
     import ApplicationSchema.{ entityTypes, entities }
+
+    if (!EntityService.isNameValid(name)) {
+      throw new ReefServiceException("Name invalid", Status.BAD_REQUEST)
+    }
 
     val entityModel = new Entity(name)
     uuid.foreach { id =>
