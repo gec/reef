@@ -21,6 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
+import scala.util.Random
 
 /**
  * example of the live example documentation/tests we use to make it clear exactly how the system is implementing
@@ -54,4 +55,15 @@ class ConfigFileServiceTest extends ServiceClientSuite {
     client.deleteConfigFile(cf2).await
   }
 
+  test("Create config file with hard to serialize bytes") {
+
+    val bytes = new Array[Byte](10000)
+    val rand = new Random()
+    rand.nextBytes(bytes)
+    val cf = client.createConfigFile("Test-Config-File", "text/plain", bytes).await
+
+    cf.getFile.toByteArray should equal(bytes)
+
+    client.deleteConfigFile(cf).await
+  }
 }
