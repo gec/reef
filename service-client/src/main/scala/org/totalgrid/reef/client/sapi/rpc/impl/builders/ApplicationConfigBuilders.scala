@@ -20,23 +20,18 @@ package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import org.totalgrid.reef.client.settings.NodeSettings
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import java.util.UUID
 
 object ApplicationConfigBuilders {
 
   def makeProto(config: NodeSettings, instanceName: String, caps: List[String]) = {
     val b = ApplicationConfig.newBuilder()
 
-    def randomString(n: Int): String = {
-      val sb = new StringBuilder
-      for (i <- 1 to n) sb.append(util.Random.nextPrintableChar)
-      sb.toString
-    }
-
     b.setInstanceName(instanceName)
     b.setNetwork(config.getNetwork)
     b.setLocation(config.getLocation)
     caps.foreach(b.addCapabilites(_))
-    b.setProcessId(randomString(8))
+    b.setProcessId(UUID.randomUUID().toString)
     b.build
   }
 }
