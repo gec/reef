@@ -90,11 +90,13 @@ object ServiceBootstrap {
    * sets up the default users and low level configurations for the system
    */
   def seed(systemPassword: String) {
+    import org.squeryl.PrimitiveTypeMode._
     val context = new SilentRequestContext
-
-    core.EventConfigService.seed()
-    core.EntityService.seed()
-    core.AuthTokenService.seed(context, systemPassword)
+    transaction {
+      core.EventConfigService.seed()
+      core.EntityService.seed()
+      core.AuthTokenService.seed(context, systemPassword)
+    }
   }
 
   /**

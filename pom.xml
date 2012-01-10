@@ -20,7 +20,7 @@
         <cglib.version>2.2</cglib.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <commons-pool.version>1.5.4</commons-pool.version>
-        <commons-codec.version>1.3</commons-codec.version>
+        <commons-codec.version>1.5</commons-codec.version>
         <maven-assembly-plugin.version>2.2.2</maven-assembly-plugin.version>
 		<maven-bundle.version>2.1.0</maven-bundle.version>
 		<felix-core.version>1.4.0</felix-core.version>

@@ -28,11 +28,9 @@ object ModelSeed {
   val context = new SilentRequestContext
 
   def seed() {
-    inTransaction {
-      if (ApplicationSchema.entities.Count.head == 0) {
-        pittsboro.seed()
-        apex.seed()
-      }
+    if (ApplicationSchema.entities.Count.head == 0) {
+      pittsboro.seed()
+      apex.seed()
     }
   }
 

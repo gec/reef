@@ -76,15 +76,14 @@ object EventConfigService {
     import org.squeryl.PrimitiveTypeMode._
     import org.totalgrid.reef.models.ApplicationSchema
 
-    inTransaction {
-      if (ApplicationSchema.eventConfigs.Count.head == 0) {
-        // TODO: make a default event config for handling unknown events
+    if (ApplicationSchema.eventConfigs.Count.head == 0) {
+      // TODO: make a default event config for handling unknown events
 
-        val ecs = builtInEventConfigurations().values
+      val ecs = builtInEventConfigurations().values
 
-        ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
-      }
+      ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
     }
+
   }
 }
 

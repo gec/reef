@@ -34,11 +34,9 @@ object EntityService {
     import org.squeryl.PrimitiveTypeMode._
     import org.totalgrid.reef.models.{ ApplicationSchema, EntityTypeMetaModel }
 
-    inTransaction {
-      if (ApplicationSchema.entityTypeMetaModel.Count.head == 0) {
-        val metaModels = allKnownTypes.map { new EntityTypeMetaModel(_) }
-        ApplicationSchema.entityTypeMetaModel.insert(metaModels)
-      }
+    if (ApplicationSchema.entityTypeMetaModel.Count.head == 0) {
+      val metaModels = allKnownTypes.map { new EntityTypeMetaModel(_) }
+      ApplicationSchema.entityTypeMetaModel.insert(metaModels)
     }
   }
 
@@ -119,7 +117,8 @@ class EntityServiceModel
     import ApplicationSchema.{ entityTypes, entities }
 
     if (!EntityService.isNameValid(name)) {
-      throw new ReefServiceException("Name invalid", Status.BAD_REQUEST)
+      throw new ReefServiceException("\"" + name + "\" is an invalid name for an entity, it probably includes " +
+        "illegal characters like a space or asterisk.", Status.BAD_REQUEST)
     }
 
     val entityModel = new Entity(name)

@@ -42,6 +42,9 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   override def beforeAll() {
     super.beforeAll()
+  }
+
+  override def beforeEachInTransaction() = {
     AuthTokenService.seedTesting(new SilentRequestContext)
   }
 
