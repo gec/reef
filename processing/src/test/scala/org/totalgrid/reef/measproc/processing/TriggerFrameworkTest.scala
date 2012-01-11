@@ -55,9 +55,9 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
     }
     def action(ret: Measurement): Action = new MockAction(ret)
     class MockAction(ret: Measurement, var disabled: Boolean = false, val name: String = "action01") extends Action {
-      def process(m: Measurement, state: Boolean, prev: Boolean): Measurement = {
+      def process(m: Measurement, state: Boolean, prev: Boolean): Option[Measurement] = {
         actionCalls.enqueue((m, state, prev))
-        ret
+        Some(ret)
       }
     }
 

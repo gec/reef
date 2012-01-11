@@ -64,7 +64,7 @@ trait Action {
    * @param prev      Previous state of the trigger condition this action is associated with
    * @return          Result of processing
    */
-  def process(m: Measurement, state: Boolean, prev: Boolean): Measurement
+  def process(m: Measurement, state: Boolean, prev: Boolean): Option[Measurement]
 }
 
 /**
@@ -73,11 +73,11 @@ trait Action {
 class BasicAction(val name: String, disabled: Boolean, activation: Action.ActivationType, eval: Action.Evaluation)
     extends Action {
 
-  def process(m: Measurement, state: Boolean, prev: Boolean): Measurement = {
+  def process(m: Measurement, state: Boolean, prev: Boolean): Option[Measurement] = {
     if (!disabled && activation(state, prev))
-      eval(m)
+      Some(eval(m))
     else
-      m
+      Some(m)
   }
 
   override def toString = name
