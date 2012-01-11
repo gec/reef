@@ -163,23 +163,25 @@ object Triggers {
     }
   }
 
+  def qualityMatches(qual: Quality, q: Quality) = {
+    qual.validity == q.validity ||
+      qual.source == q.source ||
+      qual.test == q.test ||
+      qual.operatorBlocked == q.operatorBlocked ||
+      qual.detailQual.overflow == q.detailQual.overflow ||
+      qual.detailQual.outOfRange == q.detailQual.outOfRange ||
+      qual.detailQual.badReference == q.detailQual.badReference ||
+      qual.detailQual.oscillatory == q.detailQual.oscillatory ||
+      qual.detailQual.failure == q.detailQual.failure ||
+      qual.detailQual.oldData == q.detailQual.oldData ||
+      qual.detailQual.inconsistent == q.detailQual.inconsistent ||
+      qual.detailQual.inaccurate == q.detailQual.inaccurate
+  }
+
   class QualityCondition(qual: Quality) extends Trigger.Condition {
-    import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
     def apply(m: Measurement, prev: Boolean): Boolean = {
-      val q = m.getQuality
-      qual.validity == q.validity ||
-        qual.source == q.source ||
-        qual.test == q.test ||
-        qual.operatorBlocked == q.operatorBlocked ||
-        qual.detailQual.overflow == q.detailQual.overflow ||
-        qual.detailQual.outOfRange == q.detailQual.outOfRange ||
-        qual.detailQual.badReference == q.detailQual.badReference ||
-        qual.detailQual.oscillatory == q.detailQual.oscillatory ||
-        qual.detailQual.failure == q.detailQual.failure ||
-        qual.detailQual.oldData == q.detailQual.oldData ||
-        qual.detailQual.inconsistent == q.detailQual.inconsistent ||
-        qual.detailQual.inaccurate == q.detailQual.inaccurate
+      qualityMatches(qual, m.getQuality)
     }
   }
 
