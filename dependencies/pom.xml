@@ -37,22 +37,22 @@
         <dependency>
             <groupId>backport-util-concurrent</groupId>
             <artifactId>backport-util-concurrent</artifactId>
-            <version>2.2</version>
+            <version>${backport-util-concurrent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
-            <version>1.0.1</version>
+            <version>${mina-core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-filter-ssl</artifactId>
-            <version>1.0.1</version>
+            <version>${mina-core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-jms_1.1_spec</artifactId>
-            <version>1.0</version>
+            <version>${geronimo-jms_1.1_spec.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.qpid</groupId>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.0-801.jdbc4</version>
+            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -116,9 +116,20 @@
                         <Bundle-Name>Reef Dependencies Bundle</Bundle-Name>
                         <Export-Package>
                             scala.*;version="${scala.version}",
-                            org.apache.commons.dbcp;version="${commons-dbcp.version}",
-                            org.apache.mina.*;-split-package:=merge-first,
+                            org.apache.commons.dbcp.*;version="${commons-dbcp.version}",
+                            org.apache.commons.jocl.*;version="${commons-dbcp.version}",
+                            org.apache.commons.codec.*;version="${commons-codec.version}",
+                            org.apache.commons.pool.*;version="${commons-pool.version}",
+                            org.apache.qpid.*;version="${qpid.version}",
+                            org.apache.configuration.*;version="${qpid.version}",
+                            org.squeryl.*;version="${squeryl.version}",
+                            com.google.protobuf.*;version="${protobuf-java.version}",
+                            org.postgresql.*;version="${postgresql.version}",
+                            org.apache.mina.*;version="${mina-core.version}",
+                            edu.emory.mathcs.backport.*;version="${backport-util-concurrent.version}",
                             net.sf.cglib.*;version="${cglib.version}",
+                            javax.jms.*;version="${geronimo-jms_1.1_spec.version}",
+                            -split-package:=merge-first,
                             *
                         </Export-Package>
                         <Import-Package>

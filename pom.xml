@@ -43,6 +43,10 @@
         <jaxb-impl.version>2.0.3</jaxb-impl.version>
         <maven-license-plugin.version>1.9.0</maven-license-plugin.version>
         <org.apache.felix.configadmin.version>1.2.8</org.apache.felix.configadmin.version>
+        <postgresql.version>9.0-801.jdbc4</postgresql.version>
+        <mina-core.version>1.0.1</mina-core.version>
+        <backport-util-concurrent.version>2.2</backport-util-concurrent.version>
+        <geronimo-jms_1.1_spec.version>1.0</geronimo-jms_1.1_spec.version>
     </properties>
 
 	<modules>

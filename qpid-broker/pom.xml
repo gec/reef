@@ -65,22 +65,22 @@
         <dependency>
             <groupId>backport-util-concurrent</groupId>
             <artifactId>backport-util-concurrent</artifactId>
-            <version>2.2</version>
+            <version>${backport-util-concurrent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
-            <version>1.0.1</version>
+            <version>${mina-core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-filter-ssl</artifactId>
-            <version>1.0.1</version>
+            <version>${mina-core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-jms_1.1_spec</artifactId>
-            <version>1.0</version>
+            <version>${geronimo-jms_1.1_spec.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.qpid</groupId>
