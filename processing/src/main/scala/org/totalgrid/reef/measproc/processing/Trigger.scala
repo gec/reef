@@ -109,8 +109,8 @@ class BasicTrigger(
 
     res match {
       case None => (m, false)
-      case Some(result) => {
 
+      case Some(result) => {
         // Check stop processing flag (default to continue processing)
         val stopProc = stopProcessing.map(_(state, prev)) getOrElse false
         (result, stopProc)

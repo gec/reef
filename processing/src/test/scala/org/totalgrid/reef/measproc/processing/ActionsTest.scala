@@ -23,6 +23,7 @@ import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.measproc.ProtoHelper
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 @RunWith(classOf[JUnitRunner])
 class ActionsTest extends FunSuite with ShouldMatchers {
@@ -45,5 +46,18 @@ class ActionsTest extends FunSuite with ShouldMatchers {
     transformer.apply(makeInt("test", 0)).getStringVal should equal("Searching")
 
     transformer.apply(makeInt("test", 10)).getStringVal should equal("")
+  }
+  
+  test("Suppression") {
+
+    val suppressor = new SuppressAction("testAction", false, Action.High)
+
+    val m = makeInt("test", 5)
+
+    suppressor.process(m, false, false) should equal(Some(m))
+    suppressor.process(m, true, false) should equal(None)
+    suppressor.process(m, false, true) should equal(Some(m))
+    suppressor.process(m, true, true) should equal(None)
+
   }
 }

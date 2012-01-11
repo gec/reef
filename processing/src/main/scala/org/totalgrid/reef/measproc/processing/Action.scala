@@ -65,6 +65,8 @@ trait Action {
    * @return          Result of processing
    */
   def process(m: Measurement, state: Boolean, prev: Boolean): Option[Measurement]
+
+  override def toString = name
 }
 
 /**
@@ -79,7 +81,15 @@ class BasicAction(val name: String, disabled: Boolean, activation: Action.Activa
     else
       Some(m)
   }
+}
 
-  override def toString = name
+class SuppressAction(val name: String, disabled: Boolean, activation: Action.ActivationType) extends Action {
+
+  def process(m: Measurement, state: Boolean, prev: Boolean): Option[Measurement] = {
+    if (!disabled && activation(state, prev))
+      None
+    else
+      Some(m)
+  }
 }
 
