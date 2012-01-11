@@ -64,7 +64,10 @@ object AllBenchmarksEntryPoint {
     if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
 
     val endpointNames = endpoints.map { _.getName }
-    val points = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten
+    val allPoints = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten
+
+    // test no more than 20 points
+    val points = takeRandom(20, allPoints)
 
     val tests = List(
       new SystemStateBenchmark(5),
@@ -104,4 +107,10 @@ object AllBenchmarksEntryPoint {
     }
   }
 
+  def takeRandom[A](max : Int,  list : List[A]) : List[A] = {
+    if(list.size < max) list
+    else{
+      scala.util.Random.shuffle(list).take(max)
+    }
+  }
 }
