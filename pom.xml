@@ -16,7 +16,7 @@
         <scalamodules.version>2.0.3</scalamodules.version>
         <qpid.version>0.10</qpid.version>
 		<reef.version>0.4.3-SNAPSHOT</reef.version>
-        <squeryl.version>0.9.5-Beta</squeryl.version>
+        <squeryl.version>0.9.5-RC1</squeryl.version>
         <cglib.version>2.2</cglib.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <commons-pool.version>1.5.4</commons-pool.version>

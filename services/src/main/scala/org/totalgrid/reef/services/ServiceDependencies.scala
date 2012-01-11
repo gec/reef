@@ -24,15 +24,18 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection, SubscriptionHandler }
 import org.totalgrid.reef.models.AuthPermission
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 class ServiceDependencies(
+  dbConnection: DbConnection,
   connection: Connection,
   pubs: SubscriptionHandler,
   val measurementStore: MeasurementStore,
   eventSink: SystemEventSink,
-  authToken: String) extends RequestContextDependencies(connection, pubs, authToken, eventSink)
+  authToken: String) extends RequestContextDependencies(dbConnection, connection, pubs, authToken, eventSink)
 
 class RequestContextDependencies(
+  val dbConnection: DbConnection,
   val connection: Connection,
   val pubs: SubscriptionHandler,
   val authToken: String,
@@ -71,7 +74,7 @@ class DependenciesRequestContext(dependencies: RequestContextDependencies) exten
 class DependenciesSource(dependencies: RequestContextDependencies) extends RequestContextSource {
   def transaction[A](f: RequestContext => A) = {
     val context = new DependenciesRequestContext(dependencies)
-    ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
+    ServiceTransactable.doTransaction(dependencies.dbConnection, context.operationBuffer, { b: OperationBuffer => f(context) })
   }
 }
 

@@ -31,7 +31,6 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.framework.AuthorizesEverything
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
@@ -49,10 +48,11 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
   }
 
   class Fixture extends SubscriptionTools.SubscriptionTesting {
+    def _dbConnection = dbConnection
 
     import SubscriptionTools._
 
-    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
 
     val authService = new SyncService(new AuthTokenService(modelFac.authTokens), contextSource)
 

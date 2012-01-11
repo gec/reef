@@ -27,7 +27,7 @@ object DbConnector {
 
   private val connectedAdapters = scala.collection.mutable.Map.empty[String, DbConnector]
 
-  def connect(dbInfo: DbInfo, context: BundleContext): Option[Boolean] = connectedAdapters.synchronized {
+  def connect(dbInfo: DbInfo, context: BundleContext): DbConnection = connectedAdapters.synchronized {
     val connector = connectedAdapters.get(dbInfo.dbType) match {
       case None =>
         val services = context.getServiceReferences(classOf[DbConnector].getName, "(org.totalgrid.reef.sql.type=" + dbInfo.dbType + ")")
@@ -45,7 +45,7 @@ object DbConnector {
 
   }
 
-  def connect(dbInfo: DbInfo): Option[Boolean] = connectedAdapters.synchronized {
+  def connect(dbInfo: DbInfo): DbConnection = connectedAdapters.synchronized {
     val connector = connectedAdapters.get(dbInfo.dbType) match {
       case None =>
         val klass = Class.forName("org.totalgrid.reef.persistence.squeryl." + dbInfo.dbType + ".Connector")
@@ -59,21 +59,23 @@ object DbConnector {
 }
 
 trait DbConnector {
-  def connect(dbInfo: DbInfo): Option[Boolean]
+  def connect(dbInfo: DbInfo): DbConnection
 }
 
 abstract class DbConnectorBase extends DbConnector with Logging {
-  private var connected = false
+  private var connections = Map.empty[DbInfo, DbConnection]
 
-  protected def _connect(dbInfo: DbInfo)
+  protected def _connect(dbInfo: DbInfo): DbConnection
 
-  def connect(dbInfo: DbInfo): Option[Boolean] = {
+  def connect(dbInfo: DbInfo): DbConnection = {
     try {
-      if (!connected) {
-        _connect(dbInfo)
-        connected = true
+      connections.get(dbInfo) match {
+        case Some(c) => c
+        case None =>
+          val c = _connect(dbInfo)
+          connections += dbInfo -> c
+          c
       }
-      Some(connected)
     } catch {
       case e: Exception =>
         logger.error("got exception trying to connect to database: " + dbInfo.toString, e)

@@ -111,7 +111,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     val eventSink = new CountingEventSink
     val headers = BasicRequestHeaders.empty.setUserName("user")
 
-    val deps = new ServiceDependenciesDefaults(amqp, amqp, rtDb, eventSink)
+    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp, rtDb, eventSink)
     val contextSource = new MockRequestContextSource(deps, headers)
 
     val modelFac = new ModelFactories(deps)

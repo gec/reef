@@ -29,8 +29,6 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
-
 @RunWith(classOf[JUnitRunner])
 class PointServiceTest extends DatabaseUsingTestBase {
 
@@ -39,9 +37,9 @@ class PointServiceTest extends DatabaseUsingTestBase {
   class Fixture {
     val fakeDatabase = new InMemoryMeasurementStore
 
-    val contextSource = new MockContextSource
+    val contextSource = new MockContextSource(dbConnection)
 
-    val modelFactories = new ModelFactories(new ServiceDependenciesDefaults(cm = fakeDatabase))
+    val modelFactories = new ModelFactories(new ServiceDependenciesDefaults(dbConnection, cm = fakeDatabase))
     val pointService = new SyncService(new PointService(modelFactories.points), contextSource)
     val triggerService = new SyncService(new TriggerSetService(modelFactories.triggerSets), contextSource)
     val overrideService = new SyncService(new OverrideConfigService(modelFactories.overrides), contextSource)

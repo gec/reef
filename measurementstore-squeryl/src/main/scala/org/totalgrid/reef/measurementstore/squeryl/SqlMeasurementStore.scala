@@ -22,18 +22,20 @@ import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Mea
 
 import org.totalgrid.reef.measurementstore.MeasurementStore
 
-import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.exception.InternalServiceException
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 /**
  * implementation of measurement store that uses SqlMeasurementStoreOperations functions,
  * handles sync/async, opening/closing database transaction and error message generation
  */
-class SqlMeasurementStore(connectFunction: () => Unit, includeHistory: Boolean = true) extends MeasurementStore {
+class SqlMeasurementStore(connectFunction: () => DbConnection, includeHistory: Boolean = true) extends MeasurementStore {
 
   override val supportsTrim = true
 
-  override def connect() = connectFunction()
+  private var dbConnectionOpt = Option.empty[DbConnection]
+
+  override def connect() = dbConnectionOpt = Some(connectFunction())
 
   override def reset(): Boolean = attempt("Couldn't reset database")(SqlMeasurementStoreOperations.reset)
 
@@ -62,8 +64,10 @@ class SqlMeasurementStore(connectFunction: () => Unit, includeHistory: Boolean =
     attempt("Error retrieving history")(SqlMeasurementStoreOperations.getInRange(meas_name, begin, end, max, ascending))
 
   private def attempt[A](msg: String)(f: => A): A = {
-    try { inTransaction(f) }
-    catch { case ex: Exception => throw new InternalServiceException(msg, ex) }
+    try {
+      val dbConnection = dbConnectionOpt.getOrElse(throw new InternalServiceException("Not connected to measurement store database"))
+      dbConnection.inTransaction(f)
+    } catch { case ex: Exception => throw new InternalServiceException(msg, ex) }
   }
 
 }

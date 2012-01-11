@@ -18,12 +18,12 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.squeryl.PrimitiveTypeMode
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 object ServiceTransactable {
-  def doTransaction[ModelType <: BufferLike, Output](m: ModelType, fun: ModelType => Output): Output = {
+  def doTransaction[ModelType <: BufferLike, Output](dbConnection: DbConnection, m: ModelType, fun: ModelType => Output): Output = {
     try {
-      val result: Output = PrimitiveTypeMode.inTransaction {
+      val result: Output = dbConnection.inTransaction {
         // Run logic inside sql transaction
         val resultInner: Output = fun(m)
 

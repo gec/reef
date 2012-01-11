@@ -23,11 +23,15 @@ import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
 import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext }
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 object SubscriptionTools {
 
   trait SubscriptionTesting {
-    val contextSource = new MockContextSource
+
+    def _dbConnection: DbConnection
+
+    val contextSource = new MockContextSource(_dbConnection)
 
     def events = contextSource.sink.events
 
@@ -58,7 +62,7 @@ object SubscriptionTools {
     //val subHandler = new QueueingEventSink
   }
 
-  class MockContextSource extends RequestContextSource {
+  class MockContextSource(dbConnection: DbConnection) extends RequestContextSource {
     private var subHandler = new QueueingEventSink
     private def makeContext = {
       val context = new QueueingRequestContext(subHandler)
@@ -73,7 +77,7 @@ object SubscriptionTools {
 
     def transaction[A](f: (RequestContext) => A): A = {
       val context = makeContext
-      ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
+      ServiceTransactable.doTransaction(dbConnection, context.operationBuffer, { b: OperationBuffer => f(context) })
     }
   }
 }

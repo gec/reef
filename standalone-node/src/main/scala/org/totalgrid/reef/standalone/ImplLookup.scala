@@ -32,6 +32,7 @@ import org.totalgrid.reef.measurementstore.{ MixedMeasurementStore, InMemoryMeas
 import java.util.Properties
 import net.agileautomata.executor4s.{ Executor, Cancelable }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
 object NullCancelable extends Cancelable {
   def cancel() {}
@@ -76,7 +77,7 @@ object ImplLookup extends Logging {
     val currentValueType = PropertyLoading.getString("org.totalgrid.reef.mstore.currentValueImpl", properties)
 
     def getMeasImpl(typ: String) = typ match {
-      case "squeryl" => new SqlMeasurementStore({ () => })
+      case "squeryl" => new SqlMeasurementStore({ () => DbConnector.connect(new DbInfo(properties)) })
       case "memory" => new InMemoryMeasurementStore()
     }
     logger.info("MeasStore historian: " + historianType + " realtime: " + currentValueType)

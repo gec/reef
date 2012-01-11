@@ -26,7 +26,6 @@ import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, ConfigFile, Entity }
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.services.framework.ProtoSerializer.convertStringToByteString
@@ -49,6 +48,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   class Fixture extends SubscriptionTools.SubscriptionTesting {
+    def _dbConnection = dbConnection
     val s = new SyncService(new ConfigFileService(new ConfigFileServiceModel), contextSource)
   }
 
@@ -83,7 +83,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test Searching") {
-    val s = new ConfigFileService(new ConfigFileServiceModel)
+    val s = sync(new ConfigFileService(new ConfigFileServiceModel))
 
     val configFile1 = makeConfigFile("testFile1", "text", "blah")
     val configFile2 = makeConfigFile("testFile2", "text", "blah")
@@ -104,9 +104,9 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test EntityOwnerShip") {
-    val es = new EntityService(new EntityServiceModel)
+    val es = sync(new EntityService(new EntityServiceModel))
 
-    val s = new ConfigFileService(new ConfigFileServiceModel)
+    val s = sync(new ConfigFileService(new ConfigFileServiceModel))
 
     val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
     val node2 = es.put(Entity.newBuilder.setName("node2").addTypes("magic").build).expectOne()
@@ -121,9 +121,9 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test add config file without name") {
-    val es = new EntityService(new EntityServiceModel)
+    val es = sync(new EntityService(new EntityServiceModel))
 
-    val s = new ConfigFileService(new ConfigFileServiceModel)
+    val s = sync(new ConfigFileService(new ConfigFileServiceModel))
 
     val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
 
@@ -137,9 +137,9 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Shared Entity Ownership") {
-    val es = new EntityService(new EntityServiceModel)
+    val es = sync(new EntityService(new EntityServiceModel))
 
-    val s = new ConfigFileService(new ConfigFileServiceModel)
+    val s = sync(new ConfigFileService(new ConfigFileServiceModel))
 
     val node1 = es.put(Entity.newBuilder.setName("node1").addTypes("magic").build).expectOne()
     val node2 = es.put(Entity.newBuilder.setName("node2").addTypes("magic").build).expectOne()
@@ -160,7 +160,7 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase {
   }
 
   test("Test ResultLimit") {
-    val s = new ConfigFileService(new ConfigFileServiceModel)
+    val s = sync(new ConfigFileService(new ConfigFileServiceModel))
 
     (1 to 50).foreach { i =>
       val configFile = makeConfigFile("testFile" + i, "text", "blah")

@@ -31,11 +31,13 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
 import org.totalgrid.reef.services.metrics.MetricsServiceWrapper
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 /**
  * list of all of the service providers in the system
  */
 class ServiceProviders(
+    dbConnection: DbConnection,
     connection: Connection,
     cm: MeasurementStore,
     serviceConfiguration: ServiceOptions,
@@ -44,7 +46,7 @@ class ServiceProviders(
     authToken: String) {
 
   private val eventPublisher = new LocalSystemEventSink
-  private val dependencies = new ServiceDependencies(connection, connection, cm, eventPublisher, authToken)
+  private val dependencies = new ServiceDependencies(dbConnection, connection, connection, cm, eventPublisher, authToken)
 
   private val contextSource = new DependenciesSource(dependencies)
 
@@ -52,7 +54,7 @@ class ServiceProviders(
 
   // we have to fill in the event model after constructing the event service to break the circular
   // dependency on ServiceDepenedencies, should clear up once we OSGI the services
-  eventPublisher.setComponents(modelFac.events, contextSource)
+  eventPublisher.setComponents(dbConnection, modelFac.events, contextSource)
 
   private val wrappedDb = new RTDatabaseMetrics(cm, metricsPublisher.getStore("rtdatbase.rt"))
   private val wrappedHistorian = new HistorianMetrics(cm, metricsPublisher.getStore("historian.hist"))

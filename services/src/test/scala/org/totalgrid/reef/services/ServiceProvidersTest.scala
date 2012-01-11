@@ -56,9 +56,6 @@ class NoOpService extends AsyncService[Any] {
 
 @RunWith(classOf[JUnitRunner])
 class ServiceProvidersTest extends DatabaseUsingTestBase {
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
-  }
 
   class ExchangeCheckingServiceContainer(amqp: Connection) extends ServiceContainer {
     def addCoordinator(coord: ServerSideProcess) {}
@@ -75,19 +72,18 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
   test("All Service Providers are in services list") {
     ConnectionFixture.mock() { amqp =>
-      ServiceBootstrap.resetDb
-      ServiceBootstrap.seed("system")
+      ServiceBootstrap.seed(dbConnection, "system")
 
       val userSettings = new UserSettings("system", "system")
       val nodeSettings = new NodeSettings("node1", "network", "location")
       val serviceOptions = ServiceOptions.fromFile("../org.totalgrid.reef.test.cfg")
 
-      val components = ServiceBootstrap.bootstrapComponents(amqp, userSettings, nodeSettings)
+      val components = ServiceBootstrap.bootstrapComponents(dbConnection, amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore
       val serviceContainer = new ExchangeCheckingServiceContainer(amqp)
       val metrics = MetricsSink.getInstance("test")
 
-      val provider = new ServiceProviders(amqp, measStore, serviceOptions, NullAuthService, metrics, "")
+      val provider = new ServiceProviders(dbConnection, amqp, measStore, serviceOptions, NullAuthService, metrics, "")
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

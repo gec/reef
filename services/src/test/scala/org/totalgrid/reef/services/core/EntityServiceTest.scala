@@ -20,7 +20,6 @@ package org.totalgrid.reef.services.core
 
 import java.util.UUID
 
-import SyncServiceShims._
 import org.totalgrid.reef.client.exception.ReefServiceException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -39,7 +38,7 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
   import SubscriptionTools._
 
-  val contextSource = new MockContextSource
+  val contextSource = new MockContextSource(dbConnection)
 
   val service = new SyncService(new EntityService(new EntityServiceModel), contextSource)
   val edgeModel = new EntityEdgeServiceModel

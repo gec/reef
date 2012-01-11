@@ -30,7 +30,6 @@ import org.totalgrid.reef.services._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.service.proto.Model
 
 @RunWith(classOf[JUnitRunner])
@@ -38,15 +37,17 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
 
   override def beforeAll() {
     super.beforeAll()
-    transaction {
+    dbConnection.transaction {
       ModelSeed.seed()
       seedPoints
     }
   }
 
+  val models = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
+  val service = sync(new PointService(models.points))
+
   def seedPoints {
-    val modelFactories = new ModelFactories(new ServiceDependenciesDefaults())
-    val pointModel = modelFactories.points
+    val pointModel = models.points
     val context = new SilentRequestContext
 
     EntityQuery.findEntitiesByType(List("Point")).foreach { ent =>
@@ -55,8 +56,6 @@ class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransacti
   }
 
   test("Point model lookup") {
-    val models = new ModelFactories(new ServiceDependenciesDefaults())
-    val service = new PointService(models.points)
 
     val entReq =
       EntityProto.newBuilder

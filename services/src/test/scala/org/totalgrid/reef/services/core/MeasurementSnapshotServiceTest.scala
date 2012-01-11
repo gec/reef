@@ -23,8 +23,6 @@ import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Mea
 import org.totalgrid.reef.client.service.proto.Measurements
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
-
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.client.exception.BadRequestException
@@ -54,7 +52,7 @@ class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase {
 
   test("Get Measurements from RTDB") {
     val points = Map("meas1" -> makeMeas("meas1", 0), "meas2" -> makeMeas("meas2", 0))
-    val service = new MeasurementSnapshotService(new FakeRTDatabase(points))
+    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
 
     val getMeas1 = service.get(getMeas("meas1")).expectOne()
     getMeas1.getMeasurementsCount() should equal(1)
@@ -68,7 +66,7 @@ class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase {
 
   test("Bad Request for unknown points") {
     val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = new MeasurementSnapshotService(new FakeRTDatabase(points))
+    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
 
     val exception = intercept[BadRequestException] {
       service.get(getMeas("crazyName")).expectOne()
@@ -78,7 +76,7 @@ class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase {
 
   test("Bad Request for some unknown points") {
     val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = new MeasurementSnapshotService(new FakeRTDatabase(points))
+    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
 
     val exception = intercept[BadRequestException] {
       service.get(getMeas("meas", "crazyName")).expectOne()
@@ -88,7 +86,7 @@ class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase {
 
   test("Blank Request returns ok") {
     val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = new MeasurementSnapshotService(new FakeRTDatabase(points))
+    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
 
     val result = service.get(getMeas()).expectOne()
     result.getPointNamesCount should equal(0)

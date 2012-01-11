@@ -23,7 +23,6 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Model.{ Command, CommandType, Entity }
 
@@ -35,11 +34,11 @@ class CommandServiceTest extends DatabaseUsingTestBase {
   class Fixture {
     val fakeDatabase = new InMemoryMeasurementStore
 
-    val contextSource = new MockContextSource
+    val contextSource = new MockContextSource(dbConnection)
 
-    val modelFactories = new ModelFactories(new ServiceDependenciesDefaults(cm = fakeDatabase))
-    val commandService = new SyncService(new CommandService(modelFactories.cmds), contextSource)
-    val entityService = new EntityService(modelFactories.entities)
+    val modelFactories = new ModelFactories(new ServiceDependenciesDefaults(dbConnection, cm = fakeDatabase))
+    val commandService = sync(new CommandService(modelFactories.cmds), contextSource)
+    val entityService = sync(new EntityService(modelFactories.entities), contextSource)
 
     def addCommand(name: String = "cmd01", typ: CommandType = CommandType.CONTROL) = {
       val c = Command.newBuilder.setName(name).setDisplayName(name).setType(typ)

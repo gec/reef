@@ -18,12 +18,14 @@
  */
 package org.totalgrid.reef.models
 
-import org.squeryl.PrimitiveTypeMode.transaction
 import org.scalatest._
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 trait RunTestsInsideTransaction extends FunSuite with BeforeAndAfterEach {
 
-  case object TransactionAbortException extends Exception
+  def dbConnection: DbConnection
+
+  class TransactionAbortException extends Exception
 
   /**
    * test classes shouldn't use beforeEach if using RunTestsInsideTransaction
@@ -64,13 +66,15 @@ trait RunTestsInsideTransaction extends FunSuite with BeforeAndAfterEach {
    */
   def neverCompletingTransaction[A](func: => A) = {
     try {
-      transaction {
-        func
+      dbConnection.transaction {
+        val result = func
         // we abort the transaction if we get to here, so changes get rolled back
-        throw TransactionAbortException
+        throw new TransactionAbortException
+
+        result
       }
     } catch {
-      case TransactionAbortException =>
+      case ex: TransactionAbortException =>
     }
   }
 }

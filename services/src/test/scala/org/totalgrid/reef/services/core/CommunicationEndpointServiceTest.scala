@@ -38,7 +38,6 @@ import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.{ FrontEndPort, DatabaseUsingTestBase }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
 
@@ -46,7 +45,7 @@ import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingC
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 
   class Fixture extends SubscriptionTools.SubscriptionTesting {
-
+    def _dbConnection = dbConnection
     val rtDb = new InMemoryMeasurementStore()
     val modelFac = new ModelFactories(rtDb, contextSource)
 

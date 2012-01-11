@@ -20,7 +20,6 @@ package org.totalgrid.reef.services.core
 
 import java.util.UUID
 
-import SyncServiceShims._
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.{ ApplicationSchema, DatabaseUsingTestBase }
 import scala.collection.JavaConversions._
@@ -37,7 +36,7 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase {
 
   import ApplicationSchema._
 
-  val service = new EntityEdgeService(new EntityEdgeServiceModel)
+  val service = sync(new EntityEdgeService(new EntityEdgeServiceModel))
 
   def buildEdge(parent: String, child: String, rel: String) = {
     EntityEdgeProto.newBuilder()

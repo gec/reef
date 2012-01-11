@@ -56,10 +56,10 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
 
   if (resetFirst) {
     logger.info("Resetting database and measurement store")
-    DbConnector.connect(sql)
+    val dbConnection = DbConnector.connect(sql)
     measurementStore.connect()
-    ServiceBootstrap.resetDb()
-    ServiceBootstrap.seed(userSettings.getUserPassword)
+    ServiceBootstrap.resetDb(dbConnection)
+    ServiceBootstrap.seed(dbConnection, userSettings.getUserPassword)
     measurementStore.reset()
   }
 

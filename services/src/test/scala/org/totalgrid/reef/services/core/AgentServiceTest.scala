@@ -26,7 +26,6 @@ import org.totalgrid.reef.client.service.proto.Model.Entity
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType

@@ -31,6 +31,7 @@ import org.totalgrid.reef.services.core.{ ModelFactories, ApplicationConfigServi
 import org.totalgrid.reef.client.service.list.ReefServicesList
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 object ServiceBootstrap {
 
@@ -58,8 +59,8 @@ object ServiceBootstrap {
    * use to enroll ourselves as an application to get the CoreApplicationComponents without
    * repeating that setup logic somewhere else
    */
-  def bootstrapComponents(connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
-    val dependencies = new RequestContextDependencies(connection, connection, "", new SilentEventSink)
+  def bootstrapComponents(dbConnection: DbConnection, connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
+    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink)
 
     // define the events exchanges before "logging in" which will generate some events
     defineEventExchanges(connection)
@@ -89,10 +90,9 @@ object ServiceBootstrap {
   /**
    * sets up the default users and low level configurations for the system
    */
-  def seed(systemPassword: String) {
-    import org.squeryl.PrimitiveTypeMode._
+  def seed(dbConnection: DbConnection, systemPassword: String) {
     val context = new SilentRequestContext
-    transaction {
+    dbConnection.transaction {
       core.EventConfigService.seed()
       core.EntityService.seed()
       core.AuthTokenService.seed(context, systemPassword)
@@ -102,11 +102,10 @@ object ServiceBootstrap {
   /**
    * drops and re-creates all of the tables in the database.
    */
-  def resetDb() {
-    import org.squeryl.PrimitiveTypeMode._
+  def resetDb(dbConnection: DbConnection) {
     import org.totalgrid.reef.models._
 
-    transaction {
+    dbConnection.transaction {
       ApplicationSchema.reset
     }
   }

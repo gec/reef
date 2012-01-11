@@ -64,7 +64,7 @@ object TestSchema extends Schema {
 }
 
 @RunWith(classOf[JUnitRunner])
-class ModelWithUUIDTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+class ModelWithUUIDTest extends DatabaseUsingTestBase {
 
   /**
    * @param actual how many calls to newUUID are made

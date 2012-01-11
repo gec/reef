@@ -28,7 +28,6 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point, Entity }
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.{ SilentRequestContext, ServiceDependencies, ServiceResponseTestingHelpers }
 
 @RunWith(classOf[JUnitRunner])
@@ -40,8 +39,8 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
   val context = new SilentRequestContext
 
   private def addPoint(pointName: String, devName: String): Entity = {
-    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
-    val service = new PointService(modelFac.points)
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
+    val service = sync(new PointService(modelFac.points))
 
     // val logicalNode = Entity.newBuilder.setName(devName).addTypes("LogicalNode").build
 
@@ -96,7 +95,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
     val node = addPoint("meas01", "dev1")
     addPoint("meas02", "dev2")
 
-    val s = new OverrideConfigService(new OverrideConfigServiceModel)
+    val s = sync(new OverrideConfigService(new OverrideConfigServiceModel))
 
     val headers = BasicRequestHeaders.empty.setUserName("user")
 

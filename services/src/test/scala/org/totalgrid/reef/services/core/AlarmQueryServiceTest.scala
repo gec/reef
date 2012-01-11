@@ -36,7 +36,6 @@ import org.totalgrid.reef.services.core.util._
 
 import java.util.{ Date, Calendar }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto }
-import org.totalgrid.reef.services.core.SyncServiceShims._
 
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryServiceTest extends DatabaseUsingTestBase {
@@ -101,7 +100,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
         EventConfigStore(System.SubsystemStopped, 8, LOG, 0, "Subsystem has stopped", true),
         EventConfigStore(Scada.ControlExe, 3, ALARM, AlarmModel.UNACK_AUDIBLE, "User executed control {attr0} on device {attr1}", true))
 
-      transaction {
+      dbConnection.transaction {
         ApplicationSchema.eventConfigs.deleteWhere(e => true === true)
         ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
       }
@@ -113,17 +112,17 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
       import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
       import EventType._
 
-      transaction {
+      dbConnection.transaction {
 
         // Post events to create alarms, events, and logs
 
         val entity1 = ApplicationSchema.entities.insert(new Entity(ENTITY1))
         val entity2 = ApplicationSchema.entities.insert(new Entity(ENTITY2))
 
-        val factories = new ModelFactories(new ServiceDependenciesDefaults())
+        val factories = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
 
         val eventService = factories.events
-        val context = new HeadersRequestContext()
+        val context = defaultContextSource.getContext
 
         eventService.createFromProto(context, makeEvent(System.UserLogin, DAYS_AGO_2, USER1, None))
         eventService.createFromProto(context, makeEvent(Scada.ControlExe, DAYS_AGO_2 + 1000, USER1, Some(entity1.id.toString)))
@@ -144,15 +143,15 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
 
   import EventType._
 
+  val service = sync(new AlarmQueryService)
+
   test("FailPutAlarmList") {
-    val service = new AlarmQueryService
 
     val resp = service.put(makeAL(STATE_ANY, 0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY))
     resp.status should equal(Envelope.Status.NOT_ALLOWED)
   }
 
   test("SimpleQueries") {
-    val service = new AlarmQueryService
 
     // Select EventType only.
     //
@@ -188,8 +187,6 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase {
       AlarmSelect.newBuilder
         .addAllState(STATE_ACK)
         .setEventSelect(EventSelect.newBuilder.setLimit(-1))).build
-
-    val service = new AlarmQueryService
 
     intercept[BadRequestException] {
       service.get(req)

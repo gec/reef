@@ -43,7 +43,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase {
     ReefUUID.newBuilder.setValue(EntityTestSeed.addEntity(name, typ).id.toString).build
   }
 
-  protected val service = SyncService(new EntityAttributesService)
+  protected val service = sync(new EntityAttributesService)
 
   test("Put") {
     val entId = seedEntity("ent01", "entType")

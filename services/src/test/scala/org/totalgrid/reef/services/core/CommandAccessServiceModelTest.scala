@@ -27,9 +27,10 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.client.exception.{ BadRequestException, UnauthorizedException }
 import org.totalgrid.reef.client.service.proto.Model
 import org.totalgrid.reef.services.SilentRequestContext
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
-class CommandTestRig {
-  val modelFactories = new ModelFactories(new ServiceDependenciesDefaults())
+class CommandTestRig(dbConnection: DbConnection) {
+  val modelFactories = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
 
   val commands = modelFactories.cmds
   val accesses = modelFactories.accesses
@@ -54,7 +55,7 @@ class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsIns
 
   import AccessProto._
 
-  val context = new HeadersRequestContext()
+  val context = defaultContextSource.getContext
 
   def lastSelectFor(cmd: Command) = {
     Command.findByNames(cmd.entityName :: Nil).head.lastSelectId
@@ -90,7 +91,7 @@ class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsIns
   }
 
   test("Block") {
-    val r = new CommandTestRig
+    val r = new CommandTestRig(dbConnection)
     val cmd1 = r.seed("cmd01")
     val cmd2 = r.seed("cmd02")
 
@@ -127,7 +128,7 @@ class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsIns
   }
 
   test("Multi-Block") {
-    val r = new CommandTestRig
+    val r = new CommandTestRig(dbConnection)
     val cmd1 = r.seed("cmd01")
     val cmd2 = r.seed("cmd02")
 
@@ -178,7 +179,7 @@ class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsIns
   }
 
   test("Block multiple") {
-    val r = new CommandTestRig
+    val r = new CommandTestRig(dbConnection)
 
     val cmd1 = r.seed("cmd01")
     val cmd2 = r.seed("cmd02")
@@ -202,7 +203,7 @@ class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsIns
   }
 
   test("Select") {
-    val r = new CommandTestRig
+    val r = new CommandTestRig(dbConnection)
     val cmd1 = r.seed("cmd01")
 
     val expireTime = System.currentTimeMillis + 5000
@@ -228,7 +229,7 @@ class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsIns
   }
 
   test("Select twice") {
-    val r = new CommandTestRig
+    val r = new CommandTestRig(dbConnection)
     val cmd1 = r.seed("cmd01")
 
     val expireTime = System.currentTimeMillis + 5000
@@ -250,7 +251,7 @@ class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsIns
   }
 
   test("Select multiple") {
-    val r = new CommandTestRig
+    val r = new CommandTestRig(dbConnection)
     val cmd1 = r.seed("cmd01")
     val cmd2 = r.seed("cmd02")
     val cmd3 = r.seed("cmd03")

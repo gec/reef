@@ -25,7 +25,6 @@ import org.totalgrid.reef.client.service.proto.Application._
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
@@ -34,8 +33,8 @@ import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 class ApplicationConfigServiceTest extends DatabaseUsingTestBase {
 
   class Fixture extends SubscriptionTools.SubscriptionTesting {
-
-    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
+    def _dbConnection = dbConnection
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
     val service = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
   }
 

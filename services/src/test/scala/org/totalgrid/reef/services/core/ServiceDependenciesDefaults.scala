@@ -25,16 +25,12 @@ import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Connect
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.{ DependenciesRequestContext, RequestContextDependencies, ServiceDependencies }
 import org.mockito.Mockito
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
-class ServiceDependenciesDefaults(connection: Connection = Mockito.mock(classOf[Connection]),
+class ServiceDependenciesDefaults(
+  dbConnection: DbConnection,
+  connection: Connection = Mockito.mock(classOf[Connection]),
   pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
   cm: MeasurementStore = new InMemoryMeasurementStore,
   eventSink: SystemEventSink = new SilentEventSink,
-  authToken: String = "") extends ServiceDependencies(connection, pubs, cm, eventSink, authToken)
-
-class HeadersRequestContext(
-  extraHeaders: BasicRequestHeaders = BasicRequestHeaders.empty,
-  dependencies: RequestContextDependencies = new ServiceDependenciesDefaults())
-    extends DependenciesRequestContext(dependencies) {
-  modifyHeaders(_.merge(extraHeaders))
-}
+  authToken: String = "") extends ServiceDependencies(dbConnection, connection, pubs, cm, eventSink, authToken)

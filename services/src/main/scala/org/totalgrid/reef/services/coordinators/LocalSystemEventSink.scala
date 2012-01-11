@@ -22,19 +22,20 @@ import org.totalgrid.reef.event.SystemEventSink
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.exception.ReefServiceException
 
-import org.squeryl.PrimitiveTypeMode
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 import org.totalgrid.reef.services.framework.RequestContextSource
 import org.totalgrid.reef.services.core.EventServiceModel
 
 class LocalSystemEventSink extends SystemEventSink with Logging {
 
+  private var dbConnectionOption = Option.empty[DbConnection]
   private var components: Option[(RequestContextSource, EventServiceModel)] = None
 
   def publishSystemEvent(evt: org.totalgrid.reef.client.service.proto.Events.Event) {
     try {
       // we need a different transaction so events are retained even if
       // we rollback the rest of the transaction because of an error
-      PrimitiveTypeMode.transaction {
+      dbConnectionOption.get.transaction {
         val (contextSource, model) = components.get
         contextSource.transaction { context =>
           // notice we are skipping the event service preCreate step that strips time and userId
@@ -48,7 +49,8 @@ class LocalSystemEventSink extends SystemEventSink with Logging {
     }
   }
 
-  def setComponents(model: EventServiceModel, contextSource: RequestContextSource) {
+  def setComponents(dbConnection: DbConnection, model: EventServiceModel, contextSource: RequestContextSource) {
+    dbConnectionOption = Some(dbConnection)
     components = Some(contextSource, model)
   }
 }

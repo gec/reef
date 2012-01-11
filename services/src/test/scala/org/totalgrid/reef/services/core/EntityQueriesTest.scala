@@ -111,7 +111,7 @@ class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransac
 
   override def beforeAll() {
     super.beforeAll
-    transaction { EntityTestSeed.seed }
+    dbConnection.transaction { EntityTestSeed.seed }
   }
 
   class EdgeString(me: String) {
