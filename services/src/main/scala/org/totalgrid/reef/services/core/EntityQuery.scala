@@ -175,7 +175,7 @@ object EntityQuery extends Logging {
       // short circuit the queries if we have no parent nodes
       if (upperNodes.isEmpty) return
 
-      val entEdges = lowerQuery(upperQuery)
+      val entEdges = lowerQuery(upperNodes.map { _.id })
       val entsOnlyQuery = from(entEdges)(entEdge => select(entEdge._1))
 
       val ids = upperNodes.map(_.id)
@@ -195,14 +195,13 @@ object EntityQuery extends Logging {
       subQueries.foreach(sub => sub.fillChildren(entsOnlyQuery, nodes))
     }
 
-    protected def lowerQuery(upperQuery: Query[Entity]) = {
+    protected def lowerQuery(upperIds: List[UUID]) = {
       from(entities, edges)((lowEnt, edge) =>
-        where(expr(lowEnt, edge, upperQuery))
+        where(expr(lowEnt, edge, upperIds))
           select ((lowEnt, edge)))
     }
 
-    protected def expr(ent: Entity, edge: Edge, upper: Query[Entity]): LogicalBoolean = {
-      val upperIds = from(upper)(t => select(t.id))
+    protected def expr(ent: Entity, edge: Edge, upperIds: List[UUID]): LogicalBoolean = {
 
       val optList: List[Option[LogicalBoolean]] = List(name.map(ent.name === _),
         (types.size > 0) thenGet (ent.id in entityIdsFromTypes(types)),
