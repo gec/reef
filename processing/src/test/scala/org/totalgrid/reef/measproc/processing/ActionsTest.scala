@@ -47,7 +47,7 @@ class ActionsTest extends FunSuite with ShouldMatchers {
 
     transformer.apply(makeInt("test", 10)).getStringVal should equal("")
   }
-  
+
   test("Suppression") {
 
     val suppressor = new SuppressAction("testAction", false, Action.High)
