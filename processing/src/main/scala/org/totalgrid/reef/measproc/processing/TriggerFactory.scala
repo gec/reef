@@ -70,7 +70,7 @@ object TriggerFactory {
 /**
  * Factory for trigger implementation objects.
  */
-trait TriggerFactory { self: ActionFactory =>
+trait TriggerFactory { self: ActionFactory with ProcessingResources =>
   import TriggerFactory._
   import Triggers._
 
@@ -90,7 +90,8 @@ trait TriggerFactory { self: ActionFactory =>
       proto.valueType.map(new TypeCondition(_)),
       proto.boolValue.map(new BoolValue(_)),
       proto.intValue.map(new IntegerValue(_)),
-      proto.stringValue.map(new StringValue(_))).flatten
+      proto.stringValue.map(new StringValue(_)),
+      proto.deadband.map(DeadbandTrigger(_, lastCache))).flatten
 
     val actions = proto.getActionsList.toList.map(buildAction(_))
     new BasicTrigger(cacheID, conditions, actions, stopProc)

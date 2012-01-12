@@ -25,29 +25,67 @@ import org.scalatest.FunSuite
 import org.totalgrid.reef.measproc.{ ProtoHelper, MockObjectCache }
 import org.totalgrid.reef.client.service.proto.Measurements.{ DetailQual, Quality, Measurement }
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
+import org.totalgrid.reef.client.service.proto.Events.Event
+import org.totalgrid.reef.client.service.proto.Processing.{ Trigger => TriggerProto, Deadband => DeadbandProto, Action => ActionProto, ActivationType }
 
 @RunWith(classOf[JUnitRunner])
 class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
 
   import ProtoHelper._
 
+  test("Factory") {
+    val cache = new MockObjectCache[Measurement]()
+    def publish(ev: Event.Builder): Unit = {}
+
+    val fac = new TriggerProcessingFactory(publish, cache)
+
+    val stateCache = new MockObjectCache[Boolean]
+
+    val proto = TriggerProto.newBuilder
+      .setTriggerName("testTrigger")
+      .setPriority(100)
+      .setDeadband(
+        DeadbandProto.newBuilder
+          .setType(DeadbandProto.DeadbandType.DUPLICATES_ONLY))
+        .addActions(
+          ActionProto.newBuilder
+            .setSuppress(true)
+            .setActionName("action01")
+            .setType(ActivationType.LOW))
+          .build
+
+    val trig = fac.buildTrigger(proto, "point01")
+
+    val m = makeInt("test01", 10)
+    trig.process(m, stateCache) should equal((m, false))
+
+    trig.process(m, stateCache) should equal((m, true))
+
+  }
+
   class Fixture(band: DeadbandTrigger.Deadband) {
     val cache = new MockObjectCache[Measurement]()
     val t = new DeadbandTrigger(cache, band)
+
+    def sendAndBlock(m: Measurement) {
+      t.apply(m, false) should equal(false)
+      cache.putQueue.size should equal(0)
+    }
+    def sendAndReceive(m: Measurement) {
+      t.apply(m, false) should equal(true)
+      cache.putQueue.size should equal(1)
+      cache.putQueue.dequeue should equal(m.getName, m)
+    }
   }
 
-  test("Allow all first through") {
-    val f = new Fixture(new DeadbandTrigger.AllowAll)
+  test("Duplicates first through") {
+    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
 
     val m = makeAnalog("test01", 4.234)
 
-    f.t.apply(m, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m)
+    f.sendAndReceive(m)
 
-    f.t.apply(m, true) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m)
+    f.sendAndBlock(m)
   }
 
   test("No duplicates") {
@@ -56,13 +94,10 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
     val m = makeAnalog("test01", 4.234)
 
     f.cache.update("test01", m)
-    f.t.apply(m, false) should equal(false)
-    f.cache.putQueue.size should equal(0)
 
-    val m2 = makeAnalog("test01", 3.3)
-    f.t.apply(m2, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m2)
+    f.sendAndBlock(m)
+
+    f.sendAndReceive(makeAnalog("test01", 3.3))
   }
 
   test("Duplicates") {
@@ -75,8 +110,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
   def duplicateTest(m: Measurement) {
     val f = new Fixture(new DeadbandTrigger.NoDuplicates)
     f.cache.update("test01", m)
-    f.t.apply(m, false) should equal(false)
-    f.cache.putQueue.size should equal(0)
+    f.sendAndBlock(m)
   }
 
   test("Isolate units") {
@@ -86,9 +120,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
     f.cache.update("test01", m)
 
     val m2 = Measurement.newBuilder(m).setUnit("other").build
-    f.t.apply(m2, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m2)
+    f.sendAndReceive(m2)
   }
 
   test("Isolate quality") {
@@ -98,9 +130,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
     f.cache.update("test01", m)
 
     val m2 = Measurement.newBuilder(m).setQuality(Quality.newBuilder.setDetailQual(DetailQual.newBuilder).setValidity(Validity.INVALID)).build
-    f.t.apply(m2, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m2)
+    f.sendAndReceive(m2)
   }
 
   test("Ints") {
@@ -108,50 +138,28 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
 
     val m = makeInt("test01", 10)
 
-    f.t.apply(m, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m)
+    f.sendAndReceive(m)
 
-    f.t.apply(makeInt("test01", 11), false) should equal(false)
-    f.cache.putQueue.size should equal(0)
+    f.sendAndBlock(makeInt("test01", 11))
 
-    f.t.apply(makeInt("test01", 12), false) should equal(false)
-    f.cache.putQueue.size should equal(0)
+    f.sendAndBlock(makeInt("test01", 12))
 
-    val m2 = makeInt("test01", 13)
-    f.t.apply(m2, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m2)
+    f.sendAndReceive(makeInt("test01", 13))
 
-    val m3 = makeInt("test01", 10)
-    f.t.apply(m3, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m3)
+    f.sendAndReceive(makeInt("test01", 10))
   }
 
   test("Double") {
     val f = new Fixture(new DeadbandTrigger.DoubleDeadband(1.5))
 
-    val m = makeAnalog("test01", 10.01)
+    f.sendAndReceive(makeAnalog("test01", 10.01))
 
-    f.t.apply(m, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m)
+    f.sendAndBlock(makeAnalog("test01", 11.01))
 
-    f.t.apply(makeAnalog("test01", 11.01), false) should equal(false)
-    f.cache.putQueue.size should equal(0)
+    f.sendAndBlock(makeAnalog("test01", 11.51))
 
-    f.t.apply(makeAnalog("test01", 11.51), false) should equal(false)
-    f.cache.putQueue.size should equal(0)
+    f.sendAndReceive(makeAnalog("test01", 11.52))
 
-    val m2 = makeAnalog("test01", 11.52)
-    f.t.apply(m2, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m2)
-
-    val m3 = makeAnalog("test01", 9.99)
-    f.t.apply(m3, false) should equal(true)
-    f.cache.putQueue.size should equal(1)
-    f.cache.putQueue.dequeue should equal("test01", m3)
+    f.sendAndReceive(makeAnalog("test01", 9.99))
   }
 }

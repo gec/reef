@@ -47,7 +47,9 @@
  *   required string action_name = 1;
  *   optional ActivationType type = 2;
  *   optional bool disabled = 3;
- *   
+ * 
+ *   optional bool                                     suppress = 5;
+ * 
  *   optional LinearTransform                          linear_transform = 10;
  *   optional org.totalgrid.reef.client.service.proto.Measurements.Quality      quality_annotation = 11;
  *   optional bool                                     strip_value = 12;
@@ -96,6 +98,7 @@
  *   optional bool                                           bool_value = 15;
  *   optional string                                         string_value = 16;
  *   optional sint64                                         int_value    = 17;
+ *   optional Deadband                                       deadband = 18;
  * }
  * 
  * // A set of triggers for a point.
@@ -126,6 +129,20 @@
  * message IntToString {
  *   required sint64 value       = 1;
  *   required string string      = 2;
+ * }
+ * 
+ * message Deadband {
+ *   enum DeadbandType {
+ *       DUPLICATES_ONLY       = 1;
+ *       INT                   = 2;
+ *       DOUBLE                = 3;
+ *   }
+ * 
+ *   optional DeadbandType type        = 1;
+ *   optional uint64 int_deadband       = 2;
+ *   optional double double_deadband    = 3;
+ * 
+ *   //optional uint64 cache_timeout_ms  = 10;
  * }
  * 
  * 

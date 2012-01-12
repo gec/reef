@@ -21,15 +21,23 @@ package org.totalgrid.reef.measproc.processing
 import org.totalgrid.reef.persistence.ObjectCache
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.client.service.proto.Processing.{ Deadband => DeadbandProto }
+import DeadbandProto.{ DeadbandType => Type }
+import org.totalgrid.reef.measproc.processing.DeadbandTrigger.{ IntDeadband, NoDuplicates }
 
 object DeadbandTrigger {
 
-  sealed trait Deadband {
-    def allow(m: Measurement, current: Measurement): Boolean
+  def apply(config: DeadbandProto, cache: ObjectCache[Measurement]) = {
+    val cond = config.getType match {
+      case Type.DUPLICATES_ONLY => new NoDuplicates
+      case Type.INT => new IntDeadband(config.intDeadband.getOrElse(0).asInstanceOf[Long])
+      case Type.DOUBLE => new DoubleDeadband(config.doubleDeadband.getOrElse(0).asInstanceOf[Double])
+    }
+    new DeadbandTrigger(cache, cond)
   }
 
-  class AllowAll extends Deadband {
-    def allow(m: Measurement, current: Measurement) = true
+  sealed trait Deadband {
+    def allow(m: Measurement, current: Measurement): Boolean
   }
 
   class NoDuplicates extends Deadband {

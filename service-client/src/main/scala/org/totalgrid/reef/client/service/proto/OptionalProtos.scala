@@ -409,6 +409,7 @@ object OptionalProtos {
     val actionName = optionally(_.getActionName)
     val _type = optionally(_.hasType, _.getType)
     val disabled = optionally(_.hasDisabled, _.getDisabled)
+    val suppress = optionally(_.hasSuppress, _.getSuppress)
     val linearTransform = new OptLinearTransform(optionally(_.hasLinearTransform, _.getLinearTransform))
     val qualityAnnotation = new OptMeasurementsQuality(optionally(_.hasQualityAnnotation, _.getQualityAnnotation))
     val stripValue = optionally(_.hasStripValue, _.getStripValue)
@@ -441,6 +442,7 @@ object OptionalProtos {
     val boolValue = optionally(_.hasBoolValue, _.getBoolValue)
     val stringValue = optionally(_.hasStringValue, _.getStringValue)
     val intValue = optionally(_.hasIntValue, _.getIntValue)
+    val deadband = new OptDeadband(optionally(_.hasDeadband, _.getDeadband))
   }
   implicit def proto2OptTriggerSet(a: TriggerSet): OptTriggerSet = new OptTriggerSet(Some(a))
   class OptTriggerSet(real: Option[TriggerSet]) extends OptionalStruct(real) {
@@ -467,6 +469,12 @@ object OptionalProtos {
   class OptIntToString(real: Option[IntToString]) extends OptionalStruct(real) {
     val value = optionally(_.getValue)
     val string = optionally(_.getString)
+  }
+  implicit def proto2OptDeadband(a: Deadband): OptDeadband = new OptDeadband(Some(a))
+  class OptDeadband(real: Option[Deadband]) extends OptionalStruct(real) {
+    val _type = optionally(_.hasType, _.getType)
+    val intDeadband = optionally(_.hasIntDeadband, _.getIntDeadband)
+    val doubleDeadband = optionally(_.hasDoubleDeadband, _.getDoubleDeadband)
   }
   implicit def proto2OptMeasurementProcessingRouting(a: MeasurementProcessingRouting): OptMeasurementProcessingRouting = new OptMeasurementProcessingRouting(Some(a))
   class OptMeasurementProcessingRouting(real: Option[MeasurementProcessingRouting]) extends OptionalStruct(real) {

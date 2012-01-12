@@ -22,6 +22,7 @@ import org.totalgrid.reef.client.service.proto.Events
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementBatch, Measurement }
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, processing, MeasProcObjectCaches }
+import org.totalgrid.reef.persistence.InMemoryObjectCache
 
 class MeasProcessingPipeline(
     caches: MeasProcObjectCaches,
@@ -32,9 +33,11 @@ class MeasProcessingPipeline(
   // pipeline ends up being defined backwards, output from each step is wired into input of previous step
   // basicProcessingNode -> overrideProc -> triggerProc -> batchOutput
 
+  private var lastCache = new InMemoryObjectCache[Measurement]
+
   val batchOutput = new ProcessedMeasBatchOutputCache(publish, eventSink, caches.measCache)
 
-  val triggerFactory = new processing.TriggerProcessingFactory(batchOutput.delayedEventSink)
+  val triggerFactory = new processing.TriggerProcessingFactory(batchOutput.delayedEventSink, lastCache)
   val triggerProc = new processing.TriggerProcessor(batchOutput.pubMeas, triggerFactory, caches.stateCache)
   val overProc = new processing.OverrideProcessor(overrideProcess, caches.overCache, caches.measCache.get)
   val measurementFilter = new processing.MeasurementFilter(overProc.process, pointNames)

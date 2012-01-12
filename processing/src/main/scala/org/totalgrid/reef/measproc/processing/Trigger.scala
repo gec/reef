@@ -59,6 +59,7 @@ object Trigger extends Logging {
       else result
     }
   }
+
 }
 
 /**
@@ -103,17 +104,15 @@ class BasicTrigger(
     // Allow actions to determine if they should evaluate, roll up a result measurement
     //info("Trigger state: " + state)
 
-    def evalActions(meas: Measurement, a: List[Action]): Option[Measurement] = {
-      a match {
-        case Nil => Some(meas)
-        case head :: tail => {
-          head.process(meas, state, prev).flatMap(next => evalActions(next, tail))
-        }
+    def evalActions(meas: Measurement, a: List[Action]): Option[Measurement] = a match {
+      case Nil => Some(meas)
+      case head :: tail => {
+        head.process(meas, state, prev).flatMap(next => evalActions(next, tail))
       }
     }
 
     evalActions(m, actions) match {
-      case None => (m, false)
+      case None => (m, true)
       case Some(result) => {
         // Check stop processing flag (default to continue processing)
         val stopProc = stopProcessing.map(_(state, prev)) getOrElse false
