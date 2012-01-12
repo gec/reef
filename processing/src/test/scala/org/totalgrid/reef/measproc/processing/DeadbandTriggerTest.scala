@@ -31,64 +31,113 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
 
   import ProtoHelper._
 
-  test("Allow all first through") {
+  class Fixture(band: DeadbandTrigger.Deadband) {
     val cache = new MockObjectCache[Measurement]()
-    val band = new DeadbandTrigger.AllowAll
     val t = new DeadbandTrigger(cache, band)
+  }
+
+  test("Allow all first through") {
+    val f = new Fixture(new DeadbandTrigger.AllowAll)
 
     val m = makeAnalog("test01", 4.234)
 
-    t.apply(m, false) should equal(true)
-    cache.putQueue.size should equal(1)
-    cache.putQueue.dequeue should equal("test01", m)
+    f.t.apply(m, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m)
 
-    t.apply(m, true) should equal(true)
-    cache.putQueue.size should equal(1)
-    cache.putQueue.dequeue should equal("test01", m)
+    f.t.apply(m, true) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m)
   }
 
   test("No duplicates") {
-    val cache = new MockObjectCache[Measurement]()
-    val band = new DeadbandTrigger.NoDuplicates
-    val t = new DeadbandTrigger(cache, band)
+    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
 
     val m = makeAnalog("test01", 4.234)
 
-    cache.update("test01", m)
-    t.apply(m, false) should equal(false)
-    cache.putQueue.size should equal(0)
+    f.cache.update("test01", m)
+    f.t.apply(m, false) should equal(false)
+    f.cache.putQueue.size should equal(0)
 
     val m2 = makeAnalog("test01", 3.3)
-    t.apply(m2, false) should equal(true)
-    cache.putQueue.size should equal(1)
-    cache.putQueue.dequeue should equal("test01", m2)
+    f.t.apply(m2, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m2)
   }
 
   test("Isolate units") {
-    val cache = new MockObjectCache[Measurement]()
-    val band = new DeadbandTrigger.NoDuplicates
-    val t = new DeadbandTrigger(cache, band)
+    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
 
     val m = makeAnalog("test01", 4.234)
-    cache.update("test01", m)
+    f.cache.update("test01", m)
 
     val m2 = Measurement.newBuilder(m).setUnit("other").build
-    t.apply(m2, false) should equal(true)
-    cache.putQueue.size should equal(1)
-    cache.putQueue.dequeue should equal("test01", m2)
+    f.t.apply(m2, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m2)
   }
 
   test("Isolate quality") {
-    val cache = new MockObjectCache[Measurement]()
-    val band = new DeadbandTrigger.NoDuplicates
-    val t = new DeadbandTrigger(cache, band)
+    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
 
     val m = makeAnalog("test01", 4.234)
-    cache.update("test01", m)
+    f.cache.update("test01", m)
 
     val m2 = Measurement.newBuilder(m).setQuality(Quality.newBuilder.setDetailQual(DetailQual.newBuilder).setValidity(Validity.INVALID)).build
-    t.apply(m2, false) should equal(true)
-    cache.putQueue.size should equal(1)
-    cache.putQueue.dequeue should equal("test01", m2)
+    f.t.apply(m2, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m2)
+  }
+
+  test("Ints") {
+    val f = new Fixture(new DeadbandTrigger.IntDeadband(2))
+
+    val m = makeInt("test01", 10)
+
+    f.t.apply(m, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m)
+
+    f.t.apply(makeInt("test01", 11), false) should equal(false)
+    f.cache.putQueue.size should equal(0)
+
+    f.t.apply(makeInt("test01", 12), false) should equal(false)
+    f.cache.putQueue.size should equal(0)
+
+    val m2 = makeInt("test01", 13)
+    f.t.apply(m2, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m2)
+    
+    val m3 = makeInt("test01", 10)
+    f.t.apply(m3, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m3)
+  }
+
+  test("Double") {
+    val f = new Fixture(new DeadbandTrigger.DoubleDeadband(1.5))
+
+    val m = makeAnalog("test01", 10.01)
+
+    f.t.apply(m, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m)
+
+    f.t.apply(makeAnalog("test01", 11.01), false) should equal(false)
+    f.cache.putQueue.size should equal(0)
+
+    f.t.apply(makeAnalog("test01", 11.51), false) should equal(false)
+    f.cache.putQueue.size should equal(0)
+
+    val m2 = makeAnalog("test01", 11.52)
+    f.t.apply(m2, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m2)
+
+    val m3 = makeAnalog("test01", 9.99)
+    f.t.apply(m3, false) should equal(true)
+    f.cache.putQueue.size should equal(1)
+    f.cache.putQueue.dequeue should equal("test01", m3)
   }
 }

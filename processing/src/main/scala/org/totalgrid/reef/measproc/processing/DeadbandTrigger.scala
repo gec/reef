@@ -44,7 +44,7 @@ object DeadbandTrigger {
   class IntDeadband(band: Long) extends Deadband {
     def allow(m: Measurement, current: Measurement) = {
       if (m.hasIntVal && current.hasIntVal) {
-        math.abs(m.getIntVal - current.getIntVal) >= band
+        math.abs(m.getIntVal - current.getIntVal) > band
       } else {
         true
       }
@@ -54,7 +54,7 @@ object DeadbandTrigger {
   class DoubleDeadband(band: Double) extends Deadband {
     def allow(m: Measurement, current: Measurement) = {
       if (m.hasDoubleVal && current.hasDoubleVal) {
-        math.abs(m.getDoubleVal - current.getDoubleVal) >= band
+        math.abs(m.getDoubleVal - current.getDoubleVal) > band
       } else {
         true
       }
