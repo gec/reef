@@ -102,14 +102,18 @@ class BasicTrigger(
 
     // Allow actions to determine if they should evaluate, roll up a result measurement
     //info("Trigger state: " + state)
-    //val res = actions.foldLeft(m) { (meas, action) => action.process(meas, state, prev) }
 
-    val opt: Option[Measurement] = Some(m)
-    val res = actions.foldLeft(opt) { (optMeas, action) => optMeas.map(meas => action.process(meas, state, prev)).flatten }
+    def evalActions(meas: Measurement, a: List[Action]): Option[Measurement] = {
+      a match {
+        case Nil => Some(meas)
+        case head :: tail => {
+          head.process(meas, state, prev).flatMap(next => evalActions(next, tail))
+        }
+      }
+    }
 
-    res match {
+    evalActions(m, actions) match {
       case None => (m, false)
-
       case Some(result) => {
         // Check stop processing flag (default to continue processing)
         val stopProc = stopProcessing.map(_(state, prev)) getOrElse false

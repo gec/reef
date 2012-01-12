@@ -65,6 +65,20 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
     f.cache.putQueue.dequeue should equal("test01", m2)
   }
 
+  test("Duplicates") {
+    duplicateTest(makeAnalog("test01", 4.234))
+    duplicateTest(makeInt("test01", 10))
+    duplicateTest(makeBool("test01", true))
+    duplicateTest(makeString("test01", "string"))
+  }
+
+  def duplicateTest(m: Measurement) {
+    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
+    f.cache.update("test01", m)
+    f.t.apply(m, false) should equal(false)
+    f.cache.putQueue.size should equal(0)
+  }
+
   test("Isolate units") {
     val f = new Fixture(new DeadbandTrigger.NoDuplicates)
 
@@ -108,7 +122,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
     f.t.apply(m2, false) should equal(true)
     f.cache.putQueue.size should equal(1)
     f.cache.putQueue.dequeue should equal("test01", m2)
-    
+
     val m3 = makeInt("test01", 10)
     f.t.apply(m3, false) should equal(true)
     f.cache.putQueue.size should equal(1)
