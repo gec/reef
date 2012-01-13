@@ -26,10 +26,10 @@ import org.totalgrid.reef.measproc.{ ProtoHelper, MockObjectCache }
 import org.totalgrid.reef.client.service.proto.Measurements.{ DetailQual, Quality, Measurement }
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 import org.totalgrid.reef.client.service.proto.Events.Event
-import org.totalgrid.reef.client.service.proto.Processing.{ Trigger => TriggerProto, Deadband => DeadbandProto, Action => ActionProto, ActivationType }
+import org.totalgrid.reef.client.service.proto.Processing.{ Trigger => TriggerProto, Filter => FilterProto, Action => ActionProto, ActivationType }
 
 @RunWith(classOf[JUnitRunner])
-class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
+class FilterTriggerTest extends FunSuite with ShouldMatchers {
 
   import ProtoHelper._
 
@@ -44,9 +44,9 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
     val proto = TriggerProto.newBuilder
       .setTriggerName("testTrigger")
       .setPriority(100)
-      .setDeadband(
-        DeadbandProto.newBuilder
-          .setType(DeadbandProto.DeadbandType.DUPLICATES_ONLY))
+      .setFilter(
+        FilterProto.newBuilder
+          .setType(FilterProto.FilterType.DUPLICATES_ONLY))
         .addActions(
           ActionProto.newBuilder
             .setSuppress(true)
@@ -63,9 +63,9 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
 
   }
 
-  class Fixture(band: DeadbandTrigger.Deadband) {
+  class Fixture(band: FilterTrigger.Filter) {
     val cache = new MockObjectCache[Measurement]()
-    val t = new DeadbandTrigger(cache, band)
+    val t = new FilterTrigger(cache, band)
 
     def sendAndBlock(m: Measurement) {
       t.apply(m, false) should equal(false)
@@ -79,7 +79,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
   }
 
   test("Duplicates first through") {
-    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
+    val f = new Fixture(new FilterTrigger.NoDuplicates)
 
     val m = makeAnalog("test01", 4.234)
 
@@ -89,7 +89,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
   }
 
   test("No duplicates") {
-    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
+    val f = new Fixture(new FilterTrigger.NoDuplicates)
 
     val m = makeAnalog("test01", 4.234)
 
@@ -108,13 +108,13 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
   }
 
   def duplicateTest(m: Measurement) {
-    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
+    val f = new Fixture(new FilterTrigger.NoDuplicates)
     f.cache.update("test01", m)
     f.sendAndBlock(m)
   }
 
   test("Isolate units") {
-    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
+    val f = new Fixture(new FilterTrigger.NoDuplicates)
 
     val m = makeAnalog("test01", 4.234)
     f.cache.update("test01", m)
@@ -124,7 +124,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
   }
 
   test("Isolate quality") {
-    val f = new Fixture(new DeadbandTrigger.NoDuplicates)
+    val f = new Fixture(new FilterTrigger.NoDuplicates)
 
     val m = makeAnalog("test01", 4.234)
     f.cache.update("test01", m)
@@ -134,7 +134,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
   }
 
   test("Ints") {
-    val f = new Fixture(new DeadbandTrigger.IntDeadband(2))
+    val f = new Fixture(new FilterTrigger.Deadband(2))
 
     val m = makeInt("test01", 10)
 
@@ -150,7 +150,7 @@ class DeadbandTriggerTest extends FunSuite with ShouldMatchers {
   }
 
   test("Double") {
-    val f = new Fixture(new DeadbandTrigger.DoubleDeadband(1.5))
+    val f = new Fixture(new FilterTrigger.Deadband(1.5))
 
     f.sendAndReceive(makeAnalog("test01", 10.01))
 

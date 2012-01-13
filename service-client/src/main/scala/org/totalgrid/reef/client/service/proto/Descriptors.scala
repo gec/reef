@@ -376,11 +376,11 @@ object Descriptors {
     def getKlass = classOf[IntToString]
     def id = "int_to_string"
   }
-  def deadband() = new TypeDescriptor[Deadband] {
-    def serialize(typ: Deadband): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = Deadband.parseFrom(bytes)
-    def getKlass = classOf[Deadband]
-    def id = "deadband"
+  def filter() = new TypeDescriptor[Filter] {
+    def serialize(typ: Filter): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = Filter.parseFrom(bytes)
+    def getKlass = classOf[Filter]
+    def id = "filter"
   }
   def measurementProcessingRouting() = new TypeDescriptor[MeasurementProcessingRouting] {
     def serialize(typ: MeasurementProcessingRouting): Array[Byte] = typ.toByteArray

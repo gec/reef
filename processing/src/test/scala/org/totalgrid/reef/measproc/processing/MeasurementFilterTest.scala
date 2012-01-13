@@ -32,7 +32,7 @@ class MeasurementFilterTest extends FunSuite with ShouldMatchers {
   test("Ignores meases") {
     val queue = mutable.Queue.empty[String]
     val enqueue = { m: Measurement => queue.enqueue(m.getName) }
-    val filter = new MeasurementFilter(enqueue, List("ok1", "ok2"))
+    val filter = new MeasurementWhiteList(enqueue, List("ok1", "ok2"))
 
     filter.process(makeAnalog("ok1", 100))
     filter.process(makeAnalog("ok2", 100))

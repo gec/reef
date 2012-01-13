@@ -58,7 +58,9 @@
 			</equip:pointProfile>
 
 			<equip:pointProfile name="FID_BKR">
-				<equip:unexpected stringValue="Open" actionSet="Nominal"/>
+                <!--<equip:filter allowDuplicates="false" deadband="50.0"/>-->
+
+                <equip:unexpected stringValue="Open" actionSet="Nominal"/>
 				<equip:transform fromUnit="raw" toUnit="status" transformationType="status">
 					<equip:valueMap fromValue="true" toValue="Closed"/>
 					<equip:valueMap fromValue="false" toValue="Open"/>

@@ -91,7 +91,7 @@ trait TriggerFactory { self: ActionFactory with ProcessingResources =>
       proto.boolValue.map(new BoolValue(_)),
       proto.intValue.map(new IntegerValue(_)),
       proto.stringValue.map(new StringValue(_)),
-      proto.deadband.map(DeadbandTrigger(_, lastCache))).flatten
+      proto.filter.map(FilterTrigger(_, lastCache))).flatten
 
     val actions = proto.getActionsList.toList.map(buildAction(_))
     new BasicTrigger(cacheID, conditions, actions, stopProc)

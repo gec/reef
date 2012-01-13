@@ -26,7 +26,7 @@ import com.weiglewilczek.slf4s.Logging
  * checks to see if the measurements are on the whitelist provided with the endpoint and filters
  * out the unexpected measurements and adds a log message indicating what is being ignored.
  */
-class MeasurementFilter(protected val next: Measurement => Unit, allowedPointNames: List[String])
+class MeasurementWhiteList(protected val next: Measurement => Unit, allowedPointNames: List[String])
     extends MetricsHooks
     with Logging {
 

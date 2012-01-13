@@ -98,7 +98,7 @@
  *   optional bool                                           bool_value = 15;
  *   optional string                                         string_value = 16;
  *   optional sint64                                         int_value    = 17;
- *   optional Deadband                                       deadband = 18;
+ *   optional Filter                                         filter = 18;
  * }
  * 
  * // A set of triggers for a point.
@@ -131,16 +131,14 @@
  *   required string string      = 2;
  * }
  * 
- * message Deadband {
- *   enum DeadbandType {
+ * message Filter {
+ *   enum FilterType {
  *       DUPLICATES_ONLY       = 1;
- *       INT                   = 2;
- *       DOUBLE                = 3;
+ *       DEADBAND              = 2;
  *   }
  * 
- *   optional DeadbandType type        = 1;
- *   optional uint64 int_deadband       = 2;
- *   optional double double_deadband    = 3;
+ *   optional FilterType type        = 1;
+ *   optional double deadband_value    = 2;
  * 
  *   //optional uint64 cache_timeout_ms  = 10;
  * }

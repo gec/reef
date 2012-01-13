@@ -21,26 +21,24 @@ package org.totalgrid.reef.measproc.processing
 import org.totalgrid.reef.persistence.ObjectCache
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.client.service.proto.Processing.{ Deadband => DeadbandProto }
-import DeadbandProto.{ DeadbandType => Type }
-import org.totalgrid.reef.measproc.processing.DeadbandTrigger.{ IntDeadband, NoDuplicates }
+import org.totalgrid.reef.client.service.proto.Processing.{ Filter => FilterProto }
+import FilterProto.{ FilterType => Type }
 
-object DeadbandTrigger {
+object FilterTrigger {
 
-  def apply(config: DeadbandProto, cache: ObjectCache[Measurement]) = {
+  def apply(config: FilterProto, cache: ObjectCache[Measurement]) = {
     val cond = config.getType match {
       case Type.DUPLICATES_ONLY => new NoDuplicates
-      case Type.INT => new IntDeadband(config.intDeadband.getOrElse(0).asInstanceOf[Long])
-      case Type.DOUBLE => new DoubleDeadband(config.doubleDeadband.getOrElse(0).asInstanceOf[Double])
+      case Type.DEADBAND => new Deadband(config.deadbandValue.getOrElse(0).asInstanceOf[Double])
     }
-    new DeadbandTrigger(cache, cond)
+    new FilterTrigger(cache, cond)
   }
 
-  sealed trait Deadband {
+  sealed trait Filter {
     def allow(m: Measurement, current: Measurement): Boolean
   }
 
-  class NoDuplicates extends Deadband {
+  class NoDuplicates extends Filter {
     def allow(m: Measurement, current: Measurement) = {
       m.intVal != current.intVal ||
         m.doubleVal != current.doubleVal ||
@@ -49,20 +47,12 @@ object DeadbandTrigger {
     }
   }
 
-  class IntDeadband(band: Long) extends Deadband {
-    def allow(m: Measurement, current: Measurement) = {
-      if (m.hasIntVal && current.hasIntVal) {
-        math.abs(m.getIntVal - current.getIntVal) > band
-      } else {
-        true
-      }
-    }
-  }
-
-  class DoubleDeadband(band: Double) extends Deadband {
+  class Deadband(band: Double) extends Filter {
     def allow(m: Measurement, current: Measurement) = {
       if (m.hasDoubleVal && current.hasDoubleVal) {
         math.abs(m.getDoubleVal - current.getDoubleVal) > band
+      } else if (m.hasIntVal && current.hasIntVal) {
+        math.abs(m.getIntVal - current.getIntVal).asInstanceOf[Double] > band
       } else {
         true
       }
@@ -85,8 +75,8 @@ object DeadbandTrigger {
   }
 }
 
-class DeadbandTrigger(cache: ObjectCache[Measurement], band: DeadbandTrigger.Deadband) extends Trigger.Condition {
-  import DeadbandTrigger.sameQuality
+class FilterTrigger(cache: ObjectCache[Measurement], band: FilterTrigger.Filter) extends Trigger.Condition {
+  import FilterTrigger.sameQuality
 
   def apply(m: Measurement, prev: Boolean): Boolean = {
     cache.get(m.getName) match {

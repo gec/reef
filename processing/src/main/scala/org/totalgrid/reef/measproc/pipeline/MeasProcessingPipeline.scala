@@ -40,7 +40,7 @@ class MeasProcessingPipeline(
   val triggerFactory = new processing.TriggerProcessingFactory(batchOutput.delayedEventSink, lastCache)
   val triggerProc = new processing.TriggerProcessor(batchOutput.pubMeas, triggerFactory, caches.stateCache)
   val overProc = new processing.OverrideProcessor(overrideProcess, caches.overCache, caches.measCache.get)
-  val measurementFilter = new processing.MeasurementFilter(overProc.process, pointNames)
+  val measurementFilter = new processing.MeasurementWhiteList(overProc.process, pointNames)
 
   // start the pipeline
   val processor = new MeasPipelinePump(measurementFilter.process, batchOutput.flushCache)

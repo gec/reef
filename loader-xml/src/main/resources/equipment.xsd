@@ -343,6 +343,21 @@ value will be classified as Abnormal.-->
 		</xs:complexType>
 	</xs:element>
 
+    <xs:element name="filter">
+        <xs:annotation>
+            <xs:documentation>
+                <p class="elementDef">
+                    .
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+
+        <xs:complexType>
+            <xs:attribute name="allowDuplicates" type="xs:boolean" default="false"/>
+            <xs:attribute name="deadband" type="xs:double"/>
+        </xs:complexType>
+    </xs:element>
+
 	<xs:element name="unexpected">
 		<xs:annotation>
 			<xs:documentation>
@@ -479,6 +494,7 @@ value will be classified as Abnormal.-->
 			<xs:element ref="setpoint"/>
 			<xs:element ref="range"/>
 			<xs:element ref="unexpected"/>
+            <xs:element ref="filter"/>
 			<xs:element ref="type"/>
 			<xs:element ref="common:info"/>
 		</xs:choice>
