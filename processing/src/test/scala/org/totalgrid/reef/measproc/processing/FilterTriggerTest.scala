@@ -57,9 +57,9 @@ class FilterTriggerTest extends FunSuite with ShouldMatchers {
     val trig = fac.buildTrigger(proto, "point01")
 
     val m = makeInt("test01", 10)
-    trig.process(m, stateCache) should equal((m, false))
+    trig.process(m, stateCache) should equal(Some((m, false)))
 
-    trig.process(m, stateCache) should equal((m, true))
+    trig.process(m, stateCache) should equal(None)
 
   }
 

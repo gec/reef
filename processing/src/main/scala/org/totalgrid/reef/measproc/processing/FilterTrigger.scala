@@ -29,7 +29,7 @@ object FilterTrigger {
   def apply(config: FilterProto, cache: ObjectCache[Measurement]) = {
     val cond = config.getType match {
       case Type.DUPLICATES_ONLY => new NoDuplicates
-      case Type.DEADBAND => new Deadband(config.deadbandValue.getOrElse(0).asInstanceOf[Double])
+      case Type.DEADBAND => new Deadband(config.deadbandValue.getOrElse(0))
     }
     new FilterTrigger(cache, cond)
   }

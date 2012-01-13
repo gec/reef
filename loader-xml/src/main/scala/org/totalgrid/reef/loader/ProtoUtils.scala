@@ -138,6 +138,23 @@ object ProtoUtils {
     proto
   }
 
+  def filterDefault(pointName: String): Trigger.Builder = {
+    val name = pointName + ".filter"
+
+    val f = FilterProto.newBuilder.setType(FilterProto.FilterType.DUPLICATES_ONLY).build()
+
+    val suppressAction = Action.newBuilder
+      .setActionName(name)
+      .setType(ActivationType.LOW)
+      .setSuppress(true)
+
+    Trigger.newBuilder
+      .setTriggerName(name)
+      .addActions(suppressAction)
+      .setFilter(f)
+      .setPriority(DefaultPriorities.FILTER)
+  }
+
   def toTrigger(pointName: String, filter: Filter, pointType: PointTypeProto): Option[Trigger.Builder] = {
 
     if (filter.isAllowDuplicates) {

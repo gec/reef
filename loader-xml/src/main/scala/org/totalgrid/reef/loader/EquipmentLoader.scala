@@ -253,6 +253,12 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val convertValues = getElements[Transform](name, pointType, _.getTransform.toList)
     triggers = triggers ::: convertValues.map { transform => toTrigger(name, transform, unit) }
 
+    /*val filterValues = getElements[Filter](name, pointType, _.getFilter.toList)
+    if (filterValues.isEmpty) {
+      triggers :::= List(filterDefault(name))
+    } else {
+      triggers :::= filterValues.flatMap { filter => toTrigger(name, filter, pointProtoType) }
+    }*/
     val filterValues = getElements[Filter](name, pointType, _.getFilter.toList)
     triggers :::= filterValues.flatMap { filter => toTrigger(name, filter, pointProtoType) }
 

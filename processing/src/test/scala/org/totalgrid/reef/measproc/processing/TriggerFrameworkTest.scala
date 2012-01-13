@@ -42,7 +42,7 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
     class MockTrigger(ret: Measurement, stop: Boolean) extends Trigger {
       def process(m: Measurement, cache: ObjectCache[Boolean]) = {
         triggerCalls enqueue m
-        (ret, stop)
+        Some((ret, stop))
       }
     }
 
@@ -70,7 +70,7 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
     val input = makeAnalog("meas01", 5.3)
     val trigger = new BasicTrigger("meas01.trig01", List(r.condition(true)), Nil, None)
     r.cache.update("meas01.trig01", true)
-    val (result, stop) = trigger.process(input, r.cache)
+    val (result, stop) = trigger.process(input, r.cache).get
 
     r.conditionCalls.length should equal(1)
     r.conditionCalls.dequeue should equal((input, true))
@@ -87,7 +87,7 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
 
     val triggers = List(r.trigger(output1, false), r.trigger(output2, false))
 
-    val result = Trigger.processAll(input, r.cache, triggers)
+    val result = Trigger.processAll(input, r.cache, triggers).get
 
     r.triggerCalls.length should equal(2)
     r.triggerCalls.dequeue should equal(input)
@@ -104,7 +104,7 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
 
     val triggers = List(r.trigger(output1, true), r.trigger(output2, false))
 
-    val result = Trigger.processAll(input, r.cache, triggers)
+    val result = Trigger.processAll(input, r.cache, triggers).get
 
     r.triggerCalls.length should equal(1)
     r.triggerCalls.dequeue should equal(input)
@@ -117,7 +117,7 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
     val input = makeAnalog("meas01", 5.3)
     val output = makeAnalog("meas01", 5300.0)
     val trigger = new BasicTrigger("meas01.trig01", List(r.condition(true), r.condition(true)), List(r.action(output)), None)
-    val (result, stop) = trigger.process(input, r.cache)
+    val (result, stop) = trigger.process(input, r.cache).get
 
     r.conditionCalls.length should equal(2)
     r.conditionCalls.dequeue should equal((input, false))
@@ -133,7 +133,7 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
     val input = makeAnalog("meas01", 5.3)
     val output = makeAnalog("meas01", 5300.0)
     val trigger = new BasicTrigger("meas01.trig01", List(r.condition(true), r.condition(false)), List(r.action(output)), None)
-    val (result, stop) = trigger.process(input, r.cache)
+    val (result, stop) = trigger.process(input, r.cache).get
 
     r.conditionCalls.length should equal(2)
     r.conditionCalls.dequeue should equal((input, false))
@@ -149,7 +149,7 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
     val input = makeAnalog("meas01", 5.3)
     val output = makeAnalog("meas01", 5300.0)
     val trigger = new BasicTrigger("meas01.trig01", List(r.condition(false), r.condition(true)), List(r.action(output)), None)
-    val (result, stop) = trigger.process(input, r.cache)
+    val (result, stop) = trigger.process(input, r.cache).get
 
     r.conditionCalls.length should equal(1)
     r.conditionCalls.dequeue should equal((input, false))
@@ -166,7 +166,7 @@ class TriggerFrameworkTest extends Suite with ShouldMatchers {
     val output2 = makeAnalog("meas01", 0.053)
 
     val trigger = new BasicTrigger("meas01.trig01", List(r.condition(true)), List(r.action(output1), r.action(output2)), None)
-    val (result, stop) = trigger.process(input, r.cache)
+    val (result, stop) = trigger.process(input, r.cache).get
 
     r.conditionCalls.length should equal(1)
     r.conditionCalls.dequeue should equal((input, false))

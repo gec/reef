@@ -42,7 +42,18 @@ class TriggerProcessor(protected val next: Measurement => Unit,
 
   def process(m: Measurement) = {
     val triggerList = map.get(m.getName)
-    val result = triggerList match {
+
+    triggerList match {
+      case Some(list) =>
+        logger.debug("Applying triggers: " + list.size + " to meas: " + m)
+        val res = Trigger.processAll(m, stateCache, list)
+        logger.debug("Trigger result: " + res)
+        res.foreach(next(_))
+      case None =>
+        next(m)
+    }
+
+    /*val result = triggerList match {
       case Some(list) =>
         logger.debug("Applying triggers: " + list.size + " to meas: " + m)
         val res = Trigger.processAll(m, stateCache, list)
@@ -51,7 +62,7 @@ class TriggerProcessor(protected val next: Measurement => Unit,
       case None =>
         m
     }
-    next(result)
+    next(result)*/
   }
 
   def add(set: TriggerSet) {
