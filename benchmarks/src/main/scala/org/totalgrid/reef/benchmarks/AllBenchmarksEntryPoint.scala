@@ -66,6 +66,8 @@ object AllBenchmarksEntryPoint {
     val endpointNames = endpoints.map { _.getName }
     val points = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten
 
+    //val tests = List(new MeasurementPublishingBenchmark(endpointNames, 10, 5, false))
+
     val tests = List(
       new SystemStateBenchmark(5),
       new MeasurementPublishingBenchmark(endpointNames, 1000, 5, false),

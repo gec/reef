@@ -18,6 +18,8 @@
  */
 package org.totalgrid.reef.benchmarks.measurements
 
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.util.SyncVar
 
@@ -45,7 +47,7 @@ class MeasurementRoundtripTimer(result: SubscriptionResult[List[Measurement], Me
   def await() = {
     expected.waitFor(_.size == 0, throwOnFailure = false)
     if (expected.current.size != 0) {
-      def toString(list: List[Measurement]) = list.map { m => m.getName + "->" + m.getDoubleVal }
+      def toString(list: List[Measurement]) = list.map { m => m.getName + "->" + (m.doubleVal orElse m.intVal orElse m.boolVal orElse m.stringVal).get }
       throw new FailedBenchmarkException("Didn't recieve all expected measurements" +
         "\nstill awaiting: " + toString(expected.current) +
         "\ngot unexpected: " + toString(unexpected.reverse))
