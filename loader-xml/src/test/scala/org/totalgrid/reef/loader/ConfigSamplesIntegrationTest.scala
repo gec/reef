@@ -47,8 +47,8 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   test("samples/mainstreet") {
-    //loadFile(samplesPath + "mainstreet/config.xml", 716)
-    loadFile(samplesPath + "mainstreet/config.xml", 637)
+    loadFile(samplesPath + "mainstreet/config.xml", 716)
+    //loadFile(samplesPath + "mainstreet/config.xml", 637)
   }
 
   test("dnp3-sample") {

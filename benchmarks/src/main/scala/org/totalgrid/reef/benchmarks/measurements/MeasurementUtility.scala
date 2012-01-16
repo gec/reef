@@ -30,13 +30,14 @@ object MeasurementUtility {
 
     def add = {
       val m = prev.dequeue()
-      val meas = if (m.getType == Measurement.Type.DOUBLE)
+
+      val meas = if (m.getType == Measurement.Type.DOUBLE) {
         m.toBuilder.setDoubleVal(m.getDoubleVal + 1.0).setTime(nowMillis).build
-      else if (m.getType == Measurement.Type.BOOL)
+      } else if (m.getType == Measurement.Type.BOOL || m.getType == Measurement.Type.STRING) {
         m.toBuilder.setBoolVal(!m.getBoolVal).setTime(nowMillis).build
-      else if (m.getType == Measurement.Type.INT)
+      } else if (m.getType == Measurement.Type.INT) {
         m.toBuilder.setIntVal(m.getIntVal + 1).setTime(nowMillis).build
-      else m.toBuilder.setTime(nowMillis).build
+      } else m.toBuilder.setTime(nowMillis).build
 
       prev.enqueue(meas)
       meas

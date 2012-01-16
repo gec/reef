@@ -27,7 +27,7 @@ import org.totalgrid.reef.standalone.InMemoryNode
 class AllBenchmarksTest extends FunSuite {
 
   test("Run Benchmarks") {
-    InMemoryNode.initialize("../standalone-node.cfg", true, "../assemblies/assembly-common/filtered-resources/samples/integration/config.xml")
+    InMemoryNode.initialize("../standalone-node.cfg", true, "../assemblies/assembly-common/filtered-resources/samples/benchmark/config.xml")
     Thread.sleep(5000)
     AllBenchmarksEntryPoint.runAllTests(InMemoryNode.connection, InMemoryNode.userSettings)
   }

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration version="1.0"
+							 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+							 xmlns="configuration.loader.reef.totalgrid.org"
+							 xmlns:equip="equipment.loader.reef.totalgrid.org"
+							 xmlns:comm="communications.loader.reef.totalgrid.org"
+							 xmlns:common="common.loader.reef.totalgrid.org">
+
+	<actionModel>
+
+		<actionSet name="Nominal">
+			<rising>
+				<message name="Scada.OutOfNominal"/>
+			</rising>
+
+			<high>
+				<setAbnormal/>
+			</high>
+		</actionSet>
+
+	</actionModel>
+
+	<equip:equipmentModel>
+
+		<equip:profiles>
+			<equip:pointProfile name="TrippedStatus">
+				<equip:transform transformationType="status">
+					<equip:valueMap fromValue="true" toValue="TRIPPED"/>
+					<equip:valueMap fromValue="false" toValue="CLOSED"/>
+				</equip:transform>
+
+				<equip:unexpected stringValue="TRIPPED" actionSet="Nominal"/>
+			</equip:pointProfile>
+
+			<equip:pointProfile name="BreakerStatus">
+				<!-- fromUnit and toUnit can be ommitted, we assume "raw" for fromUnit and point unit for toUnit -->
+				<equip:transform fromUnit="raw" toUnit="status" transformationType="status">
+					<equip:valueMap fromValue="true" toValue="CLOSED"/>
+					<equip:valueMap fromValue="false" toValue="TRIPPED"/>
+				</equip:transform>
+
+				<equip:unexpected stringValue="CLOSED" actionSet="Nominal"/>
+			</equip:pointProfile>
+
+			<equip:equipmentProfile name="Substation">
+				<equip:type name="Substation"/>
+			</equip:equipmentProfile>
+
+			<equip:equipmentProfile name="MockBreaker">
+				<equip:type name="Breaker"/>
+
+				<equip:control name="Trip">
+					<equip:type name="bkrTrip"/>
+				</equip:control>
+
+				<equip:control name="Close">
+					<equip:type name="bkrClose"/>
+					<common:info>
+						<common:attribute name="display.hide" booleanValue="false"/>
+					</common:info>
+				</equip:control>
+
+                <equip:setpoint name="TripSetting" setpointType="string" />
+
+				<equip:status name="Bkr" unit="status" pointProfile="BreakerStatus">
+                    <equip:filter allowDuplicates="true"/>
+					<equip:control name="Trip"/>
+					<equip:control name="Close"/>
+					<equip:type name="bkrStatus"/>
+				</equip:status>
+
+				<equip:status name="Tripped" unit="status" pointProfile="TrippedStatus">
+                    <equip:filter allowDuplicates="true"/>
+                    <equip:setpoint name="TripSetting"/>
+                </equip:status>
+			</equip:equipmentProfile>
+
+			<equip:equipmentProfile name="MockLine">
+				<!-- A made-up setpoint for use with integration tests -->
+				<equip:setpoint name="VoltageSetpoint">
+
+				</equip:setpoint>
+
+				<equip:type name="Line"/>
+				<equip:analog name="Current" unit="A">
+					<equip:range actionSet="Nominal" low="10" high="20" deadband="0.5"/>
+                    <equip:filter allowDuplicates="true"/>
+					<equip:setpoint name="VoltageSetpoint"/>
+					<common:info>
+						<common:attribute name="display.hide" booleanValue="false"/>
+					</common:info>
+				</equip:analog>
+			</equip:equipmentProfile>
+
+		</equip:profiles>
+
+		<equip:equipment name="SimulatedSubstation">
+			<equip:equipmentProfile name="Substation"/>
+
+			<common:info>
+				<common:configFile name="equipmentGroupConfig" fileName="equipmentGroupConfig.properties" mimeType="text/plain"/>
+			</common:info>
+
+			<equip:equipment name="Breaker01">
+				<equip:equipmentProfile name="MockBreaker"/>
+				<common:info>
+					<common:configFile name="Notes.txt" mimeType="text/text"><![CDATA[
+                  This breaker is special.  
+                  ]]></common:configFile>
+					<common:attribute name="display.icon" stringValue="circuit-breaker"/>
+				</common:info>
+			</equip:equipment>
+
+			<equip:equipment name="Line01">
+				<equip:equipmentProfile name="MockLine"/>
+				<common:info>
+					<common:attribute name="display.icon" stringValue="line-segment"/>
+				</common:info>
+			</equip:equipment>
+		</equip:equipment>
+
+		<equip:equipment name="StaticSubstation">
+			<equip:equipmentProfile name="Substation"/>
+
+			<common:info>
+				<common:configFile name="equipmentGroupConfig" fileName="equipmentGroupConfig.properties" mimeType="text/plain"/>
+			</common:info>
+
+			<equip:equipment name="Breaker02">
+				<equip:equipmentProfile name="MockBreaker"/>
+			</equip:equipment>
+
+			<equip:equipment name="Line02">
+				<equip:equipmentProfile name="MockLine"/>
+			</equip:equipment>
+		</equip:equipment>
+
+	</equip:equipmentModel>
+
+
+	<comm:communicationsModel>
+
+		<comm:endpoint name="SimulatedEndpoint">
+			<comm:protocol name="benchmark">
+				<comm:simOptions delay="100"/>
+			</comm:protocol>
+
+			<comm:equipment name="SimulatedSubstation">
+				<comm:equipment name="Breaker01">
+					<comm:status name="Bkr" index="0"/>
+					<comm:status name="Tripped" index="1"/>
+					<comm:control name="Trip" index="0"/>
+					<comm:control name="Close" index="1"/>
+                    <comm:setpoint name="TripSetting" index="1"/>
+				</comm:equipment>
+
+				<comm:equipment name="Line01">
+					<comm:analog name="Current" index="0" unit="A"/>
+					<comm:setpoint name="VoltageSetpoint" index="0"/>
+				</comm:equipment>
+			</comm:equipment>
+		</comm:endpoint>
+
+		<comm:endpoint name="StaticEndpoint">
+			<comm:protocol name="benchmark">
+				<comm:simOptions delay="0"/>
+			</comm:protocol>
+
+			<comm:equipment name="StaticSubstation">
+				<comm:equipment name="Breaker02">
+					<comm:status name="Bkr" index="0"/>
+					<comm:status name="Tripped" index="1"/>
+					<comm:control name="Trip" index="0"/>
+					<comm:control name="Close" index="1"/>
+                    <comm:setpoint name="TripSetting" index="1"/>
+				</comm:equipment>
+
+				<comm:equipment name="Line02">
+					<comm:setpoint name="VoltageSetpoint" index="0"/>
+					<comm:analog name="Current" index="0" unit="A"/>
+				</comm:equipment>
+			</comm:equipment>
+		</comm:endpoint>
+
+	</comm:communicationsModel>
+
+</configuration>
