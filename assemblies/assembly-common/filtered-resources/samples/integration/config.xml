@@ -82,7 +82,7 @@
 				<equip:type name="Line"/>
 				<equip:analog name="Current" unit="A">
 					<equip:range actionSet="Nominal" low="10" high="20" deadband="0.5"/>
-                    <equip:filter deadband="0.01"/>
+                    <equip:filter deadband="0.5"/>
 					<equip:setpoint name="VoltageSetpoint"/>
 					<common:info>
 						<common:attribute name="display.hide" booleanValue="false"/>

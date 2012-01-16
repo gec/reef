@@ -21,7 +21,7 @@ package org.totalgrid.reef.persistence
 import scala.collection.immutable
 
 class InMemoryObjectCache[A] extends ObjectCache[A] {
-  private var map = immutable.Map.empty[String, A]
+  protected var map = immutable.Map.empty[String, A]
   def getMap = map
 
   def put(name: String, obj: A) = { map += (name -> obj) }
