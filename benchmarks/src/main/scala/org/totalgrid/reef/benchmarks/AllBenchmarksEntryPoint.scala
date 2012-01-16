@@ -107,9 +107,9 @@ object AllBenchmarksEntryPoint {
     }
   }
 
-  def takeRandom[A](max : Int,  list : List[A]) : List[A] = {
-    if(list.size < max) list
-    else{
+  def takeRandom[A](max: Int, list: List[A]): List[A] = {
+    if (list.size < max) list
+    else {
       scala.util.Random.shuffle(list).take(max)
     }
   }
