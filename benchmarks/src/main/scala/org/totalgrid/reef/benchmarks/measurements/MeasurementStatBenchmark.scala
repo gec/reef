@@ -19,7 +19,7 @@
 package org.totalgrid.reef.benchmarks.measurements
 
 import org.totalgrid.reef.client.service.proto.Model.Point
-import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
+import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
 import collection.mutable.Queue
@@ -34,7 +34,7 @@ case class MeasurementStat(statName: String, pointName: String, value: Long) ext
   def testOutputs = List(pointName, value)
 }
 
-class MeasurementStatBenchmark(points: List[Point]) extends BenchmarkTest {
+class MeasurementStatBenchmark(points: List[Point]) extends AllScadaServicesTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 
     val readings = Queue.empty[BenchmarkReading]

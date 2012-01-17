@@ -20,7 +20,7 @@ package org.totalgrid.reef.benchmarks.measurements
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
-import org.totalgrid.reef.benchmarks.{ BenchmarkReading, BenchmarkTest }
+import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.util.Timing
 import collection.mutable.Queue
 import org.totalgrid.reef.client.service.proto.Model.Point
@@ -35,7 +35,7 @@ case class MeasurementHistoryReading(pointName: String, operation: String, time:
   def testOutputs = List(pointName, time)
 }
 
-class MeasurementHistoryBenchmark(points: List[Point], sizes: List[Int], getAll: Boolean) extends BenchmarkTest {
+class MeasurementHistoryBenchmark(points: List[Point], sizes: List[Int], getAll: Boolean) extends AllScadaServicesTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 
     stream.foreach { _.println("Collecting historian stats for: " + points.size + " points using sizes: " + sizes) }

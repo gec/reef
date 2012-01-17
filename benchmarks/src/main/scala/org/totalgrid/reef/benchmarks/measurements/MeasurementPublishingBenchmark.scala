@@ -27,7 +27,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.benchmarks._
 import java.io.PrintStream
 
-class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int, attempts: Int, direct: Boolean) extends BenchmarkTest {
+class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int, attempts: Int, direct: Boolean) extends AllScadaServicesTest {
 
   case class Reading(endpointName: String, direct: Boolean, measurements: Long, publishTime: Long, firstMessageTime: Long, roundtripTime: Long) extends BenchmarkReading {
 

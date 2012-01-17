@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.benchmarks.system
 
-import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
+import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
 import collection.mutable.Queue
@@ -48,7 +48,7 @@ case class SystemTimingStat(request: String, time: Long) extends BenchmarkReadin
   def testOutputs = List(time)
 }
 
-class SystemStateBenchmark(runs: Int) extends BenchmarkTest {
+class SystemStateBenchmark(runs: Int) extends AllScadaServicesTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 
     val readings = Queue.empty[BenchmarkReading]

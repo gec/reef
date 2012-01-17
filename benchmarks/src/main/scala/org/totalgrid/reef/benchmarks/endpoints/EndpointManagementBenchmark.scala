@@ -21,7 +21,7 @@ package org.totalgrid.reef.benchmarks.endpoints
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection._
-import org.totalgrid.reef.benchmarks.{ BenchmarkReading, FailedBenchmarkException, BenchmarkTest }
+import org.totalgrid.reef.benchmarks._
 
 case class EndpointCycleReading(endpointName: String, protocol: String, finalState: State, stateTransitionTime: Long) extends BenchmarkReading {
   def csvName = "endpoint"
@@ -35,7 +35,7 @@ case class EndpointCycleReading(endpointName: String, protocol: String, finalSta
   def testParameters = protocol :: finalState :: Nil
 }
 
-class EndpointManagementBenchmark(endpointNames: List[String], cycles: Int) extends BenchmarkTest {
+class EndpointManagementBenchmark(endpointNames: List[String], cycles: Int) extends AllScadaServicesTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
     stream.foreach(_.println("Cycling " + endpointNames.size + " endpoints"))
 
