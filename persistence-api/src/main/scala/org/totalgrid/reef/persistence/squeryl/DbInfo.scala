@@ -44,14 +44,15 @@ object DbInfo extends Logging {
 }
 
 case class DbInfo(dbType: String, url: String, user: String, password: String,
-    slowQueryTimeMilli: Long) {
+    slowQueryTimeMilli: Long, poolMaxActive: Int) {
 
   def this(props: Dictionary[Object, Object]) = this(
     PropertyLoading.getString("org.totalgrid.reef.sql.type", props),
     DbInfo.getUrl(props),
     PropertyLoading.getString("org.totalgrid.reef.sql.user", props),
     PropertyLoading.getString("org.totalgrid.reef.sql.password", props),
-    PropertyLoading.getInt("org.totalgrid.reef.sql.slowquery", props))
+    PropertyLoading.getInt("org.totalgrid.reef.sql.slowquery", props),
+    PropertyLoading.getInt("org.totalgrid.reef.sql.pool.maxactive", props, 8))
 
   // custom too string to hide password
   override def toString() = user + "@" + url
