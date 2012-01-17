@@ -31,9 +31,12 @@ trait BatchOperations {
   def startBatchRequests()
   def stopBatchRequests()
   def flushBatchRequests(): Future[Response[BatchServiceRequest]]
+  def batchedFlushBatchRequests(batchSize: Int): Future[Response[Boolean]]
 }
 
 object BatchOperations {
+
+  // TODO: replace BatchOperations.batchOperations with batchedFlushBatchRequests()
   def batchOperations[A <: BatchOperations](client: A, uploadActions: scala.List[A => Promise[_]], batchSize: Int) {
 
     try {

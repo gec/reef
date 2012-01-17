@@ -70,9 +70,9 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
     def scheduleWithFixedOffset(initial: TimeInterval, offset: TimeInterval)(fun: => Unit) = throw new Exception
   }
 
-  private def duplicatePayload(request: BatchServiceRequest) = {
+  private def duplicatePayload(onRequest: () => Unit, request: BatchServiceRequest) = {
     val batchResponse = BatchServiceRequest.newBuilder
-
+    onRequest()
     request.getRequestsList.toList.map { req =>
       val request = req.getRequest
       val response = Envelope.ServiceResponse.newBuilder.setId(request.getId).setStatus(Envelope.Status.OK)
@@ -101,8 +101,13 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
     FailureResponse(Envelope.Status.UNAUTHORIZED, "not authorized")
   }
 
+  case class RealRequestCounter(var requests: Int = 0) {
+    def increment() = requests += 1
+  }
+
   test("Single Request works") {
-    val client = new MockRestOperations(duplicatePayload _)
+    val requestCounter = new RealRequestCounter()
+    val client = new MockRestOperations(duplicatePayload(requestCounter.increment _, _))
     val ops = new BatchServiceRestOperations(client)
 
     val future = ops.request(Envelope.Verb.PUT, SomeInteger(100), None)
@@ -113,10 +118,13 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
 
     future.isComplete should equal(true)
     future.await.list should equal(List(SomeInteger(100), SomeInteger(100)))
+
+    requestCounter.requests should equal(1)
   }
 
   test("Multiple Requests works") {
-    val client = new MockRestOperations(duplicatePayload _)
+    val requestCounter = new RealRequestCounter()
+    val client = new MockRestOperations(duplicatePayload(requestCounter.increment _, _))
     val ops = new BatchServiceRestOperations(client)
 
     val futures = (0 to 100).map { i =>
@@ -132,7 +140,7 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
       case (value, index) =>
         value.await.list should equal(List(SomeInteger(index), SomeInteger(index)))
     }
-
+    requestCounter.requests should equal(1)
   }
 
   test("Handles General Batch Level Failure") {
@@ -169,6 +177,20 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
 
     batchResult.success should equal(false)
     batchResult.toString should include("partial failure")
+  }
+
+  test("BatchedFlush will send in chunks") {
+    val requestCounter = new RealRequestCounter()
+    val client = new MockRestOperations(duplicatePayload(requestCounter.increment _, _))
+    val ops = new BatchServiceRestOperations(client)
+
+    (1 to 13).map { i => ops.request(Envelope.Verb.PUT, SomeInteger(i), None) }
+
+    val batchResult = ops.batchedFlush(4).await
+
+    batchResult.success should equal(true)
+
+    requestCounter.requests should equal(3 + 1)
   }
 
 }
