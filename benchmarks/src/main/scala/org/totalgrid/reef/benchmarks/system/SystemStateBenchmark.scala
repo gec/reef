@@ -24,6 +24,8 @@ import java.io.PrintStream
 import collection.mutable.Queue
 import org.totalgrid.reef.util.Timing
 
+import scala.collection.JavaConversions._
+
 case class SystemStat(statName: String, value: Long) extends BenchmarkReading {
   def csvName = "systemStats"
 
@@ -90,7 +92,7 @@ class SystemStateBenchmark(runs: Int) extends BenchmarkTest {
       time("allPermissionSets") { client.getPermissionSets().await }
       val applications = time("allApplications") { client.getApplications().await }
 
-      applications.groupBy { _.getCapabilites(0) }.foreach {
+      applications.groupBy { _.getCapabilitesList.toList.headOption.getOrElse("none") }.foreach {
         case (capability, apps) =>
           readings.enqueue(new SystemStat("appsCapability" + capability, apps.size))
           readings.enqueue(new SystemStat("appsCapability", apps.size))
