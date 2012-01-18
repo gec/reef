@@ -204,6 +204,17 @@ class MeasHistCommand extends ReefCommandSupport {
   }
 }
 
+@Command(scope = "meas", name = "stat", description = "Prints measurement statistics.")
+class MeasStatCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "name", description = "Measurement name.", required = true, multiValued = false)
+  var name: String = null
+
+  def doCommand(): Unit = {
+    MeasView.printStats(services.getMeasurementStatisticsByName(name))
+  }
+}
+
 @Command(scope = "meas", name = "download", description = "Download all measurements for a point to CSV file.")
 class MeasDownloadCommand extends ReefCommandSupport {
 

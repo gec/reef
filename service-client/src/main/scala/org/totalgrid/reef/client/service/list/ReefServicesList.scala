@@ -33,6 +33,7 @@ object ReefServicesList {
     getEntry(Descriptors.measurementBatch),
     getEntry(Descriptors.measurementHistory, Some(Descriptors.measurement)),
     getEntry(Descriptors.measurementSnapshot, Some(Descriptors.measurement)),
+    getEntry(Descriptors.measurementStatistics),
     getEntry(Descriptors.measOverride),
     getEntry(Descriptors.triggerSet),
     getEntry(Descriptors.statusSnapshot),

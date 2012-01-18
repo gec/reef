@@ -81,6 +81,9 @@
         <command name="meas/hist">
             <action class="org.totalgrid.reef.shell.proto.MeasHistCommand"/>
         </command>
+        <command name="meas/stat">
+            <action class="org.totalgrid.reef.shell.proto.MeasStatCommand"/>
+        </command>
         <command name="meas/download">
             <action class="org.totalgrid.reef.shell.proto.MeasDownloadCommand"/>
         </command>

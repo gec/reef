@@ -22,7 +22,9 @@ import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.Routable;
 import org.totalgrid.reef.client.SubscriptionCreator;
 import org.totalgrid.reef.client.SubscriptionResult;
+import org.totalgrid.reef.client.service.proto.Measurements;
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement;
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics;
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch;
 import org.totalgrid.reef.client.service.proto.Model.Point;
 
@@ -167,4 +169,9 @@ public interface MeasurementService extends SubscriptionCreator
      * @return a Boolean that will always be true (otherwise an exception has been thrown), included for api consistency only
      */
     Boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
+
+
+    MeasurementStatistics getMeasurementStatisticsByPoint( Point point ) throws ReefServiceException;
+
+    MeasurementStatistics getMeasurementStatisticsByName( String name ) throws ReefServiceException;
 }

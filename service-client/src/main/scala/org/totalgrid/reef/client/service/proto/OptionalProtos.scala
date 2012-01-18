@@ -331,6 +331,12 @@ object OptionalProtos {
     val sampling = optionally(_.hasSampling, _.getSampling)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptMeasurementsMeasurement(Some(i)) })
   }
+  implicit def proto2OptMeasurementsMeasurementStatistics(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics): OptMeasurementsMeasurementStatistics = new OptMeasurementsMeasurementStatistics(Some(a))
+  class OptMeasurementsMeasurementStatistics(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics]) extends OptionalStruct(real) {
+    val point = new OptModelPoint(optionally(_.hasPoint, _.getPoint))
+    val count = optionally(_.hasCount, _.getCount)
+    val oldestTime = optionally(_.hasOldestTime, _.getOldestTime)
+  }
   implicit def proto2OptModelReefUUID(a: org.totalgrid.reef.client.service.proto.Model.ReefUUID): OptModelReefUUID = new OptModelReefUUID(Some(a))
   class OptModelReefUUID(real: Option[org.totalgrid.reef.client.service.proto.Model.ReefUUID]) extends OptionalStruct(real) {
     val value = optionally(_.getValue)
