@@ -20,7 +20,6 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
-import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.Routable
@@ -28,11 +27,12 @@ import org.totalgrid.reef.client.Routable
 import org.totalgrid.reef.client.exception.ExpectationException
 
 import org.totalgrid.reef.client.sapi.client.rest.RestOperations
-import org.totalgrid.reef.client.sapi.client.{ Subscription, BasicRequestHeaders }
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s.{ Failure, Success, Future, Result }
+import org.totalgrid.reef.client.sapi.client.{ Promise, Subscription, BasicRequestHeaders }
+import org.totalgrid.reef.client.service.proto.Measurements._
 
 trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementService {
 
@@ -120,6 +120,18 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
     }
   }
 
+  def getMeasurementStatisticsByPoint(point: Point): Promise[MeasurementStatistics] = {
+    ops.operation("Couldn't get measurement statistics for point: " + point) { c =>
+      c.get(MeasurementStatistics.newBuilder.setPoint(point).build).map(_.one)
+    }
+  }
+
+  def getMeasurementStatisticsByName(name: String): Promise[MeasurementStatistics] = {
+    ops.operation("Couldn't get measurement statistics for point name: " + name) { c =>
+      c.get(MeasurementStatistics.newBuilder.setPoint(Point.newBuilder.setName(name)).build).map(_.one)
+    }
+  }
+
   private def expectSingle(f: Future[Result[List[Measurement]]]): Future[Result[Measurement]] = f.map {
     _.flatMap { list =>
       list match {
@@ -143,5 +155,6 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
   private def measHistoryList(session: RestOperations, request: MeasurementHistory, sub: Subscription[Measurement]) = {
     session.get(request, sub).map(_.one.map(_.getMeasurementsList.toList))
   }
+
 }
 

@@ -256,6 +256,12 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory]
     def id = "measurement_history"
   }
+  def measurementStatistics() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics]
+    def id = "measurement_statistics"
+  }
   def reefUUID() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Model.ReefUUID] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.Model.ReefUUID): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Model.ReefUUID.parseFrom(bytes)

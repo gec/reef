@@ -3,6 +3,8 @@ package org.totalgrid.reef.client.service.proto.Measurements;
 option java_package = "org.totalgrid.reef.client.service.proto";
 option java_outer_classname = "Measurements";
 
+import "Model.proto";
+
 //The descriptions below come from iec61850-7-3{ed1.0}en.pdf, page 15
 message DetailQual {
 	optional bool overflow = 1 [default = false];		// representation overflow, value can't be trusted
@@ -110,4 +112,10 @@ message MeasurementHistory{
     
     // measurements are always returned in ascending time order (oldest first)
     repeated Measurement measurements = 7;
+}
+
+message MeasurementStatistics {
+    optional org.totalgrid.reef.client.service.proto.Model.Point point = 1;
+    optional uint64 count = 10;
+    optional uint64 oldest_time = 11;
 }
