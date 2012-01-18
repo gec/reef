@@ -18,20 +18,19 @@
  */
 package org.totalgrid.reef.benchmarks
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.standalone.InMemoryNode
+import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 
-@RunWith(classOf[JUnitRunner])
-class AllBenchmarksTest extends BenchmarkTestBase {
+class BenchmarkTestBase extends FunSuite with BeforeAndAfterAll {
+  def client = {
+    val c = InMemoryNode.connection.login(InMemoryNode.userSettings.getUserName, InMemoryNode.userSettings.getUserPassword).await
+    c.setHeaders(c.getHeaders.setTimeout(120000))
+    c.setHeaders(c.getHeaders.setResultLimit(10000))
+
+    c
+  }
 
   override def beforeAll {
     InMemoryNode.initialize("../standalone-node.cfg", true, None)
-  }
-
-  test("Run Benchmarks") {
-    InMemoryNode.system.loadModel("../assemblies/assembly-common/filtered-resources/samples/integration/config.xml")
-
-    AllBenchmarksEntryPoint.runAllTests(InMemoryNode.connection, InMemoryNode.userSettings)
   }
 }

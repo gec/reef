@@ -35,22 +35,26 @@ object InMemoryNode {
     def terminate() {}
   }
   lazy val userSettings = systemOption.get.userSettings
+  lazy val system = systemOption.get
 
   private var systemOption = Option.empty[IntegratedSystem]
   private var delayedShutdown = Option.empty[Timer]
   private var exeOption = Option.empty[ExecutorService]
 
-  def initialize(configFile: String, resetFirst: Boolean, fileName: String) = {
+  def initialize(configFile: String, resetFirst: Boolean, fileName: String): Boolean = {
+    initialize(configFile, resetFirst, Some(fileName))
+  }
+  def initialize(configFile: String, resetFirst: Boolean, fileName: Option[String]): Boolean = {
     delayedShutdown.foreach { _.cancel }
     if (systemOption.isEmpty) {
-      val exe = Executors.newResizingThreadPool(1.minutes)
+      val exe = Executors.newResizingThreadPool(5.minutes)
       val system = new IntegratedSystem(exe, configFile, resetFirst)
       exeOption = Some(exe)
       systemOption = Some(system)
 
       system.start()
 
-      system.loadModel(fileName)
+      fileName.foreach { system.loadModel(_) }
 
       true
     } else {

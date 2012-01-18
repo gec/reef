@@ -21,33 +21,13 @@ package org.totalgrid.reef.benchmarks
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.benchmarks.system.EndpointLoaderBenchmark
-import net.agileautomata.executor4s._
-import org.totalgrid.reef.standalone.IntegratedSystem
-import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 
 @RunWith(classOf[JUnitRunner])
-class ParallelismTest extends FunSuite with BeforeAndAfterAll {
+class ParallelismTest extends BenchmarkTestBase {
 
-  def client(system: IntegratedSystem) = {
-    val c = system.connection.login(system.userSettings.getUserName, system.userSettings.getUserPassword).await
-    c.setHeaders(c.getHeaders.setTimeout(120000))
-    c.setHeaders(c.getHeaders.setResultLimit(10000))
-
-    c
-  }
-
-  var exe: ExecutorService = null
-  var system: IntegratedSystem = null
   var readings = List.empty[BenchmarkReading]
 
-  override protected def beforeAll() {
-    exe = Executors.newResizingThreadPool(5.minutes)
-    system = new IntegratedSystem(exe, "../standalone-node.cfg", true)
-  }
-
   override protected def afterAll() {
-    system.stop()
-    exe.terminate()
     val results = readings.groupBy(_.csvName)
     val histogramResults = Histogram.getHistograms(results)
 
@@ -64,7 +44,7 @@ class ParallelismTest extends FunSuite with BeforeAndAfterAll {
     test("Loading " + endpoints + " endpoints with " + pointsPerEndpoint + " points each with " + threads + " loaders") {
 
       val test = new EndpointLoaderBenchmark(endpoints, pointsPerEndpoint, threads, batchSize)
-      readings :::= test.runTest(client(system), Some(Console.out))
+      readings :::= test.runTest(client, Some(Console.out))
     }
   }
 
