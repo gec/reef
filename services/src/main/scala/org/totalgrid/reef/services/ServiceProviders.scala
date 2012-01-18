@@ -70,6 +70,7 @@ class ServiceProviders(
     new EntityAttributesService,
     new MeasurementHistoryService(wrappedHistorian),
     new MeasurementSnapshotService(wrappedDb),
+    new MeasurementStatisticsService(wrappedHistorian),
     new EventQueryService,
     new AlarmQueryService,
     new MeasurementBatchService,

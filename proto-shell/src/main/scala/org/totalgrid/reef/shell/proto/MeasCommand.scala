@@ -211,10 +211,7 @@ class MeasStatCommand extends ReefCommandSupport {
   var name: String = null
 
   def doCommand(): Unit = {
-
-    val stats = services.getMeasurementStatisticsByName(name)
-    println(stats)
-    //MeasView.printTable(services.getMeasurementHistory(point, count).toList)
+    MeasView.printStats(services.getMeasurementStatisticsByName(name))
   }
 }
 
