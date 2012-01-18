@@ -35,12 +35,10 @@ case class EndpointLoadingReading(request: String, endpoints: Int, pointsPerEndp
   def testOutputs = List(time)
 }
 
-case class EndpointBatchReading(_request: String, _endpoints: Int, _pointsPerEndpoint: Int,
-    _time: Long, _parallelism: Int, _batchSize: Int) extends EndpointLoadingReading(_request, _endpoints, _pointsPerEndpoint, _time, _parallelism, _batchSize) {
-  override def csvName = "endpointBatching"
-}
+class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: Int, parallelism: Int, batchSize: Int, add: Boolean = true, delete: Boolean = true) extends BenchmarkTest {
 
-class EndpointLoaderBenchmark(endpoints: Int, pointsPerEndpoint: Int, parallelism: Int, batchSize: Int) extends BenchmarkTest {
+  val endpoints = endpointNames.size
+
   def runTest(client: Client, stream: Option[PrintStream]) = {
 
     var readings = List.empty[BenchmarkReading]
@@ -58,11 +56,15 @@ class EndpointLoaderBenchmark(endpoints: Int, pointsPerEndpoint: Int, parallelis
       }
     }
 
-    val preparedLoaders = (1 to endpoints).map { i => ModelCreationUtilities.addEndpoint(client, "TestEndpoint" + i, pointsPerEndpoint) }
-    addReadings("addEndpoint", preparedLoaders)
+    if (add) {
+      val preparedLoaders = endpointNames.map { n => ModelCreationUtilities.addEndpoint(client, n, pointsPerEndpoint) }
+      addReadings("addEndpoint", preparedLoaders)
+    }
 
-    val preparedDeleters = (1 to endpoints).map { i => ModelCreationUtilities.deleteEndpoint(client, "TestEndpoint" + i, pointsPerEndpoint) }
-    addReadings("deleteEndpoint", preparedDeleters)
+    if (delete) {
+      val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client, n, pointsPerEndpoint) }
+      addReadings("deleteEndpoint", preparedDeleters)
+    }
 
     readings
   }

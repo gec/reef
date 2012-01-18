@@ -23,28 +23,23 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.benchmarks.system.EndpointLoaderBenchmark
 
 @RunWith(classOf[JUnitRunner])
-class ParallelismTest extends BenchmarkTestBase {
+class EndpointLoaderTest extends BenchmarkTestBase {
 
   var readings = List.empty[BenchmarkReading]
 
   override protected def afterAll() {
-    val results = readings.groupBy(_.csvName)
-    val histogramResults = Histogram.getHistograms(results)
-
-    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, "endpointLoading")
-    BenchmarkUtilities.writeCsvFiles(results, "endpointLoading-")
+    writeFiles("endpointLoading", readings)
   }
 
   val endpoints = 10
+  val endpointNames = (1 to endpoints).map { i => "TestEndpoint" + i }.toList
   val pointsPerEndpoint = 20
   val parallelisms = List(1, 5, 10)
   val batchSize = 1000
 
   parallelisms.foreach { threads =>
     test("Loading " + endpoints + " endpoints with " + pointsPerEndpoint + " points each with " + threads + " loaders") {
-
-      val test = new EndpointLoaderBenchmark(endpoints, pointsPerEndpoint, threads, batchSize)
-      readings :::= test.runTest(client, Some(Console.out))
+      readings :::= runBenchmark(new EndpointLoaderBenchmark(endpointNames, pointsPerEndpoint, threads, batchSize))
     }
   }
 

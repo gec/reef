@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.benchmarks.measurements
 
-import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
@@ -34,23 +33,24 @@ case class MeasurementStat(statName: String, pointName: String, value: Long) ext
   def testOutputs = List(pointName, value)
 }
 
-class MeasurementStatBenchmark(points: List[Point]) extends AllScadaServicesTest {
+class MeasurementStatBenchmark(pointNames: List[String]) extends AllScadaServicesTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 
     val readings = Queue.empty[BenchmarkReading]
 
-    points.foreach { p =>
-      stream.foreach { _.println("Getting measurement stats for: " + p.getName) }
+    pointNames.foreach { pointName =>
+      stream.foreach { _.println("Getting measurement stats for: " + pointName) }
+
+      val point = client.getPointByName(pointName).await
+      val totalMeas = client.getMeasurementHistory(point, 10000).await
+      readings.enqueue(new MeasurementStat("totalMeas", pointName, totalMeas.size))
 
       val now = System.currentTimeMillis()
-
-      val totalMeas = client.getMeasurementHistory(p, 10000).await
-      readings.enqueue(new MeasurementStat("totalMeas", p.getName, totalMeas.size))
-      client.getMeasurementHistory(p, 0, Long.MaxValue, false, 1).await.headOption.map { oldest =>
-        readings.enqueue(new MeasurementStat("oldestMeas", p.getName, (now - oldest.getTime) / 1000))
+      client.getMeasurementHistory(point, 0, Long.MaxValue, false, 1).await.headOption.map { oldest =>
+        readings.enqueue(new MeasurementStat("oldestMeas", pointName, (now - oldest.getTime) / 1000))
       }
-      client.getMeasurementHistory(p, 1).await.headOption.map { newest =>
-        readings.enqueue(new MeasurementStat("newestMeas", p.getName, (now - newest.getTime) / 1000))
+      client.getMeasurementHistory(point, 1).await.headOption.map { newest =>
+        readings.enqueue(new MeasurementStat("newestMeas", pointName, (now - newest.getTime) / 1000))
       }
     }
 

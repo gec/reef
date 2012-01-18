@@ -30,7 +30,19 @@ class BenchmarkTestBase extends FunSuite with BeforeAndAfterAll {
     c
   }
 
+  def runBenchmark(test: BenchmarkTest) = {
+    test.runTest(client, Some(Console.out))
+  }
+
   override def beforeAll {
     InMemoryNode.initialize("../standalone-node.cfg", true, None)
+  }
+
+  def writeFiles(baseName: String, readings: List[BenchmarkReading]) {
+    val results = readings.groupBy(_.csvName)
+    val histogramResults = Histogram.getHistograms(results)
+
+    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, baseName)
+    BenchmarkUtilities.writeCsvFiles(results, baseName + "-")
   }
 }

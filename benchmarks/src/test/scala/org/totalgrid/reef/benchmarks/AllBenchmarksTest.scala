@@ -21,17 +21,51 @@ package org.totalgrid.reef.benchmarks
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.standalone.InMemoryNode
+import org.totalgrid.reef.benchmarks.endpoints._
+import org.totalgrid.reef.benchmarks.system._
+import org.totalgrid.reef.benchmarks.measurements._
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 @RunWith(classOf[JUnitRunner])
 class AllBenchmarksTest extends BenchmarkTestBase {
 
-  override def beforeAll {
-    InMemoryNode.initialize("../standalone-node.cfg", true, None)
+  var readings = List.empty[BenchmarkReading]
+
+  val attempts = 5
+  var endpointNames: List[String] = null
+  var pointNames: List[String] = null
+
+  override def afterAll() {
+    AllBenchmarksEntryPoint.outputResults(readings)
   }
 
-  test("Run Benchmarks") {
+  test("Load Model") {
     InMemoryNode.system.loadModel("../assemblies/assembly-common/filtered-resources/samples/integration/config.xml")
 
-    AllBenchmarksEntryPoint.runAllTests(InMemoryNode.connection, InMemoryNode.userSettings)
+    val c = client.getRpcInterface(classOf[AllScadaService])
+    endpointNames = c.getEndpoints().await.map { _.getName }
+    pointNames = c.getPoints().await.map { _.getName }
+  }
+
+  test("System State") {
+    readings :::= runBenchmark(new SystemStateBenchmark(attempts))
+  }
+  test("Measurement Publishing 1000") {
+    readings :::= runBenchmark(new MeasurementPublishingBenchmark(endpointNames, 1000, 5, false))
+  }
+  test("Measurement Publishing 10 direct") {
+    readings :::= runBenchmark(new MeasurementPublishingBenchmark(endpointNames, 10, 5, true))
+  }
+  test("Measurement Publishing 10 proxied") {
+    readings :::= runBenchmark(new MeasurementPublishingBenchmark(endpointNames, 10, 5, false))
+  }
+  test("Measurement Statistics") {
+    readings :::= runBenchmark(new MeasurementStatBenchmark(pointNames))
+  }
+  test("Measurement History") {
+    readings :::= runBenchmark(new MeasurementHistoryBenchmark(pointNames, List(1, 10, 100, 1000), true))
+  }
+  test("Endpoint Mangement") {
+    readings :::= runBenchmark(new EndpointManagementBenchmark(endpointNames, 5))
   }
 }

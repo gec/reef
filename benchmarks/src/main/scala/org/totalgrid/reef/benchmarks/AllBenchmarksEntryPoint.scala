@@ -23,10 +23,10 @@ import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.benchmarks.measurements._
+import org.totalgrid.reef.benchmarks.system._
 import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
 import org.totalgrid.reef.client.service.list.ReefServices
-import org.totalgrid.reef.benchmarks.system.SystemStateBenchmark
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 
 object AllBenchmarksEntryPoint {
@@ -64,10 +64,16 @@ object AllBenchmarksEntryPoint {
     if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
 
     val endpointNames = endpoints.map { _.getName }
-    val allPoints = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten
+    val allPoints = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten.map { _.getName }
 
     // test no more than 20 points
     val points = takeRandom(20, allPoints)
+
+    val totalMeasurements = 50000
+    val concurrentEndpointNames = (1 to 10).map { i => "Endpoint" + i }.toList
+    val pointsPerEndpoint = 30
+    val concurrency = 5
+    val batchSize = 50
 
     val tests = List(
       new SystemStateBenchmark(5),
@@ -76,9 +82,12 @@ object AllBenchmarksEntryPoint {
       new MeasurementPublishingBenchmark(endpointNames, 10, 5, true),
       new MeasurementStatBenchmark(points),
       new MeasurementHistoryBenchmark(points, List(1, 10, 100, 1000), true),
-      new EndpointManagementBenchmark(endpointNames, 5))
+      new EndpointManagementBenchmark(endpointNames, 5),
+      new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, true, false),
+      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, concurrency, 25),
+      new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, false, true))
 
-    val allResults = tests.map(_.runTest(services, stream)).flatten
+    val allResults = tests.map(_.runTest(client, stream)).flatten
     outputResults(allResults)
   }
 

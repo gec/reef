@@ -98,4 +98,50 @@ object ModelCreationUtilities {
     // wait for them all to succeed or an exception to occur
     prom.await
   }
+
+  /**
+   * takes a list of operations and runs up to configurable number of them at the same time and collects
+   * timing information on how long each individual request takes. The batchSize parameter is used to change
+   * how much work is done in each request to the server.
+   *
+   * TODO: merge parallelExecutor functions to work on Promises not futures
+   */
+  def parallelExecutor2[A](client: Client, numConcurrent: Int, batchSize: Int, batchableOperations: Seq[(Int) => Promise[A]]) = {
+    var inProgressOps = 0
+    var remainingOps = batchableOperations
+    var timingResults = List.empty[(Long, A)]
+
+    val f = client.future[Result[List[(Long, A)]]]
+    val prom = Promise.from(f)
+
+    def completed(startTime: Long, a: Promise[A]) {
+      val result = a.extract
+      if (result.isSuccess) {
+        inProgressOps -= 1
+        val processTime = (System.nanoTime() - startTime) / 1000000
+        timingResults ::= (processTime, result.get)
+        if (timingResults.size == batchableOperations.size) f.set(Success(timingResults))
+        else startNext()
+      } else {
+        f.set(Failure(result.toString))
+      }
+    }
+
+    def startNext() {
+      if (inProgressOps < numConcurrent) {
+        inProgressOps += 1
+        val startTime = System.nanoTime()
+        val nextOperationToStart = remainingOps.head(batchSize)
+        remainingOps = remainingOps.tail
+        nextOperationToStart.listen(completed(startTime, _))
+        startNext()
+      }
+    }
+
+    // kick off the executions
+    startNext()
+
+    // wait for them all to succeed or an exception to occur
+    prom.await
+  }
 }
