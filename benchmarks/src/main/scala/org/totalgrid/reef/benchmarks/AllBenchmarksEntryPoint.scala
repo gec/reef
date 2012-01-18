@@ -28,6 +28,7 @@ import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.loader.commons.LoaderServicesList
 
 object AllBenchmarksEntryPoint {
 
