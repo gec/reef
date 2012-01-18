@@ -59,9 +59,12 @@ class MeasurementStreamProcessingNode(
   val endpoint = client.getEndpointByUuid(connection.getLogicalNode.getUuid).await
   val expectedPoints = endpoint.getOwnerships.getPointsList.toList
 
-  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, expectedPoints)
+  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, expectedPoints, endpoint.getName)
 
   addHookedObject(processingPipeline)
+
+  val endpointResult = client.subscribeToEndpointConnection(endpoint.getUuid).await
+  val endpointSub = processingPipeline.lastCacheManager.setSubscription(endpointResult)
 
   val overrideResult = client.subscribeToOverridesForConnection(connection).await
   val overrideSub = processingPipeline.overProc.setSubscription(overrideResult)
@@ -77,5 +80,6 @@ class MeasurementStreamProcessingNode(
     binding.cancel
     triggerSub.cancel
     overrideSub.cancel
+    endpointSub.cancel
   }
 }

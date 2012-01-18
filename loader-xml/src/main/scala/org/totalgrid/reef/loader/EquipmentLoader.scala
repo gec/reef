@@ -22,7 +22,7 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.configuration._
-import org.totalgrid.reef.client.service.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Processing.{ Filter => FilterProto, _ }
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
 import org.totalgrid.reef.client.service.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
 import org.totalgrid.reef.loader.equipment._
@@ -252,6 +252,10 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
 
     val convertValues = getElements[Transform](name, pointType, _.getTransform.toList)
     triggers = triggers ::: convertValues.map { transform => toTrigger(name, transform, unit) }
+
+    val filterValues = getElements[Filter](name, pointType, _.getFilter.toList)
+    if (filterValues.isEmpty) triggers :::= List(filterDefault(name))
+    else triggers :::= filterValues.flatMap { filter => toTrigger(name, filter, pointProtoType) }
 
     if (!triggers.isEmpty) addTriggers(commonLoader.triggerCache, point, triggers)
 

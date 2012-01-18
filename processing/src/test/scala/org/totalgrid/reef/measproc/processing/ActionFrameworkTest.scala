@@ -48,7 +48,7 @@ class ActionFrameworkTest extends Suite with ShouldMatchers {
     val r = new TestRig
     val input = makeAnalog("meas01", 5.3)
     val output = makeAnalog("meas01", 5300.0)
-    val result = r.action(High, true, output).process(input, true, true)
+    val result = r.action(High, true, output).process(input, true, true).get
     result should equal(input)
     r.evalCalls.length should equal(0)
   }
@@ -57,7 +57,7 @@ class ActionFrameworkTest extends Suite with ShouldMatchers {
     val r = new TestRig
     val input = makeAnalog("meas01", 5.3)
     val output = makeAnalog("meas01", 5300.0)
-    val result = r.action(act, false, output).process(input, state, prev)
+    val result = r.action(act, false, output).process(input, state, prev).get
     if (works) {
       result should equal(output)
       r.evalCalls.length should equal(1)

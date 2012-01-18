@@ -70,7 +70,7 @@ object TriggerFactory {
 /**
  * Factory for trigger implementation objects.
  */
-trait TriggerFactory { self: ActionFactory =>
+trait TriggerFactory { self: ActionFactory with ProcessingResources =>
   import TriggerFactory._
   import Triggers._
 
@@ -90,7 +90,8 @@ trait TriggerFactory { self: ActionFactory =>
       proto.valueType.map(new TypeCondition(_)),
       proto.boolValue.map(new BoolValue(_)),
       proto.intValue.map(new IntegerValue(_)),
-      proto.stringValue.map(new StringValue(_))).flatten
+      proto.stringValue.map(new StringValue(_)),
+      proto.filter.map(FilterTrigger(_, lastCache))).flatten
 
     val actions = proto.getActionsList.toList.map(buildAction(_))
     new BasicTrigger(cacheID, conditions, actions, stopProc)
@@ -163,23 +164,25 @@ object Triggers {
     }
   }
 
+  def qualityMatches(qual: Quality, q: Quality) = {
+    qual.validity == q.validity ||
+      qual.source == q.source ||
+      qual.test == q.test ||
+      qual.operatorBlocked == q.operatorBlocked ||
+      qual.detailQual.overflow == q.detailQual.overflow ||
+      qual.detailQual.outOfRange == q.detailQual.outOfRange ||
+      qual.detailQual.badReference == q.detailQual.badReference ||
+      qual.detailQual.oscillatory == q.detailQual.oscillatory ||
+      qual.detailQual.failure == q.detailQual.failure ||
+      qual.detailQual.oldData == q.detailQual.oldData ||
+      qual.detailQual.inconsistent == q.detailQual.inconsistent ||
+      qual.detailQual.inaccurate == q.detailQual.inaccurate
+  }
+
   class QualityCondition(qual: Quality) extends Trigger.Condition {
-    import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
     def apply(m: Measurement, prev: Boolean): Boolean = {
-      val q = m.getQuality
-      qual.validity == q.validity ||
-        qual.source == q.source ||
-        qual.test == q.test ||
-        qual.operatorBlocked == q.operatorBlocked ||
-        qual.detailQual.overflow == q.detailQual.overflow ||
-        qual.detailQual.outOfRange == q.detailQual.outOfRange ||
-        qual.detailQual.badReference == q.detailQual.badReference ||
-        qual.detailQual.oscillatory == q.detailQual.oscillatory ||
-        qual.detailQual.failure == q.detailQual.failure ||
-        qual.detailQual.oldData == q.detailQual.oldData ||
-        qual.detailQual.inconsistent == q.detailQual.inconsistent ||
-        qual.detailQual.inaccurate == q.detailQual.inaccurate
+      qualityMatches(qual, m.getQuality)
     }
   }
 

@@ -41,7 +41,6 @@ import java.io.PrintStream
 import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.benchmarks.system.ModelCreationUtilities
 import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.service.proto.Measurements
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -101,10 +100,7 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
       val (connection, pointsOnEndpoint) = pointsForEndpoints(endpointName)
       val measurementProcessorDestination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
 
-      // lazily prepare all of the measurements, wraps around point names if more measurements than points
-      val now = System.currentTimeMillis()
-      val pointNames = Stream.continually(pointsOnEndpoint).flatten.take(batchSize)
-      val measurements = pointNames.map { makeMeas(_, nextValue, now) }
+      val measurements = MeasurementUtility.makeMeasurements(pointsOnEndpoint, batchSize)
 
       (i: Int) => publishingClient.publishMeasurements(measurements.toList, measurementProcessorDestination)
     }
@@ -123,18 +119,4 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
     readings.toList
   }
 
-  var measValue = -1000
-  private def nextValue: Int = {
-    measValue = (measValue + 1)
-    if (measValue >= 1000) measValue = -1000
-    measValue
-  }
-
-  private def makeMeas(name: String, value: Int, time: Long) = {
-    val meas = Measurements.Measurement.newBuilder
-    meas.setName(name).setType(Measurements.Measurement.Type.INT).setIntVal(value)
-    meas.setQuality(Measurements.Quality.newBuilder.build)
-    meas.setTime(time)
-    meas.build
-  }
 }

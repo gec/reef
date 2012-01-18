@@ -59,6 +59,7 @@ object EnhancedEquipmentElements {
     def getType = withClass(parts, classOf[Type])
     def getRange = withClass(parts, classOf[Range])
     def getUnexpected = withClass(parts, classOf[Unexpected])
+    def getFilter = withClass(parts, classOf[Filter])
     def getControl = withClass(parts, classOf[Control])
     def getTransform = withClass(parts, classOf[Transform])
     def getSetpoint = withClass(parts, classOf[Setpoint])

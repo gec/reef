@@ -23,11 +23,12 @@ import org.totalgrid.reef.client.service.proto.Events._
 import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.Processing.{ Action => ActionProto, ActivationType => TypeProto, LinearTransform => LinearProto, EventGeneration }
 import org.totalgrid.reef.event._
+import org.totalgrid.reef.persistence.ObjectCache
 
 /**
  * Trigger/Action factory with constructor dependencies.
  */
-class TriggerProcessingFactory(protected val publishEvent: Event.Builder => Unit)
+class TriggerProcessingFactory(protected val publishEvent: Event.Builder => Unit, protected val lastCache: ObjectCache[Measurement])
   extends ProcessingResources
   with TriggerFactory
   with ActionFactory
@@ -37,6 +38,7 @@ class TriggerProcessingFactory(protected val publishEvent: Event.Builder => Unit
  */
 trait ProcessingResources {
   protected val publishEvent: (Event.Builder) => Unit
+  protected val lastCache: ObjectCache[Measurement]
 }
 
 /**
@@ -56,29 +58,33 @@ trait ActionFactory { self: ProcessingResources =>
     val typ = convertActivation(proto.getType)
     val disabled = proto.getDisabled
 
-    val eval = if (proto.hasLinearTransform) {
-      new LinearTransform(proto.getLinearTransform.getScale, proto.getLinearTransform.getOffset)
-    } else if (proto.hasQualityAnnotation) {
-      new AnnotateQuality(proto.getQualityAnnotation)
-    } else if (proto.hasStripValue && proto.getStripValue) {
-      new StripValue
-    } else if (proto.hasSetBool) {
-      new SetBool(proto.getSetBool)
-    } else if (proto.hasSetUnit) {
-      new SetUnit(proto.getSetUnit)
-    } else if (proto.hasEvent) {
-      new EventGenerator(publishEvent, proto.getEvent.getEventType)
-    } else if (proto.hasBoolTransform) {
-      new BoolEnumTransformer(proto.getBoolTransform.getFalseString, proto.getBoolTransform.getTrueString)
-    } else if (proto.hasIntTransform) {
-      import scala.collection.JavaConversions._
-      val intMapping = proto.getIntTransform.getMappingsList.toList.map { vm => vm.getValue -> vm.getString }.toMap
-      new IntegerEnumTransformer(intMapping)
+    if (proto.hasSuppress && proto.getSuppress) {
+      new SuppressAction(name, disabled, typ)
     } else {
-      throw new Exception("Must specify at least one action")
-    }
+      val eval = if (proto.hasLinearTransform) {
+        new LinearTransform(proto.getLinearTransform.getScale, proto.getLinearTransform.getOffset)
+      } else if (proto.hasQualityAnnotation) {
+        new AnnotateQuality(proto.getQualityAnnotation)
+      } else if (proto.hasStripValue && proto.getStripValue) {
+        new StripValue
+      } else if (proto.hasSetBool) {
+        new SetBool(proto.getSetBool)
+      } else if (proto.hasSetUnit) {
+        new SetUnit(proto.getSetUnit)
+      } else if (proto.hasEvent) {
+        new EventGenerator(publishEvent, proto.getEvent.getEventType)
+      } else if (proto.hasBoolTransform) {
+        new BoolEnumTransformer(proto.getBoolTransform.getFalseString, proto.getBoolTransform.getTrueString)
+      } else if (proto.hasIntTransform) {
+        import scala.collection.JavaConversions._
+        val intMapping = proto.getIntTransform.getMappingsList.toList.map { vm => vm.getValue -> vm.getString }.toMap
+        new IntegerEnumTransformer(intMapping)
+      } else {
+        throw new Exception("Must specify at least one action")
+      }
 
-    new BasicAction(name, disabled, typ, eval)
+      new BasicAction(name, disabled, typ, eval)
+    }
   }
 }
 
