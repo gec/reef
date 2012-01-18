@@ -53,6 +53,7 @@ object AllBenchmarksEntryPoint {
 
   def runAllTests(connection: Connection, userSettings: UserSettings) {
     val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+    client.addServicesList(new LoaderServicesList())
     client.setHeaders(client.getHeaders.setTimeout(20000))
     client.setHeaders(client.getHeaders.setResultLimit(10000))
     val services = client.getRpcInterface(classOf[AllScadaService])
