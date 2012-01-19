@@ -24,7 +24,7 @@ import net.agileautomata.executor4s._
 
 final class Activator extends BundleActivator {
 
-  val exe = Executors.newResizingThreadPool(1.minutes)
+  val exe = Executors.newResizingThreadPool(5.minutes)
 
   def start(context: BundleContext) = context.createService(exe, interface1 = interface[Executor])
 

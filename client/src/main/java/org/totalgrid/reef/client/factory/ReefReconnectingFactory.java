@@ -58,7 +58,7 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory, o
     public ReefReconnectingFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
     {
         brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
-        exe = Executors.newResizingThreadPool( new Minutes( 1 ) );
+        exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
         servicesList = list;
         factory = new DefaultReconnectingFactory( brokerConnectionFactory, exe, startDelayMs, maxDelayMs );
         factory.addConnectionWatcher( this );

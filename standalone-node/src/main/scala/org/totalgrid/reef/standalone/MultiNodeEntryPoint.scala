@@ -23,7 +23,7 @@ import net.agileautomata.executor4s._
 object MultiNodeEntryPoint {
 
   def main(args: Array[String]) = {
-    val exe = Executors.newResizingThreadPool(1.minutes)
+    val exe = Executors.newResizingThreadPool(5.minutes)
     val system = new IntegratedSystem(exe, "standalone-node.cfg", true)
 
     try {

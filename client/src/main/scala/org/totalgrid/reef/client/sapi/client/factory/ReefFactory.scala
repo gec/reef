@@ -33,7 +33,7 @@ import org.totalgrid.reef.client.ServicesList
  */
 class ReefFactory(amqpSettings: AmqpSettings, servicesList: ServicesList) {
   private val factory = new QpidBrokerConnectionFactory(amqpSettings)
-  private val exe = Executors.newResizingThreadPool(1.minutes)
+  private val exe = Executors.newResizingThreadPool(5.minutes)
 
   private var broker = Option.empty[BrokerConnection]
   private var connection = Option.empty[Connection]
