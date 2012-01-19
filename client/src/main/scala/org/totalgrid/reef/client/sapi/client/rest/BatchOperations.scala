@@ -30,8 +30,8 @@ trait BatchOperations {
 
   def startBatchRequests()
   def stopBatchRequests()
-  def flushBatchRequests(): Future[Response[BatchServiceRequest]]
-  def batchedFlushBatchRequests(batchSize: Int): Future[Response[Boolean]]
+  def flushBatchRequests(): Promise[BatchServiceRequest]
+  def batchedFlushBatchRequests(batchSize: Int): Promise[Boolean]
 }
 
 object BatchOperations {
@@ -46,13 +46,13 @@ object BatchOperations {
         i = i + 1
         if (batchSize > 0) {
           action(client)
-          if (i % batchSize == 0) client.flushBatchRequests().await.expectOne
+          if (i % batchSize == 0) client.flushBatchRequests().await
         } else {
           action(client).await
         }
       }
       if (batchSize > 0) {
-        client.flushBatchRequests().await.expectOne
+        client.flushBatchRequests().await
       }
     } finally {
       if (batchSize > 0) client.stopBatchRequests()

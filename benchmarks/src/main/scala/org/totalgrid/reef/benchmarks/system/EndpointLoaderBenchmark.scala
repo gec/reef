@@ -21,8 +21,7 @@ package org.totalgrid.reef.benchmarks.system
 import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
 import java.io.PrintStream
 import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.sapi.client.Response
-import net.agileautomata.executor4s._
+import org.totalgrid.reef.client.sapi.client.Promise
 
 case class EndpointLoadingReading(request: String, endpoints: Int, pointsPerEndpoint: Int,
     time: Long, parallelism: Int, batchSize: Int) extends BenchmarkReading {
@@ -43,9 +42,9 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
 
     var readings = List.empty[BenchmarkReading]
 
-    def addReadings[A](operation: String, ops: Seq[(Int) => Future[Response[A]]]) {
+    def addReadings[A](operation: String, ops: Seq[() => Promise[A]]) {
       val start = System.nanoTime()
-      val results = ModelCreationUtilities.parallelExecutor(client, parallelism, batchSize, ops)
+      val results = ModelCreationUtilities.parallelExecutor(client, parallelism, ops)
       val overallTime = (System.nanoTime() - start) / 1000000
 
       readings ::= new EndpointLoadingReading("overall" + operation, endpoints, pointsPerEndpoint, overallTime, parallelism, batchSize)
@@ -57,12 +56,12 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
     }
 
     if (add) {
-      val preparedLoaders = endpointNames.map { n => ModelCreationUtilities.addEndpoint(client, n, pointsPerEndpoint) }
+      val preparedLoaders = endpointNames.map { n => ModelCreationUtilities.addEndpoint(client, n, pointsPerEndpoint, batchSize) }
       addReadings("addEndpoint", preparedLoaders)
     }
 
     if (delete) {
-      val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client, n, pointsPerEndpoint) }
+      val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client, n, pointsPerEndpoint, batchSize) }
       addReadings("deleteEndpoint", preparedDeleters)
     }
 

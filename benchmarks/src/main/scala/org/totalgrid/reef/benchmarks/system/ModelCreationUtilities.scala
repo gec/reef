@@ -24,10 +24,10 @@ import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointOwnership }
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.sapi.client.{ Response, Promise }
+import org.totalgrid.reef.client.sapi.client.Promise
 
 object ModelCreationUtilities {
-  def addEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int) = {
+  def addEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
     val loaderServices = client.getRpcInterface(classOf[LoaderServices])
     loaderServices.startBatchRequests()
 
@@ -39,10 +39,10 @@ object ModelCreationUtilities {
 
     val putEndpoint = Endpoint.newBuilder.setName(endpointName).setProtocol("null").setOwnerships(owner).build
     loaderServices.addEndpoint(putEndpoint)
-    (i: Int) => loaderServices.batchedFlushBatchRequests(i)
+    () => loaderServices.batchedFlushBatchRequests(batchSize)
   }
 
-  def deleteEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int) = {
+  def deleteEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
     val loaderServices = client.getRpcInterface(classOf[LoaderServices])
 
     val uuid = loaderServices.getEndpointByName(endpointName).await.getUuid
@@ -53,7 +53,7 @@ object ModelCreationUtilities {
 
     loaderServices.delete(Endpoint.newBuilder.setName(endpointName).build)
     names.map { n => loaderServices.delete(Point.newBuilder.setName(n).build) }
-    (i: Int) => loaderServices.batchedFlushBatchRequests(i)
+    () => loaderServices.batchedFlushBatchRequests(batchSize)
   }
 
   /**
@@ -61,52 +61,7 @@ object ModelCreationUtilities {
    * timing information on how long each individual request takes. The batchSize parameter is used to change
    * how much work is done in each request to the server.
    */
-  def parallelExecutor[A](client: Client, numConcurrent: Int, batchSize: Int, batchableOperations: Seq[(Int) => Future[Response[A]]]) = {
-    var inProgressOps = 0
-    var remainingOps = batchableOperations
-    var timingResults = List.empty[(Long, A)]
-
-    val f = client.future[Result[List[(Long, A)]]]
-    val prom = Promise.from(f)
-
-    def completed(startTime: Long, a: Response[A]) {
-      if (a.success) {
-        inProgressOps -= 1
-        val processTime = (System.nanoTime() - startTime) / 1000000
-        timingResults ::= (processTime, a.list.head)
-        if (timingResults.size == batchableOperations.size) f.set(Success(timingResults))
-        else startNext()
-      } else {
-        f.set(Failure(a.error))
-      }
-    }
-
-    def startNext() {
-      if (inProgressOps < numConcurrent) {
-        inProgressOps += 1
-        val startTime = System.nanoTime()
-        val nextOperationToStart = remainingOps.head(batchSize)
-        remainingOps = remainingOps.tail
-        nextOperationToStart.listen(completed(startTime, _))
-        startNext()
-      }
-    }
-
-    // kick off the executions
-    startNext()
-
-    // wait for them all to succeed or an exception to occur
-    prom.await
-  }
-
-  /**
-   * takes a list of operations and runs up to configurable number of them at the same time and collects
-   * timing information on how long each individual request takes. The batchSize parameter is used to change
-   * how much work is done in each request to the server.
-   *
-   * TODO: merge parallelExecutor functions to work on Promises not futures
-   */
-  def parallelExecutor2[A](client: Client, numConcurrent: Int, batchSize: Int, batchableOperations: Seq[(Int) => Promise[A]]) = {
+  def parallelExecutor[A](client: Client, numConcurrent: Int, batchableOperations: Seq[() => Promise[A]]) = {
     var inProgressOps = 0
     var remainingOps = batchableOperations
     var timingResults = List.empty[(Long, A)]
@@ -131,7 +86,7 @@ object ModelCreationUtilities {
       if (inProgressOps < numConcurrent) {
         inProgressOps += 1
         val startTime = System.nanoTime()
-        val nextOperationToStart = remainingOps.head(batchSize)
+        val nextOperationToStart = remainingOps.head()
         remainingOps = remainingOps.tail
         nextOperationToStart.listen(completed(startTime, _))
         startNext()

@@ -153,8 +153,8 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
 
     val batchFuture = ops.flush()
 
-    batchFuture.await.success should equal(false)
-    batchFuture.await.toString should include("not authorized")
+    batchFuture.extract.isSuccess should equal(false)
+    batchFuture.extract.toString should include("not authorized")
 
     future.isComplete should equal(true)
     future.await.success should equal(false)
@@ -168,14 +168,14 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
     val successFuture = ops.request(Envelope.Verb.PUT, SomeInteger(100), None)
     val failureFuture = ops.request(Envelope.Verb.PUT, SomeInteger(200), None)
 
-    val batchResult = ops.flush().await
+    val batchResult = ops.flush().extract
 
     successFuture.await.success should equal(false)
     successFuture.await.toString should include("partial failure")
     failureFuture.await.success should equal(false)
     failureFuture.await.toString should include("partial failure")
 
-    batchResult.success should equal(false)
+    batchResult.isSuccess should equal(false)
     batchResult.toString should include("partial failure")
   }
 
@@ -186,9 +186,9 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
 
     (1 to 13).map { i => ops.request(Envelope.Verb.PUT, SomeInteger(i), None) }
 
-    val batchResult = ops.batchedFlush(4).await
+    val batchResult = ops.batchedFlush(4).extract
 
-    batchResult.success should equal(true)
+    batchResult.isSuccess should equal(true)
 
     requestCounter.requests should equal(3 + 1)
   }

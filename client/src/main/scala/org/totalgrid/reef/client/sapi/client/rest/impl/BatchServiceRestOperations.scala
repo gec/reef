@@ -85,7 +85,7 @@ class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with Se
 
     startNextBatch(overallFuture, grabPendingRequests(), None)
 
-    overallFuture
+    Promise.from(overallFuture.map { _.one })
   }
 
   private def grabPendingRequests() = {
@@ -118,7 +118,7 @@ class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with Se
           fail
       }
     }
-    batchFuture
+    Promise.from(batchFuture.map { _.one })
   }
 
   private def applyResponse[A](response: ServiceResponse, reqWithFuture: RequestWithFuture[A]) {
