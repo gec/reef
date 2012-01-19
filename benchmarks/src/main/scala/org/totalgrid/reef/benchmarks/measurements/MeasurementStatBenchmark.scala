@@ -22,6 +22,7 @@ import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
 import collection.mutable.Queue
+import org.totalgrid.reef.util.Timing
 
 case class MeasurementStat(statName: String, pointName: String, value: Long) extends BenchmarkReading {
   def csvName = "measStats"
@@ -40,18 +41,14 @@ class MeasurementStatBenchmark(pointNames: List[String]) extends AllScadaService
 
     pointNames.foreach { pointName =>
       stream.foreach { _.println("Getting measurement stats for: " + pointName) }
+      val stats = Timing.time { t => readings.enqueue(new MeasurementHistoryReading(pointName, "measStat", t)) } {
+        client.getMeasurementStatisticsByName(pointName).await
+      }
 
-      val point = client.getPointByName(pointName).await
-      val totalMeas = client.getMeasurementHistory(point, 10000).await
-      readings.enqueue(new MeasurementStat("totalMeas", pointName, totalMeas.size))
+      readings.enqueue(new MeasurementStat("totalMeas", pointName, stats.getCount))
 
       val now = System.currentTimeMillis()
-      client.getMeasurementHistory(point, 0, Long.MaxValue, false, 1).await.headOption.map { oldest =>
-        readings.enqueue(new MeasurementStat("oldestMeas", pointName, (now - oldest.getTime) / 1000))
-      }
-      client.getMeasurementHistory(point, 1).await.headOption.map { newest =>
-        readings.enqueue(new MeasurementStat("newestMeas", pointName, (now - newest.getTime) / 1000))
-      }
+      readings.enqueue(new MeasurementStat("oldestMeas", pointName, (now - stats.getOldestTime) / 1000))
     }
 
     readings.toList
