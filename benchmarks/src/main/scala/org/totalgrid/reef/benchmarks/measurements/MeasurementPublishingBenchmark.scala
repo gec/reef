@@ -51,7 +51,7 @@ class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int
 
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 
-    stream.foreach(_.println("Running MeasurementPublishingTests: " + attempts))
+    stream.foreach(_.println("Running MeasurementRoundtripTest. measurements: " + measCount + " attempts: " + attempts + " direct: " + direct))
 
     endpointNames.map { testEndpoint(_, client) }.flatten
   }
