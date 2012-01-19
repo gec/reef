@@ -83,10 +83,12 @@ object AllBenchmarksEntryPoint {
       new MeasurementPublishingBenchmark(endpointNames, 10, 5, false),
       new MeasurementPublishingBenchmark(endpointNames, 10, 5, true),
       new MeasurementStatBenchmark(points),
-      new MeasurementHistoryBenchmark(points, List(1, 10, 100, 1000), true),
+      new MeasurementHistoryBenchmark(points, List(10, 1000), true),
       new EndpointManagementBenchmark(endpointNames, 5),
       new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, true, false),
-      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, concurrency, 25),
+      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 1, 25),
+      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 5, 25),
+      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 10, 25),
       new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, false, true))
 
     val allResults = tests.map(_.runTest(client, stream)).flatten

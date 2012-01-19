@@ -67,6 +67,7 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
       e.getName -> (connection, points)
     }.toMap
 
+    stream.foreach { _.println("Publishing: " + totalMeas + " measurements using batchSize: " + batchSize + " concurrency: " + concurrency) }
     publishMeasurements(client, pointsForEndpoints)
   }
 

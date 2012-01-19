@@ -38,8 +38,8 @@ class ConcurrentMeasurementPublishingTest extends BenchmarkTestBase {
   val pointsPerEndpoint = 30
   //val parallelisms = List(1, 5, 10, 15)
   val parallelisms = List(5, 10)
-  val batchSizes = List(25)
-  val totalMeasurements = 50000
+  val batchSizes = List(1000)
+  val totalMeasurements = 10000
   val measurementsImported = totalMeasurements * parallelisms.size * batchSizes.size
   val endpointNames = (1 to endpoints).map { i => "TestEndpoint" + i }.toList
 
