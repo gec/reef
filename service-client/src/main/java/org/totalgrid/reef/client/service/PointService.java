@@ -73,10 +73,19 @@ public interface PointService
     /**
      * retrieve all points that are have the relationship "owns" to the parent entity
      *
+     * @deprecated use getPointsOwnedByEntity(entityUuid) instead
      * @param parentEntity parent we are looking for children of
      * @return points owned by parentEntity
      */
     List<Point> getPointsOwnedByEntity( Entity parentEntity ) throws ReefServiceException;
+
+    /**
+     * retrieve all points that are have the relationship "owns" to the parent entity
+     *
+     * @param entityUuid parents Uuid
+     * @return points owned by parentEntity
+     */
+    List<Point> getPointsOwnedByEntity( ReefUUID entityUuid ) throws ReefServiceException;
 
     /**
      * retrieve all points that are have the relationship "source" to the endpoint
