@@ -51,8 +51,8 @@ class MeasurementSnapshotService(cm: RTDatabase)
     val b = MeasurementSnapshot.newBuilder()
     // clients shouldn't ask for 0 measurements but if they do we should just return a blank rather than an error.
     if (searchList.size > 0) {
-      val measurements = cm.get(searchList).values()
-      val foundNames = measurements.map(_.getName).toList
+      val measurements = cm.get(searchList)
+      val foundNames = measurements.keys.toList
 
       val missing = searchList.diff(foundNames)
       if (!missing.isEmpty) {
@@ -60,7 +60,7 @@ class MeasurementSnapshotService(cm: RTDatabase)
       }
 
       b.addAllPointNames(foundNames)
-      b.addAllMeasurements(measurements)
+      measList.foreach(name => b.addMeasurements(measurements.get(name).get))
     }
     b.build
   }
