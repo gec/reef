@@ -24,6 +24,7 @@ import org.totalgrid.reef.standalone.InMemoryNode
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.httpbridge.servlets._
 import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCallLibrary
+import org.totalgrid.reef.client.settings.util.PropertyReader
 
 object JettyLauncher {
   def main(args: Array[String]) {
@@ -33,14 +34,19 @@ object JettyLauncher {
 
     InMemoryNode.initialize("./standalone-node.cfg", false, modelFile)
 
-    val defaultAuthToken = InMemoryNode.connection.login("system", "system").await.getHeaders.getAuthToken()
+    val properties = PropertyReader.readFromFile("./http-bridge/http-bridge/src/test/resources/org.totalgrid.reef.httpbridge.cfg")
+    val defaultUser = DefaultUserConfiguration.getDefaultUser(properties)
+
+    val defaultAuthToken = defaultUser.map { user =>
+      InMemoryNode.connection.login(user.getUserName, user.getUserPassword).await.getHeaders.getAuthToken()
+    }
 
     val managedConnection = new ManagedConnection {
       def getAuthenticatedClient(authToken: String) = InMemoryNode.connection.login(authToken)
       def getNewAuthToken(userName: String, userPassword: String) =
         InMemoryNode.connection.login(userName, userPassword).await.getHeaders.getAuthToken()
 
-      def getSharedBridgeAuthToken() = Some(defaultAuthToken)
+      def getSharedBridgeAuthToken() = defaultAuthToken
     }
 
     val builderLocator = new BuilderLocator(new ReefServices)

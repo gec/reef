@@ -44,10 +44,10 @@ class JsonBridgeActivator extends ExecutorBundleActivator {
   protected def start(context: BundleContext, executor: Executor) {
     val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
 
-    // TODO: fix default user to come from configuration file
-    val defaultSettings = new UserSettings("system", "system")
+    val bridgeOptions = OsgiConfigReader(context, "org.totalgrid.reef.httpbridge").getProperties
+    val defaultUser = DefaultUserConfiguration.getDefaultUser(bridgeOptions)
 
-    managedConnection = Some(new SimpleManagedConnection(brokerOptions, executor, Some(defaultSettings)))
+    managedConnection = Some(new SimpleManagedConnection(brokerOptions, executor, defaultUser))
 
     val builderLocator = new BuilderLocator(new ReefServices)
     val bridge = new RestLevelServlet(managedConnection.get, builderLocator)
