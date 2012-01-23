@@ -139,10 +139,14 @@
                 },
                 type: 'GET',
                 dataType: 'json',
-                success: function(json_data) {
+                success: function(json_data, textStatus) {
+                    // if the server is totally unavailable success is called with null data and textStatus "success"
+                    // that is strange, though possibly a caching issue
                     if (json_data) {
                         var measurements = json_data.results;
                         settings.display_function(enhanceMeasurements(measurements));
+                    }else{
+                        settings.error_function("Couldn't connect to server.");
                     }
                 },
                 error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -157,26 +161,35 @@
         };
 
         var settings = $.extend({
+            // address of the server to query
             'server': '',
+            // list of point names, must include atleast one point name
             'pointNames': [],
+            // enables live-updates via polling, do not poll more often than once a second
             'polling': {
                 'enabled': false,
                 'period': 5000,
                 'cancel_polling': function() {}
             },
-            // allow overriding of the display routines
+            // allow overriding of the display and error routines
+            // display_function takes a list of measurements with the enhanced fields ('value', 'quality_string', 'time_string' and 'abnormal')
             'display_function': displayMeasurements,
+            // error message takes a string describing the error
             'error_function': displayError,
-            // default to the div we called the jquery function on
+            // div we want to replace the contents of (if using default displayMeasurements)
             'target_div': this,
+            // options for the default displayMeasurements function
             'display': {
+                // *_div options control the adding of a seperate <div> element for each element
                 'name_div': true,
                 'value_div': true,
                 'add_unit_to_name': true,
                 'quality_div': false,
                 'time_div': false,
+                // add time and/or quality to the hover over text (title) for the value
                 'time_in_hover': true,
                 'quality_in_hover': true,
+                // takes a time in milliseconds
                 'time_formatter': timeFormatter
             }
         }, options);
