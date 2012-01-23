@@ -1,0 +1,68 @@
+<project
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+	<groupId>org.totalgrid.reef</groupId>
+    <artifactId>protobuf-java-format-dependencies</artifactId>
+	<version>1.3-SNAPSHOT</version>
+    <name>${project.artifactId}</name>
+    <description>Java Protobuf Format with all dependencies</description>
+    <packaging>bundle</packaging>
+
+    <parent>
+        <groupId>org.totalgrid.reef</groupId>
+        <artifactId>reef</artifactId>
+        <version>0.4.3-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <properties>
+        <protobuf-java-format.version>1.3-SNAPSHOT</protobuf-java-format.version>
+        <jackson-smile.version>1.7.7</jackson-smile.version>
+        <protobuf-java.version>2.3.0</protobuf-java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.googlecode.protobuf-java-format</groupId>
+            <artifactId>protobuf-java-format</artifactId>
+            <version>${protobuf-java-format.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-smile</artifactId>
+            <version>${jackson-smile.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${maven-bundle.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>Java Protobuf with Dependencies Bundle</Bundle-Name>
+                        <Export-Package>
+                            com.googlecode.protobuf.format.*;version="${protobuf-java-format.version}"
+                        </Export-Package>
+                        <Import-Package>
+                            com.google.protobuf;version="${protobuf-java.version}",
+                            javax.*;resolution:=optional
+                        </Import-Package>
+                        <_nouses>true</_nouses>
+                        <Embed-Dependency>
+                                *;scope=compile|runtime;type=!pom;inline=false
+                        </Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

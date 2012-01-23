@@ -53,4 +53,17 @@
 		<feature>reef-core</feature>
 		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-example-simulator/${reef.version}</bundle>
 	</feature>
+	
+	<feature name="reef-http-bridge" version="${reef.version}">
+        <!--
+            We need to use the war feature becauase it is the only one with the "OPS4J Pax Web - Extender - Whiteboard"
+            bundle that we actually use. There has been talk of moving that feature to the lighter weight http feature.
+
+            TODO: paramaterize the greenbus features file
+        -->
+        <feature>war</feature>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/protobuf-java-format-dependencies/1.3-SNAPSHOT</bundle>
+        <bundle start-level='100'>mvn:org.totalgrid.reef/reef-http-bridge/${reef.version}</bundle>
+    </feature>
+	
 </features>

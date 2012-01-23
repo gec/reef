@@ -71,6 +71,8 @@
         <module>memory-broker</module>
 		<module>application-framework</module>
 		<module>proto-shell</module>
+        <module>http-bridge/http-bridge</module>
+        <module>http-bridge/js-service-client</module>
 		<module>loader-common</module>
 		<module>loader-xml</module>
 		<module>processing</module>
@@ -85,6 +87,7 @@
         <module>standalone-node</module>
 		<module>branding</module>
 		<module>dependencies</module>
+        <module>http-bridge/protobuf-java-format-dependencies</module>
 		<module>assemblies</module>
 
     </modules>
