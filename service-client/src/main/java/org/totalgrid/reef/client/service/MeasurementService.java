@@ -214,8 +214,15 @@ public interface MeasurementService extends SubscriptionCreator
      */
     Boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
 
-
+    /**
+     * returns statistics on the point including oldest measurement, and total count
+     * @return measurement statistics proto
+     */
     MeasurementStatistics getMeasurementStatisticsByPoint( Point point ) throws ReefServiceException;
 
+    /**
+     * returns statistics on the point including oldest measurement, and total count
+     * @return measurement statistics proto
+     */
     MeasurementStatistics getMeasurementStatisticsByName( String pointName ) throws ReefServiceException;
 }
