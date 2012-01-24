@@ -198,17 +198,19 @@ class EntityServiceModel
       entry.types.value.diff(previous.types.value) == Nil
   }
 
-  override protected def preDelete(context: RequestContext, previous: Entity) {
-    val events = ApplicationSchema.events.where(e => e.entityId in List(previous.id)).toList
-    val alarms = ApplicationSchema.alarms.where(a => a.eventId in events.map(_.id)).toList
-
-    alarms.foreach(a => alarmModel.delete(context, a))
-    events.foreach(e => eventModel.delete(context, e))
-  }
-
   override protected def postDelete(context: RequestContext, previous: Entity) {
 
-    val edges = ApplicationSchema.edges.where(e => (e.parentId === previous.id) or (e.childId === previous.id))
+    val edges = ApplicationSchema.edges.where(e => (e.parentId === previous.id) or (e.childId === previous.id)).toList
+    val events = ApplicationSchema.events.where(e => e.entityId in List(previous.id)).toList
+
+    val eventIds = events.map(_.id)
+
+    logger.info("Deleting Entity: " + previous.name + " events: " + eventIds.size + " edges: " + edges.size)
+
+    // we delete these without "eventing" them because its too slow and it doesn't really make sense to
+    // see a DELETED Event or Alarm
+    ApplicationSchema.events.deleteWhere(e => e.id in eventIds)
+    ApplicationSchema.alarms.deleteWhere(a => a.eventId in eventIds)
 
     edges.foreach(edge => edgeModel.delete(context, edge))
 

@@ -303,10 +303,6 @@ class EntityServiceTest extends DatabaseUsingTestBase {
 
     // multiple events due to multi-level subscriptions
     val eventList = List(
-      (REMOVED, classOf[Alarm]),
-      (REMOVED, classOf[Alarm]),
-      (REMOVED, classOf[Event]),
-      (REMOVED, classOf[Event]),
       (REMOVED, classOf[Entity]),
       (REMOVED, classOf[EntityEdge]))
 
