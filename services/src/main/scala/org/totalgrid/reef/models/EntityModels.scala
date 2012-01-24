@@ -28,7 +28,7 @@ import org.squeryl.annotations.Transient
 case class Entity(
     val name: String) extends ModelWithUUID {
 
-  val types = LazyVar(from(ApplicationSchema.entityTypes)(t => where(id === t.entityId) select (&(t.entType))).toList)
+  val types = LazyVar(from(ApplicationSchema.entityTypes)(t => where(id === t.entityId) select (&(t.entType))).toList.sorted)
 
   val attributes = LazyVar(from(ApplicationSchema.entityAttributes)(t => where(id === t.entityId) select (t)).toList)
 
