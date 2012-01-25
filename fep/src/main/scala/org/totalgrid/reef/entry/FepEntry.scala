@@ -28,7 +28,7 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import net.agileautomata.executor4s.Cancelable
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.client.rest.{ Client, RpcProvider }
 import org.totalgrid.reef.frontend._
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSettings }
 import net.agileautomata.executor4s.Executor
@@ -36,9 +36,15 @@ import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 
 object FepEntry {
   def startFepNode(client: Client, services: AllScadaService, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
-    val services = new FrontEndProviderServicesImpl(client)
+    client.addRpcProvider(RpcProvider(c => new FrontEndProviderServicesImpl(client), List(classOf[FrontEndProviderServices])))
 
-    val frontEndConnections = new FrontEndConnections(protocols, services, client)
+    val services = client.getRpcInterface(classOf[FrontEndProviderServices])
+
+    def endpointClient = {
+      client.login(client.getHeaders.getAuthToken)
+    }
+
+    val frontEndConnections = new FrontEndConnections(protocols, endpointClient)
     val populator = new EndpointConnectionPopulatorAction(services)
     val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client)
 
