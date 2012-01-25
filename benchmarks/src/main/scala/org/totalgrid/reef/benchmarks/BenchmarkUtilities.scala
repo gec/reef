@@ -53,7 +53,7 @@ object BenchmarkUtilities {
 
     val output = new DelimitedFileOutput(baseName + ".csv", false)
 
-    output.addRow("parameters,fieldName,average,max,min".split(",").toList)
+    output.addRow("testType,parameters,fieldName,min,max,average,count".split(",").toList)
     histogramResults.foreach { h => output.addRow(h.values.map { _.toString }) }
     output.close()
   }
