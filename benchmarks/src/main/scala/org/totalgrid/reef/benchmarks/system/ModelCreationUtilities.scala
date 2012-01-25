@@ -25,6 +25,7 @@ import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointOwnership
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.util.Timing.Stopwatch
 
 object ModelCreationUtilities {
   def addEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
@@ -69,12 +70,11 @@ object ModelCreationUtilities {
     val f = client.future[Result[List[(Long, A)]]]
     val prom = Promise.from(f)
 
-    def completed(startTime: Long, a: Promise[A]) {
+    def completed(stopwatch: Stopwatch, a: Promise[A]) {
       val result = a.extract
       if (result.isSuccess) {
         inProgressOps -= 1
-        val processTime = (System.nanoTime() - startTime) / 1000000
-        timingResults ::= (processTime, result.get)
+        timingResults ::= (stopwatch.elapsed, result.get)
         if (timingResults.size == batchableOperations.size) f.set(Success(timingResults))
         else startNext()
       } else {
@@ -85,10 +85,10 @@ object ModelCreationUtilities {
     def startNext() {
       if (inProgressOps < numConcurrent) {
         inProgressOps += 1
-        val startTime = System.nanoTime()
+        val stopwatch = new Stopwatch()
         val nextOperationToStart = remainingOps.head()
         remainingOps = remainingOps.tail
-        nextOperationToStart.listen(completed(startTime, _))
+        nextOperationToStart.listen(completed(stopwatch, _))
         startNext()
       }
     }

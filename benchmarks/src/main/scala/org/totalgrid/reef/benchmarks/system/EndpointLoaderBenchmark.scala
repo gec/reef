@@ -22,6 +22,7 @@ import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
 import java.io.PrintStream
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.util.Timing.Stopwatch
 
 case class EndpointLoadingReading(request: String, endpoints: Int, pointsPerEndpoint: Int,
     time: Long, parallelism: Int, batchSize: Int) extends BenchmarkReading {
@@ -43,9 +44,9 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
     var readings = List.empty[BenchmarkReading]
 
     def addReadings[A](operation: String, ops: Seq[() => Promise[A]]) {
-      val start = System.nanoTime()
+      val stopwatch = new Stopwatch()
       val results = ModelCreationUtilities.parallelExecutor(client, parallelism, ops)
-      val overallTime = (System.nanoTime() - start) / 1000000
+      val overallTime = stopwatch.elapsed
 
       readings ::= new EndpointLoadingReading("overall" + operation, endpoints, pointsPerEndpoint, overallTime, parallelism, batchSize)
 
@@ -57,11 +58,13 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
 
     if (add) {
       val preparedLoaders = endpointNames.map { n => ModelCreationUtilities.addEndpoint(client, n, pointsPerEndpoint, batchSize) }
+      stream.foreach { _.println("Adding " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points using " + parallelism + " writers.") }
       addReadings("addEndpoint", preparedLoaders)
     }
 
     if (delete) {
       val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client, n, pointsPerEndpoint, batchSize) }
+      stream.foreach { _.println("Deleting " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points using " + parallelism + " writers.") }
       addReadings("deleteEndpoint", preparedDeleters)
     }
 

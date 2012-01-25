@@ -22,6 +22,7 @@ import java.io.PrintStream
 import org.totalgrid.reef.client.sapi.client.{ Response, RequestSpy }
 import net.agileautomata.executor4s.Future
 import org.totalgrid.reef.client.proto.Envelope.{ BatchServiceRequest, Status, Verb }
+import org.totalgrid.reef.util.Timing.Stopwatch
 
 class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends RequestSpy {
 
@@ -53,7 +54,7 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
   var counts = Map.empty[Status, Counter]
   var classCounts = Map.empty[Class[_], Counter]
   var handled: Int = 0
-  val startTime = System.nanoTime()
+  val stopwatch = new Stopwatch()
 
   def start = {
     handled = 0
@@ -101,7 +102,7 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
   def finish = {
     this.synchronized { while (outstandingCalls > 0) wait() }
     stream.println("|")
-    stream.println("Statistics. Finished in: " + ((System.nanoTime() - startTime) / 1000000) + " milliseconds")
+    stream.println("Statistics. Finished in: " + stopwatch.elapsed + " milliseconds")
     counts.foreach {
       case (status, count) =>
         stream.println("\t" + status.toString + "(" + getStatusChar(status) + ")" + " : " + count.sum)
