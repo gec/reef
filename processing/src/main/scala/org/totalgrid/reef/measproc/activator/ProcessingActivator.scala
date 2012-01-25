@@ -41,6 +41,8 @@ object ProcessingActivator {
           new MeasurementProcessorServicesImpl(client.login(client.getHeaders.getAuthToken))
         }
 
+        measStore.connect()
+
         val connector = new MeasStreamConnector(perStreamService, measStore, appConfig.getInstanceName)
         val connectionHandler = new ProcessingNodeMap(connector)
 
@@ -52,6 +54,7 @@ object ProcessingActivator {
         new Cancelable {
           def cancel() {
             measProc.stop
+            measStore.disconnect()
           }
         }
       }
@@ -75,8 +78,6 @@ class ProcessingActivator extends ExecutorBundleActivator with Logging {
     val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
 
     val measStore = MeasurementStoreFinder.getInstance(context)
-
-    measStore.connect()
 
     manager = Some(new ConnectionCloseManagerEx(brokerOptions, exe))
 

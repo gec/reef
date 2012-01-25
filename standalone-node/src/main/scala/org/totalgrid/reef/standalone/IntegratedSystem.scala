@@ -61,6 +61,7 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     ServiceBootstrap.resetDb(dbConnection)
     ServiceBootstrap.seed(dbConnection, userSettings.getUserPassword)
     measurementStore.reset()
+    measurementStore.disconnect()
   }
 
   // we don't use ConnectionCloseManagerEx because it doesn't start things in the order they were added

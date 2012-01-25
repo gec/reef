@@ -85,6 +85,8 @@ object ServiceFactory {
             providers.coordinators.foreach { _.stopProcess() }
             mgr.stop()
             heartbeater.stop()
+
+            measStore.disconnect()
           }
         }
       }

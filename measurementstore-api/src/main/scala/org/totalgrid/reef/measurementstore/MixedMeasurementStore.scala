@@ -42,6 +42,11 @@ class MixedMeasurementStore(historian: MeasurementStore, realtime: MeasurementSt
     realtime.connect()
   }
 
+  def disconnect() {
+    realtime.disconnect()
+    historian.disconnect()
+  }
+
   override def reset() = {
     historian.reset()
     realtime.reset()

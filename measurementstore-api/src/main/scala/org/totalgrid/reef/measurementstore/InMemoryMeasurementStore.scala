@@ -97,6 +97,7 @@ class InMemoryMeasurementStore(currentValueOnly: Boolean = false) extends Measur
   }
 
   def connect() = {}
+  def disconnect() = {}
 
   private def checkHistorian = if (currentValueOnly) throw new Exception("Using currentValue store as historian!")
 }

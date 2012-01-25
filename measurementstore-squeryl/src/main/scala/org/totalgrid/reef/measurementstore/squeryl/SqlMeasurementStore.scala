@@ -37,6 +37,12 @@ class SqlMeasurementStore(connectFunction: () => DbConnection, includeHistory: B
 
   override def connect() = dbConnectionOpt = Some(connectFunction())
 
+  override def disconnect() = {
+    // TODO: implement disconnect for DbConnection
+    //dbConnectionOpt.foreach{_.disconnect()}
+    dbConnectionOpt = None
+  }
+
   override def reset(): Boolean = attempt("Couldn't reset database")(SqlMeasurementStoreOperations.reset)
 
   override def trim(numPoints: Long): Long =

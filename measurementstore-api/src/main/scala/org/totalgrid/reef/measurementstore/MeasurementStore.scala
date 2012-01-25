@@ -46,6 +46,11 @@ trait MeasurementStore extends Historian with RTDatabase with MeasSink {
   def connect()
 
   /**
+   * disconnects the measurement store and cleans up any pools or underlying connections
+   */
+  def disconnect()
+
+  /**
    *   tell the measurement store that it can (if it chooses) move measurements before end
    * to a slower secondary storage
    * @return whether archiving is supported

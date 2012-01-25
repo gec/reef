@@ -34,4 +34,5 @@ class MockMeasurementStore extends MeasurementStore {
   def remove(names: Seq[String]) {}
 
   def connect() {}
+  def disconnect() {}
 }
