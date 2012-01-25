@@ -36,11 +36,15 @@ object ProcessingActivator {
     val appConfigConsumer = new AppEnrollerConsumer {
       // Downside of using classes not functions, we can't partially evalute
       def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig) = {
-        val services = new MeasurementProcessorServicesImpl(client)
 
-        val connector = new MeasStreamConnector(services, measStore, appConfig.getInstanceName)
+        def perStreamService = {
+          new MeasurementProcessorServicesImpl(client.login(client.getHeaders.getAuthToken))
+        }
+
+        val connector = new MeasStreamConnector(perStreamService, measStore, appConfig.getInstanceName)
         val connectionHandler = new ProcessingNodeMap(connector)
 
+        val services = new MeasurementProcessorServicesImpl(client)
         val measProc = new FullProcessor(services, connectionHandler, appConfig, services)
 
         measProc.start

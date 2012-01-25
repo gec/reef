@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
 import net.agileautomata.executor4s.Cancelable
 
-class MeasStreamConnector(client: MeasurementProcessorServices, measStore: MeasurementStore, instanceName: String) {
+class MeasStreamConnector(newClient: => MeasurementProcessorServices, measStore: MeasurementStore, instanceName: String) {
   val metricsPublisher = MetricsSink.getInstance(instanceName)
 
   // caches used to store measurements and overrides
@@ -39,6 +39,10 @@ class MeasStreamConnector(client: MeasurementProcessorServices, measStore: Measu
   val caches = MeasProcObjectCaches(measCache, overCache, triggerStateCache)
 
   def addStreamProcessor(streamConfig: MeasurementProcessingConnection): Cancelable = {
+
+    // get a new client for each stream processor so service requests will actually be handled in parallel
+    val client = newClient
+
     val streamHandler = new MeasurementStreamProcessingNode(client, caches, streamConfig)
     streamHandler.setHookSource(metricsPublisher.getStore("measproc-" + streamConfig.getLogicalNode.getName))
     new Cancelable {
