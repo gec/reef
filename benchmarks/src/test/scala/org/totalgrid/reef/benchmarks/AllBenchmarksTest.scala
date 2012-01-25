@@ -50,15 +50,6 @@ class AllBenchmarksTest extends BenchmarkTestBase {
   test("System State") {
     readings :::= runBenchmark(new SystemStateBenchmark(attempts))
   }
-  test("Measurement Roundtrip Timing 1000") {
-    readings :::= runBenchmark(new MeasurementPublishingBenchmark(endpointNames, 1000, 5, false))
-  }
-  test("Measurement Roundtrip Timing 10 direct") {
-    readings :::= runBenchmark(new MeasurementPublishingBenchmark(endpointNames, 10, 5, true))
-  }
-  test("Measurement Roundtrip Timing 10 proxied") {
-    readings :::= runBenchmark(new MeasurementPublishingBenchmark(endpointNames, 10, 5, false))
-  }
   test("Measurement Statistics") {
     readings :::= runBenchmark(new MeasurementStatBenchmark(pointNames))
   }

@@ -71,26 +71,23 @@ object AllBenchmarksEntryPoint {
     // test no more than 20 points
     val points = takeRandom(20, allPoints)
 
-    val totalMeasurements = 50000
+    val totalMeasurements = 5000
     val concurrentEndpointNames = (1 to 10).map { i => "Endpoint" + i }.toList
-    val pointsPerEndpoint = 30
+    val pointsPerEndpoint = 20
     val concurrency = 5
     val batchSize = 50
 
-    val tests = List(
-      new SystemStateBenchmark(5),
-      new MeasurementStatBenchmark(points),
-      new MeasurementHistoryBenchmark(points, List(10, 1000), true),
-      new EndpointManagementBenchmark(endpointNames, 5),
-      new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, true, false),
-      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 1, 25),
-      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 5, 25),
-      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 10, 25),
-      new MeasurementPublishingBenchmark(concurrentEndpointNames, 1000, 5, false),
-      new MeasurementPublishingBenchmark(concurrentEndpointNames, 10, 5, false),
-      new MeasurementPublishingBenchmark(concurrentEndpointNames, 10, 5, true),
-      new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, false, true))
-
+    val tests =
+      new SystemStateBenchmark(5) ::
+        new MeasurementStatBenchmark(points) ::
+        new MeasurementHistoryBenchmark(points, List(10, 1000), true) ::
+        new EndpointManagementBenchmark(endpointNames, 5) ::
+        new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, true, false) ::
+        new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 1, 25) ::
+        new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 5, 25) ::
+        new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 10, 25) ::
+        new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, false, true) ::
+        Nil
     val allResults = tests.map(_.runTest(client, stream)).flatten
     outputResults(allResults)
   }
@@ -101,9 +98,10 @@ object AllBenchmarksEntryPoint {
 
     val histogramResults = resultsByFileName.map {
       case (csvName, results) =>
-        Histogram.getHistograms(results)
+        Histogram.getHistograms(csvName, results)
     }.toList.flatten
 
+    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, "averages")
     val teamCity = new TeamCityStatisticsXml("teamcity-info.xml")
     histogramResults.foreach { h =>
       h.outputsWithLabels.foreach { case (label, value) => teamCity.addRow(label, value) }
