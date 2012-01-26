@@ -71,6 +71,22 @@ public interface PointService
     Point getPointByUuid( ReefUUID uuid ) throws ReefServiceException;
 
     /**
+     * retrieve a point by name, throws exception if point is unknown
+     *
+     * @param names of the Point we are retrieving
+     * @return the point object with matching name
+     */
+    List<Point> getPointsByNames( List<String> names ) throws ReefServiceException;
+
+    /**
+     * retrieve a point by uuid, throws exception if point is unknown
+     *
+     * @param uuids of the Point we are retrieving
+     * @return the point object with matching name
+     */
+    List<Point> getPointsByUuids( List<ReefUUID> uuids ) throws ReefServiceException;
+
+    /**
      * retrieve all points that are have the relationship "owns" to the parent entity
      *
      * @deprecated use getPointsOwnedByEntity(entityUuid) instead

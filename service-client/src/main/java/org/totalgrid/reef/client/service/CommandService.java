@@ -315,6 +315,33 @@ public interface CommandService
     Command getCommandByName( String name ) throws ReefServiceException;
 
     /**
+     * Get a command object by uuid.
+     *
+     * @param uuid  Entity Uuid
+     * @return command associated with the supplied uuid
+     * @throws ReefServiceException if an error occurs
+     */
+    Command getCommandByUuid( ReefUUID uuid ) throws ReefServiceException;
+
+    /**
+     * Get a command object by name.
+     *
+     * @param names  Command name (example: "substation1.breaker2.trip").
+     * @return command associated with the supplied name
+     * @throws ReefServiceException if an error occurs
+     */
+    List<Command> getCommandsByNames( List<String> names ) throws ReefServiceException;
+
+    /**
+     * Get a command object by uuid.
+     *
+     * @param uuids  Entity Uuids
+     * @return command associated with the supplied uuid
+     * @throws ReefServiceException if an error occurs
+     */
+    List<Command> getCommandsByUuids( List<ReefUUID> uuids ) throws ReefServiceException;
+
+    /**
      * retrieve all commands that are have the relationship "owns" to the parent entity
      *
      * @param parentUUID uuid of parent entity

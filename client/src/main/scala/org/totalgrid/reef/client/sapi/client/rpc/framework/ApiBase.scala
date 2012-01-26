@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.client.rest.impl.{ ExecutorDelegate, Batch
 import org.totalgrid.reef.client.{ SubscriptionCreator, SubscriptionCreationListener }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client._
-import net.agileautomata.executor4s.{ TimeInterval, Executor }
+import net.agileautomata.executor4s._
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations
@@ -37,6 +37,15 @@ trait HasAnnotatedOperations {
     val result = fun(batch)
     batch.flush()
     result
+  }
+
+  def batchGets[A](gets: List[A]): Future[Result[List[A]]] = {
+    // do all of queries in a single batch request (instead of N seperate queries which though should actually
+    // be slightly faster it uses much much more server resources)
+    val requests = batch { batchSession =>
+      gets.map { g => batchSession.get(g).map(_.one) }
+    }
+    MultiRequestHelper.gatherResults(requests)
   }
 }
 

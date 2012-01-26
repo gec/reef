@@ -20,9 +20,8 @@ package org.totalgrid.reef.integration;
 
 import org.junit.*;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
+import org.totalgrid.reef.client.service.CommandService;
 import org.totalgrid.reef.client.service.entity.EntityRelation;
 import org.totalgrid.reef.client.exception.BadRequestException;
 import org.totalgrid.reef.client.exception.ReefServiceException;
@@ -303,6 +302,63 @@ public class TestEntityService extends ReefConnectionTestBase
         assertTrue( equipTypes.contains( "Breaker" ) );
         assertTrue( equipTypes.contains( "Line" ) );
 
+    }
+
+    @Test
+    public void batchGetEntitiesAndPoints() throws ReefServiceException
+    {
+        EntityService es = helpers;
+
+        List<String> names = new ArrayList<String>();
+        List<ReefUUID> uuids = new ArrayList<ReefUUID>();
+
+        List<Entity> pointEntities = es.getEntitiesWithType( "Point" );
+
+        for ( Entity e : pointEntities )
+        {
+            names.add( e.getName() );
+            uuids.add( e.getUuid() );
+        }
+
+        // test that batch queries will return same list as by type query
+        List<Entity> batchRequestByName = es.getEntitiesByNames( names );
+        assertArrayEquals( pointEntities.toArray(), batchRequestByName.toArray() );
+
+        List<Entity> batchRequestByUuid = es.getEntitiesByUuids( uuids );
+        assertArrayEquals( pointEntities.toArray(), batchRequestByUuid.toArray() );
+
+        PointService ps = helpers;
+
+        // test that this is the same list as getting all points (since we have entites of Point Type)
+        List<Point> allPoints = ps.getPoints();
+
+        assertArrayEquals( ps.getPointsByNames( names ).toArray(), allPoints.toArray() );
+        assertArrayEquals( ps.getPointsByUuids( uuids ).toArray(), allPoints.toArray() );
+    }
+
+    @Test
+    public void batchGetCommands() throws ReefServiceException
+    {
+        EntityService es = helpers;
+
+        List<String> names = new ArrayList<String>();
+        List<ReefUUID> uuids = new ArrayList<ReefUUID>();
+
+        List<Entity> commandEntities = es.getEntitiesWithType( "Command" );
+
+        for ( Entity e : commandEntities )
+        {
+            names.add( e.getName() );
+            uuids.add( e.getUuid() );
+        }
+
+        CommandService cs = helpers;
+
+        // test that this is the same list as getting all points (since we have entites of Point Type)
+        List<Command> allCommands = cs.getCommands();
+
+        assertArrayEquals( cs.getCommandsByNames( names ).toArray(), allCommands.toArray() );
+        assertArrayEquals( cs.getCommandsByUuids( uuids ).toArray(), allCommands.toArray() );
     }
 
     @Test

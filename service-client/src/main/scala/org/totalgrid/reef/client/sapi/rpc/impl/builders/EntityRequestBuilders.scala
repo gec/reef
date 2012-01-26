@@ -139,6 +139,9 @@ object EntityRequestBuilders {
   def getRelatedEntities(rootUuid: ReefUUID, relations: List[EntityRelation]) = {
     Entity.newBuilder.setUuid(rootUuid).addRelations(relatedByRelation(makeRelations(relations))).build
   }
+  def getRelatedEntitiesByName(name: String, relations: List[EntityRelation]) = {
+    Entity.newBuilder.setName(name).addRelations(relatedByRelation(makeRelations(relations))).build
+  }
 
   def getAllPointsSortedByOwningEquipment(rootId: ReefUUID) = {
     Entity.newBuilder.setUuid(rootId).addRelations(

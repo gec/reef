@@ -44,6 +44,14 @@ trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
     _.get(Endpoint.newBuilder.setUuid(endpointUuid).build).map(_.one)
   }
 
+  override def getEndpointsByNames(names: List[String]) = ops.operation("Couldn't get endpoints with names: " + names) { _ =>
+    batchGets(names.map { Endpoint.newBuilder.setName(_).build })
+  }
+
+  override def getEndpointsByUuids(endpointUuids: List[ReefUUID]) = ops.operation("Couldn't get endpoint with uuids: " + endpointUuids.map { _.getValue }) { _ =>
+    batchGets(endpointUuids.map { Endpoint.newBuilder.setUuid(_).build })
+  }
+
   override def disableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, false)
 
   override def enableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, true)

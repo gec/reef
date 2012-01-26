@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.sapi.client.rpc.framework
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.InstantExecutor
