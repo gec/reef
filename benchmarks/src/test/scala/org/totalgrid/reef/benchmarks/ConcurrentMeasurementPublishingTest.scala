@@ -63,8 +63,7 @@ class ConcurrentMeasurementPublishingTest extends BenchmarkTestBase {
     setupReadings :::= runBenchmark(new MeasurementHistoryBenchmark(partialPointNames, List(10, 1000), true))
   }
   test("Measurement CurrentValue") {
-    val pointsCount = pointNames.size
-    val pointsEach = List(1, 10, 20, pointsCount / 8, pointsCount / 6, pointsCount / 4, pointsCount / 3, pointsCount / 2, pointsCount)
+    val pointsEach = MeasurementCurrentValueBenchmark.testSizes(pointNames.size)
     setupReadings :::= runBenchmark(new MeasurementCurrentValueBenchmark(pointNames, pointsEach, 5))
   }
 

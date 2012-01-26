@@ -34,6 +34,12 @@ case class MeasurementCurrentValueReading(points: Int, time: Long) extends Bench
   def testOutputs = List(time)
 }
 
+object MeasurementCurrentValueBenchmark {
+  def testSizes(pointsCount: Int) = {
+    List(1, 10, 20, pointsCount / 8, pointsCount / 6, pointsCount / 4, pointsCount / 3, pointsCount / 2, pointsCount)
+  }
+}
+
 class MeasurementCurrentValueBenchmark(pointNames: List[String], sizes: List[Int], attempts: Int) extends AllScadaServicesTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 

@@ -43,16 +43,22 @@ object AllBenchmarksEntryPoint {
 
     try {
 
+      var doSyntheticTests = true
+      var doLiveSystemTests = true
+
+      if (args.contains("--no-live")) doLiveSystemTests = false
+      if (args.contains("--no-synthetic")) doSyntheticTests = false
+
       val connection = factory.connect()
 
-      runAllTests(connection, userSettings)
+      runAllTests(connection, userSettings, doSyntheticTests, doLiveSystemTests)
 
     } finally {
       factory.terminate()
     }
   }
 
-  def runAllTests(connection: Connection, userSettings: UserSettings) {
+  def runAllTests(connection: Connection, userSettings: UserSettings, doSyntheticTests: Boolean, doLiveSystemTests: Boolean) {
     val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
     client.addServicesList(new LoaderServicesList())
     client.setHeaders(client.getHeaders.setTimeout(20000))
@@ -61,34 +67,48 @@ object AllBenchmarksEntryPoint {
 
     val stream = Some(Console.out)
 
-    val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark")
+    var tests = List.empty[BenchmarkTest]
 
-    if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
+    if (doLiveSystemTests) {
+      val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark")
 
-    val endpointNames = endpoints.map { _.getName }
-    val allPoints = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten.map { _.getName }
+      if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system, can't run live tests. Use --no-live")
 
-    // test no more than 20 points
-    val points = takeRandom(20, allPoints)
+      val endpointNames = endpoints.map { _.getName }
+      val allPoints = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten.map { _.getName }
 
-    val totalMeasurements = 5000
-    val concurrentEndpointNames = (1 to 10).map { i => "Endpoint" + i }.toList
-    val pointsPerEndpoint = 20
-    val concurrency = 5
-    val batchSize = 50
+      // test no more than 20 points
+      val points = takeRandom(20, allPoints)
 
-    val tests =
-      new SystemStateBenchmark(5) ::
-        new MeasurementStatBenchmark(points) ::
-        new MeasurementHistoryBenchmark(points, List(10, 1000), true) ::
-        new EndpointManagementBenchmark(endpointNames, 5) ::
-        new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, true, false) ::
-        new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 1, 25) ::
-        new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 5, 25) ::
-        new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 10, 25) ::
-        new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, false, true) ::
-        Nil
-    val allResults = tests.map(_.runTest(client, stream)).flatten
+      tests ::= new SystemStateBenchmark(5)
+      tests ::= new MeasurementStatBenchmark(points)
+      tests ::= new MeasurementHistoryBenchmark(points, List(10, 1000), true)
+      tests ::= new MeasurementCurrentValueBenchmark(allPoints, MeasurementCurrentValueBenchmark.testSizes(allPoints.size), 5)
+      tests ::= new EndpointManagementBenchmark(endpointNames, 5)
+    }
+
+    if (doSyntheticTests) {
+
+      val totalMeasurements = 5000
+      val concurrentEndpointNames = (1 to 10).map { i => "Endpoint" + i }.toList
+      val pointsPerEndpoint = 20
+      val pointNames = concurrentEndpointNames.map { ModelCreationUtilities.getPointNames(_, pointsPerEndpoint) }.flatten
+      val partialPointNames = takeRandom(20, pointNames)
+      val publishingWriters = List(1, 5, 10)
+      val concurrency = 5
+      val batchSize = 50
+
+      tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, true, false)
+      publishingWriters.foreach { writers =>
+        tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, writers, 25)
+      }
+      tests ::= new MeasurementStatBenchmark(partialPointNames)
+      tests ::= new MeasurementHistoryBenchmark(partialPointNames, List(10, 1000), true)
+      tests ::= new MeasurementCurrentValueBenchmark(pointNames, MeasurementCurrentValueBenchmark.testSizes(pointNames.size), 5)
+      tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, false, true)
+    }
+
+    val allResults = tests.reverse.map(_.runTest(client, stream)).flatten
     outputResults(allResults)
   }
 
