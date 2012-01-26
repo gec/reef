@@ -19,6 +19,7 @@
 package org.totalgrid.reef.measurementstore
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import net.agileautomata.executor4s._
 
 /**
  * Uses two MeasurementStore implementations to implement MeasurementStore:
@@ -29,7 +30,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.Measurement
  *
  * Calls rest on historian only
  */
-class MixedMeasurementStore(historian: MeasurementStore, realtime: MeasurementStore) extends MeasurementStore {
+class MixedMeasurementStore(exeSource: => ExecutorService, historian: MeasurementStore, realtime: MeasurementStore) extends MeasurementStore {
 
   // calls both historian and realtime
 
@@ -37,30 +38,39 @@ class MixedMeasurementStore(historian: MeasurementStore, realtime: MeasurementSt
 
   // TODO: use executor to run operations on historian and realtime in parallel
 
-  def connect() = {
+  var executor = Option.empty[ExecutorService]
+  def exe: Executor = executor.getOrElse(throw new RuntimeException("Not connected to mixed measurment store"))
+
+  def connect() {
     historian.connect()
     realtime.connect()
+    executor = Some(exeSource)
   }
 
   def disconnect() {
-    realtime.disconnect()
+    executor.foreach { _.terminate() }
+    executor = None
     historian.disconnect()
+    realtime.disconnect()
   }
 
   override def reset() = {
-    historian.reset()
+    val f = exe.attempt { historian.reset() }
     realtime.reset()
+    f.await.get
   }
 
   def remove(names: Seq[String]) {
-    historian.remove(names)
+    val f = exe.attempt { historian.remove(names) }
     realtime.remove(names)
+    f.await.get
   }
 
   // both stores need to be given new values
   def set(meas: Seq[Measurement]) {
-    historian.set(meas)
+    val f = exe.attempt { historian.set(meas) }
     realtime.set(meas)
+    f.await.get
   }
 
   // realtime only functionality

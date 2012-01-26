@@ -23,6 +23,7 @@ import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.util.PropertyLoading
+import net.agileautomata.executor4s._
 
 object MeasurementStoreFinder extends Logging {
 
@@ -40,11 +41,16 @@ object MeasurementStoreFinder extends Logging {
     // if the two impls are the same get a single measurementstore that does both
     if (historian == currentValue) getImplementation(context, historian, Some(true), Some(true))
     else {
+
+      val executorSource = {
+        Executors.newResizingThreadPool(5.minutes)
+      }
+
       // otherwise load both implementations and return the mixed store
       val historianStore = getImplementation(context, historian, Some(true), None)
       val currentStore = getImplementation(context, currentValue, None, Some(true))
 
-      new MixedMeasurementStore(historianStore, currentStore)
+      new MixedMeasurementStore(executorSource, historianStore, currentStore)
     }
   }
 

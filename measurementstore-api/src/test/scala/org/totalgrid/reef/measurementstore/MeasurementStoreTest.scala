@@ -18,16 +18,13 @@
  */
 package org.totalgrid.reef.measurementstore
 
+import org.scalatest._
 import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import scala.annotation._
-
-import org.totalgrid.reef.util.Timing
 import org.totalgrid.reef.client.service.proto.Measurements
-import org.scalatest._
+import net.agileautomata.executor4s.testing.InstantExecutor
 
 @RunWith(classOf[JUnitRunner])
 class InMemoryMeasurementStoreTest extends MeasurementStoreTest {
@@ -38,7 +35,11 @@ class InMemoryMeasurementStoreTest extends MeasurementStoreTest {
 class MixedMemoryMeasStoreTest extends MeasurementStoreTest {
   val currentMeas = new InMemoryMeasurementStore(true)
   val historian = new InMemoryMeasurementStore(false)
-  val cm = new MixedMeasurementStore(historian, currentMeas)
+  val cm = {
+    val c = new MixedMeasurementStore(new FakeExecutorService(new InstantExecutor()), historian, currentMeas)
+    c.connect
+    c
+  }
 }
 
 abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
