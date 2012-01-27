@@ -40,6 +40,7 @@
  * 
  * // A single attribute with a name and one typed value.
  * //
+ * // TODO 0.5.0 - REMOVE REQUIREDS
  * message Attribute {
  * 
  *   enum Type {

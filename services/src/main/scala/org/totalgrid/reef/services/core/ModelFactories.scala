@@ -74,4 +74,6 @@ class ModelFactories(measurementStore: MeasurementStore, contextSource: RequestC
   val edges = new EntityEdgeServiceModel
   val entities = new EntityServiceModel
 
+  val attributes = new EntityAttributeServiceModel
+
 }

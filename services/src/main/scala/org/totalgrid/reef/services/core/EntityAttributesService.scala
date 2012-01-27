@@ -32,6 +32,7 @@ import scala.collection.JavaConversions._
 
 import java.util.UUID
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.services.framework.SquerylModel._
 
 class EntityAttributesService extends ServiceEntryPoint[AttrProto] with AuthorizesEverything {
   import EntityAttributesService._
