@@ -48,7 +48,10 @@ class MeasurementCurrentValueBenchmark(pointNames: List[String], sizes: List[Int
     val readings = Queue.empty[BenchmarkReading]
 
     def time[A](points: Int)(fun: => A): A = {
-      Timing.time { t => readings.enqueue(new MeasurementCurrentValueReading(points, t)) } {
+      Timing.time { t =>
+        readings.enqueue(new MeasurementCurrentValueReading(points, t))
+        readings.enqueue(new MeasurementCurrentValueReading(-1, t))
+      } {
         fun
       }
     }

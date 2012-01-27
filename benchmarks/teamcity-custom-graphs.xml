@@ -24,116 +24,101 @@
     <!-- /home/teamcity/.BuildServer/config/reef/plugin-settings.xml replacing bt45 with bt43 -->
     <custom-graphs>
         <graph title="Number of Objects in the system">
-            <valueType key="allPointsvalueaverage" title="Points" buildTypeId="bt45"/>
-            <valueType key="allCommandsvalueaverage" title="Commands" buildTypeId="bt45"/>
-            <valueType key="allEntitiesvalueaverage" title="Entities" buildTypeId="bt45"/>
-            <valueType key="allEndpointsvalueaverage" title="Endpoints" buildTypeId="bt45"/>
-            <valueType key="allApplicationsvalueaverage" title="Applications" buildTypeId="bt45"/>
+            <valueType key="systemStatsallPointsvalueaverage" title="Points" buildTypeId="bt45"/>
+            <valueType key="systemStatsallCommandsvalueaverage" title="Commands" buildTypeId="bt45"/>
+            <valueType key="systemStatsallEntitiesvalueaverage" title="Entities" buildTypeId="bt45"/>
+            <valueType key="systemStatsallEndpointsvalueaverage" title="Endpoints" buildTypeId="bt45"/>
+            <valueType key="systemStatsallApplicationsvalueaverage" title="Applications" buildTypeId="bt45"/>
         </graph>
         <graph title="Get allXxxxx request times">
-            <valueType key="requesttimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="requesttimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="requesttimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="systemRequestsrequesttimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="systemRequestsrequesttimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="systemRequestsrequesttimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Measurements per Point">
-            <valueType key="totalMeasvaluemin" title="min" buildTypeId="bt45"/>
-            <valueType key="totalMeasvaluemax" title="max" buildTypeId="bt45"/>
-            <valueType key="totalMeasvalueaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="measStatstotalMeasvaluemin" title="min" buildTypeId="bt45"/>
+            <valueType key="measStatstotalMeasvaluemax" title="max" buildTypeId="bt45"/>
+            <valueType key="measStatstotalMeasvalueaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Oldest measurement per Point (seconds)">
-            <valueType key="oldestMeasvaluemin" title="min" buildTypeId="bt45"/>
-            <valueType key="oldestMeasvaluemax" title="max" buildTypeId="bt45"/>
-            <valueType key="oldestMeasvalueaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="measStatsoldestMeasvaluemin" title="min" buildTypeId="bt45"/>
+            <valueType key="measStatsoldestMeasvaluemax" title="max" buildTypeId="bt45"/>
+            <valueType key="measStatsoldestMeasvalueaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Retrieving oldest 10 measurements">
-            <valueType key="oldest10Meastimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="oldest10Meastimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="oldest10Meastimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="measHistoryoldest10Meastimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="measHistoryoldest10Meastimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="measHistoryoldest10Meastimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Retrieving oldest 1000 measurements">
-            <valueType key="oldest1000Meastimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="oldest1000Meastimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="oldest1000Meastimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="measHistoryoldest1000Meastimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="measHistoryoldest1000Meastimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="measHistoryoldest1000Meastimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Retrieving newest 10 measurements">
-            <valueType key="newest10Meastimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="newest10Meastimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="newest10Meastimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="measHistorynewest10Meastimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="measHistorynewest10Meastimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="measHistorynewest10Meastimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Retrieving newest 1000 measurements">
-            <valueType key="newest1000Meastimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="newest1000Meastimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="newest1000Meastimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="measHistorynewest1000Meastimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="measHistorynewest1000Meastimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="measHistorynewest1000Meastimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Retrieving all measurements (up to 10000 limit)">
-            <valueType key="allMeastimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="allMeastimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="allMeastimeaverage" title="average" buildTypeId="bt45"/>
-        </graph>
-        <graph title="Publishing 10 measurements through proxy (milliseconds)">
-            <valueType key="false10publishingTimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="false10publishingTimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="false10publishingTimeaverage" title="average" buildTypeId="bt45"/>
-        </graph>
-        <graph title="Publishing 10 measurements direct (milliseconds)">
-            <valueType key="true10publishingTimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="true10publishingTimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="true10publishingTimeaverage" title="average" buildTypeId="bt45"/>
-        </graph>
-        <graph title="Average Measurement Publishing Time (milliseconds)">
-            <valueType key="false1000publishingTimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="false1000publishingTimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="false1000publishingTimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="measHistoryallMeastimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="measHistoryallMeastimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="measHistoryallMeastimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Getting measurement statistics">
-            <valueType key="measStattimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="measStattimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="measStattimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="measHistorymeasStattimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="measHistorymeasStattimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="measHistorymeasStattimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Benchmark Endpoint disable to COMMS_DOWN Time (milliseconds)">
-            <valueType key="benchmarkCOMMSDOWNStateTransmissionTimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="benchmarkCOMMSDOWNStateTransmissionTimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="benchmarkCOMMSDOWNStateTransmissionTimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="endpointbenchmark-COMMSDOWNStateTransmissionTimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="endpointbenchmark-COMMSDOWNStateTransmissionTimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="endpointbenchmark-COMMSDOWNStateTransmissionTimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Benchmark Endpoint enable to COMMS_UP Time (milliseconds)">
-            <valueType key="benchmarkCOMMSUPStateTransmissionTimemin" title="min" buildTypeId="bt45"/>
-            <valueType key="benchmarkCOMMSUPStateTransmissionTimemax" title="max" buildTypeId="bt45"/>
-            <valueType key="benchmarkCOMMSUPStateTransmissionTimeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="endpointbenchmark-COMMSUPStateTransmissionTimemin" title="min" buildTypeId="bt45"/>
+            <valueType key="endpointbenchmark-COMMSUPStateTransmissionTimemax" title="max" buildTypeId="bt45"/>
+            <valueType key="endpointbenchmark-COMMSUPStateTransmissionTimeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Overall Time to add/remove Endpoints in parallel (5 writers)">
-            <valueType key="overalladdEndpoint1030550timemin" title="Add 10 Endpoints, 300 Points" buildTypeId="bt45"/>
-            <valueType key="overalldeleteEndpoint1030550timemin" title="Delete 10 Endpoints, 300 Points"
+            <valueType key="endpointLoadingoveralladdEndpoint-10-20-5-50timemin" title="Add 10 Endpoints, 200 Points" buildTypeId="bt45"/>
+            <valueType key="endpointLoadingoveralldeleteEndpoint-10-20-5-50timemin" title="Delete 10 Endpoints, 300 Points"
                        buildTypeId="bt45"/>
         </graph>
         <graph title="Time to add endpoints with 30 points each (5 writers)">
-            <valueType key="addEndpoint1030550timemin" title="min" buildTypeId="bt45"/>
-            <valueType key="addEndpoint1030550timemax" title="max" buildTypeId="bt45"/>
-            <valueType key="addEndpoint1030550timeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="endpointLoadingaddEndpoint-10-20-5-50timemin" title="min" buildTypeId="bt45"/>
+            <valueType key="endpointLoadingaddEndpoint-10-20-5-50timemax" title="max" buildTypeId="bt45"/>
+            <valueType key="endpointLoadingaddEndpoint-10-20-5-50timeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Time to delete endpoints with 30 points and 15000 meas total (5 writers)">
-            <valueType key="deleteEndpoint1030550timemin" title="min" buildTypeId="bt45"/>
-            <valueType key="deleteEndpoint1030550timemax" title="max" buildTypeId="bt45"/>
-            <valueType key="deleteEndpoint1030550timeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="endpointLoadingdeleteEndpoint-10-20-5-50timemin" title="min" buildTypeId="bt45"/>
+            <valueType key="endpointLoadingdeleteEndpoint-10-20-5-50timemax" title="max" buildTypeId="bt45"/>
+            <valueType key="endpointLoadingdeleteEndpoint-10-20-5-50timeaverage" title="average" buildTypeId="bt45"/>
         </graph>
-        <graph title="Overall Time to publish 50000 measurements in batches of 25">
-            <valueType key="overall125timemin" title="1 writers" buildTypeId="bt45"/>
-            <valueType key="overall525timemin" title="5 writers" buildTypeId="bt45"/>
-            <valueType key="overall1025timemin" title="10 writers" buildTypeId="bt45"/>
+        <graph title="Overall Time to publish 5000 measurements in batches of 25">
+            <valueType key="concurrentPublishOverall1-25-5000timemin" title="1 writers" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishOverall5-25-5000timemin" title="5 writers" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishOverall10-25-5000timemin" title="10 writers" buildTypeId="bt45"/>
         </graph>
         <graph title="Time to publish a 25 measurement batch (1 writers)">
-            <valueType key="write125timemin" title="min" buildTypeId="bt45"/>
-            <valueType key="write125timemax" title="max" buildTypeId="bt45"/>
-            <valueType key="write125timeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing1-25-5000timemin" title="min" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing1-25-5000timemax" title="max" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing1-25-5000timeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Time to publish a 25 measurement batch (5 writers)">
-            <valueType key="write525timemin" title="min" buildTypeId="bt45"/>
-            <valueType key="write525timemax" title="max" buildTypeId="bt45"/>
-            <valueType key="write525timeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing5-25-5000timemin" title="min" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing5-25-5000timemax" title="max" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing5-25-5000timeaverage" title="average" buildTypeId="bt45"/>
         </graph>
         <graph title="Time to publish a 25 measurement batch (10 writers)">
-            <valueType key="write1025timemin" title="min" buildTypeId="bt45"/>
-            <valueType key="write1025timemax" title="max" buildTypeId="bt45"/>
-            <valueType key="write1025timeaverage" title="average" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing10-25-5000timemin" title="min" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing10-25-5000timemax" title="max" buildTypeId="bt45"/>
+            <valueType key="concurrentPublishing10-25-5000timeaverage" title="average" buildTypeId="bt45"/>
         </graph>
     </custom-graphs>
 </settings>

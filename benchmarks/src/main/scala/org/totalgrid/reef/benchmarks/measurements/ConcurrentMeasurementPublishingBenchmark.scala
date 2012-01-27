@@ -28,6 +28,7 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable
 import org.totalgrid.reef.client.AddressableDestination
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.util.Timing.Stopwatch
 
 /**
  * this benchmark tests how long it takes to publish a total number of measurements to the server.
@@ -46,8 +47,8 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
     def testParameterNames = List("concurrency", "batchSize", "totalMeas")
     def testParameters = List(concurrency, batchSize, totalMeas)
 
-    def testOutputNames = List("time", "firstMessage", "lastMessage")
-    def testOutputs = List(time, firstMessage, lastMessage)
+    def testOutputNames = List("time", "firstMessage", "lastMessage", "spread")
+    def testOutputs = List(time, firstMessage, lastMessage, lastMessage - firstMessage)
   }
 
   case class OverallConcurrentMeasurementReading(concurrency: Int, batchSize: Int, time: Long) extends BenchmarkReading {
@@ -99,18 +100,17 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
       val (connection, pointsOnEndpoint) = pointsForEndpoints(endpointName)
       val measurementProcessorDestination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
 
-      val measurements = MeasurementUtility.makeMeasurements(pointsOnEndpoint, batchSize)
-
       () => {
+        val measurements = MeasurementUtility.makeMeasurements(pointsOnEndpoint, batchSize)
         val roundtripPromise = roundtripTimer.timeRoundtrip(measurements.toList)
         publishingClient.publishMeasurements(measurements.toList, measurementProcessorDestination)
         roundtripPromise
       }
     }
 
-    val start = System.nanoTime()
+    val stopwatch = new Stopwatch
     val results = ModelCreationUtilities.parallelExecutor(client, concurrency, batchPublishers)
-    val overallTime = (System.nanoTime() - start) / 1000000
+    val overallTime = stopwatch.elapsed
 
     val readings = mutable.Queue.empty[BenchmarkReading]
     readings.enqueue(new OverallConcurrentMeasurementReading(concurrency, batchSize, overallTime))
