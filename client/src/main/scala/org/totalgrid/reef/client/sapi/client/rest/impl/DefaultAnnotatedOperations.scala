@@ -56,6 +56,9 @@ final class DefaultAnnotatedOperations(restOps: RestOperations, exe: Executor) e
     try {
       fun(restOps).map(convert)
     } catch {
+      case npe: NullPointerException =>
+        definedFuture[Result[A]](Failure(new InternalClientError("Null pointer error while making request. " +
+          "Check that all parameters are not null.", npe)))
       case rse: ReefServiceException =>
         definedFuture[Result[A]](Failure(rse))
       case ex: Exception =>
