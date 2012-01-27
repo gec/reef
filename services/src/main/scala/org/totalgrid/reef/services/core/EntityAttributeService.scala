@@ -25,8 +25,8 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
-import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 
 class EntityAttributeService(protected val model: EntityAttributeServiceModel)
     extends SyncModeledServiceBase[AttrProto, AttrModel, EntityAttributeServiceModel]
@@ -37,12 +37,12 @@ class EntityAttributeService(protected val model: EntityAttributeServiceModel)
   override protected def preCreate(context: RequestContext, attr: AttrProto): AttrProto = {
 
     if (!attr.hasEntity)
-      throw new ReefServiceException("Must specify entity on creation", Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Must specify entity on creation")
     if (!attr.hasAttribute)
-      throw new ReefServiceException("Must specify attribute on creation", Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Must specify attribute on creation")
 
     def check(f: => Boolean, typ: String) {
-      if (!f) throw new ReefServiceException("Must specify attribute value of type " + typ + " on creation", Envelope.Status.BAD_REQUEST)
+      if (!f) throw new BadRequestException("Must specify attribute value of type " + typ + " on creation")
     }
 
     attr.getAttribute.getVtype match {
@@ -62,14 +62,11 @@ class EntityAttributeServiceModel
     with EventedServiceModel[AttrProto, AttrModel]
     with EntityAttributeConversion {
 
-  val entityModel = new EntityServiceModel
-  //val edgeModel = new EntityEdgeServiceModel
-
   val table = ApplicationSchema.entityAttributes
 
   override def createFromProto(context: RequestContext, attr: AttrProto): AttrModel = {
     val entity = EntityQuery.findEntity(attr.getEntity).getOrElse {
-      throw new ReefServiceException("Cannot find entity", Envelope.Status.BAD_REQUEST)
+      throw new BadRequestException("Cannot find entity")
     }
 
     create(context, EntityAttributesService.convertProtoToEntry(entity.id, attr.getAttribute))
@@ -107,14 +104,8 @@ trait EntityAttributeConversion extends UniqueAndSearchQueryable[AttrProto, Attr
       entry.longVal != existing.longVal ||
       entry.stringVal != existing.stringVal ||
       entry.byteVal != existing.byteVal
-
   }
 
-  /*def createModelEntry(proto: AttrProto, entity: Entity): AttrModel = {
-    null
-  }*/
-
-  import org.totalgrid.reef.services.framework.ProtoSerializer.convertBytesToByteString
   def convertToProto(entry: AttrModel): AttrProto = {
     AttrProto.newBuilder
       .setEntity(EntityQuery.entityToProto(entry.entity.value))

@@ -20,13 +20,14 @@ package org.totalgrid.reef.services.core
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.core.SubscriptionTools.SubscriptionTesting
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityAttribute }
 import org.totalgrid.reef.client.service.proto.Utils.Attribute
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
+import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.models.{ ApplicationSchema, DatabaseUsingTestBase, EntityAttribute => AttrModel }
 
 @RunWith(classOf[JUnitRunner])
 class EntityAttributeServiceTest extends DatabaseUsingTestBase {
@@ -41,6 +42,50 @@ class EntityAttributeServiceTest extends DatabaseUsingTestBase {
     val s = new SyncService(new EntityAttributeService(factories.attributes), contextSource)
 
     val ent = EntityTestSeed.addEntity("ent01", List("typ01"))
+
+    def scenario() {
+      val entId1 = ent.id
+      val entId2 = EntityTestSeed.addEntity("ent02", List("typ02")).id
+
+      ApplicationSchema.entityAttributes.insert(AttrModel(entId1, "attr01", Some("val01"), None, None, None, None))
+      ApplicationSchema.entityAttributes.insert(AttrModel(entId1, "attr02", Some("val02"), None, None, None, None))
+      ApplicationSchema.entityAttributes.insert(AttrModel(entId2, "attr01", Some("val03"), None, None, None, None))
+      ApplicationSchema.entityAttributes.insert(AttrModel(entId2, "attr03", Some("val04"), None, None, None, None))
+    }
+  }
+
+  def findAndCheck(l: List[EntityAttribute], entName: String, name: String, v: String) {
+    val attr = l.find(ea => ea.getAttribute.getName == name && ea.getEntity.getName == entName).get
+    attr.getAttribute.getVtype should equal(Attribute.Type.STRING)
+    attr.getAttribute.getValueString should equal(v)
+  }
+
+  test("Get all from entity") {
+    val f = new Fixture
+
+    f.scenario()
+
+    val query = EntityAttribute.newBuilder
+      .setEntity(Entity.newBuilder.setName("ent01"))
+      .build
+
+    val results = f.s.get(query).expectMany(2)
+    findAndCheck(results, "ent01", "attr01", "val01")
+    findAndCheck(results, "ent01", "attr02", "val02")
+  }
+
+  test("Get all across entity") {
+    val f = new Fixture
+
+    f.scenario()
+
+    val query = EntityAttribute.newBuilder
+      .setAttribute(Attribute.newBuilder.setName("attr01").setVtype(Attribute.Type.STRING))
+      .build
+
+    val results = f.s.get(query).expectMany(2)
+    findAndCheck(results, "ent01", "attr01", "val01")
+    findAndCheck(results, "ent02", "attr01", "val03")
   }
 
   def stringAttr(attrName: String, v: String) = {
@@ -104,6 +149,34 @@ class EntityAttributeServiceTest extends DatabaseUsingTestBase {
     f.eventCheck should equal(eventList)
   }
 
+  def putTest(attr: EntityAttribute) {
+    val f = new Fixture
+    intercept[BadRequestException] {
+      f.s.put(attr)
+    }
+  }
+
+  test("Bad put - no entity") {
+    putTest(
+      EntityAttribute.newBuilder
+        .setAttribute(Attribute.newBuilder.setName("attr01").setVtype(Attribute.Type.STRING).setValueString("ent01"))
+        .build)
+  }
+  test("Bad put - no value") {
+    putTest(
+      EntityAttribute.newBuilder
+        .setEntity(Entity.newBuilder.setName("ent01"))
+        .setAttribute(Attribute.newBuilder.setName("attr01").setVtype(Attribute.Type.STRING))
+        .build)
+  }
+  test("Bad put - wrong value") {
+    putTest(
+      EntityAttribute.newBuilder
+        .setEntity(Entity.newBuilder.setName("ent01"))
+        .setAttribute(Attribute.newBuilder.setName("attr01").setVtype(Attribute.Type.STRING).setValueBool(true))
+        .build)
+  }
+
   test("Delete / full lifecycle") {
     val f = new Fixture
 
@@ -120,4 +193,5 @@ class EntityAttributeServiceTest extends DatabaseUsingTestBase {
     val eventList = List((ADDED, classOf[EntityAttribute]), (MODIFIED, classOf[EntityAttribute]), (REMOVED, classOf[EntityAttribute]))
     f.eventCheck should equal(eventList)
   }
+
 }
