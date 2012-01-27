@@ -63,7 +63,7 @@ class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
     val modelFac = new ModelFactories(deps)
 
-    val service = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
+    val service = new SyncService(new ProcessStatusService(modelFac.procStatus, false), contextSource)
 
     val appService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
 

@@ -39,11 +39,21 @@ import org.totalgrid.reef.client.sapi.types.Optional._
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
-class ProcessStatusService(val model: ProcessStatusServiceModel)
+class ProcessStatusService(val model: ProcessStatusServiceModel, useServerTime: Boolean = true)
     extends SyncModeledServiceBase[StatusSnapshot, HeartbeatStatus, ProcessStatusServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.statusSnapshot
+
+  override protected def preUpdate(context: RequestContext, request: StatusSnapshot, existing: HeartbeatStatus) = {
+    // ignore any time sent to us, use our own clock for consistency
+    if (useServerTime) {
+      request.toBuilder.setTime(System.currentTimeMillis()).build
+    } else {
+      // in tests we want to accept whatever time is sent to us
+      request
+    }
+  }
 }
 
 class ProcessStatusServiceModel(

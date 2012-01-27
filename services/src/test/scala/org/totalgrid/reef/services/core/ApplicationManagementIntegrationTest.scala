@@ -54,7 +54,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
 
     val modelFac = new ModelFactories(deps)
 
-    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
+    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus, false), contextSource)
 
     val applicationConfigService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
 
