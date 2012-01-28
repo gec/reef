@@ -28,7 +28,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Reef Executor</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.executor.*</Export-Package>
+                        <Export-Package>org.totalgrid.reef.executor.*;version="${reef.version}"</Export-Package>
                         <Bundle-Activator>org.totalgrid.reef.executor.Activator</Bundle-Activator>
                         <_nouses>true</_nouses>
                     </instructions>

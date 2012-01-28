@@ -30,7 +30,7 @@
                         <Bundle-Activator>org.totalgrid.reef.measproc.activator.ProcessingActivator</Bundle-Activator>
                         <Private-Package>org.totalgrid.reef.measproc.activator</Private-Package>
                         <Export-Package>!org.totalgrid.reef.measproc.activator,
-                            org.totalgrid.reef.measproc.*</Export-Package>
+                            org.totalgrid.reef.measproc.*;version="${reef.version}"</Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <DynamicImport-Package>net.sf.cglib.*</DynamicImport-Package>
                         <_nouses>true</_nouses>

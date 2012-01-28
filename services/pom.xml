@@ -30,8 +30,8 @@
                         <Bundle-Activator>org.totalgrid.reef.services.activator.ServiceActivator</Bundle-Activator>
                         <Export-Package>
                             !org.totalgrid.reef.services.activator,
-                            org.totalgrid.reef.services.*,
-                            org.totalgrid.reef.models
+                            org.totalgrid.reef.services.*;version="${reef.version}",
+                            org.totalgrid.reef.models;version="${reef.version}"
                         </Export-Package>
                         <Private-Package>org.totalgrid.reef.services.activator</Private-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>

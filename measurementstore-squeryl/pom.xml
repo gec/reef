@@ -31,7 +31,7 @@
                         <Bundle-Activator>org.totalgrid.reef.measurementstore.squeryl.activator.SquerylMeasurementStoreActivator</Bundle-Activator>
                         <Private-Package>org.totalgrid.reef.measurementstore.squeryl.activator</Private-Package>
                         <Export-Package>
-                            org.totalgrid.reef.measurementstore.squeryl
+                            org.totalgrid.reef.measurementstore.squeryl;version="${reef.version}"
                         </Export-Package>
                         <DynamicImport-Package>net.sf.cglib.*</DynamicImport-Package>
                         <_nouses>true</_nouses>
