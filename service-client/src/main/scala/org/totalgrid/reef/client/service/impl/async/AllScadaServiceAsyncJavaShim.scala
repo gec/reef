@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.service.impl.async
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.client.service.impl.async
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.service.impl.async
+
 import org.totalgrid.reef.client.SubscriptionCreationListener
 
 import org.totalgrid.reef.client.service.async._

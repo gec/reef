@@ -1,5 +1,3 @@
-package org.totalgrid.reef.simulator.random
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.simulator.random
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.simulator.random
+
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
 

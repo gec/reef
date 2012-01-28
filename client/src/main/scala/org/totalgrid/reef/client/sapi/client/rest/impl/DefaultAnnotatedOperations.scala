@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.SubscriptionResult
  * object provides the stateless functions to do a complex futures operation
  * safeley and attach a helpful error message if something goes wrong.
  */
-object DefaultAnnotatedOperations{
+object DefaultAnnotatedOperations {
   def renderErrorMsg(errorMsg: => String): String = {
     try {
       val errorString = errorMsg
@@ -42,13 +42,13 @@ object DefaultAnnotatedOperations{
     }
   }
 
-  def definedFuture[A](exe : Executor, value: A): Future[A] = {
+  def definedFuture[A](exe: Executor, value: A): Future[A] = {
     val future = exe.future[A]
     future.set(value)
     future
   }
 
-  private def safeOpWithFuture[A,B](err: => String, exe : Executor)(fun:  => Future[Result[A]]): Future[Result[A]] = {
+  private def safeOpWithFuture[A, B](err: => String, exe: Executor)(fun: => Future[Result[A]]): Future[Result[A]] = {
     def convert(r: Result[A]): Result[A] = r match {
       case Success(x) => Success(x)
       case Failure(ex) => ex match {
@@ -63,22 +63,21 @@ object DefaultAnnotatedOperations{
       fun.map(convert)
     } catch {
       case npe: NullPointerException =>
-        definedFuture[Result[A]](exe,Failure(new InternalClientError("Null pointer error while making request. " +
+        definedFuture[Result[A]](exe, Failure(new InternalClientError("Null pointer error while making request. " +
           "Check that all parameters are not null.", npe)))
       case rse: ReefServiceException =>
-        definedFuture[Result[A]](exe,Failure(rse))
+        definedFuture[Result[A]](exe, Failure(rse))
       case ex: Exception =>
-        definedFuture[Result[A]](exe,Failure(new InternalClientError("ops() function: unexpected error: " + ex.getMessage, ex)))
+        definedFuture[Result[A]](exe, Failure(new InternalClientError("ops() function: unexpected error: " + ex.getMessage, ex)))
     }
   }
 
   /**
    * tries to execute the given function and catches all errors to create helpful error messages.
    */
-  def safeOperation[A,B](err: => String, exe : Executor)(fun:  => Future[Result[A]]): Promise[A] =
+  def safeOperation[A, B](err: => String, exe: Executor)(fun: => Future[Result[A]]): Promise[A] =
     Promise.from(safeOpWithFuture(err, exe)(fun))
 }
-
 
 /**
  * we only need the executor to create futures for errors correctly
@@ -91,13 +90,13 @@ final class DefaultAnnotatedOperations(restOps: RestOperations, exe: Executor) e
    * Forces the user of this class to provide a descriptive error message for the operation they're performing
    */
   def operation[A](err: => String)(fun: RestOperations => Future[Result[A]]): Promise[A] =
-    safeOperation(err, exe){fun(restOps)}
+    safeOperation(err, exe) { fun(restOps) }
 
   // TODO - it's probably possible to make SubscriptionResult only polymorphic in one type
   def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]] = {
     val future: Future[Result[SubscriptionResult[A, B]]] = try {
       val sub = restOps.subscribe(desc)
-      val opFuture = safeOpWithFuture(err, exe){fun(sub, restOps)}
+      val opFuture = safeOpWithFuture(err, exe) { fun(sub, restOps) }
       def onResult(r: Result[A]) = {
         if (r.isFailure) sub.cancel()
       }
