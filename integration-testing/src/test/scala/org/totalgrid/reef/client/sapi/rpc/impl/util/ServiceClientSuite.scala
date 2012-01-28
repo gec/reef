@@ -81,7 +81,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
     conn.addServicesList(new LoaderServicesList)
     conn.addServicesList(new ReefServices)
 
-    sessionOption = Some(conn.login(userConfig.getUserName, userConfig.getUserPassword).await)
+    sessionOption = Some(conn.login(userConfig).await)
     clientOption = Some(session.getRpcInterface(classOf[AllScadaService]))
     client.addSubscriptionCreationListener(canceler)
 

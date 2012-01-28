@@ -19,11 +19,13 @@
 package org.totalgrid.reef.client.sapi.client.rest
 
 import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.client.settings.UserSettings
 
 trait Login {
 
   def login(authToken: String): Client
   def login(userName: String, password: String): Promise[Client]
+  def login(userSettings: UserSettings): Promise[Client]
 
 }
 

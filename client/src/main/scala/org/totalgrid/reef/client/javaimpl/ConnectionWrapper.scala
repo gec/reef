@@ -32,7 +32,7 @@ class ConnectionWrapper(conn: SConnection) extends Connection {
 
   @throws(classOf[ReefServiceException])
   def login(userSettings: UserSettings): Client =
-    new ClientWrapper(conn.login(userSettings.getUserName, userSettings.getUserPassword).await)
+    new ClientWrapper(conn.login(userSettings).await)
 
   def createClient(authToken: String): Client = new ClientWrapper(conn.login(authToken))
 

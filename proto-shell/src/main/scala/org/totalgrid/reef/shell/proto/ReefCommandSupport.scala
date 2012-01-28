@@ -47,7 +47,7 @@ object ReefCommandSupport extends Logging {
 
   def getAuthenticatedClient(session: CommandSession, connection: Connection, context: String, cancelable: Cancelable, userSettings: UserSettings) {
     try {
-      val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+      val client = connection.login(userSettings).await
       val services = client.getRpcInterface(classOf[AllScadaService])
 
       println("Logged into " + context + " as user: " + userSettings.getUserName + "\n\n")

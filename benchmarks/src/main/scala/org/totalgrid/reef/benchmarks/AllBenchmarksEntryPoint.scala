@@ -58,7 +58,7 @@ object AllBenchmarksEntryPoint {
   }
 
   def runAllTests(connection: Connection, userSettings: UserSettings, properties: Properties) {
-    val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+    val client = connection.login(userSettings).await
     client.addServicesList(new LoaderServicesList())
     client.setHeaders(client.getHeaders.setTimeout(60000))
     client.setHeaders(client.getHeaders.setResultLimit(10000))

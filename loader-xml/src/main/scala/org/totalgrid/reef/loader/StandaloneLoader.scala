@@ -34,7 +34,7 @@ object StandaloneLoader {
         val factory = new ReefFactory(connectionInfo, new ReefServices)
         val conn = factory.connect
 
-        val session = conn.login(userSettings.getUserName, userSettings.getUserPassword).await
+        val session = conn.login(userSettings).await
 
         cancelable = Some(new Cancelable {
           def cancel() = {

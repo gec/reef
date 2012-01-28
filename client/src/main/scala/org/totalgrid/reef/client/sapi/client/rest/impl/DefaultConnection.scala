@@ -32,6 +32,7 @@ import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Rout
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
+import org.totalgrid.reef.client.settings.UserSettings
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -72,6 +73,8 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   }
 
   def login(authToken: String): Client = createClient(authToken, Strand(executor))
+
+  def login(userSettings: UserSettings) = login(userSettings.getUserName, userSettings.getUserPassword)
 
   def login(userName: String, password: String): Promise[Client] = {
     val strand = Strand(executor)
