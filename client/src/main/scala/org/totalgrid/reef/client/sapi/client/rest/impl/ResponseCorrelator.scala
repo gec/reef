@@ -43,19 +43,19 @@ class ResponseCorrelator(executor: Executor) extends Logging with BrokerMessageC
   private def nextUuid = UUID.randomUUID().toString
 
   /// mutable state
-  private case class Record(timer: Cancelable, callback: ResponseCallback)
+  private case class Record(timer: Cancelable, callback: ResponseCallback, interval: TimeInterval)
   private val map = mutable.Map.empty[String, Record]
 
   def register(interval: TimeInterval, callback: ResponseCallback): String = map.synchronized {
     val uuid = nextUuid
     val timer = executor.schedule(interval)(onTimeout(uuid))
-    map.put(uuid, Record(timer, callback))
+    map.put(uuid, Record(timer, callback, interval))
     uuid
   }
 
   def fail(uuid: String, response: FailureResponse) = {
     map.synchronized(map.remove(uuid)) match {
-      case Some(Record(timer, callback)) =>
+      case Some(Record(timer, callback, _)) =>
         timer.cancel()
         doCallback(callback, Left(response))
       case None =>
@@ -72,7 +72,7 @@ class ResponseCorrelator(executor: Executor) extends Logging with BrokerMessageC
       map.clear()
       values
     }.foreach {
-      case Record(timer, callback) =>
+      case Record(timer, callback, _) =>
         timer.cancel()
         doCallback(callback, Left(FailureResponse(Envelope.Status.BUS_UNAVAILABLE, "Graceful close")))
     }
@@ -80,8 +80,8 @@ class ResponseCorrelator(executor: Executor) extends Logging with BrokerMessageC
 
   private def onTimeout(uuid: String) = {
     map.synchronized(map.remove(uuid)) match {
-      case Some(Record(timer, callback)) =>
-        doCallback(callback, Left(ResponseTimeout))
+      case Some(Record(timer, callback, interval)) =>
+        doCallback(callback, Left(ResponseTimeout(interval)))
       case None =>
         logger.warn("Unexpected service response timeout w/ uuid: " + uuid)
     }
@@ -97,7 +97,7 @@ class ResponseCorrelator(executor: Executor) extends Logging with BrokerMessageC
 
   private def onResponse(rsp: ServiceResponse) = {
     map.synchronized(map.remove(rsp.getId)) match {
-      case Some(Record(timer, callback)) =>
+      case Some(Record(timer, callback, _)) =>
         timer.cancel()
         doCallback(callback, Right(rsp))
       case None =>

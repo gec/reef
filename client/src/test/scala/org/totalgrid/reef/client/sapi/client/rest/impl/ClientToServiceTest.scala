@@ -153,7 +153,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
 
   def testTimeout(c: Client) {
     val i = SomeInteger(1)
-    c.put(i).await should equal(Response(Envelope.Status.RESPONSE_TIMEOUT))
+    c.put(i).await.status should equal(Envelope.Status.RESPONSE_TIMEOUT)
   }
 
   test("Failures timeout sucessfully") {
