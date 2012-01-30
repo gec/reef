@@ -19,22 +19,22 @@
 package org.totalgrid.reef.models
 
 import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, EntityEdge => EntityEdgeProto, Relationship }
-import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
 import org.squeryl.dsl.ast.LogicalBoolean
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
+
 import org.totalgrid.reef.client.exception.BadRequestException
 
-import SquerylModel._
+import org.totalgrid.reef.client.sapi.types.Optional._
+import UUIDConversions._
+import SquerylConversions._
+
 import java.util.UUID
-import org.totalgrid.reef.services.NullRequestContext
 import com.weiglewilczek.slf4s.Logging
 
-// implict asParam
-import org.totalgrid.reef.client.sapi.types.Optional._
 import scala.collection.JavaConversions._
 
 object EntityQuery extends Logging {

@@ -34,7 +34,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
-import util.UUIDConversions._
+import org.totalgrid.reef.models.UUIDConversions._
 import java.util.UUID
 
 // implicit proto properties

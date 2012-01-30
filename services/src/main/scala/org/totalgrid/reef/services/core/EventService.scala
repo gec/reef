@@ -34,6 +34,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 //import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.models.UUIDConversions._
 
 import org.totalgrid.reef.event.AttributeList
 import org.totalgrid.reef.services.core.util.MessageFormatter

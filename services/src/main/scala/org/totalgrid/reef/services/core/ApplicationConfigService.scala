@@ -30,6 +30,7 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
+import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.sapi.types.Optional._
 
 import scala.collection.JavaConversions._

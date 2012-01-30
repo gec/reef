@@ -16,12 +16,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.models
+package org.totalgrid.reef.services.core
 
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FunSuite }
-import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
-import org.totalgrid.reef.services.ServiceBootstrap
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -30,10 +26,10 @@ import scala.collection.mutable.ListBuffer
 
 import org.totalgrid.reef.client.service.proto.Alarms._
 import org.totalgrid.reef.client.service.proto.Events._
-import org.totalgrid.reef.services.core.{ SyncService, AlarmQueryService }
+import org.totalgrid.reef.models._
 
 @RunWith(classOf[JUnitRunner])
-class EventAlarmIndexingTests extends DatabaseUsingTestBaseNoTransaction {
+class EventAlarmIndexingTests extends DatabaseUsingTestBaseNoTransaction with SyncServicesTestHelpers {
 
   test("Seed events") {
 

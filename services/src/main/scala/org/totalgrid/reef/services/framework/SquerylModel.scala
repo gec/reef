@@ -170,43 +170,8 @@ trait BasicSquerylModel[SqlKeyType, SqlType <: ModelWithIdBase[SqlKeyType]]
 }
 
 object SquerylModel {
-  import org.totalgrid.reef.client.service.proto.Model.ReefUUID
-  def makeId(entry: ModelWithId) = {
-    ReefID.newBuilder.setValue(entry.id.toString)
-  }
-  def makeUuid(entry: EntityBasedModel) = {
-    ReefUUID.newBuilder.setValue(entry.entityId.toString)
-  }
-  def makeUuid(entry: ModelWithUUID) = {
-    ReefUUID.newBuilder.setValue(entry.id.toString)
-  }
-  def makeUuid(id: Long) = {
-    ReefUUID.newBuilder.setValue(id.toString)
-  }
-  def makeUuid(id: java.util.UUID) = {
-    ReefUUID.newBuilder.setValue(id.toString)
-  }
 
   import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }
-
-  class NoSearchTermsException(msg: String) extends BadRequestException(msg)
-
-  /**
-   *  Common logic for dynamically combining multiple squeryl expressions (with and)
-   * @param exps    List of squeryl expressions
-   * @return        Expression that results from intersection of input expressions
-   */
-  def combineExpressions(exps: List[LogicalBoolean]) = {
-    exps.length match {
-      case 0 => throw new NoSearchTermsException("No search terms in query. If searching for all records use a wildcard (\"*\") on a searchable field")
-      case _ =>
-        exps.reduceLeft { (a, b) =>
-          new BinaryOperatorNodeLogicalBoolean(a, b, "and")
-        }
-    }
-  }
-
-  implicit def expressionAnder(exps: List[LogicalBoolean]): LogicalBoolean = combineExpressions(exps)
 
   /**
    * we use this singleton to indicate a wildcard search so we can differentiate between a totally blank query and

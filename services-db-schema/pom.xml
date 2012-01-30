@@ -7,7 +7,7 @@
         <version>0.4.4-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
-    <artifactId>reef-services</artifactId>
+    <artifactId>reef-services-db-schema</artifactId>
     <packaging>bundle</packaging>
 
     <licenses>
@@ -26,13 +26,10 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Services</Bundle-Name>
-                        <Bundle-Activator>org.totalgrid.reef.services.activator.ServiceActivator</Bundle-Activator>
+                        <Bundle-Name>Reef Service DB Schema</Bundle-Name>
                         <Export-Package>
-                            !org.totalgrid.reef.services.activator,
-                            org.totalgrid.reef.services.*;version="${reef.version}"
+                            org.totalgrid.reef.models;version="${reef.version}"
                         </Export-Package>
-                        <Private-Package>org.totalgrid.reef.services.activator</Private-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <DynamicImport-Package>net.sf.cglib.*</DynamicImport-Package>
                         <_nouses>true</_nouses>
@@ -46,51 +43,35 @@
                     <header>../AGPL_FILE_HEADER</header>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-application-framework</artifactId>
+            <artifactId>reef-persistence-api</artifactId>
             <version>${reef.version}</version>
-            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons-codec.version}</version>
         </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-services-db-schema</artifactId>
+            <artifactId>reef-service-client</artifactId>
             <version>${reef.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-measurementstore-api</artifactId>
-            <version>${reef.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-processing</artifactId>
-            <version>${reef.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-processing</artifactId>
-            <version>${reef.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-		<dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-memory-broker</artifactId>
-            <version>${reef.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-util-osgi</artifactId>
-            <version>${reef.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
@@ -99,22 +80,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>${felix-core.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-postgresql</artifactId>
             <version>${reef.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-services-db-schema</artifactId>
-            <version>${reef.version}</version>
-            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
     </dependencies>

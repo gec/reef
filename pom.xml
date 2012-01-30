@@ -82,6 +82,7 @@
 		<module>default-simulator</module>
 		<module>example-simulator</module>
 		<module>protocol-dnp3</module>
+        <module>services-db-schema</module>
 		<module>services</module>
 		<module>admin-shell</module>
         <module>standalone-node</module>

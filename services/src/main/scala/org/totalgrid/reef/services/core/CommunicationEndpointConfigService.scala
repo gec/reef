@@ -27,6 +27,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => Entit
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.sapi.types.Optional._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.models.UUIDConversions._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Descriptors
@@ -53,7 +54,7 @@ class CommEndCfgServiceModel(
   val edgeModel = new EntityEdgeServiceModel
 
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
-    import org.totalgrid.reef.services.core.util.UUIDConversions._
+    import org.totalgrid.reef.models.UUIDConversions._
     val ent = entityModel.findOrCreate(context, proto.getName, "CommunicationEndpoint" :: "LogicalNode" :: Nil, proto.uuid)
     val sql = create(context, createModelEntry(context, proto, ent))
     setLinkedObjects(context, sql, proto, ent)

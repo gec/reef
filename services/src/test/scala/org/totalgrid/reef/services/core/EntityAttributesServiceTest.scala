@@ -37,7 +37,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity, EntityA
 import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])
-class EntityAttributesServiceTest extends DatabaseUsingTestBase {
+class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   def seedEntity(name: String, typ: String) = {
     ReefUUID.newBuilder.setValue(EntityTestSeed.addEntity(name, typ).id.toString).build

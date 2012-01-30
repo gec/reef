@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel => ChannelProto }
 import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndPort }
 
-import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.framework._
@@ -29,7 +28,7 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.services.core.util.UUIDConversions._
+import org.totalgrid.reef.models.UUIDConversions._
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._
 

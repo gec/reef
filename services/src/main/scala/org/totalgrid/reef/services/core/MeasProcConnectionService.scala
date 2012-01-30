@@ -28,6 +28,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.coordinators._
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Descriptors
 

@@ -16,23 +16,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.services.core.util
+package org.totalgrid.reef.models
 
-import java.util.UUID
-import org.totalgrid.reef.client.service.proto.Model.ReefUUID
-import org.totalgrid.reef.client.service.proto.OptionalProtos.OptModelReefUUID
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FunSuite }
+import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
-object UUIDConversions {
-
-  implicit def convertReefUUIDToUUID(optUUID: Option[ReefUUID]) = {
-    optUUID.map { ru => UUID.fromString(ru.getValue) }
+abstract class DatabaseUsingTestBaseNoTransaction extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
+  lazy val dbConnection = DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
+  override def beforeAll() {
+    dbConnection.transaction {
+      ApplicationSchema.reset()
+    }
   }
 
-  implicit def convertOptReefUUIDToUUID(optUUID: OptModelReefUUID) = {
-    optUUID.value.map { ru => UUID.fromString(ru) }
-  }
+}
 
-  implicit def convertUUIDtoReefUUID(uuid: UUID) = {
-    ReefUUID.newBuilder.setValue(uuid.toString).build
-  }
+abstract class DatabaseUsingTestBase extends DatabaseUsingTestBaseNoTransaction with RunTestsInsideTransaction {
+
 }

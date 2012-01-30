@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point, Entity 
 import org.totalgrid.reef.services.{ SilentRequestContext, ServiceDependencies, ServiceResponseTestingHelpers }
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
+class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import ServiceResponseTestingHelpers._
 

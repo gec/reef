@@ -25,8 +25,10 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models._
 
+import org.totalgrid.reef.models.SquerylConversions._
 import SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, EntityEdge => EntityEdgeProto }
 
 class EntityEdgeService(protected val model: EntityEdgeServiceModel)

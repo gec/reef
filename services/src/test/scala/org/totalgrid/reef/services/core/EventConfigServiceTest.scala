@@ -31,7 +31,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.proto.Envelope
 
 @RunWith(classOf[JUnitRunner])
-class EventConfigServiceTest extends DatabaseUsingTestBase {
+class EventConfigServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   val service = sync(new EventConfigService(new EventConfigServiceModel))
 

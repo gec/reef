@@ -46,7 +46,7 @@ class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
 }
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementHistoryServiceTest extends DatabaseUsingTestBase {
+class MeasurementHistoryServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   def getMeas(name: String, time: Int, value: Int) = {
     val meas = Measurements.Measurement.newBuilder

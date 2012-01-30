@@ -29,7 +29,7 @@ import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.client.service.proto.Model._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.services.core.util.UUIDConversions._
+import org.totalgrid.reef.models.UUIDConversions._
 import java.util.UUID
 
 import org.scalatest.junit.JUnitRunner

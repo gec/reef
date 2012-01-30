@@ -30,6 +30,8 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.{ SaltedPasswordHelper, ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 
+import org.totalgrid.reef.models.UUIDConversions._
+
 class AgentService(protected val model: AgentServiceModel)
     extends SyncModeledServiceBase[Agent, AgentModel, AgentServiceModel]
     with DefaultSyncBehaviors {

@@ -27,7 +27,7 @@ import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Model.{ Command, CommandType, Entity }
 
 @RunWith(classOf[JUnitRunner])
-class CommandServiceTest extends DatabaseUsingTestBase {
+class CommandServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   import SubscriptionTools._
 
