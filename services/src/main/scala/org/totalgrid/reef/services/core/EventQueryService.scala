@@ -28,6 +28,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
+import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
 import org.totalgrid.reef.client.exception.BadRequestException
 

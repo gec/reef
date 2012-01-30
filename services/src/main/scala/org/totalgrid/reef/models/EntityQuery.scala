@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.services.core
+package org.totalgrid.reef.models
 
 import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, EntityEdge => EntityEdgeProto, Relationship }
 import org.totalgrid.reef.services.framework._
@@ -30,7 +30,6 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import SquerylModel._
 import java.util.UUID
-import org.totalgrid.reef.models.{ EntityTypeMetaModel, ApplicationSchema, Entity, EntityEdge => Edge, EntityDerivedEdge => Derived, EntityToTypeJoins }
 import org.totalgrid.reef.services.NullRequestContext
 import com.weiglewilczek.slf4s.Logging
 
@@ -201,7 +200,7 @@ object EntityQuery extends Logging {
           select ((lowEnt, edge)))
     }
 
-    protected def expr(ent: Entity, edge: Edge, upperIds: List[UUID]): LogicalBoolean = {
+    protected def expr(ent: Entity, edge: EntityEdge, upperIds: List[UUID]): LogicalBoolean = {
 
       val optList: List[Option[LogicalBoolean]] = List(name.map(ent.name === _),
         (types.size > 0) thenGet (ent.id in entityIdsFromTypes(types)),
@@ -396,7 +395,7 @@ object EntityQuery extends Logging {
         select (ent, edge.distance))
   }
 
-  // Helper for 
+  // Helper for
   def getChildrenOfType(rootId: UUID, relation: String, entType: String) = {
     from(entities)(ent =>
       where((ent.id in
@@ -404,6 +403,15 @@ object EntityQuery extends Logging {
           where((edge.parentId === rootId) and (edge.relationship === relation))
             select (edge.childId))) and (ent.id in entityIdsFromTypes(List(entType))))
         select (ent))
+  }
+
+  def getChildrenIdsOfType(rootId: UUID, relation: String, entType: String) = {
+    from(entities)(ent =>
+      where((ent.id in
+        from(edges)(edge =>
+          where((edge.parentId === rootId) and (edge.relationship === relation))
+            select (edge.childId))) and (ent.id in entityIdsFromTypes(List(entType))))
+        select (ent.id))
   }
 
   def getParentOfType(rootId: UUID, relation: String, entType: String) = {
@@ -415,7 +423,7 @@ object EntityQuery extends Logging {
         select (ent))
   }
 
-  def findEdge(proto: EntityEdgeProto): Option[Edge] = {
+  def findEdge(proto: EntityEdgeProto): Option[EntityEdge] = {
     proto.uuid.value.flatMap { v =>
       returnSingleOption(edges.where(t => t.id === v.toInt).toList, "Entity Edge")
     }
@@ -450,45 +458,11 @@ object EntityQuery extends Logging {
     if (rootNode.uuid.value == Some("*") || rootNode.name == Some("*")) {
       entityIdsFromType(childType)
     } else {
-      // TODO: get entitiy queries to use and respect requestContext - backlog-70
-      EntitySearches.findRecord(new NullRequestContext, rootNode).map { rootEnt =>
-        from(getChildrenOfType(rootEnt.id, relation, childType))(ent => select(ent.id))
+      findEntity(rootNode).map { rootEnt =>
+        getChildrenIdsOfType(rootEnt.id, relation, childType)
       }.getOrElse(from(entities)(e => where(true === false) select (e.id)))
     }
   }
 
 }
-
-trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
-  val table = ApplicationSchema.entities
-  def uniqueQuery(proto: EntityProto, sql: Entity) = {
-    List(
-      proto.uuid.value.asParam(sql.id === UUID.fromString(_)),
-      proto.name.asParam(sql.name === _),
-      EntityQuery.noneIfEmpty(proto.types).asParam(sql.id in EntityQuery.entityIdsFromTypes(_)))
-  }
-
-  def searchQuery(proto: EntityProto, sql: Entity) = Nil
-}
-object EntitySearches extends EntitySearches
-
-case class EntitySearch(uuid: Option[String], name: Option[String], types: Option[List[String]]) {
-  def map[B](f: EntitySearch => B): Option[B] = {
-    if (uuid.isDefined || name.isDefined || (types.isDefined && !types.get.isEmpty)) Some(f(this))
-    else None
-  }
-}
-
-trait EntityPartsSearches extends UniqueAndSearchQueryable[EntitySearch, Entity] {
-  val table = ApplicationSchema.entities
-  def uniqueQuery(proto: EntitySearch, sql: Entity) = {
-    List(
-      proto.uuid.asParam(sql.id === UUID.fromString(_)),
-      proto.name.asParam(sql.name === _),
-      EntityQuery.noneIfEmpty(proto.types).asParam(sql.id in EntityQuery.entityIdsFromTypes(_)))
-  }
-
-  def searchQuery(proto: EntitySearch, sql: Entity) = Nil
-}
-object EntityPartsSearches extends EntityPartsSearches
 

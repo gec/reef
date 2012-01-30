@@ -22,7 +22,6 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
-import org.totalgrid.reef.services.core.EntityQuery
 
 case class ApplicationCapability(
     val applicationId: Long,

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.models
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.services.core.EntityQuery.ResultNode
+import org.totalgrid.reef.models.EntityQuery.ResultNode
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
 import org.squeryl.{ KeyedEntity, Table }

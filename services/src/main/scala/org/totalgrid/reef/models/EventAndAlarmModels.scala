@@ -21,7 +21,6 @@ package org.totalgrid.reef.models
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.util.LazyVar
-import org.totalgrid.reef.services.core.EntityQuery
 import java.util.UUID
 
 case class EventStore(

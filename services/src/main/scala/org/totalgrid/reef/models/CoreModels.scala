@@ -19,7 +19,6 @@
 package org.totalgrid.reef.models
 
 import org.totalgrid.reef.util.LazyVar
-import org.totalgrid.reef.services.core.EntityQuery
 
 import org.squeryl.annotations.Transient
 import org.squeryl.PrimitiveTypeMode._

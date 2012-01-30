@@ -21,7 +21,6 @@ package org.totalgrid.reef.models
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
-import org.totalgrid.reef.services.core.EntityQuery
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords

@@ -19,6 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Point, Entity }
+import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._

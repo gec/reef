@@ -25,6 +25,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point, Entity }
 

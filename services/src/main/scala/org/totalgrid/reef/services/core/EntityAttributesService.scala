@@ -27,6 +27,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
+import org.totalgrid.reef.models.EntityQuery
 
 import scala.collection.JavaConversions._
 
