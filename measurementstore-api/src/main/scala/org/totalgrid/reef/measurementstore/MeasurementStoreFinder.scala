@@ -38,28 +38,40 @@ object MeasurementStoreFinder extends Logging {
     val historian = PropertyLoading.getString("org.totalgrid.reef.mstore.historianImpl", config)
     val currentValue = PropertyLoading.getString("org.totalgrid.reef.mstore.currentValueImpl", config)
 
-    // if the two impls are the same get a single measurementstore that does both
-    if (historian == currentValue) getImplementation(context, historian, Some(true), Some(true))
-    else {
+    def fail() {
+      throw new IllegalArgumentException("Measurement store implementation not found, make sure packages are active and installed. " +
+        " historian: " + historian + " realtime: " + currentValue)
+    }
 
-      val executorSource = {
-        Executors.newResizingThreadPool(5.minutes)
-      }
+    // if the two impls are the same get a single measurementstore that does both
+    if (historian == currentValue) {
+      val store = getImplementation(context, historian, Some(true), Some(true))
+
+      if (store.isEmpty) fail()
+
+      store.get
+    } else {
 
       // otherwise load both implementations and return the mixed store
-      val historianStore = getImplementation(context, historian, Some(true), None)
-      val currentStore = getImplementation(context, currentValue, None, Some(true))
+      // first try to find implementation that doesn't do both, then one that does both if it can't find it
+      val historianStore = getImplementation(context, historian, Some(true), Some(false)).orElse(
+        getImplementation(context, historian, Some(true), None))
+      val currentStore = getImplementation(context, currentValue, Some(false), Some(true)).orElse(
+        getImplementation(context, currentValue, None, Some(true)))
 
-      new MixedMeasurementStore(executorSource, historianStore, currentStore)
+      if (historianStore.isEmpty || currentStore.isEmpty) fail()
+
+      // don't actually make the executor unless connect is called
+      val executorSource = { Executors.newResizingThreadPool(5.minutes) }
+
+      new MixedMeasurementStore(executorSource, historianStore.get, currentStore.get)
     }
   }
 
   /**
    * get a particular implementation of MeasurementStore with the specific historian and realtime values
    */
-  private def getImplementation(context: BundleContext, implementation: String, historian: Option[Boolean], realtime: Option[Boolean]): MeasurementStore = {
-
-    def showOptions = "implementation: " + implementation + " hist: " + historian + " realtime: " + realtime
+  private def getImplementation(context: BundleContext, implementation: String, historian: Option[Boolean], realtime: Option[Boolean]): Option[MeasurementStore] = {
 
     val serviceOptions = context findServices withInterface[MeasurementStore] withFilter
       "impl" === implementation andApply { (service, properties) =>
@@ -70,8 +82,8 @@ object MeasurementStoreFinder extends Logging {
         else Some(service)
       }
     serviceOptions.flatten match {
-      case x :: tail => x
-      case _ => throw new IllegalArgumentException("Measurement store implementation not found, make sure package is installed: " + showOptions)
+      case x :: tail => Some(x)
+      case _ => None
     }
   }
 }
