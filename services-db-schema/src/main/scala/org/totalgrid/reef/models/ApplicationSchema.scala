@@ -81,6 +81,8 @@ object ApplicationSchema extends Schema {
   val permissionSets = table[PermissionSet]
   val permissionSetJoins = table[PermissionSetJoin]
   val authTokens = table[AuthToken]
+
+  //on(authTokens)(s => declare(s.token is (indexed), s.expirationTime is (indexed)))
   val tokenSetJoins = table[AuthTokenPermissionSetJoin]
   val agentSetJoins = table[AgentPermissionSetJoin]
 

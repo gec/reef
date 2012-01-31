@@ -33,6 +33,7 @@ import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderServicesList }
 import org.totalgrid.reef.client.settings.util.{ PropertyLoading, PropertyReader }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.models.CoreServicesSchema
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
@@ -58,7 +59,7 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     logger.info("Resetting database and measurement store")
     val dbConnection = DbConnector.connect(sql)
     measurementStore.connect()
-    ServiceBootstrap.resetDb(dbConnection)
+    CoreServicesSchema.prepareDatabase(dbConnection)
     ServiceBootstrap.seed(dbConnection, userSettings.getUserPassword)
     measurementStore.reset()
     measurementStore.disconnect()

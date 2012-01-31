@@ -25,9 +25,7 @@ import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 abstract class DatabaseUsingTestBaseNoTransaction extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
   lazy val dbConnection = DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
   override def beforeAll() {
-    dbConnection.transaction {
-      ApplicationSchema.reset()
-    }
+    CoreServicesSchema.prepareDatabase(dbConnection, true, true)
   }
 
 }

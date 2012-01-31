@@ -26,12 +26,20 @@ import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import org.totalgrid.reef.services.ServiceBootstrap
 import org.apache.felix.gogo.commands.{ Option => GogoOption, Command }
 import java.io.{ InputStreamReader, BufferedReader }
+import org.totalgrid.reef.models.CoreServicesSchema
 
 @Command(scope = "reef", name = "resetdb", description = "Clears and resets sql tables")
 class ResetDatabaseCommand extends ReefCommandSupport {
 
   @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
   private var password: String = null
+
+  @GogoOption(name = "-m", description = "Migrate database schema (rather than clearing then writing)")
+  private var useMigrations = false
+
+  // TODO: once we believe in the migrations switch this to default to not clear
+  @GogoOption(name = "-dontClear", description = "Don't clear database first")
+  private var dontClearFirst = false
 
   override val requiresLogin = false
 
@@ -63,7 +71,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
     mstore.connect()
 
     try {
-      ServiceBootstrap.resetDb(dbConnection)
+      CoreServicesSchema.prepareDatabase(dbConnection, !dontClearFirst, useMigrations)
       ServiceBootstrap.seed(dbConnection, systemPassword)
       println("Cleared and updated jvm database")
 
