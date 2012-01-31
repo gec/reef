@@ -85,6 +85,11 @@
             <version>${reef.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-osgi</artifactId>
+            <version>${liquibase.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
