@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.service.proto.Utils.Attribute
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
+import org.totalgrid.reef.models.{ EntityQuery, Entity, ApplicationSchema, EntityAttribute => AttrModel }
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 

@@ -764,4 +764,7 @@
             <column name="expirationTime"/>
         </createIndex>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1328117146325-1">
+        <dropSequence schemaName="public" sequenceName="s_CommandAccessModel_id"/>
+    </changeSet>
 </databaseChangeLog>
