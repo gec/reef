@@ -40,7 +40,7 @@ class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
 
   override def postAsync(contextSource: RequestContextSource, req: BatchServiceRequest)(callback: Response[BatchServiceRequest] => Unit) {
     val responses = contextSource.transaction { context =>
-      authorizeCreate(context, req)
+
       val source = new RequestContextSource { def transaction[A](f: (RequestContext) => A) = f(context) }
 
       val requests = req.getRequestsList.toList

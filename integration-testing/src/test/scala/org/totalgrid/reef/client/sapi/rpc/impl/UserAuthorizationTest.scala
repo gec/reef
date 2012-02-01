@@ -73,6 +73,27 @@ class UserAuthorizationTest extends ServiceClientSuite {
 
   }
 
+  test("Batch services enforces same permissions") {
+
+    asGuestUser("test-agent", "test-password") { (guestClient, guestServices) =>
+      // test that we can use batch service to do allowed operations
+      guestServices.startBatchRequests()
+      val commandPromise = guestServices.getCommands()
+      guestServices.flushBatchRequests().await
+
+      val commands = commandPromise.await
+
+      intercept[UnauthorizedException] {
+        guestServices.startBatchRequests()
+        // should fail overall batch, since we can read but not create
+        guestServices.getCommands()
+        guestServices.createCommandExecutionLock(commands.head :: Nil)
+        guestServices.flushBatchRequests().await
+      }
+    }
+
+  }
+
   test("Can update own password") {
     val userName = "test-agent3"
     val password = "test-password3"
