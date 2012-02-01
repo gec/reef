@@ -45,6 +45,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncService
 
   protected val service = sync(new EntityAttributesService)
 
+  /*
   test("Put") {
     val entId = seedEntity("ent01", "entType")
 
@@ -62,12 +63,6 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncService
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.addAttributes(attribute).build))
   }
 
-  /*test("Bad put - no attributes") {
-    val entity = Entity.newBuilder.setUuid("fake").build
-
-    intercept[BadRequestException](service.put(EntityAttributes.newBuilder.setEntity(entity).build))
-  }*/
-
   test("Bad put - entity doesn't exist") {
     val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue(new UUID(0, 0).toString)).build
     val attribute = Attribute.newBuilder.setName("testAttr").setVtype(Attribute.Type.SINT64).setValueSint64(56).build
@@ -83,19 +78,6 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncService
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build
 
     intercept[BadRequestException](service.put(EntityAttributes.newBuilder.setEntity(entity).addAttributes(attribute).build))
-  }
-
-  def simpleGetScenario = {
-    val id = EntityTestSeed.addEntity("ent01", "entType1").id
-    EntityTestSeed.addEntity("ent02", "entType2")
-
-    ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
-    ReefUUID.newBuilder.setValue(id.toString).build
-  }
-
-  def attrReq(entityId: ReefUUID, attributes: List[Attribute]) = {
-    val entity = Entity.newBuilder.setUuid(entityId).build
-    EntityAttributes.newBuilder.setEntity(entity).addAllAttributes(attributes.toList).build
   }
 
   test("Second put modifies") {
@@ -136,6 +118,19 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncService
 
     result2.getAttributesCount should equal(1)
     result2.getAttributesList.get(0).getName should equal("testAttr03")
+  }*/
+
+  def simpleGetScenario = {
+    val id = EntityTestSeed.addEntity("ent01", "entType1").id
+    EntityTestSeed.addEntity("ent02", "entType2")
+
+    ApplicationSchema.entityAttributes.insert(new EntityAttribute(id, "attr01", Some("hello"), None, None, None, None))
+    ReefUUID.newBuilder.setValue(id.toString).build
+  }
+
+  def attrReq(entityId: ReefUUID, attributes: List[Attribute]) = {
+    val entity = Entity.newBuilder.setUuid(entityId).build
+    EntityAttributes.newBuilder.setEntity(entity).addAllAttributes(attributes.toList).build
   }
 
   def checkSimpleGetScenario(request: EntityAttributes) = {
@@ -206,6 +201,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncService
     }
   }
 
+  /*
   def roundtrip[A](v: A, typ: Attribute.Type, setup: (Attribute.Builder, A) => Unit, get: Attribute => A) = {
     val entId = seedEntity("ent01", "entType")
 
@@ -262,7 +258,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncService
     resp.getAttributesCount should equal(0)
 
     noneForEntity(entId)
-  }
+  } */
 
   def deleteScenario = {
     val entId1 = EntityTestSeed.addEntity("ent01", "entType1").id

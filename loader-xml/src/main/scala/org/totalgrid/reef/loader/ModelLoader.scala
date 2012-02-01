@@ -27,7 +27,8 @@ import org.totalgrid.reef.client.service.proto.Processing._
 trait ModelLoader {
   def putOrThrow(e: Entity)
   def putOrThrow(e: EntityEdge)
-  def putOrThrow(e: EntityAttributes)
+  //def putOrThrow(e: EntityAttributes)
+  def putOrThrow(e: EntityAttribute)
   def putOrThrow(e: Command)
   def putOrThrow(e: Point)
   def putOrThrow(e: EventConfig)

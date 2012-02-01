@@ -102,6 +102,11 @@
  *   repeated org.totalgrid.reef.client.service.proto.Utils.Attribute attributes = 2;
  * }
  * 
+ * message EntityAttribute {
+ *   optional Entity entity = 1;
+ *   optional org.totalgrid.reef.client.service.proto.Utils.Attribute attribute = 2;
+ * }
+ * 
  * enum PointType {
  *   ANALOG         = 1;
  *   COUNTER        = 2;

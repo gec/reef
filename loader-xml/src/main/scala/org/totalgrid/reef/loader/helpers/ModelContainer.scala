@@ -19,7 +19,6 @@
 package org.totalgrid.reef.loader.helpers
 
 import org.totalgrid.reef.client.service.proto.Alarms.EventConfig
-import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile, Point, Command, EntityAttributes, EntityEdge, Entity }
 import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, Endpoint }
 import collection.mutable.{ ArrayBuffer }
 import com.google.protobuf.GeneratedMessage
@@ -30,6 +29,7 @@ import org.totalgrid.reef.client.service.proto.Model
 import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.LoadingException
+import org.totalgrid.reef.client.service.proto.Model._
 
 class ModelContainer extends Logging {
   private val models = new ArrayBuffer[GeneratedMessage]
@@ -67,7 +67,7 @@ class ModelContainer extends Logging {
       edge
     }
 
-  def add(entityAttributes: EntityAttributes): EntityAttributes =
+  def add(entityAttributes: EntityAttribute): EntityAttribute =
     {
       addModel(entityAttributes)
       entityAttributes

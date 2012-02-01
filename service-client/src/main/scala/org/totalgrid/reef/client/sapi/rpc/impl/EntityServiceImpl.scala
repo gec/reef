@@ -19,7 +19,6 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.service.proto.Model.{ EntityAttributes, Entity, ReefUUID }
 import org.totalgrid.reef.client.service.proto.Utils.Attribute
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ EntityAttributesBuilders, EntityRequestBuilders }
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
@@ -28,6 +27,7 @@ import net.agileautomata.executor4s.{ Result, Future }
 import org.totalgrid.reef.client.sapi.rpc.EntityService
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 import org.totalgrid.reef.client.service.entity.EntityRelation
+import org.totalgrid.reef.client.service.proto.Model.{ EntityAttribute, EntityAttributes, Entity, ReefUUID }
 
 trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
 
@@ -175,29 +175,49 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
 
   override def removeEntityAttribute(id: ReefUUID, attrName: String) = {
     ops.operation("Couldn't remove attribute for entity: " + id + " attrName: " + attrName) { session =>
-      val prev = getEntityAttributes(id).await
-      val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
-      session.put(EntityAttributesBuilders.putAttributesToEntityId(id, set)).map(_.one)
+
+      val delReq = EntityAttribute.newBuilder
+        .setEntity(Entity.newBuilder.setUuid(id))
+        .setAttribute(Attribute.newBuilder.setName(attrName).setVtype(Attribute.Type.STRING).build)
+        .build
+
+      session.delete(delReq).map(_.one).await
+
+      val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(id)).build
+      session.get(req).map(_.one)
     }
   }
 
   override def clearEntityAttributes(id: ReefUUID) = {
-    ops.operation("Couldn't clear all attributes for entity: " + id.getValue) {
-      _.delete(EntityAttributesBuilders.getForEntityId(id)).map(_.oneOrNone)
+    ops.operation("Couldn't clear all attributes for entity: " + id.getValue) { session =>
+
+      val results = session.get(EntityAttributesBuilders.getForEntityId(id)).map(_.oneOrNone)
+
+      results.await
+
+      val delReq = EntityAttribute.newBuilder.setEntity(Entity.newBuilder.setUuid(id)).build
+      session.delete(delReq).map(_.oneOrNone).await
+
+      results
     }
   }
 
   protected def addSingleAttribute(id: ReefUUID, attr: Attribute) = {
     ops.operation("Couldn't add attribute for entity: " + id.getValue + " attr: " + attr) { session =>
       // TODO: fix getEntityAttributes futureness
+
       val prev = getEntityAttributes(id).await
       val prevSet = prev.getAttributesList.toList.filterNot(_.getName == attr.getName)
 
-      val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(id))
-      prevSet.foreach(req.addAttributes)
-      req.addAttributes(attr)
+      val putReq = EntityAttribute.newBuilder
+        .setEntity(Entity.newBuilder.setUuid(id))
+        .setAttribute(attr)
+        .build
 
-      session.put(req.build).map(_.one)
+      session.put(putReq).map(_.one).await
+
+      val req = EntityAttributes.newBuilder.setEntity(Entity.newBuilder.setUuid(id)).build
+      session.get(req).map(_.one)
     }
   }
 }

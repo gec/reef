@@ -140,6 +140,7 @@
  *   optional FilterType type        = 1;
  *   optional double deadband_value    = 2;
  * 
+ *   // we could in the future
  *   //optional uint64 cache_timeout_ms  = 10;
  * }
  * 
