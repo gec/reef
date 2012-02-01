@@ -68,6 +68,7 @@ class ServiceProviders(
     new EntityEdgeService(modelFac.edges),
     new EntityService(modelFac.entities),
     new EntityAttributesService,
+    new EntityAttributeService(modelFac.attributes),
     new MeasurementHistoryService(wrappedHistorian),
     new MeasurementSnapshotService(wrappedDb),
     new MeasurementStatisticsService(wrappedHistorian),

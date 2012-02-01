@@ -194,4 +194,15 @@ class EntityAttributeServiceTest extends DatabaseUsingTestBase {
     f.eventCheck should equal(eventList)
   }
 
+  test("Clear entity") {
+    val f = new Fixture
+    f.scenario()
+
+    val attr = EntityAttribute.newBuilder
+      .setEntity(Entity.newBuilder.setName("ent01"))
+      .build
+
+    val results = f.s.delete(attr).expectMany(2)
+  }
+
 }

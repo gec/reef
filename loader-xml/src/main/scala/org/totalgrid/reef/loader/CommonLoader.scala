@@ -26,11 +26,11 @@ import org.totalgrid.reef.loader.common.{ Info, Attribute, ConfigFile, ConfigFil
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.service.proto.Model.{ EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
 import org.totalgrid.reef.util.IOHelpers
 import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 
 import scala.collection.mutable
+import org.totalgrid.reef.client.service.proto.Model.{ EntityAttribute, EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
 
 class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, rootDir: File) extends Logging {
 
@@ -114,11 +114,21 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     }
   }
 
-  def toAttribute(entity: Entity, attrElements: List[Attribute]): Option[EntityAttributes] = {
+  def toAttribute(entity: Entity, attrElements: List[Attribute]): List[EntityAttribute] = {
     import org.totalgrid.reef.client.service.proto.Utils.{ Attribute => AttributeProto }
     import org.totalgrid.reef.client.service.proto.Utils.Attribute.Type
 
-    if (attrElements.isEmpty) return None
+    attrElements.map { attr =>
+      val entAttr = EntityAttribute.newBuilder.setEntity(entity)
+      val b = AttributeProto.newBuilder.setName(attr.getName)
+      attr.doubleValue.foreach { v => b.setValueDouble(v); b.setVtype(Type.DOUBLE) }
+      attr.intValue.foreach { v => b.setValueSint64(v); b.setVtype(Type.SINT64) }
+      attr.booleanValue.foreach { v => b.setValueBool(v); b.setVtype(Type.BOOL) }
+      attr.stringValue.foreach { v => b.setValueString(v); b.setVtype(Type.STRING) }
+      entAttr.setAttribute(b)
+      entAttr.build
+    }
+    /*if (attrElements.isEmpty) return None
 
     val builder = EntityAttributes.newBuilder.setEntity(entity)
 
@@ -131,7 +141,7 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
       builder.addAttributes(attributeProtoBuilder)
     }
 
-    Some(builder.build)
+    Some(builder.build)*/
   }
 
 }

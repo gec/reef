@@ -39,7 +39,7 @@ class EntityAttributesService extends ServiceEntryPoint[AttrProto] with Authoriz
 
   override val descriptor = Descriptors.entityAttributes
 
-  override def putAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
+  /*override def putAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
     callback(source.transaction { context =>
       authorizeRead(context, req)
 
@@ -93,7 +93,7 @@ class EntityAttributesService extends ServiceEntryPoint[AttrProto] with Authoriz
       }
       Response(status, protoFromEntity(entEntry) :: Nil)
     })
-  }
+  }*/
 
   override def getAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
     callback(source.transaction { context =>
