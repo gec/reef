@@ -170,9 +170,6 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   override def removeEntityAttribute(id: ReefUUID, attrName: String) = {
     ops.operation("Couldn't remove attribute for entity: " + id + " attrName: " + attrName) { session =>
 
-      /*val prev = getEntityAttributes(id).await
-      val set = prev.getAttributesList.toList.filterNot(_.getName == attrName)
-      session.put(EntityAttributesBuilders.putAttributesToEntityId(id, set)).map(_.one)*/
       val delReq = EntityAttribute.newBuilder
         .setEntity(Entity.newBuilder.setUuid(id))
         .setAttribute(Attribute.newBuilder.setName(attrName).setVtype(Attribute.Type.STRING).build)

@@ -128,20 +128,6 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
       entAttr.setAttribute(b)
       entAttr.build
     }
-    /*if (attrElements.isEmpty) return None
-
-    val builder = EntityAttributes.newBuilder.setEntity(entity)
-
-    attrElements.foreach { attrElement =>
-      val attributeProtoBuilder = AttributeProto.newBuilder.setName(attrElement.getName)
-      attrElement.doubleValue.foreach { v => attributeProtoBuilder.setValueDouble(v); attributeProtoBuilder.setVtype(Type.DOUBLE) }
-      attrElement.intValue.foreach { v => attributeProtoBuilder.setValueSint64(v); attributeProtoBuilder.setVtype(Type.SINT64) }
-      attrElement.booleanValue.foreach { v => attributeProtoBuilder.setValueBool(v); attributeProtoBuilder.setVtype(Type.BOOL) }
-      attrElement.stringValue.foreach { v => attributeProtoBuilder.setValueString(v); attributeProtoBuilder.setVtype(Type.STRING) }
-      builder.addAttributes(attributeProtoBuilder)
-    }
-
-    Some(builder.build)*/
   }
 
 }
