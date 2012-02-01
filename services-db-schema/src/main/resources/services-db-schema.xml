@@ -754,4 +754,14 @@
     <changeSet author="diff" context="original" id="1327943117559-80">
         <createSequence schemaName="public" sequenceName="s_UserCommandModel_id"/>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1328109714935-1">
+        <createIndex indexName="idx2e6e05e2" tableName="AuthToken" unique="false">
+            <column name="token"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328109714935-2">
+        <createIndex indexName="idx76050993" tableName="AuthToken" unique="false">
+            <column name="expirationTime"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
