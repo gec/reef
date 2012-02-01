@@ -29,6 +29,7 @@ import java.io.File
 import liquibase.Liquibase
 import liquibase.resource.FileSystemResourceAccessor
 import org.totalgrid.reef.models._
+import org.totalgrid.reef.measurementstore.squeryl.SqlMeasurementStoreSchema
 
 @RunWith(classOf[JUnitRunner])
 class LiquibaseGenerateSchema extends FunSuite {
@@ -48,7 +49,10 @@ class LiquibaseGenerateSchema extends FunSuite {
     val dbConnection2 = DbConnector.connect(testInfo)
 
     println("Generating standard squeryl schema in standard database")
-    dbConnection.transaction { ApplicationSchema.reset() }
+    dbConnection.transaction {
+      ApplicationSchema.reset()
+      SqlMeasurementStoreSchema.reset()
+    }
 
     useDb(dbConnection) { referenceDb =>
 
