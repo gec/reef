@@ -40,6 +40,7 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
@@ -254,7 +255,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     f.portService.delete(port).expectOne(Status.DELETED)
 
     val eventList = List(
-      (ADDED, classOf[Entity]), (ADDED, classOf[Point]),
+      (ADDED, classOf[Entity]), (ADDED, classOf[Point]), (ADDED, classOf[Measurement]),
       (ADDED, classOf[Entity]), (ADDED, classOf[Command]),
       (ADDED, classOf[Entity]), (ADDED, classOf[ConfigFile]),
       (ADDED, classOf[Entity]), (ADDED, classOf[CommChannel]),
@@ -265,7 +266,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
       (REMOVED, classOf[MeasurementProcessingConnection]), (REMOVED, classOf[EndpointConnection]),
       (REMOVED, classOf[Endpoint]), (REMOVED, classOf[Entity]),
       (REMOVED, classOf[EntityEdge]), (REMOVED, classOf[EntityEdge]), (REMOVED, classOf[EntityEdge]),
-      (REMOVED, classOf[Point]), (REMOVED, classOf[Entity]),
+      (REMOVED, classOf[Point]), (REMOVED, classOf[Measurement]), (REMOVED, classOf[Entity]),
       (REMOVED, classOf[Command]), (REMOVED, classOf[Entity]),
       (REMOVED, classOf[ConfigFile]), (REMOVED, classOf[Entity]),
       (REMOVED, classOf[CommChannel]), (REMOVED, classOf[Entity]))

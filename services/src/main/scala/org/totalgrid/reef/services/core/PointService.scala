@@ -99,7 +99,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
   }
 
   override def postCreate(context: RequestContext, entry: Point) {
-    markPointsOffline(entry :: Nil)
+    markPointsOffline(entry :: Nil, context)
   }
 
   override def preDelete(context: RequestContext, entry: Point) {
@@ -115,7 +115,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
     entry.triggers.value.foreach { t => triggerModel.delete(context, t) }
     entry.overrides.value.foreach { o => overrideModel.delete(context, o) }
 
-    measurementStore.remove(entry.entityName :: Nil)
+    removePointMeasurements(entry :: Nil, context)
 
     entityModel.delete(context, entry.entity.value)
   }

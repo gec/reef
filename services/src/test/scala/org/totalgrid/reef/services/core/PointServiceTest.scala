@@ -28,6 +28,7 @@ import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 @RunWith(classOf[JUnitRunner])
 class PointServiceTest extends DatabaseUsingTestBase {
@@ -102,6 +103,13 @@ class PointServiceTest extends DatabaseUsingTestBase {
 
     m.getQuality.getValidity should equal(Validity.QUESTIONABLE)
     m.getTime should not equal (0)
+
+    val eventList = List(
+      (ADDED, classOf[Entity]),
+      (ADDED, classOf[Point]),
+      (ADDED, classOf[Measurement]))
+
+    f.events.map(s => (s.typ, s.value.getClass)) should equal(eventList)
   }
 
   test("Deleting point deletes dependent resources") {
@@ -137,11 +145,13 @@ class PointServiceTest extends DatabaseUsingTestBase {
     val eventList = List(
       (ADDED, classOf[Entity]),
       (ADDED, classOf[Point]),
+      (ADDED, classOf[Measurement]),
       (ADDED, classOf[TriggerSet]),
       (ADDED, classOf[MeasOverride]),
       (REMOVED, classOf[Point]),
       (REMOVED, classOf[TriggerSet]),
       (REMOVED, classOf[MeasOverride]),
+      (REMOVED, classOf[Measurement]),
       (REMOVED, classOf[Entity]))
 
     f.events.map(s => (s.typ, s.value.getClass)) should equal(eventList)
