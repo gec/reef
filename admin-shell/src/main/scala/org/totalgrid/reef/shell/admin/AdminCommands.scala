@@ -27,6 +27,7 @@ import org.totalgrid.reef.services.ServiceBootstrap
 import org.apache.felix.gogo.commands.{ Option => GogoOption, Command }
 import java.io.{ InputStreamReader, BufferedReader }
 import org.totalgrid.reef.models.CoreServicesSchema
+import org.totalgrid.reef.client.settings.UserSettings
 
 @Command(scope = "reef", name = "resetdb", description = "Clears and resets sql tables")
 class ResetDatabaseCommand extends ReefCommandSupport {
@@ -34,12 +35,11 @@ class ResetDatabaseCommand extends ReefCommandSupport {
   @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
   private var password: String = null
 
+  @GogoOption(name = "--ask-password", description = "Prompt new system password.")
+  private var askPassword: Boolean = false
+
   @GogoOption(name = "-m", description = "Migrate database schema (rather than clearing then writing)")
   private var useMigrations = false
-
-  // TODO: once we believe in the migrations switch this to default to not clear
-  @GogoOption(name = "-dontClear", description = "Don't clear database first")
-  private var dontClearFirst = false
 
   override val requiresLogin = false
 
@@ -50,13 +50,19 @@ class ResetDatabaseCommand extends ReefCommandSupport {
         System.out.println("WARNING: Password will be visible in karaf command history!")
         pass.trim
       case None =>
-        val stdIn = new BufferedReader(new InputStreamReader(System.in))
-        System.out.println("Enter New System Password: ")
-        val p1 = stdIn.readLine.trim
-        System.out.println("Repeat System Password: ")
-        val p2 = stdIn.readLine.trim
-        if (p1 != p2) throw new Exception("Passwords do not match, please try again.")
-        p2
+        val userSettings = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
+        if (userSettings.getUserName == "system" && !askPassword) {
+          System.out.println("Using System Password from etc/org.totalgrid.reef.user.cfg file.\nUse -p or --ask-password to manually provide password.")
+          userSettings.getUserPassword
+        } else {
+          val stdIn = new BufferedReader(new InputStreamReader(System.in))
+          System.out.println("Enter New System Password: ")
+          val p1 = stdIn.readLine.trim
+          System.out.println("Repeat System Password: ")
+          val p2 = stdIn.readLine.trim
+          if (p1 != p2) throw new Exception("Passwords do not match, please try again.")
+          p2
+        }
     }
 
     val sql = new DbInfo(OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql").getProperties)
@@ -71,7 +77,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
     mstore.connect()
 
     try {
-      CoreServicesSchema.prepareDatabase(dbConnection, !dontClearFirst, useMigrations)
+      CoreServicesSchema.prepareDatabase(dbConnection, true, useMigrations)
       ServiceBootstrap.seed(dbConnection, systemPassword)
       println("Cleared and updated jvm database")
 
@@ -86,6 +92,21 @@ class ResetDatabaseCommand extends ReefCommandSupport {
 
     mstore.disconnect()
   }
+}
 
+@Command(scope = "reef", name = "migratedb", description = "Migrates the database to the current schema")
+class MigrateDatabaseCommand extends ReefCommandSupport {
+
+  override val requiresLogin = false
+
+  override def doCommand(): Unit = {
+
+    val sql = new DbInfo(OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql").getProperties)
+
+    val dbConnection = DbConnector.connect(sql, getBundleContext)
+
+    CoreServicesSchema.prepareDatabase(dbConnection, false, true)
+    println("Migrated database")
+  }
 }
 
