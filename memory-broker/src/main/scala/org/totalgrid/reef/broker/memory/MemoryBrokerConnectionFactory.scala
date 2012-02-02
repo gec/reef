@@ -25,8 +25,18 @@ final class MemoryBrokerConnectionFactory(exe: Executor) extends BrokerConnectio
 
   import MemoryBrokerState._
   private var state = State()
+  private var updating = false
 
-  def update(fun: MemoryBrokerState.State => MemoryBrokerState.State) = synchronized(state = fun(state))
+  // This call should never be made re-entrantly
+  def update(fun: MemoryBrokerState.State => MemoryBrokerState.State) = synchronized {
+    if (updating) {
+      throw new RuntimeException("Memory broker used re-entrantly")
+    }
+    updating = true
+    state = fun(state)
+    updating = false
+  }
+
   def getState: MemoryBrokerState.State = state
 
   def connect = new MemoryBrokerConnection(this, exe)
