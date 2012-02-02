@@ -155,7 +155,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
       val batchClient = new BatchServiceRestOperations(client)
       def getCommandWithUuid(uuid: ReefUUID) = batchClient.get(CommandRequestBuilders.getByEntityId(uuid)).map(_.one)
-      MultiRequestHelper.batchScatterGatherQuery(entityList, getCommandWithUuid _, batchClient.flush _)
+      MultiRequestHelper.batchScatterGatherQuery(client, entityList, getCommandWithUuid _, batchClient.flush _)
     }
   }
 

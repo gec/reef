@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.client.rpc.framework
 
 import org.totalgrid.reef.client.sapi.client.rest._
-import org.totalgrid.reef.client.sapi.client.rest.impl.{ ExecutorDelegate, BatchServiceRestOperations, DefaultAnnotatedOperations }
+import org.totalgrid.reef.client.sapi.client.rest.impl.{ BatchServiceRestOperations, DefaultAnnotatedOperations }
 import org.totalgrid.reef.client.{ SubscriptionCreator, SubscriptionCreationListener }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client._
@@ -45,7 +45,7 @@ trait HasAnnotatedOperations {
     val requests = batch { batchSession =>
       gets.map { g => batchSession.get(g).map(_.one) }
     }
-    MultiRequestHelper.gatherResults(requests)
+    MultiRequestHelper.gatherResults(client, requests)
   }
 }
 
