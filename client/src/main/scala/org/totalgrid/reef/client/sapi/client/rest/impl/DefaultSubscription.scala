@@ -40,7 +40,12 @@ final class DefaultSubscription[A](subscription: BrokerSubscription, executor: E
         try {
           val event = Envelope.ServiceNotification.parseFrom(msg.bytes)
           val value = deserialize(event.getPayload.toByteArray)
-          executor.execute(callback(Event(event.getEvent, value)))
+          executor.execute(try {
+            callback(Event(event.getEvent, value))
+          } catch {
+            case ex: Exception =>
+              logger.error("Subscription event caused exception: " + ex.getMessage, ex)
+          })
         } catch {
           case ex: Exception => logger.error("Unable to deserialize incoming event: " + ex.getMessage, ex)
         }
