@@ -75,7 +75,7 @@ object ModelCreationUtilities {
     val f = client.future[Result[List[(Long, A)]]]
     val prom = Promise.from(f)
 
-    def completed(stopwatch: Stopwatch, a: Promise[A]) {
+    def completed(stopwatch: Stopwatch, a: Promise[A]): Unit = f.synchronized {
       val result = a.extract
       if (result.isSuccess) {
         inProgressOps -= 1
@@ -87,14 +87,16 @@ object ModelCreationUtilities {
       }
     }
 
-    def startNext() {
+    def startNext(): Unit = f.synchronized {
       if (inProgressOps < numConcurrent) {
         inProgressOps += 1
         val stopwatch = new Stopwatch()
-        val nextOperationToStart = remainingOps.head()
-        remainingOps = remainingOps.tail
-        nextOperationToStart.listen(completed(stopwatch, _))
-        startNext()
+        val nextOperationToStart = remainingOps.headOption
+        if (nextOperationToStart.isDefined) {
+          remainingOps = remainingOps.tail
+          nextOperationToStart.get().listen(completed(stopwatch, _))
+          startNext()
+        }
       }
     }
 
