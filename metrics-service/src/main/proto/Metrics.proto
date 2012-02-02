@@ -1,0 +1,9 @@
+package org.totalgrid.reef.metrics.client.proto.Metrics;
+
+
+option java_package = "org.totalgrid.reef.metrics.client.proto";
+option java_outer_classname = "Metrics";
+
+message Sample {
+  optional string test = 1;
+}
