@@ -68,6 +68,8 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
     def execute(fun: => Unit) = throw new Exception
     def schedule(interval: TimeInterval)(fun: => Unit) = throw new Exception
     def scheduleWithFixedOffset(initial: TimeInterval, offset: TimeInterval)(fun: => Unit) = throw new Exception
+    def future[A] = new MockFuture[A](None)
+    def onException(ex: Exception) = throw ex
   }
 
   private def duplicatePayload(onRequest: () => Unit, request: BatchServiceRequest) = {

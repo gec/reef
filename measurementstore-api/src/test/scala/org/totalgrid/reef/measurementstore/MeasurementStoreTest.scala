@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.client.service.proto.Measurements
-import net.agileautomata.executor4s.testing.InstantExecutor
+import net.agileautomata.executor4s.testing._
 
 @RunWith(classOf[JUnitRunner])
 class InMemoryMeasurementStoreTest extends MeasurementStoreTest {
@@ -36,7 +36,7 @@ class MixedMemoryMeasStoreTest extends MeasurementStoreTest {
   val currentMeas = new InMemoryMeasurementStore(true)
   val historian = new InMemoryMeasurementStore(false)
   val cm = {
-    val c = new MixedMeasurementStore(new FakeExecutorService(new InstantExecutor()), historian, currentMeas)
+    val c = new MixedMeasurementStore(new MockExecutorService(new InstantExecutor()), historian, currentMeas)
     c.connect
     c
   }

@@ -22,7 +22,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.persistence.squeryl._
-import net.agileautomata.executor4s.testing.InstantExecutor
+import net.agileautomata.executor4s.testing._
 import org.totalgrid.reef.measurementstore._
 
 trait SqlMeasStoreTestFixture {
@@ -54,7 +54,7 @@ class SqlMeasRTDatabaseReadPerformanceTest extends RTDatabaseReadPerformanceTest
 class SqlMixedMeasTest extends MeasurementStoreTest with SqlMeasStoreTestFixture {
 
   lazy val cm = {
-    val c = new MixedMeasurementStore(new FakeExecutorService(new InstantExecutor()), new InMemoryMeasurementStore(false), connect(false))
+    val c = new MixedMeasurementStore(new MockExecutorService(new InstantExecutor()), new InMemoryMeasurementStore(false), connect(false))
     c.connect
     c
   }

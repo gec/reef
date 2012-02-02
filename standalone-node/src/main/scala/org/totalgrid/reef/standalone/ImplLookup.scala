@@ -31,6 +31,7 @@ import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import org.totalgrid.reef.measurementstore._
 import java.util.Properties
 import net.agileautomata.executor4s.{ Executor, Cancelable }
+import net.agileautomata.executor4s.testing.MockExecutorService
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
@@ -84,7 +85,7 @@ object ImplLookup extends Logging {
     if (historianType == currentValueType) {
       getMeasImpl(historianType)
     } else {
-      new MixedMeasurementStore(new FakeExecutorService(exe), getMeasImpl(historianType), getMeasImpl(currentValueType))
+      new MixedMeasurementStore(new MockExecutorService(exe), getMeasImpl(historianType), getMeasImpl(currentValueType))
     }
   }
 }
