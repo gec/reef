@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 
 import org.mockito.Mockito._
 import collection.immutable.{ Queue => ScalaQueue }
-import net.agileautomata.executor4s.testing.MockExecutor
+import net.agileautomata.executor4s.testing.InstantExecutor
 import org.totalgrid.reef.broker._
 
 @RunWith(classOf[JUnitRunner])
@@ -39,11 +39,12 @@ class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
     val mc2 = mock(classOf[BrokerMessageConsumer])
     val mc3 = mock(classOf[BrokerMessageConsumer])
 
-    val exe = new MockExecutor
+    val exe = new InstantExecutor
+    val holder = new SideEffectHolder
 
-    Queue("q1", exe, consumers = List(mc1, mc2, mc3)).publish(msg) should equal(Queue("q1", exe, consumers = List(mc2, mc3, mc1)))
+    Queue("q1", exe, consumers = List(mc1, mc2, mc3)).publish(msg, holder) should equal(Queue("q1", exe, consumers = List(mc2, mc3, mc1)))
 
-    exe.runNextPendingAction()
+    holder.execute()
 
     verify(mc1).onMessage(msg)
     verifyZeroInteractions(mc2, mc3)
@@ -52,10 +53,11 @@ class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
   test("Publishing to queue with no consumers will enqueue message") {
     val msg1 = mock(classOf[BrokerMessage])
     val msg2 = mock(classOf[BrokerMessage])
-    val exe = new MockExecutor
-    val afterMsg1 = Queue("q1", exe).publish(msg1)
+    val exe = new InstantExecutor
+    val holder = new SideEffectHolder
+    val afterMsg1 = Queue("q1", exe).publish(msg1, holder)
     afterMsg1 should equal(Queue("q1", exe, unread = ScalaQueue.empty[BrokerMessage] ++ List(msg1)))
-    val afterMsg2 = afterMsg1.publish(msg2)
+    val afterMsg2 = afterMsg1.publish(msg2, holder)
     afterMsg2 should equal(Queue("q1", exe, unread = ScalaQueue.empty[BrokerMessage] ++ List(msg1, msg2)))
   }
 
@@ -69,7 +71,7 @@ class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
   }
 
   test("Broker state declares queues") {
-    val exe = new MockExecutor()
+    val exe = new InstantExecutor()
     val state = State().declareQueue("queueName", exe)
     state.queues.keys.toList should equal(List("queueName"))
   }
@@ -79,17 +81,18 @@ class MemoryBrokerStateTest extends FunSuite with ShouldMatchers {
     var msg: Option[BrokerMessage] = None
     val consumer = new BrokerMessageConsumer { def onMessage(m: BrokerMessage) = msg = Some(m) }
 
-    val exe = new MockExecutor
+    val exe = new InstantExecutor
+    val holder = new SideEffectHolder
     val state = State().declareExchange("ex", "topic").declareQueue("q", exe).bindQueue("q", "ex", "#", false).listen("q", consumer)
     state.exchanges("ex").bindings.map { _.queue } should equal(List("q"))
-    state.publish("ex", "key", testMsg)
-    exe.runNextPendingAction()
+    state.publish("ex", "key", testMsg, holder)
+    holder.execute()
     msg should equal(Some(testMsg))
   }
 
   test("Broker ignores duplicate bindings") {
 
-    val exe = new MockExecutor
+    val exe = new InstantExecutor
     val setup = State().declareExchange("ex", "topic").declareQueue("q", exe).declareQueue("q2", exe)
 
     // same queue, same key is ignored
