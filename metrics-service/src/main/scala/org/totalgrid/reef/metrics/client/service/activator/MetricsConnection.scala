@@ -26,9 +26,9 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
-import org.totalgrid.reef.services.ServiceContext
 import org.totalgrid.reef.metrics.client.service.MetricsService
 import org.totalgrid.reef.metrics.client.MetricsServiceList
+import org.totalgrid.reef.client.AnyNodeDestination
 
 class MetricsConnection(user: UserSettings, node: NodeSettings) extends ConnectionConsumer {
 
@@ -43,9 +43,7 @@ class MetricsConnection(user: UserSettings, node: NodeSettings) extends Connecti
 
     val heartbeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg, exe)
 
-    val serviceContext = new ServiceContext(connection, exe)
-
-    val services = serviceContext.attachServices(List(new MetricsService))
+    connection.bindService(new MetricsService, exe, new AnyNodeDestination, true)
 
     heartbeater.start()
 

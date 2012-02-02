@@ -101,11 +101,16 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-services</artifactId>
+            <artifactId>reef-application-framework</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util-osgi</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-test-util</artifactId>
