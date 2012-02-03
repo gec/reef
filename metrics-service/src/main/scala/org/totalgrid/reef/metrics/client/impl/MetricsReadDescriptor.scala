@@ -19,15 +19,14 @@
 package org.totalgrid.reef.metrics.client.impl
 
 import org.totalgrid.reef.client.types.TypeDescriptor
-import java.lang.{ Class, String }
-import org.totalgrid.reef.metrics.client.proto.Metrics.Sample
+import org.totalgrid.reef.metrics.client.proto.Metrics.MetricsRead
 
-class SampleTypeDescriptor extends TypeDescriptor[Sample] {
-  def serialize(value: Sample): Array[Byte] = value.toByteArray
+class MetricsReadDescriptor extends TypeDescriptor[MetricsRead] {
+  def serialize(value: MetricsRead): Array[Byte] = value.toByteArray
 
-  def deserialize(bytes: Array[Byte]): Sample = Sample.parseFrom(bytes)
+  def deserialize(bytes: Array[Byte]): MetricsRead = MetricsRead.parseFrom(bytes)
 
-  def getKlass: Class[Sample] = classOf[Sample]
+  def getKlass: Class[MetricsRead] = classOf[MetricsRead]
 
-  def id(): String = "sample"
+  def id(): String = "metrics_read"
 }

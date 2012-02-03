@@ -133,7 +133,7 @@ class MetricsFilter extends MetricsCommands {
 @Command(scope = "metrics", name = "calcs", description = "Add calculations on metrics points")
 class MetricsCalcs extends MetricsCommands {
 
-  @Argument(index = 0, name = "key", description = "Key to do operation on (needs wildcard \"*\" to be useful)", required = false, multiValued = false)
+  @Argument(index = 0, name = "key", description = "Key to do operation on (needs wildcard \"*\" to be useful)", required = true, multiValued = false)
   private var key: String = null
 
   // TODO: implement calculations other than sumCount
@@ -161,7 +161,7 @@ class MetricsCalcs extends MetricsCommands {
 @Command(scope = "metrics", name = "throughput", description = "Displays current state and overall rate for a key.")
 class MetricsThroughput extends MetricsCommands {
 
-  @Argument(index = 0, name = "key", description = "Key to do operation on (usually needs wildcard \"*\" to be useful)", required = false, multiValued = false)
+  @Argument(index = 0, name = "key", description = "Key to do operation on (usually needs wildcard \"*\" to be useful)", required = true, multiValued = false)
   private var key: String = null
 
   @Option(name = "-time", aliases = Array[String](), description = "Dont run the same calc on future metrics reads", required = false, multiValued = false)

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.metrics.client
 
-import impl.{ SampleTypeDescriptor, MetricsServiceImpl }
+import impl.{ MetricsReadDescriptor, MetricsServiceImpl }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.types.{ ServiceInfo, ServiceTypeInformation }
 import org.totalgrid.reef.client.{ ServiceProviderFactory, ServiceProviderInfo, ServicesList }
@@ -27,7 +27,7 @@ import org.totalgrid.reef.client.sapi.client.rest.Client
 class MetricsServiceList extends ServicesList {
 
   def getServiceTypeInformation: java.util.List[ServiceTypeInformation[_, _]] = {
-    val typ = new SampleTypeDescriptor
+    val typ = new MetricsReadDescriptor
     List(new ServiceInfo(typ, typ))
   }
 

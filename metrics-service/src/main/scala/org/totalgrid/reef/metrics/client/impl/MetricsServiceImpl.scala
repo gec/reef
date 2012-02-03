@@ -19,12 +19,21 @@
 package org.totalgrid.reef.metrics.client.impl
 
 import org.totalgrid.reef.metrics.client.MetricsService
-import org.totalgrid.reef.metrics.client.proto.Metrics.Sample
+import org.totalgrid.reef.metrics.client.proto.Metrics.MetricsRead
 import org.totalgrid.reef.client.sapi.client.rest.Client
 
 class MetricsServiceImpl(client: Client) extends MetricsService {
 
-  def getSample(): Sample = {
-    client.get(Sample.newBuilder.setTest("request").build).await.expectOne
+  def getMetrics(): MetricsRead = {
+    client.get(MetricsRead.newBuilder.build).await.expectOne
   }
+
+  def getMetricsWithFilter(filter: String): MetricsRead = {
+    client.get(MetricsRead.newBuilder.addFilters(filter).build).await.expectOne
+  }
+
+  def getMetricsWithFilters(filters: java.util.List[String]): MetricsRead = {
+    client.get(MetricsRead.newBuilder.addAllFilters(filters).build).await.expectOne
+  }
+
 }

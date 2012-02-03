@@ -18,17 +18,36 @@
  */
 package org.totalgrid.reef.metrics.client.service
 
-import org.totalgrid.reef.metrics.client.proto.Metrics.Sample
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
-import org.totalgrid.reef.metrics.client.impl.SampleTypeDescriptor
+import org.totalgrid.reef.metrics.client.impl.MetricsReadDescriptor
+import org.totalgrid.reef.metrics.client.proto.Metrics.{ MetricsValue, MetricsRead }
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.metrics.MetricsHolder
 
-class MetricsService extends AsyncServiceBase[Sample] {
+class MetricsService(metrics: MetricsHolder) extends AsyncServiceBase[MetricsRead] {
 
-  override val descriptor = new SampleTypeDescriptor
+  override val descriptor = new MetricsReadDescriptor
 
-  override def getAsync(req: Sample, env: BasicRequestHeaders)(callback: (Response[Sample]) => Unit) {
-    callback(Response(Status.OK, List(Sample.newBuilder.setTest("response").build)))
+  override def getAsync(req: MetricsRead, env: BasicRequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
+
+    val values = metrics.values(req.getFiltersList.toList)
+
+    val b = MetricsRead.newBuilder
+      .setReadTime(System.currentTimeMillis())
+
+    values.foreach {
+      case (key, v) =>
+        val builder = MetricsValue.newBuilder.setName(key)
+        v match {
+          case d: Double => builder.setValue(d)
+          case i: Int => builder.setValue(i.toDouble)
+          case _ => builder.setValue(-1.0)
+        }
+        b.addResults(builder)
+    }
+
+    callback(Response(Status.OK, List(b.build)))
   }
 }

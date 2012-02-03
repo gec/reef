@@ -18,9 +18,13 @@
  */
 package org.totalgrid.reef.metrics.client
 
-import proto.Metrics.Sample
+import proto.Metrics.MetricsRead
 
 trait MetricsService {
 
-  def getSample(): Sample
+  def getMetrics(): MetricsRead
+
+  def getMetricsWithFilter(filter: String): MetricsRead
+
+  def getMetricsWithFilters(filters: java.util.List[String]): MetricsRead
 }

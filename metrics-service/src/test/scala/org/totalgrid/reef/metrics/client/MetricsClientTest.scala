@@ -44,7 +44,7 @@ class MetricsClientTest extends FunSuite with ShouldMatchers {
 
     val metrics = client.getRpcInterface(classOf[MetricsService])
 
-    println(metrics.getSample())
+    println(metrics.getMetrics())
 
     factory.terminate()
   }*/
