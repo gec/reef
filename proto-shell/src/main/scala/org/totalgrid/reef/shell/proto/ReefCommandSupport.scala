@@ -30,6 +30,8 @@ import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.totalgrid.reef.client.ConnectionCloseListener
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
+import org.totalgrid.reef.metrics.client.MetricsServiceList
+
 
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
@@ -65,6 +67,7 @@ object ReefCommandSupport extends Logging {
 
     val factory = new ReefFactory(amqpSettings, new ReefServices)
     val conn = factory.connect
+    conn.addServicesList(new MetricsServiceList)
 
     val cancel = new Cancelable {
       def cancel() = {
@@ -79,9 +82,38 @@ object ReefCommandSupport extends Logging {
 
     getAuthenticatedClient(session, conn, amqpSettings.toString, cancel, userSettings)
   }
+
+  /**
+   * holds an objects in the command session to maintain state between command
+   * invocations
+   */
+  class SessionHeldObject[A](name: String, session: => CommandSession, default: A) {
+
+    def get(): A = {
+      session.get(name) match {
+        case null => default
+        case o: Object => o.asInstanceOf[A]
+      }
+    }
+    def set(obj: A) = session.put(name, obj)
+    def clear() = session.put(name, null)
+  }
+
+  /**
+   * wrapper around the object holder that adds some list manipulation functions
+   */
+  class SessionHeldList[A](name: String, session: => CommandSession) extends SessionHeldObject[List[A]](name, session, Nil: List[A]) {
+
+    def add(key: A) = set(key :: get)
+    def remove(key: A) = set(get.filterNot(_ == key))
+  }
 }
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
+  import ReefCommandSupport.{SessionHeldObject, SessionHeldList}
+
+  def list[A](key: String) = new SessionHeldList[A](key, {this.session})
+  def obj[A](key: String, default: A) = new SessionHeldObject[A](key, {this.session}, default)
 
   protected val requiresLogin = true
 
