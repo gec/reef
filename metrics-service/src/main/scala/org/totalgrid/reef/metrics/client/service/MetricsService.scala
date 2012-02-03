@@ -30,9 +30,8 @@ class MetricsService(metrics: MetricsHolder) extends AsyncServiceBase[MetricsRea
 
   override val descriptor = new MetricsReadDescriptor
 
-  override def getAsync(req: MetricsRead, env: BasicRequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
-
-    val values = metrics.values(req.getFiltersList.toList)
+  private def buildValuesResponse(filters: List[String]) = {
+    val values = metrics.values(filters)
 
     val b = MetricsRead.newBuilder
       .setReadTime(System.currentTimeMillis())
@@ -48,6 +47,25 @@ class MetricsService(metrics: MetricsHolder) extends AsyncServiceBase[MetricsRea
         b.addResults(builder)
     }
 
-    callback(Response(Status.OK, List(b.build)))
+    b.build()
+  }
+
+  override def getAsync(req: MetricsRead, env: BasicRequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
+    val response = buildValuesResponse(req.getFiltersList.toList)
+    callback(Response(Status.OK, List(response)))
+  }
+
+  override def deleteAsync(req: MetricsRead, env: BasicRequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
+
+    req.getFiltersList.toList match {
+      case Nil => callback(Response(Status.BAD_REQUEST, Nil))
+      case List("*") => doReset(Nil)
+      case filters: List[String] => doReset(filters)
+    }
+
+    def doReset(filters: List[String]) {
+      metrics.reset(filters)
+      callback(Response(Status.DELETED, List(buildValuesResponse(filters))))
+    }
   }
 }

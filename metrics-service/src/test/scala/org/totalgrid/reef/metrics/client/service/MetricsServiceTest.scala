@@ -48,8 +48,33 @@ class MetricsServiceTest extends FunSuite with ShouldMatchers {
       resp.get
     }
 
+    def delete(req: MetricsRead): Response[MetricsRead] = {
+      var resp: Option[Response[MetricsRead]] = None
+      srv.deleteAsync(req, BasicRequestHeaders.empty) { r: Response[MetricsRead] =>
+        resp = Some(r)
+      }
+      resp.get
+    }
+
     def getFun(store: String, hook: String, typ: MetricsHooks.HookType) = {
       metrics.getStore("testStore").getStore(store).getSinkFunction(hook, typ)
+    }
+
+    def getAndCheck(name: String, v: Double) = {
+      val result = get(MetricsRead.newBuilder.addFilters(name).build).expectOne(Status.OK)
+      val l = result.getResultsList.toList
+      l.size should equal(1)
+      l.head.getName should equal(name)
+      l.head.getValue should equal(v)
+      result.hasReadTime should equal(true)
+    }
+    def getAllAndCheckOne(name: String, v: Double) = {
+      val result = get(MetricsRead.newBuilder.build).expectOne(Status.OK)
+      val l = result.getResultsList.toList
+      l.size should equal(1)
+      l.head.getName should equal(name)
+      l.head.getValue should equal(v)
+      result.hasReadTime should equal(true)
     }
   }
 
@@ -101,5 +126,44 @@ class MetricsServiceTest extends FunSuite with ShouldMatchers {
     //l.find(_.getName == "lowerStore.hook01").get.getValue should equal(5.0)
     l.find(_.getName == "lowerStore.hook02").get.getValue should equal(8.0)
   }
+
+  test("Delete no params error") {
+    val f = new Fixture
+    f.getFun("lowerStore", "hook01", MetricsHooks.Counter)(5)
+    f.delete(MetricsRead.newBuilder.build).expectNone(Status.BAD_REQUEST)
+  }
+
+  test("Delete single") {
+    val f = new Fixture
+    f.getFun("lowerStore", "hook01", MetricsHooks.Counter)(5)
+
+    f.getAllAndCheckOne("lowerStore.hook01", 5.0)
+
+    val result = f.delete(MetricsRead.newBuilder.addFilters("*").build).expectOne(Status.DELETED)
+    val l = result.getResultsList.toList
+    l.size should equal(1)
+    l.head.getName should equal("lowerStore.hook01")
+    l.head.getValue should equal(0.0)
+    result.hasReadTime should equal(true)
+
+  }
+
+  test("Delete single with filter") {
+    val f = new Fixture
+    f.getFun("lowerStore", "hook01", MetricsHooks.Counter)(5)
+    f.getFun("lowerStore", "hook02", MetricsHooks.Counter)(8)
+
+
+    val result = f.delete(MetricsRead.newBuilder.addFilters("lowerStore.hook02").build).expectOne(Status.DELETED)
+    val l = result.getResultsList.toList
+    l.size should equal(1)
+    l.head.getName should equal("lowerStore.hook02")
+    l.head.getValue should equal(0.0)
+    result.hasReadTime should equal(true)
+
+
+    f.getAndCheck("lowerStore.hook01", 5.0)
+  }
+
 
 }
