@@ -153,7 +153,6 @@ class MetricsServiceTest extends FunSuite with ShouldMatchers {
     f.getFun("lowerStore", "hook01", MetricsHooks.Counter)(5)
     f.getFun("lowerStore", "hook02", MetricsHooks.Counter)(8)
 
-
     val result = f.delete(MetricsRead.newBuilder.addFilters("lowerStore.hook02").build).expectOne(Status.DELETED)
     val l = result.getResultsList.toList
     l.size should equal(1)
@@ -161,9 +160,7 @@ class MetricsServiceTest extends FunSuite with ShouldMatchers {
     l.head.getValue should equal(0.0)
     result.hasReadTime should equal(true)
 
-
     f.getAndCheck("lowerStore.hook01", 5.0)
   }
-
 
 }

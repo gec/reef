@@ -36,4 +36,15 @@ class MetricsServiceImpl(client: Client) extends MetricsService {
     client.get(MetricsRead.newBuilder.addAllFilters(filters).build).await.expectOne
   }
 
+  def resetMetrics(): MetricsRead = {
+    client.delete(MetricsRead.newBuilder.addFilters("*").build).await.expectOne
+  }
+
+  def resetMetricsWithFilter(filter: String): MetricsRead = {
+    client.delete(MetricsRead.newBuilder.addFilters(filter).build).await.expectOne
+  }
+
+  def resetMetricsWithFilters(filters: java.util.List[String]): MetricsRead = {
+    client.delete(MetricsRead.newBuilder.addAllFilters(filters).build).await.expectOne
+  }
 }

@@ -27,4 +27,10 @@ trait MetricsService {
   def getMetricsWithFilter(filter: String): MetricsRead
 
   def getMetricsWithFilters(filters: java.util.List[String]): MetricsRead
+
+  def resetMetrics(): MetricsRead
+
+  def resetMetricsWithFilter(filter: String): MetricsRead
+
+  def resetMetricsWithFilters(filters: java.util.List[String]): MetricsRead
 }
