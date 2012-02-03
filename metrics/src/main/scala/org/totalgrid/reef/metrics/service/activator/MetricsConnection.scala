@@ -1,3 +1,5 @@
+package org.totalgrid.reef.metrics.service.activator
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.metrics.client.service.activator
 
 import org.totalgrid.reef.app.ConnectionConsumer
 import org.totalgrid.reef.broker.BrokerConnection
@@ -26,7 +27,7 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
-import org.totalgrid.reef.metrics.client.service.MetricsService
+import org.totalgrid.reef.metrics.service.MetricsService
 import org.totalgrid.reef.metrics.client.MetricsServiceList
 import org.totalgrid.reef.client.AnyNodeDestination
 import org.totalgrid.reef.metrics.MetricsSink

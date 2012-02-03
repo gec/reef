@@ -1,3 +1,5 @@
+package org.totalgrid.reef.metrics.service
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,15 +18,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.metrics.client.service
 
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
-import org.totalgrid.reef.metrics.client.impl.MetricsReadDescriptor
 import org.totalgrid.reef.metrics.client.proto.Metrics.{ MetricsValue, MetricsRead }
-import scala.collection.JavaConversions._
 import org.totalgrid.reef.metrics.MetricsHolder
+import org.totalgrid.reef.metrics.client.MetricsReadDescriptor
+import scala.collection.JavaConversions._
 
 class MetricsService(metrics: MetricsHolder) extends AsyncServiceBase[MetricsRead] {
 

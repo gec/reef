@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>reef-metrics-service</artifactId>
+    <artifactId>reef-metrics-client</artifactId>
     <packaging>bundle</packaging>
     <parent>
         <groupId>org.totalgrid.reef</groupId>
@@ -49,12 +49,10 @@
                         <Bundle-Activator>org.totalgrid.reef.metrics.client.service.activator.MetricsActivator</Bundle-Activator>
                         <Export-Package>
                             org.totalgrid.reef.metrics.client.proto;version="${reef.version}",
-                            org.totalgrid.reef.metrics.client.impl;version="${reef.version}",
                             org.totalgrid.reef.metrics.client;version="${reef.version}"
                         </Export-Package>
                         <Private-Package>
-                            org.totalgrid.reef.metrics.client.service;version="${reef.version}",
-                            org.totalgrid.reef.metrics.client.service.activator;version="${reef.version}"
+                            org.totalgrid.reef.metrics.client.impl;version="${reef.version}"
                         </Private-Package>
                         <_nouses>true</_nouses>
                     </instructions>
@@ -82,12 +80,6 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-application-framework</artifactId>
-            <version>${reef.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-metrics</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.metrics.client
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.metrics.client.impl
 
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.metrics.client.proto.Metrics.MetricsRead

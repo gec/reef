@@ -63,7 +63,7 @@
 		<module>util</module>
 		<module>util-osgi</module>
 		<module>metrics</module>
-        <module>metrics-service</module>
+        <module>metrics-client</module>
 		<module>broker</module>
         <module>qpid-broker</module>
 		<module>persistence-api</module>

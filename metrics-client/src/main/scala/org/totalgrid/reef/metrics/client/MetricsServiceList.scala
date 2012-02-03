@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.metrics.client
 
-import impl.{ MetricsReadDescriptor, MetricsServiceImpl }
+import impl.MetricsServiceImpl
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.types.{ ServiceInfo, ServiceTypeInformation }
 import org.totalgrid.reef.client.{ ServiceProviderFactory, ServiceProviderInfo, ServicesList }

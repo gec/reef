@@ -1,3 +1,5 @@
+package org.totalgrid.reef.metrics.service
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.metrics.client.service
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

@@ -32,7 +32,6 @@ import org.totalgrid.reef.client.ConnectionCloseListener
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.metrics.client.MetricsServiceList
 
-
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
     session.put("context", context)
@@ -110,10 +109,10 @@ object ReefCommandSupport extends Logging {
 }
 
 abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
-  import ReefCommandSupport.{SessionHeldObject, SessionHeldList}
+  import ReefCommandSupport.{ SessionHeldObject, SessionHeldList }
 
-  def list[A](key: String) = new SessionHeldList[A](key, {this.session})
-  def obj[A](key: String, default: A) = new SessionHeldObject[A](key, {this.session}, default)
+  def list[A](key: String) = new SessionHeldList[A](key, { this.session })
+  def obj[A](key: String, default: A) = new SessionHeldObject[A](key, { this.session }, default)
 
   protected val requiresLogin = true
 
