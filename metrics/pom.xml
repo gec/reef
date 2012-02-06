@@ -29,10 +29,13 @@
                     <instructions>
                         <Bundle-Name>Reef Metrics Provider</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
-                        <Export-Package>
-                            org.totalgrid.reef.metrics;version="${reef.version}",
+                        <Bundle-Activator>org.totalgrid.reef.metrics.service.activator.MetricsActivator</Bundle-Activator>
+                        <Private-Package>
                             org.totalgrid.reef.metrics.service;version="${reef.version}",
                             org.totalgrid.reef.metrics.service.activator;version="${reef.version}"
+                        </Private-Package>
+                        <Export-Package>
+                            org.totalgrid.reef.metrics;version="${reef.version}"
                         </Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>

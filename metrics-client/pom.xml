@@ -45,8 +45,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Metrics Service</Bundle-Name>
-                        <Bundle-Activator>org.totalgrid.reef.metrics.client.service.activator.MetricsActivator</Bundle-Activator>
+                        <Bundle-Name>Reef Metrics Service Client</Bundle-Name>
                         <Export-Package>
                             org.totalgrid.reef.metrics.client.proto;version="${reef.version}",
                             org.totalgrid.reef.metrics.client;version="${reef.version}"
