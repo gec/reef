@@ -1,16 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>reef-metrics-client</artifactId>
+    <packaging>bundle</packaging>
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
         <version>0.4.4-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
-
-    <artifactId>reef-client</artifactId>
-    <packaging>bundle</packaging>
 
     <licenses>
         <license>
@@ -22,7 +21,23 @@
 
     <build>
         <plugins>
-
+            <plugin>
+                <groupId>com.google.protobuf.tools</groupId>
+                <artifactId>maven-protoc-plugin</artifactId>
+                <version>${maven-protoc-plugin.version}</version>
+                <configuration>
+                    <protoSourceRoot>src/main/proto</protoSourceRoot>
+					<outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -30,68 +45,50 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Client API</Bundle-Name>
+                        <Bundle-Name>Reef Metrics Service Client</Bundle-Name>
                         <Export-Package>
-                            org.totalgrid.reef.client;version="${reef.version}",
-                            org.totalgrid.reef.client.factory;version="${reef.version}",
-                            org.totalgrid.reef.client.javaimpl;version="${reef.version}",
-                            org.totalgrid.reef.client.sapi.client.*;version="${reef.version}",
-                            org.totalgrid.reef.client.sapi.service;version="${reef.version}",
-                            org.totalgrid.reef.client.sapi.client.factory;version="${reef.version}",
+                            org.totalgrid.reef.metrics.client.proto;version="${reef.version}",
+                            org.totalgrid.reef.metrics.client;version="${reef.version}"
                         </Export-Package>
-                        <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
+                        <Private-Package>
+                            org.totalgrid.reef.metrics.client.impl;version="${reef.version}"
+                        </Private-Package>
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>
             </plugin>
-            <plugin>
+			<plugin>
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
-                    <excludes>
-						<exclude>**/js/jquery*</exclude>
-						<exclude>**/site/site.vm</exclude>
-					</excludes>
                     <header>../APACHE_FILE_HEADER</header>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
-    <dependencies>
 
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-broker</artifactId>
-            <version>${reef.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-util</artifactId>
-            <version>${reef.version}</version>
-        </dependency>
+
+    <dependencies>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-client-common</artifactId>
+            <artifactId>reef-client</artifactId>
             <version>${reef.version}</version>
+			<scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-qpid-broker</artifactId>
+            <artifactId>reef-application-framework</artifactId>
             <version>${reef.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-memory-broker</artifactId>
+            <artifactId>reef-util-osgi</artifactId>
             <version>${reef.version}</version>
-			<scope>test</scope>
+            <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>net.agile-automata.executor4s</groupId>
-            <artifactId>executor4s_${scala.version}</artifactId>
-            <version>${executor4s.version}</version>
-        </dependency>
-        <dependency>
+		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-test-util</artifactId>
             <version>${reef.version}</version>
@@ -99,5 +96,6 @@
         </dependency>
     </dependencies>
 
-
 </project>
+
+

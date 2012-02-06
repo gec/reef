@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.activator
 
 import net.agileautomata.executor4s._
 
-import org.osgi.framework._
+import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.services._

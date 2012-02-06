@@ -1,3 +1,5 @@
+package org.totalgrid.reef.metrics.client
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,8 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.metrics
-
 class CSVMetricPublisher(fileName: String, append: Boolean = true) {
 
   val outputStream = new java.io.FileOutputStream(fileName, append)

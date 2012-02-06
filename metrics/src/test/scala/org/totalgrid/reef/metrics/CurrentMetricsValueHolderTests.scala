@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.metrics
 
+import client.MetricsMapHelpers
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FunSuite
 import org.junit.runner.RunWith
