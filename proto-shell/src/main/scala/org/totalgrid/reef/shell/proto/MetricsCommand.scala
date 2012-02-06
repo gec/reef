@@ -19,7 +19,7 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
-import org.totalgrid.reef.metrics.{ MetricsMapHelpers, CSVMetricPublisher }
+import org.totalgrid.reef.metrics.client.{ MetricsMapHelpers, CSVMetricPublisher }
 import org.apache.felix.gogo.commands.{ Argument, Command, Option }
 import org.totalgrid.reef.client.service.AllScadaService
 import org.totalgrid.reef.metrics.client.MetricsService
