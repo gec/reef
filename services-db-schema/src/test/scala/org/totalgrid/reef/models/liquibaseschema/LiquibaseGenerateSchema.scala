@@ -49,6 +49,9 @@ class LiquibaseGenerateSchema extends FunSuite {
     val dbConnection2 = DbConnector.connect(testInfo)
 
     println("Generating standard squeryl schema in standard database")
+    useDb(dbConnection) { referenceDb =>
+      referenceDb.dropDatabaseObjects(null)
+    }
     dbConnection.transaction {
       ApplicationSchema.reset()
       SqlMeasurementStoreSchema.reset()
