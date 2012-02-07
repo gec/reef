@@ -114,6 +114,15 @@
 			</snapshots>
 		</repository>
 
+        <repository>
+            <id>third-party-snapshot</id>
+            <name>https://repo.totalgrid.org-snapshots</name>
+            <url>https://repo.totalgrid.org/artifactory/third-party-snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
 		<repository>
 			<id>scala-tools-releases</id>
 			<name>Scala-tools Maven2 Repository</name>
