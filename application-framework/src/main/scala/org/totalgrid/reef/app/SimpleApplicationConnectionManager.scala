@@ -25,8 +25,8 @@ import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.app.subprocess.{ SimpleProcessManager, ErrorHandler, ProcessManager }
-import org.totalgrid.reef.app.subprocess.{ Process, OneShotProcess, RetryableProcess }
+import org.totalgrid.reef.app.process.{ SimpleProcessManager, ErrorHandler, ProcessManager }
+import org.totalgrid.reef.app.process.{ Process, OneShotProcess, RetryableProcess }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 
