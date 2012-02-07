@@ -25,13 +25,6 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 
-trait Publisher[A] {
-  /**
-   * @param value Value that will be updated
-   */
-  def publish(value: A): Unit
-}
-
 object Protocol {
 
   def find(files: List[Model.ConfigFile], mimetype: String): Model.ConfigFile = {
@@ -47,10 +40,6 @@ object Protocol {
   type EndpointPublisher = Publisher[EndpointConnection.State]
   type ChannelPublisher = Publisher[CommChannel.State]
   type ResponsePublisher = Publisher[Commands.CommandStatus]
-}
-
-trait CommandHandler {
-  def issue(cmd: Commands.CommandRequest, publisher: Publisher[Commands.CommandStatus])
 }
 
 trait NullPublisher[A] extends Publisher[A] {
