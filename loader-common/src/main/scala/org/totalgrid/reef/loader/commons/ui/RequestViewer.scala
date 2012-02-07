@@ -77,7 +77,7 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
     }
   }
 
-  private def update(status: Status, request: AnyRef) = {
+  private def update(status: Status, request: AnyRef) = this.synchronized {
 
     stream.print(getStatusChar(status))
 
