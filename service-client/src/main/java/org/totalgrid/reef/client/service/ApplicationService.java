@@ -20,6 +20,7 @@ package org.totalgrid.reef.client.service;
 
 import java.util.List;
 
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
 import org.totalgrid.reef.client.settings.NodeSettings;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig;
@@ -54,17 +55,53 @@ public interface ApplicationService
      */
     ApplicationConfig unregisterApplication( ApplicationConfig appConfig ) throws ReefServiceException;
 
+
     /**
      * Performs a heartbeat service call with the services.
-     * @param statusSnapshot
-     * @return
-     * @throws ReefServiceException
+     * @param statusSnapshot a preconstructed snapshot proto
+     * @return proto used to indicate when the application will timeout
+     * @deprecated use sendHeartbeat(appConfig) instead
      */
     StatusSnapshot sendHeartbeat( StatusSnapshot statusSnapshot ) throws ReefServiceException;
+
+    /**
+     * Performs a heartbeat service call with the services.
+     * @param appConfig the configuration for the application
+     * @return proto used to indicate when the application will timeout
+     */
+    StatusSnapshot sendHeartbeat( ApplicationConfig appConfig ) throws ReefServiceException;
+
+    /**
+     * When an application is shutting down, but expects to come back online later we will send an
+     * "offline heartbeat" to the server. This will cause the services to reallocate any work that
+     * application was doing to other nodes (if it does "coordinated work")
+     */
+    StatusSnapshot sendApplicationOffline( ApplicationConfig appConfig ) throws ReefServiceException;
 
     /**
      * Gets list of all currently registered applications
      * @throws ReefServiceException
      */
     List<ApplicationConfig> getApplications() throws ReefServiceException;
+
+    /**
+     * find a particular application by name
+     * @param name name of the application
+     * @return application proto or null if not found
+     */
+    ApplicationConfig findApplicationByName( String name ) throws ReefServiceException;
+
+    /**
+     * retrieve an application by name
+     * @param name name of the application
+     * @return application if found or exception will be thrown
+     */
+    ApplicationConfig getApplicationByName( String name ) throws ReefServiceException;
+
+    /**
+     * retrieve an application by uuid
+     * @param uuid uuid of the application
+     * @return application if found or exception will be thrown
+     */
+    ApplicationConfig getApplicationByUuid( ReefUUID uuid ) throws ReefServiceException;
 }
