@@ -29,7 +29,7 @@
                         <Bundle-Name>Reef Application Framework</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <Export-Package>
-                            org.totalgrid.reef.app;version="${reef.version}",
+                            org.totalgrid.reef.app.*;version="${reef.version}",
                             org.totalgrid.reef.event;version="${reef.version}",
                             org.totalgrid.reef.procstatus;version="${reef.version}"
                         </Export-Package>
@@ -59,6 +59,12 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>${commons-codec.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-test-util</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
