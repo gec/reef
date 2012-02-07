@@ -33,6 +33,7 @@ class SimpleManagedConnection(brokerOptions: AmqpSettings, executor: Executor, d
 
   private val connectionManager = new ConnectionCloseManagerEx(brokerOptions, executor)
   private val appManager = new SimpleApplicationConnectionManager(executor, connectionManager)
+  appManager.addConnectionListener(this)
 
   def getAuthenticatedClient(authToken: String) = {
     appManager.getConnection.login(authToken)
