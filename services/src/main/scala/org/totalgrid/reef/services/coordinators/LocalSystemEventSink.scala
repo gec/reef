@@ -25,13 +25,22 @@ import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 import org.totalgrid.reef.services.framework.RequestContextSource
 import org.totalgrid.reef.services.core.EventServiceModel
+import net.agileautomata.executor4s.Executor
 
-class LocalSystemEventSink extends SystemEventSink with Logging {
+import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto }
+
+class LocalSystemEventSink(executor: Executor) extends SystemEventSink with Logging {
 
   private var dbConnectionOption = Option.empty[DbConnection]
   private var components: Option[(RequestContextSource, EventServiceModel)] = None
 
-  def publishSystemEvent(evt: org.totalgrid.reef.client.service.proto.Events.Event) {
+  def publishSystemEvent(evt: EventProto) {
+    executor.execute {
+      publishSystemEventInAnotherThread(evt)
+    }
+  }
+
+  private def publishSystemEventInAnotherThread(evt: EventProto) {
     try {
       // we need a different transaction so events are retained even if
       // we rollback the rest of the transaction because of an error

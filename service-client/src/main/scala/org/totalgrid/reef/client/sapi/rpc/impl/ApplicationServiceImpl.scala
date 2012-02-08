@@ -25,6 +25,7 @@ import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperation
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import org.totalgrid.reef.client.settings.NodeSettings
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 
 trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationService {
 
@@ -41,7 +42,33 @@ trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationServ
   override def sendHeartbeat(statusSnapshot: StatusSnapshot) =
     ops.operation("Heartbeat failed")(_.put(statusSnapshot).map(_.one))
 
+  override def sendHeartbeat(appConfig: ApplicationConfig) =
+    ops.operation("Heartbeat failed")(_.put(makeStatusProto(appConfig, true)).map(_.one))
+
+  def sendApplicationOffline(appConfig: ApplicationConfig) =
+    ops.operation("Setting app offline failed")(_.put(makeStatusProto(appConfig, false)).map(_.one))
+
+  private def makeStatusProto(appConfig: ApplicationConfig, online: Boolean): StatusSnapshot = {
+    StatusSnapshot.newBuilder
+      .setProcessId(appConfig.getProcessId)
+      .setInstanceName(appConfig.getInstanceName)
+      .setTime(System.currentTimeMillis)
+      .setOnline(online).build
+  }
+
   override def getApplications() = ops.operation("Heartbeat failed") {
     _.get(ApplicationConfig.newBuilder.setInstanceName("*").build).map(_.many)
+  }
+
+  def findApplicationByName(name: String) = ops.operation("Couldn't find application with name: " + name) {
+    _.get(ApplicationConfig.newBuilder.setInstanceName(name).build).map(_.oneOrNone)
+  }
+
+  def getApplicationByName(name: String) = ops.operation("Couldn't get application with name: " + name) {
+    _.get(ApplicationConfig.newBuilder.setInstanceName(name).build).map(_.one)
+  }
+
+  def getApplicationByUuid(uuid: ReefUUID) = ops.operation("Couldn't get application with uuid: " + uuid.getValue) {
+    _.get(ApplicationConfig.newBuilder.setUuid(uuid).build).map(_.one)
   }
 }

@@ -21,7 +21,8 @@ package org.totalgrid.reef.httpbridge.activator
 import com.weiglewilczek.scalamodules._
 import javax.servlet.Servlet
 import org.osgi.framework.{ ServiceRegistration, BundleContext }
-import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
+import org.totalgrid.reef.app.ApplicationSettings
+import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings, AmqpSettings }
 import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.service.list.ReefServices
@@ -47,7 +48,11 @@ class JsonBridgeActivator extends ExecutorBundleActivator {
     val bridgeOptions = OsgiConfigReader(context, "org.totalgrid.reef.httpbridge").getProperties
     val defaultUser = DefaultUserConfiguration.getDefaultUser(bridgeOptions)
 
-    managedConnection = Some(new SimpleManagedConnection(brokerOptions, executor, defaultUser))
+    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
+    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
+    val appSettings = new ApplicationSettings(userSettings, nodeSettings, nodeSettings.getDefaultNodeName + "-http-bridge", List("Bridge"))
+
+    managedConnection = Some(new SimpleManagedConnection(brokerOptions, executor, defaultUser, appSettings))
 
     val builderLocator = new BuilderLocator(new ReefServices)
     val bridge = new RestLevelServlet(managedConnection.get, builderLocator)

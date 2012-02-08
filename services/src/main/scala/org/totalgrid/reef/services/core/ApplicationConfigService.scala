@@ -144,6 +144,7 @@ trait ApplicationConfigConversion
       .setHeartbeatCfg(h)
       .setOnline(hbeat.isOnline)
       .setTimesOutAt(hbeat.timeoutAt)
+      .setProcessId(hbeat.processId)
 
     entry.capabilities.value.foreach(x => b.addCapabilites(x.capability))
     b.build

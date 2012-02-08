@@ -18,60 +18,58 @@
  */
 package org.totalgrid.reef.httpbridge
 
-import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
-import org.totalgrid.reef.app.{ ConnectionConsumer, ConnectionCloseManagerEx }
-import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.service.list.ReefServices
-import net.agileautomata.executor4s.{ Cancelable, Executor }
-import org.totalgrid.reef.client.exception.{ ReefServiceException, ServiceIOException }
+import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.client.exception.ReefServiceException
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.app._
 
-class SimpleManagedConnection(brokerOptions: AmqpSettings, executor: Executor, defaultUser: Option[UserSettings]) extends ManagedConnection with ConnectionConsumer with Logging {
-  private var currentConnection = Option.empty[Connection]
+class SimpleManagedConnection(brokerOptions: AmqpSettings, executor: Executor, defaultUser: Option[UserSettings], appSettings: ApplicationSettings)
+    extends ManagedConnection
+    with ApplicationConnectionListener
+    with Logging {
+
   private var defaultAuthToken = Option.empty[String]
 
-  def connection = currentConnection.getOrElse(throw new ServiceIOException("No connection to broker."))
-
-  private val manager = new ConnectionCloseManagerEx(brokerOptions, executor)
-
-  manager.addConsumer(this)
+  private val connectionManager = new ConnectionCloseManagerEx(brokerOptions, executor)
+  private val appManager = new SimpleApplicationConnectionManager(executor, connectionManager)
+  appManager.addConnectionListener(this)
 
   def getAuthenticatedClient(authToken: String) = {
-    connection.login(authToken)
+    appManager.getConnection.login(authToken)
   }
 
   def getNewAuthToken(userName: String, userPassword: String) = {
-    connection.login(userName, userPassword).await.getHeaders.getAuthToken()
+    appManager.getConnection.login(userName, userPassword).await.getHeaders.getAuthToken()
   }
 
   def getSharedBridgeAuthToken() = defaultAuthToken
 
-  def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
-
-    val conn = new DefaultConnection(brokerConnection, exe, 5000)
-    conn.addServicesList(new ReefServices)
-
-    currentConnection = Some(conn)
-
-    defaultUser.foreach { user =>
-      try {
-        defaultAuthToken = Some(getNewAuthToken(user.getUserName, user.getUserPassword))
-      } catch {
-        case rse: ReefServiceException =>
-          logger.error("Couldn't login default user: " + user.getUserName + ". Error: " + rse, rse)
+  def onConnectionStatusChanged(isConnected: Boolean) = {
+    if (isConnected) {
+      defaultUser.foreach { user =>
+        try {
+          defaultAuthToken = Some(getNewAuthToken(user.getUserName, user.getUserPassword))
+        } catch {
+          case rse: ReefServiceException =>
+            logger.error("Couldn't login default user: " + user.getUserName + ". Error: " + rse, rse)
+        }
       }
-    }
-
-    new Cancelable {
-      def cancel() {
-        currentConnection = None
-        defaultAuthToken = None
-      }
+    } else {
+      defaultAuthToken = None
     }
   }
 
-  def start() = manager.start()
-  def stop() = manager.stop()
+  def onConnectionError(msg: String, exception: Option[Exception]) = {
+    logger.warn(msg)
+  }
+
+  def start() {
+    connectionManager.start()
+    appManager.start(appSettings)
+  }
+  def stop() {
+    appManager.stop()
+    connectionManager.stop()
+  }
 }

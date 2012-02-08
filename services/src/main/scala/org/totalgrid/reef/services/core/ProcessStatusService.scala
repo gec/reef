@@ -80,7 +80,8 @@ class ProcessStatusServiceModel(
         takeApplicationOffline(context, hbeat, ss.getTime)
       }
     } else {
-      throw new BadRequestException("App " + ss.getInstanceName + ": is marked offline but got message!")
+      if (ss.getOnline) throw new BadRequestException("App " + ss.getInstanceName + ": is marked offline but got message!")
+      else (hbeat, false)
     }
   }
 

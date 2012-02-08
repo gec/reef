@@ -767,4 +767,22 @@
     <changeSet author="incremental" context="original" id="1328117146325-1">
         <dropSequence schemaName="public" sequenceName="s_CommandAccessModel_id"/>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1328639505560-1">
+        <createSequence schemaName="public" sequenceName="s_CommandAccessModel_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-1">
+        <dropSequence schemaName="public" sequenceName="s_AccessTable_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-2">
+        <dropSequence schemaName="public" sequenceName="s_CommandAccessModel_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-3">
+        <dropSequence schemaName="public" sequenceName="s_Foo_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-4">
+        <dropTable tableName="AccessTable"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-5">
+        <dropTable tableName="Foo"/>
+    </changeSet>
 </databaseChangeLog>
