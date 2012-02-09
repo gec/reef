@@ -54,6 +54,12 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-application-whiteboard</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-protocol-api</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
