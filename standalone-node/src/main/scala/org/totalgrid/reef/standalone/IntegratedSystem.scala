@@ -75,7 +75,7 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
   nodeSettings.foreach { nodeSettings =>
 
     val appManagerSettings = new ApplicationManagerSettings(userSettings, nodeSettings)
-    val applicationManager = new SimpleConnectedApplicationManager(new InstantExecutor, manager, appManagerSettings)
+    val applicationManager = new SimpleConnectedApplicationManager(exe, manager, appManagerSettings)
     applicationManager.start()
 
     manager.addConsumer(ServiceFactory.create(options, userSettings, nodeSettings, modules))
