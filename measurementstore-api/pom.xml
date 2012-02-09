@@ -42,7 +42,7 @@
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
-                    <header>../AGPL_FILE_HEADER</header>
+                    <header>../APACHE_FILE_HEADER</header>
                 </configuration>
             </plugin>
             <plugin>
