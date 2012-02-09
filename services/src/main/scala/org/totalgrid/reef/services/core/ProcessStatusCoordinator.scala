@@ -56,7 +56,7 @@ class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: 
     contextSource.transaction { context =>
       ApplicationSchema.heartbeats.where(heartbeat => heartbeat.isOnline === true and (heartbeat.timeoutAt lte now)).foreach(h => {
         logger.info("App: " + h.instanceName.value + ": has timed out at: " + now + " (" + (h.timeoutAt - now) + ")")
-        model.takeApplicationOffline(context, h, now)
+        model.handleOfflineHeartbeat(context, h, now)
       })
     }
   }

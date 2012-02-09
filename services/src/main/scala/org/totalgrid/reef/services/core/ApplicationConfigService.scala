@@ -91,6 +91,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   }
 
   override def preDelete(context: RequestContext, sql: ApplicationInstance) {
+    procStatusModel.takeApplicationOffline(context, sql)
     procStatusModel.delete(context, sql.heartbeat.value)
   }
 

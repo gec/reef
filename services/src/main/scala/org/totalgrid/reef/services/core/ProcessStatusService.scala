@@ -82,7 +82,7 @@ class ProcessStatusServiceModel(
         (hbeat, true)
       } else {
         logger.info("App " + hbeat.instanceName.value + ": is shutting down at " + ss.getTime)
-        takeApplicationOffline(context, hbeat, ss.getTime)
+        handleOfflineHeartbeat(context, hbeat, ss.getTime)
       }
     } else {
       if (ss.getOnline) throw new BadRequestException("App " + ss.getInstanceName + ": is marked offline but got message!")
@@ -112,14 +112,18 @@ class ProcessStatusServiceModel(
     ret
   }
 
-  def takeApplicationOffline(context: RequestContext, hbeat: HeartbeatStatus, now: Long) = {
+  def handleOfflineHeartbeat(context: RequestContext, hbeat: HeartbeatStatus, now: Long = System.currentTimeMillis) = {
 
-    logger.debug("App " + hbeat.instanceName + ": is being marked offline at " + now)
     val ret = update(context, new HeartbeatStatus(hbeat.applicationId, hbeat.periodMS, now, false, hbeat.processId), hbeat)
 
-    notifyModels(context, hbeat.application.value, false, hbeat.application.value.capabilities.value.toList.map { _.capability })
+    takeApplicationOffline(context, hbeat.application.value)
 
     ret
+  }
+
+  def takeApplicationOffline(context: RequestContext, app: ApplicationInstance) {
+    logger.debug("App " + app.instanceName + ": is being marked offline")
+    notifyModels(context, app, false, app.capabilities.value.toList.map { _.capability })
   }
 
   def notifyModels(context: RequestContext, app: ApplicationInstance, online: Boolean, capabilities: List[String]) {
