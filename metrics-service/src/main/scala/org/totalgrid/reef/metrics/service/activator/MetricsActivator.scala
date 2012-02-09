@@ -18,35 +18,15 @@
  */
 package org.totalgrid.reef.metrics.service.activator
 
-import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.osgi.{ OsgiConfigReader, ExecutorBundleActivator }
-import org.osgi.framework.BundleContext
-import org.totalgrid.reef.app.ConnectionCloseManagerEx
+import org.osgi.framework.{ BundleContext }
+import org.totalgrid.reef.app.whiteboard.ConnectedApplicationBundleActivator
+import org.totalgrid.reef.app.{ ConnectedApplicationManager, ConnectionProvider }
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings, AmqpSettings }
 
-class MetricsActivator extends ExecutorBundleActivator with Logging {
+class MetricsActivator extends ConnectedApplicationBundleActivator {
 
-  private var manager = Option.empty[ConnectionCloseManagerEx]
-
-  protected def start(context: BundleContext, executor: Executor) {
-    logger.info("Starting Service bundle..")
-
-    val brokerConfig = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
-    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
-    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
-
-    manager = Some(new ConnectionCloseManagerEx(brokerConfig, executor))
-
-    manager.get.addConsumer(new MetricsConnection(userSettings, nodeSettings))
-
-    manager.get.start()
+  def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
+    appManager.addConnectedApplication(new MetricsServiceApplication)
   }
 
-  protected def stop(context: BundleContext, executor: Executor) {
-
-    manager.foreach(_.stop())
-
-    logger.info("Stopped Service bundle..")
-  }
 }
