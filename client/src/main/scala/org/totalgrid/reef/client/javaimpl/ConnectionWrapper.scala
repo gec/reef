@@ -24,8 +24,10 @@ import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
 import org.totalgrid.reef.client._
 import org.totalgrid.reef.client.ServicesList
+import net.agileautomata.executor4s.Executor
+import registration.ServiceRegistration
 
-class ConnectionWrapper(conn: SConnection) extends Connection {
+class ConnectionWrapper(conn: SConnection, exe: Executor) extends Connection {
   def addConnectionListener(listener: ConnectionCloseListener) = conn.addConnectionListener(listener)
 
   def removeConnectionListener(listener: ConnectionCloseListener) = conn.removeConnectionListener(listener)
@@ -41,4 +43,6 @@ class ConnectionWrapper(conn: SConnection) extends Connection {
   def disconnect(): Unit = conn.disconnect()
 
   def addServicesList(servicesList: ServicesList) = conn.addServicesList(servicesList)
+
+  def getServiceRegistration: ServiceRegistration = new ServiceRegistrationWrapper(conn, exe)
 }
