@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.app
+package org.totalgrid.reef.app.impl
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -31,58 +31,39 @@ import org.totalgrid.reef.client.settings._
 import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
-import org.totalgrid.reef.client.exception.{ ReefServiceException, ServiceIOException }
 import org.totalgrid.reef.client.service.proto.Application.{ HeartbeatConfig, ApplicationConfig }
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
-import net.agileautomata.executor4s.Failure._
-import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.app.{ ConnectionProvider, ApplicationSettings, ConnectedApplication }
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationManagerTest extends FunSuite with ShouldMatchers {
+class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
 
   val userSettings = new UserSettings("user", "password")
   val nodeSettings = new NodeSettings("nodeName", "location", "network")
 
   val capabilites = List("Cap1", "Cap2")
-  val instanceName = "instance"
+  val baseInstanceName = "instance"
+  val instanceName = "nodeName-instance"
 
-  val settings = ApplicationSettings(userSettings, nodeSettings, instanceName, capabilites, None)
+  val settings = new ApplicationManagerSettings(userSettings, nodeSettings)
 
-  test("Check status functions") {
-    val executor = new MockExecutor()
+  class MockAppListener extends ConnectedApplication {
+    def getApplicationSettings = new ApplicationSettings(baseInstanceName, capabilites)
 
-    val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    val manager = new SimpleApplicationConnectionManager(executor, connectionProvider)
+    def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
+      connected.set(true)
+    }
 
-    manager.isConnected should equal(false)
-    manager.isShutdown should equal(true)
-    intercept[ServiceIOException] { manager.getConnection }
+    def onApplicationShutdown() = {
+      connected.set(false)
+    }
 
-    manager.start(settings)
+    def onConnectionError(msg: String) = errors.append(msg)
 
-    Mockito.verify(connectionProvider).addConsumer(manager)
-
-    manager.isConnected should equal(false)
-    manager.isShutdown should equal(false)
-    intercept[ServiceIOException] { manager.getConnection }
-
-    manager.stop()
-
-    Mockito.verify(connectionProvider).removeConsumer(manager)
-
-    manager.isConnected should equal(false)
-    manager.isShutdown should equal(true)
-    intercept[ServiceIOException] { manager.getConnection }
-  }
-
-  class MockAppListener extends ApplicationConnectionListener {
     val connected = new SynchronizedVariable(false)
     var errors = new SynchronizedList[String]()
 
     def clearErrors() = errors = new SynchronizedList[String]()
-    def onConnectionStatusChanged(isConnected: Boolean) = connected.set(isConnected)
-
-    def onConnectionError(msg: String, exception: Option[Exception]) = errors.append(msg)
 
     def errorsShouldInclude(msg: String) = {
       def evaluate(success: Boolean, last: List[String], timeout: Long) =
@@ -103,6 +84,7 @@ class ApplicationManagerTest extends FunSuite with ShouldMatchers {
 
     Mockito.doReturn(new FixedPromise(Success(true))).when(client).logout()
 
+    Mockito.doReturn(client).when(client).spawn()
     Mockito.doReturn(services).when(client).getRpcInterface(classOf[AllScadaService])
     Mockito.doReturn(new FixedPromise(Success(client))).when(connection).login(userSettings)
     (connection, services)
@@ -114,13 +96,13 @@ class ApplicationManagerTest extends FunSuite with ShouldMatchers {
     val listener = new MockAppListener
 
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    val manager = new SimpleApplicationConnectionManager(executor, connectionProvider)
-    manager.addConnectionListener(listener)
+    val manager = new SimpleConnectedApplicationManager(executor, connectionProvider, settings)
+    manager.addConnectedApplication(listener)
 
     val (connection, services) = makeServices()
     Mockito.doReturn(new FixedPromise(Failure("Unknown user"))).when(connection).login(userSettings)
 
-    manager.start(settings)
+    manager.start()
 
     manager.handleConnection(connection)
 
@@ -141,9 +123,9 @@ class ApplicationManagerTest extends FunSuite with ShouldMatchers {
     val listener = new MockAppListener
 
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    val manager = new SimpleApplicationConnectionManager(executor, connectionProvider)
-    manager.addConnectionListener(listener)
-    manager.start(settings)
+    val manager = new SimpleConnectedApplicationManager(executor, connectionProvider, settings)
+    manager.addConnectedApplication(listener)
+    manager.start()
 
     val (connection, services) = makeServices()
 
@@ -170,8 +152,8 @@ class ApplicationManagerTest extends FunSuite with ShouldMatchers {
     val listener = new MockAppListener
 
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    val manager = new SimpleApplicationConnectionManager(executor, connectionProvider)
-    manager.addConnectionListener(listener)
+    val manager = new SimpleConnectedApplicationManager(executor, connectionProvider, settings)
+    manager.addConnectedApplication(listener)
 
     val (connection, services) = makeServices()
 
@@ -184,7 +166,7 @@ class ApplicationManagerTest extends FunSuite with ShouldMatchers {
 
     Mockito.doReturn(new FixedPromise(Success(status))).when(services).sendApplicationOffline(appConfig)
 
-    manager.start(settings)
+    manager.start()
 
     manager.handleConnection(connection)
 
@@ -205,8 +187,8 @@ class ApplicationManagerTest extends FunSuite with ShouldMatchers {
     val listener = new MockAppListener
 
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    val manager = new SimpleApplicationConnectionManager(executor, connectionProvider)
-    manager.addConnectionListener(listener)
+    val manager = new SimpleConnectedApplicationManager(executor, connectionProvider, settings)
+    manager.addConnectedApplication(listener)
 
     val (connection, services) = makeServices()
 
@@ -219,7 +201,7 @@ class ApplicationManagerTest extends FunSuite with ShouldMatchers {
 
     Mockito.doReturn(new FixedPromise(Success(status))).when(services).sendApplicationOffline(appConfig)
 
-    manager.start(settings)
+    manager.start()
 
     manager.handleConnection(connection)
 
@@ -235,14 +217,12 @@ class ApplicationManagerTest extends FunSuite with ShouldMatchers {
 
     listener errorsShouldInclude ("Unexpected heartbeat failure")
     listener connectedShouldBecome (false) within 500
-    intercept[ServiceIOException] { manager.getConnection }
 
     Mockito.doReturn(new FixedPromise(Success(status))).when(services).sendHeartbeat(appConfig)
 
     executor.tick(10000.milliseconds)
     listener connectedShouldBecome (true) within 500
 
-    manager.getConnection
   }
 
 }

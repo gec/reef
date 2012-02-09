@@ -24,30 +24,39 @@ import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.mockito.Mockito
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import net.agileautomata.commons.testing.SynchronizedVariable
-import org.totalgrid.reef.app.{ ApplicationSettings, ApplicationConnectionListener, ConnectionProvider, SimpleApplicationConnectionManager }
+import org.totalgrid.reef.app._
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
+import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+
+import org.totalgrid.reef.app.impl.{ SimpleConnectedApplicationManager, ApplicationManagerSettings }
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagerTest extends ServiceClientSuite {
 
   val userSettings = new UserSettings("applicationUser", "password")
   val nodeSettings = new NodeSettings("nodeName", "location", "network")
-  val instanceName = "test-app"
-  val settings = ApplicationSettings(userSettings, nodeSettings, instanceName, List("HMI"), Some(100), 50)
+  val baseInstanceName = "test-app"
+  val instanceName = "nodeName-test-app"
+  val settings = new ApplicationManagerSettings(userSettings, nodeSettings, Some(100), 50)
 
   test("ApplicationConnectionManager integration test") {
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    val appManager = new SimpleApplicationConnectionManager(client, connectionProvider)
+    val appManager = new SimpleConnectedApplicationManager(client, connectionProvider, settings)
 
     val connected = new SynchronizedVariable(false)
 
-    appManager.addConnectionListener(new ApplicationConnectionListener {
-      def onConnectionStatusChanged(isConnected: Boolean) = connected.set(isConnected)
+    appManager.addConnectedApplication(new ConnectedApplication {
+      def getApplicationSettings = new ApplicationSettings(baseInstanceName, List("HMI"))
 
-      def onConnectionError(msg: String, exception: Option[Exception]) = null
+      def onApplicationShutdown() = connected.set(false)
+
+      def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = connected.set(true)
+
+      def onConnectionError(msg: String) = null
     })
 
     withGuestUser(userSettings, "all") {
-      appManager.start(settings)
+      appManager.start()
       appManager.handleConnection(connection)
 
       connected shouldBecome (true) within 50000
