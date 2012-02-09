@@ -35,7 +35,7 @@ trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationServ
     }
   }
   override def unregisterApplication(appConfig: ApplicationConfig) = {
-    ops.operation("Failed registering application") {
+    ops.operation("Failed removing application") {
       _.delete(appConfig).map(_.one)
     }
   }

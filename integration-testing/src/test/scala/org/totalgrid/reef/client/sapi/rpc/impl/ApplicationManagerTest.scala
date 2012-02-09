@@ -49,11 +49,17 @@ class ApplicationManagerTest extends ServiceClientSuite with Logging {
     appManager.addConnectedApplication(new ConnectedApplication {
       def getApplicationSettings = new ApplicationSettings(baseInstanceName, List("HMI"))
 
-      def onApplicationShutdown() = connected.set(false)
+      def onApplicationShutdown() = {
+        logger.info("App shutdown")
+        connected.set(false)
+      }
 
-      def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = connected.set(true)
+      def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
+        logger.info("App started")
+        connected.set(true)
+      }
 
-      def onConnectionError(msg: String) = logger.info(msg)
+      def onConnectionError(msg: String) = logger.debug(msg)
     })
 
     withGuestUser(userSettings, "all") {

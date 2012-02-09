@@ -97,11 +97,11 @@ class LoginProcessTree(connection: Connection,
 
     def cleanup(p: ProcessManager) {
 
-      appConfig.foreach { services.sendApplicationOffline(_) }
+      connectedApp.onApplicationShutdown()
+
+      appConfig.foreach { services.sendApplicationOffline(_).await }
 
       appConfig = None
-
-      connectedApp.onApplicationShutdown()
     }
   }
 
