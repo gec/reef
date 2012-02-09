@@ -56,7 +56,7 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
 
   def start() {
     val future = this.synchronized {
-      logger.info(name + " starting")
+      logger.debug(name + " starting")
       isStopping = false
       isFailed = false
       val f = exe.attempt(payloadLogic.setup(p))
@@ -71,11 +71,11 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
         r match {
           case Success(_) =>
             if (!isStopping) {
-              logger.info(name + " started")
+              logger.debug(name + " started")
               isActive = true
               startChildren()
             } else {
-              logger.info(name + " started but stop requested, stopping")
+              logger.debug(name + " started but stop requested, stopping")
               cleanupProcess()
             }
           case Failure(ex) =>
@@ -85,11 +85,11 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
             } else {
               val delayTime = payloadLogic.setupRetryDelay.milliseconds
               retryTimer = Some(exe.schedule(delayTime) {
-                logger.info(name + " retrying setup.")
+                logger.debug(name + " retrying setup.")
                 start()
               })
-              logger.info(name + " failed setup. " + ex.getMessage, ex)
-              logger.info(name + " retrying setup in: " + delayTime)
+              logger.debug(name + " failed setup. " + ex.getMessage, ex)
+              logger.debug(name + " retrying setup in: " + delayTime)
             }
         }
         notify()
@@ -100,13 +100,13 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
 
   def stop() = {
     this.synchronized {
-      logger.info(name + " stopping")
+      logger.debug(name + " stopping")
       isStopping = true
       if (setupFuture.isDefined) wait()
     }
 
     retryTimer.foreach { t =>
-      logger.info(name + " canceling retry")
+      logger.debug(name + " canceling retry")
       t.cancel()
     }
 
@@ -131,7 +131,7 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
     val toStart = children.filter { _.shouldBeStarted }
 
     toStart.foreach { child =>
-      logger.info(name + " starting child: " + child.name.trim())
+      logger.debug(name + " starting child: " + child.name.trim())
       child.start()
     }
   }
@@ -140,7 +140,7 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
     val toStop = children.filter { _.shouldBeStopped }
 
     toStop.foreach { child =>
-      logger.info(name + " stoppping child: " + child.name.trim())
+      logger.debug(name + " stoppping child: " + child.name.trim())
       child.stop()
     }
   }
@@ -148,24 +148,24 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
   private def failParent() {
 
     parent.filter { _.shouldBeStopped }.foreach { p =>
-      logger.info(name + " failing parent: " + p.name.trim())
+      logger.debug(name + " failing parent: " + p.name.trim())
       p.fail()
     }
   }
 
   def fail() = this.synchronized {
     isFailed = true
-    logger.info(name + " failed!")
+    logger.debug(name + " failed!")
     stop()
     stopChildren()
     failParent()
     if (payloadLogic.retryAfterFailure) {
       val delayTime = payloadLogic.setupRetryDelay.milliseconds
       retryTimer = Some(exe.schedule(delayTime) {
-        logger.info(name + " retrying setup after failure.")
+        logger.debug(name + " retrying setup after failure.")
         start()
       })
-      logger.info(name + " retrying setup after failure in: " + delayTime)
+      logger.debug(name + " retrying setup after failure in: " + delayTime)
     }
   }
 
