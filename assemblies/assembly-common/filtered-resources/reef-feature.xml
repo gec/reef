@@ -42,6 +42,7 @@
         <bundle start-level='60'>mvn:org.liquibase/liquibase-osgi/${liquibase.version}</bundle>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-services-db-schema/${reef.version}</bundle>
 		<bundle start-level='91'>mvn:org.totalgrid.reef/reef-services/${reef.version}</bundle>
+        <bundle start-level='92'>mvn:org.totalgrid.reef/reef-application-whiteboard/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-admin-shell/${reef.version}</bundle>
         <bundle start-level='99'>mvn:org.totalgrid.reef/reef-metrics-service/${reef.version}</bundle>
 		<bundle start-level='99'>mvn:org.totalgrid.reef/reef-processing/${reef.version}</bundle>

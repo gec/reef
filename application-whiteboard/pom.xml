@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.totalgrid.reef</groupId>
+        <artifactId>reef-scala-base</artifactId>
+        <version>0.4.4-SNAPSHOT</version>
+        <relativePath>../scala-base</relativePath>
+    </parent>
+    <artifactId>reef-application-whiteboard</artifactId>
+    <packaging>bundle</packaging>
+
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${maven-bundle.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>Reef Application Whiteboard</Bundle-Name>
+                        <Export-Package>org.totalgrid.reef.app.whiteboard;version="${reef.version}"</Export-Package>
+                        <Bundle-Activator>org.totalgrid.reef.app.whiteboard.AppWhiteboardActivator</Bundle-Activator>
+                        <_nouses>true</_nouses>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <header>../APACHE_FILE_HEADER</header>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util-osgi</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-application-framework</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+</project>

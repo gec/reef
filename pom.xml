@@ -73,6 +73,7 @@
 		<module>measurementstore-squeryl</module>
         <module>memory-broker</module>
 		<module>application-framework</module>
+        <module>application-whiteboard</module>
 		<module>proto-shell</module>
         <module>http-bridge/http-bridge</module>
         <module>http-bridge/js-service-client</module>
