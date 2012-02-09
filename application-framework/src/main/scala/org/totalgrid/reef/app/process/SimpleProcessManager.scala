@@ -88,8 +88,10 @@ class SimpleProcessManager(exe: Executor) extends ProcessManager {
     toStart.foreach { _.start() }
   }
 
-  def stop() = this.synchronized {
-    started = false
+  def stop() = {
+    this.synchronized {
+      started = false
+    }
     parentTasks.foreach { _.stop() }
   }
 

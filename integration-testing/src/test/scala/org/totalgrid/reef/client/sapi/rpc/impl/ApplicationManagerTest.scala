@@ -29,15 +29,16 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 
 import org.totalgrid.reef.app.impl.{ SimpleConnectedApplicationManager, ApplicationManagerSettings }
+import com.weiglewilczek.slf4s.Logging
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationManagerTest extends ServiceClientSuite {
+class ApplicationManagerTest extends ServiceClientSuite with Logging {
 
   val userSettings = new UserSettings("applicationUser", "password")
   val nodeSettings = new NodeSettings("nodeName", "location", "network")
   val baseInstanceName = "test-app"
   val instanceName = "nodeName-test-app"
-  val settings = new ApplicationManagerSettings(userSettings, nodeSettings, Some(100), 50)
+  val settings = new ApplicationManagerSettings(userSettings, nodeSettings, Some(1), 50)
 
   test("ApplicationConnectionManager integration test") {
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
@@ -52,35 +53,39 @@ class ApplicationManagerTest extends ServiceClientSuite {
 
       def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = connected.set(true)
 
-      def onConnectionError(msg: String) = null
+      def onConnectionError(msg: String) = logger.info(msg)
     })
 
     withGuestUser(userSettings, "all") {
-      appManager.start()
-      appManager.handleConnection(connection)
+      try {
+        appManager.start()
+        appManager.handleConnection(connection)
 
-      connected shouldBecome (true) within 50000
+        connected shouldBecome (true) within 50000
 
-      val appConfig = client.getApplicationByName(instanceName).await
-      appConfig.getOnline should equal(true)
+        (0 to 5).foreach { i =>
+          val appConfig = client.getApplicationByName(instanceName).await
+          appConfig.getOnline should equal(true)
 
-      // mark the application offline (will cause a heartbeat error)
-      client.sendApplicationOffline(appConfig).await
+          // remove the application offline (will cause a heartbeat error)
+          client.unregisterApplication(appConfig).await
 
-      // application will be marked offline
-      connected shouldBecome (false) within 50000
-      client.getApplicationByName(instanceName).await.getOnline should equal(false)
+          // application will be marked offline
+          connected shouldBecome (false) within 50000
 
-      // we should automatically retry, logging back in
-      connected shouldBecome (true) within 50000
-      client.getApplicationByName(instanceName).await.getOnline should equal(true)
+          // we should automatically retry, logging back in
+          connected shouldBecome (true) within 50000
+          client.getApplicationByName(instanceName).await.getOnline should equal(true)
+        }
+        // now stop the manager like an application would, make sure our app gets cleaned up and we are
+        // informed that we are going offline
+        appManager.stop()
 
-      // now stop the manager like an application would, make sure our app gets cleaned up and we are
-      // informed that we are going offline
-      appManager.stop()
-
-      connected shouldBecome (false) within 50000
-      client.getApplicationByName(instanceName).await.getOnline should equal(false)
+        connected shouldBecome (false) within 50000
+        client.getApplicationByName(instanceName).await.getOnline should equal(false)
+      } finally {
+        appManager.stop()
+      }
     }
 
     client.unregisterApplication(client.getApplicationByName(instanceName).await).await

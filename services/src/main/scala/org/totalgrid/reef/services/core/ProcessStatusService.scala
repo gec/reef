@@ -73,7 +73,12 @@ class ProcessStatusServiceModel(
         logger.info("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime))
         hbeat.timeoutAt = ss.getTime + hbeat.periodMS * 2
         // don't publish a modify
-        ApplicationSchema.heartbeats.update(hbeat)
+        try {
+          ApplicationSchema.heartbeats.update(hbeat)
+        } catch {
+          // if we have deleted the application we need to fail any remaining heartbeats
+          case ex: RuntimeException => throw new BadRequestException("Application deleted")
+        }
         (hbeat, true)
       } else {
         logger.info("App " + hbeat.instanceName.value + ": is shutting down at " + ss.getTime)
