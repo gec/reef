@@ -39,6 +39,7 @@ class LoginProcessTree(connection: Connection,
     extends ErrorHandler {
 
   private val appSettings = connectedApp.getApplicationSettings
+  private val instanceName = managerSettings.nodeSettings.getDefaultNodeName + "-" + appSettings.instanceName
   private val parentProcess: Process = new LoginTask()
   private val processManager = new SimpleProcessManager(executor)
 
@@ -50,10 +51,10 @@ class LoginProcessTree(connection: Connection,
 
   // proxy the login errors to the ConnectedApplication
   def onError(msg: String, ex: Option[Exception]) = {
-    connectedApp.onConnectionError(msg)
+    connectedApp.onConnectionError(msg + ex.map { " : " + _.getMessage }.getOrElse(""))
   }
 
-  class LoginTask extends RetryableProcess("Logging in " + managerSettings.userSettings.getUserName) {
+  class LoginTask extends RetryableProcess("Attempting to login user: " + managerSettings.userSettings.getUserName) {
 
     override def setupRetryDelay = managerSettings.retryLoginInitialDelayMs
 
@@ -76,13 +77,12 @@ class LoginProcessTree(connection: Connection,
   }
 
   class AppRegistrationTask(client: Client, services: AllScadaService)
-      extends OneShotProcess("Registering application: " + appSettings.instanceName) {
+      extends OneShotProcess("Registering application: " + instanceName) {
 
     var appConfig = Option.empty[ApplicationConfig]
 
     def setup(p: ProcessManager) {
 
-      val instanceName = managerSettings.nodeSettings.getDefaultNodeName + "-" + appSettings.instanceName
       appConfig = Some(services.registerApplication(managerSettings.nodeSettings, instanceName, appSettings.capabilites.toList).await)
 
       // send a single heartbeat just to verify we are correctly registered
@@ -106,7 +106,7 @@ class LoginProcessTree(connection: Connection,
   }
 
   class HeartbeatTask(services: AllScadaService, appConfig: ApplicationConfig)
-      extends OneShotProcess("heartbeat " + appConfig.getInstanceName) {
+      extends OneShotProcess("Starting beartbeats for: " + instanceName) {
 
     var timer = Option.empty[Timer]
 

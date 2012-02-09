@@ -26,18 +26,23 @@ import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.app.{ ConnectedApplication, ConnectionConsumer, ConnectedApplicationManager, ConnectionProvider }
 import net.agileautomata.executor4s.{ Cancelable, Executor }
+import org.totalgrid.reef.util.Lifecycle
 
 // TODO: implement retry backoff
 case class ApplicationManagerSettings(
-  userSettings: UserSettings,
-  nodeSettings: NodeSettings,
-  overrideHeartbeatPeriodMs: Option[Long] = None,
-  retryLoginInitialDelayMs: Long = 1000,
-  retryLoginMaxDelayMs: Long = 60000)
+    userSettings: UserSettings,
+    nodeSettings: NodeSettings,
+    overrideHeartbeatPeriodMs: Option[Long] = None,
+    retryLoginInitialDelayMs: Long,
+    retryLoginMaxDelayMs: Long) {
+
+  def this(userSettings: UserSettings, nodeSettings: NodeSettings) = this(userSettings, nodeSettings, None, 1000, 60000)
+}
 
 class SimpleConnectedApplicationManager(executor: Executor, provider: ConnectionProvider, managerSettings: ApplicationManagerSettings)
     extends ConnectedApplicationManager
     with ConnectionConsumer
+    with Lifecycle
     with Logging {
 
   private var currentConnection = Option.empty[Connection]
@@ -73,12 +78,12 @@ class SimpleConnectedApplicationManager(executor: Executor, provider: Connection
     connectionStopped()
   }
 
-  def addConnectedApplication(app: ConnectedApplication) = {
+  def addConnectedApplication(app: ConnectedApplication) = this.synchronized {
 
     createLoginProcess(app)
   }
 
-  def removeConnectedApplication(app: ConnectedApplication) = {
+  def removeConnectedApplication(app: ConnectedApplication) = this.synchronized {
     applications.get(app) match {
       case Some(process) => process.foreach { _.stop() }
       case None =>

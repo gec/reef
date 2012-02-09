@@ -38,7 +38,7 @@ class ApplicationManagerTest extends ServiceClientSuite with Logging {
   val nodeSettings = new NodeSettings("nodeName", "location", "network")
   val baseInstanceName = "test-app"
   val instanceName = "nodeName-test-app"
-  val settings = new ApplicationManagerSettings(userSettings, nodeSettings, Some(1), 50)
+  val settings = new ApplicationManagerSettings(userSettings, nodeSettings, Some(1), 50, 50)
 
   test("ApplicationConnectionManager integration test") {
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
