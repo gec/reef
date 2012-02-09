@@ -23,6 +23,7 @@ import presentation.EndpointView
 import org.apache.felix.gogo.commands.{ Argument, Command }
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 
 @Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
 class EndpointListCommand extends ReefCommandSupport {
@@ -51,6 +52,29 @@ class EndpointEnableCommand extends ReefCommandSupport with EndpointRetrieval {
 
   def doCommand() = {
     EndpointView.printTable(endpoints(endpointName).map { c => services.enableEndpointConnection(c.getUuid) })
+  }
+}
+
+// TODO: remove endpoint:changestate command
+@Command(scope = "endpoint", name = "changestate", description = "Force an endpoint into a different state (experts only!)")
+class EndpointChangeStateCommand extends ReefCommandSupport with EndpointRetrieval {
+
+  @Argument(index = 0, name = "name", description = "Endpoint name. Use \"*\" for all endpoints.", required = true, multiValued = false)
+  var endpointName: String = null
+
+  @Argument(index = 1, name = "state", description = "The desired state we want the endpoint in. COMMS_UP, COMMS_DOWN or COMMS_ERROR", required = false, multiValued = false)
+  var stateStr: String = "COMMS_DOWN"
+
+  def doCommand() = {
+
+    val state = EndpointConnection.State.valueOf(stateStr)
+    if (state == null) println("State must be one of: COMMS_UP, COMMS_DOWN or COMMS_ERROR")
+    else {
+      EndpointView.printTable(endpoints(endpointName).map { c =>
+        val connection = services.getEndpointConnectionByUuid(c.getUuid)
+        services.alterEndpointConnectionState(connection.getId, state)
+      })
+    }
   }
 }
 

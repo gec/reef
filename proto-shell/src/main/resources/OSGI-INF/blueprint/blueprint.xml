@@ -162,8 +162,14 @@
         <command name="endpoint/disable">
             <action class="org.totalgrid.reef.shell.proto.EndpointDisableCommand"/>
         </command>
+        <command name="endpoint/changestate">
+            <action class="org.totalgrid.reef.shell.proto.EndpointChangeStateCommand"/>
+        </command>
         <command name="application/list">
             <action class="org.totalgrid.reef.shell.proto.ApplicationListCommand"/>
+        </command>
+        <command name="application/remove">
+            <action class="org.totalgrid.reef.shell.proto.ApplicationRemoveCommand"/>
         </command>
         <command name="configfile/list">
             <action class="org.totalgrid.reef.shell.proto.ConfigFileListCommand"/>

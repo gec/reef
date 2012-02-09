@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.apache.felix.gogo.commands.Command
+import org.apache.felix.gogo.commands.{ Argument, Command }
 
 import scala.collection.JavaConversions._
 import presentation.ApplicationView
@@ -27,6 +27,20 @@ import presentation.ApplicationView
 class ApplicationListCommand extends ReefCommandSupport {
 
   def doCommand() = {
+    ApplicationView.printTable(services.getApplications.toList)
+  }
+}
+
+@Command(scope = "application", name = "remove", description = "Remove an application from list. If we try to remove a running application it will cause that app to restart. (experts-only!)")
+class ApplicationRemoveCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "application name", description = "Name of the application we want to remove.", required = true, multiValued = false)
+  var applicationName: String = null
+
+  def doCommand() = {
+    val appConfig = services.getApplicationByName(applicationName)
+
+    services.unregisterApplication(appConfig)
     ApplicationView.printTable(services.getApplications.toList)
   }
 }
