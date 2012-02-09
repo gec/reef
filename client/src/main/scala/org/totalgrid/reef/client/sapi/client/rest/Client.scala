@@ -22,12 +22,20 @@ import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.sapi.client._
 
 trait Client
-  extends Executor
-  with RestOperations
-  with RequestSpyHook
-  with DefaultHeaders
-  with Connection
-  with RpcProvider
-  with SubscriptionCreatorManager
-  with ServiceRegistry
-  with ClientLogout
+    extends Executor
+    with RestOperations
+    with RequestSpyHook
+    with DefaultHeaders
+    with Connection
+    with RpcProvider
+    with SubscriptionCreatorManager
+    with ServiceRegistry
+    with ClientLogout {
+  /**
+   * create a copy of the client for use in a different thread (or whose
+   * subscriptions we want handled in pararell with the original client).
+   *
+   * No listeners are copied, only the auth token.
+   */
+  def spawn(): Client
+}
