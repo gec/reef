@@ -73,7 +73,7 @@ object MeasurementStoreFinder extends Logging {
    */
   private def getImplementation(context: BundleContext, implementation: String, historian: Option[Boolean], realtime: Option[Boolean]): Option[MeasurementStore] = {
 
-    val serviceOptions = context findServices withInterface[MeasurementStore] withFilter
+    val serviceOptions = context findServices withInterface[MeasurementStoreProvider] withFilter
       "impl" === implementation andApply { (service, properties) =>
         // filtering doesn't work as expected, seems to do an "or" rather than an "and"
         if (properties.get("impl").get != implementation) None
@@ -81,9 +81,6 @@ object MeasurementStoreFinder extends Logging {
         else if (realtime.isDefined && properties.get("realtime").get != realtime.get) None
         else Some(service)
       }
-    serviceOptions.flatten match {
-      case x :: tail => Some(x)
-      case _ => None
-    }
+    serviceOptions.flatten.headOption.map { _.createStore }
   }
 }

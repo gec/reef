@@ -20,7 +20,7 @@ package org.totalgrid.reef.measurementstore.activator
 
 import org.osgi.framework.{ BundleContext, BundleActivator }
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
+import org.totalgrid.reef.measurementstore.{ MeasurementStoreProvider, InMemoryMeasurementStore }
 
 class InMemoryMeasurementStoreActivator extends BundleActivator {
   def start(context: BundleContext) {
@@ -32,8 +32,8 @@ class InMemoryMeasurementStoreActivator extends BundleActivator {
     val historianOptions = commonOptions + ("historian" -> true)
     val realtimeOptions = commonOptions + ("historian" -> false)
 
-    context.createService(historianMeasurementStore, historianOptions, interface[MeasurementStore])
-    context.createService(realtimeMeasurementStore, realtimeOptions, interface[MeasurementStore])
+    context.createService(MeasurementStoreProvider(historianMeasurementStore), historianOptions, interface[MeasurementStoreProvider])
+    context.createService(MeasurementStoreProvider(realtimeMeasurementStore), realtimeOptions, interface[MeasurementStoreProvider])
 
   }
 
