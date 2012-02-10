@@ -19,14 +19,14 @@
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import org.totalgrid.reef.client.exception.UnknownServiceException
-import org.totalgrid.reef.client.sapi.client.rest.{ Client }
 import org.totalgrid.reef.client.types.ServiceTypeInformation
-import org.totalgrid.reef.client.{ ServiceProviderInfo, ServiceProviderFactory, ServicesList }
-import org.totalgrid.reef.client.{ ServiceProviderInfo, ServiceProviderFactory, ServicesList }
+import org.totalgrid.reef.client.{ ServiceProviderInfo, ServiceProviderFactory => JavaProviderFactory, ServicesList }
+import org.totalgrid.reef.client.internal.ProviderFactory
+import org.totalgrid.reef.client.sapi.client.rest.{ ServiceProviderFactory, Client }
 
 trait DefaultServiceRegistry {
 
-  private var providers = Map.empty[Class[_], ServiceProviderFactory]
+  private var providers = Map.empty[Class[_], ProviderFactory]
 
   private var servicemap = Map.empty[Class[_], ServiceTypeInformation[_, _]]
 
@@ -37,9 +37,13 @@ trait DefaultServiceRegistry {
     }
   }
 
-  def getRpcInterface[A](klass: Class[A], client: Client) = this.synchronized {
+  def getRpcInterface[A](klass: Class[A], client: Client): A = this.synchronized {
     providers.get(klass) match {
-      case Some(creator) => creator.createRpcProvider(client).asInstanceOf[A]
+      //case Some(creator) => creator.createRpcProvider(client).asInstanceOf[A]
+      case Some(creator) => creator match {
+        case jfac: JavaProviderFactory => throw new UnknownServiceException("Java interface for: " + klass + "not supported")
+        case sfac: ServiceProviderFactory => sfac.createRpcProvider(client).asInstanceOf[A]
+      }
       case None => throw new UnknownServiceException("Unknown rpc interface for: " + klass)
     }
   }

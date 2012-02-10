@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.sapi.client.rest.{ Client }
+import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.client.{ RequestSpyHook, BasicRequestHeaders }
 import org.totalgrid.reef.client.proto.Envelope.{ SubscriptionEventType, Verb }
 import org.totalgrid.reef.client.sapi.service.AsyncService
