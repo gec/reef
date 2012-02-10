@@ -21,22 +21,44 @@ package org.totalgrid.reef.entry
 import org.osgi.framework._
 
 import org.totalgrid.reef.protocol.api.Protocol
+import org.totalgrid.reef.protocol.api.ScadaProtocolAdapter
+
 import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.app._
 
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.app.whiteboard.ConnectedApplicationBundleActivator
+import org.totalgrid.reef.protocol.api.scada.ProtocolAdapter
 
 final class FepActivator extends ConnectedApplicationBundleActivator {
 
   private var map = Map.empty[Protocol, ConnectedApplication]
+  private var wrapperMap = Map.empty[ProtocolAdapter, Protocol]
 
   def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
+
     context watchServices withInterface[Protocol] andHandle {
       case AddingService(p, _) => addProtocol(p, appManager)
       case ServiceRemoved(p, _) => removeProtocol(p, appManager)
     }
+
+    /**
+     * Produces a wrapper for Java protocol adapters, adding them just like the current Scala one is added
+     */
+    context watchServices withInterface[ProtocolAdapter] andHandle {
+      case AddingService(p, _) =>
+        val wrapper = new ScadaProtocolAdapter(p)
+        wrapperMap += p -> wrapper
+        addProtocol(wrapper, appManager)
+      case ServiceRemoved(p, _) =>
+        wrapperMap.get(p).foreach { x =>
+            wrapperMap -= p
+            removeProtocol(x, appManager)
+        }
+
+    }
+
   }
 
   private def addProtocol(p: Protocol, appManager: ConnectedApplicationManager) = map.synchronized {
