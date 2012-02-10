@@ -70,6 +70,7 @@ trait ArgumentSourceHelpers { self: ArgumentSource =>
   def getLongs(name: String) = require(name, findArguments(name, LongClass))
   def getBooleans(name: String) = require(name, findArguments(name, BooleanClass))
   def getStrings(name: String) = require(name, findArguments(name, StringClass))
+  def getUuids(name: String) = require(name, findArguments(name, ReefUuidClass))
 
   def require[A](name: String, result: Option[A]): A = {
     result.getOrElse(throw new BadRequestException("Missing required argument: " + name))

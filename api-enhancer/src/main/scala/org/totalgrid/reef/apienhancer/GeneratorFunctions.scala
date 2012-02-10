@@ -48,6 +48,9 @@ trait GeneratorFunctions {
     "/**\n" + strippedText.lines.toList.map { " *" + _ }.mkString("\n") + "\n*/"
   }
 
+  /**
+   * get the type as a printable String => Measurement or List<Things>
+   */
   def typeString(ptype: Type): String = {
     if (ptype.asParameterizedType() != null) {
 
@@ -58,6 +61,9 @@ trait GeneratorFunctions {
     }
   }
 
+  /**
+   * get the type parameter (if it exists) and render it as [Type] or <Type>
+   */
   def typeAnnotation(m: MethodDoc, java: Boolean): String = {
     val typ = m.typeParameters().toList.headOption
     val typAnnotation = typ.map { t =>
@@ -104,5 +110,13 @@ trait GeneratorFunctions {
       val simpleType = ptype.simpleTypeName()
       map.get(simpleType).getOrElse(simpleType)
     }
+  }
+
+  def isReturnOptional(m: MethodDoc) = {
+    (m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List"
+  }
+
+  def isReturnList(m: MethodDoc) = {
+    m.returnType.simpleTypeName == "List"
   }
 }

@@ -25,6 +25,9 @@ import java.io.File
 
 trait ApiTransformer {
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File)
+
+  // called once all of the classes have been procesed
+  def finish(rootDir: File) {}
 }
 
 object ApiEnhancer {
@@ -34,7 +37,7 @@ object ApiEnhancer {
     val rootDir = new File(".")
     val sourceDir = new File(rootDir, "../../src/main/java")
 
-    val transformers = List(new ScalaWithFutures, new ScalaJavaShims(false), new JavaFutures, new ScalaJavaShims(true))
+    val transformers = List(new ScalaWithFutures, new ScalaJavaShims(false), new JavaFutures, new ScalaJavaShims(true), new HttpServiceCallBindings)
 
     root.classes.toList.filter { c =>
       c.getRawCommentText.indexOf("!api-definition!") != -1
@@ -47,6 +50,8 @@ object ApiEnhancer {
 
       transformers.foreach { _.make(c, packageStr, rootDir, sourceFile) }
     }
+
+    transformers.foreach { _.finish(rootDir) }
 
     true
   }
