@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestExc
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 @RunWith(classOf[JUnitRunner])
-class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   class TestRig(dbConnection: DbConnection) extends CommandTestRig(dbConnection) {
 

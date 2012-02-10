@@ -21,13 +21,14 @@ package org.totalgrid.reef.httpbridge.activator
 import com.weiglewilczek.scalamodules._
 import javax.servlet.Servlet
 import org.osgi.framework.{ ServiceRegistration, BundleContext }
-import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
-import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
+import org.totalgrid.reef.osgi.OsgiConfigReader
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.httpbridge._
 import org.totalgrid.reef.httpbridge.servlets._
 import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCallLibrary
+import org.totalgrid.reef.app.whiteboard.ConnectedApplicationBundleActivator
+import org.totalgrid.reef.app.{ ConnectedApplicationManager, ConnectionProvider }
 
 /**
  * We use the "whiteboard" style of servlet registration and let the pax extender
@@ -35,27 +36,23 @@ import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCal
  *
  * http://felix.apache.org/site/apache-felix-http-service.html#ApacheFelixHTTPService-UsingtheWhiteboard
  */
-class JsonBridgeActivator extends ExecutorBundleActivator {
+class JsonBridgeActivator extends ConnectedApplicationBundleActivator {
 
   private var registrations = List.empty[ServiceRegistration]
 
-  private var managedConnection = Option.empty[SimpleManagedConnection]
-
-  protected def start(context: BundleContext, executor: Executor) {
-    val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
-
+  def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
     val bridgeOptions = OsgiConfigReader(context, "org.totalgrid.reef.httpbridge").getProperties
     val defaultUser = DefaultUserConfiguration.getDefaultUser(bridgeOptions)
 
-    managedConnection = Some(new SimpleManagedConnection(brokerOptions, executor, defaultUser))
+    val managedConnection = new ConnectedApplicationManagedConnection(defaultUser)
+
+    appManager.addConnectedApplication(managedConnection)
 
     val builderLocator = new BuilderLocator(new ReefServices)
-    val bridge = new RestLevelServlet(managedConnection.get, builderLocator)
-    val login = new LoginServlet(managedConnection.get)
+    val bridge = new RestLevelServlet(managedConnection, builderLocator)
+    val login = new LoginServlet(managedConnection)
     val converter = new ConverterServlet(builderLocator)
-    val apiBridge = new ApiServlet(managedConnection.get, new AllScadaServiceApiCallLibrary)
-
-    managedConnection.get.start()
+    val apiBridge = new ApiServlet(managedConnection, new AllScadaServiceApiCallLibrary)
 
     registrations ::= context.createService(bridge, List("alias" -> "/rest").toMap, interface[Servlet])
     registrations ::= context.createService(login, List("alias" -> "/login").toMap, interface[Servlet])
@@ -63,9 +60,7 @@ class JsonBridgeActivator extends ExecutorBundleActivator {
     registrations ::= context.createService(apiBridge, List("alias" -> "/api").toMap, interface[Servlet])
   }
 
-  protected def stop(context: BundleContext, executor: Executor) {
-    registrations.foreach(_.unregister())
-    managedConnection.foreach { _.stop() }
+  override def stopApplication() = {
+    registrations.foreach { _.unregister() }
   }
-
 }

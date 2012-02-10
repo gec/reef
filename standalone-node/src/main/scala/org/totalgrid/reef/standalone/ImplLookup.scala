@@ -28,9 +28,10 @@ import org.totalgrid.reef.client.settings.util.PropertyLoading
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
-import org.totalgrid.reef.measurementstore.{ MixedMeasurementStore, InMemoryMeasurementStore }
+import org.totalgrid.reef.measurementstore._
 import java.util.Properties
 import net.agileautomata.executor4s.{ Executor, Cancelable }
+import net.agileautomata.executor4s.testing.MockExecutorService
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 
@@ -84,7 +85,7 @@ object ImplLookup extends Logging {
     if (historianType == currentValueType) {
       getMeasImpl(historianType)
     } else {
-      new MixedMeasurementStore(getMeasImpl(historianType), getMeasImpl(currentValueType))
+      new MixedMeasurementStore(new MockExecutorService(exe), getMeasImpl(historianType), getMeasImpl(currentValueType))
     }
   }
 }

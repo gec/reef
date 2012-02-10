@@ -24,6 +24,7 @@ import dsl.fsm.{ Conditioned, SelectState, WhereState }
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.QueryYield
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.models.SquerylConversions
 
 /**
  * defines a simple to integrate implementation of the findRecord and findRecords functions
@@ -142,9 +143,9 @@ trait UniqueAndSearchQueryable[MessageType, T] {
     from(table)(sql => getOrdering(selectFun(sql, where(searchParams(req, sql))), sql)).page(0, resultLimit)
   }
   def uniqueParams(req: MessageType, sql: T): LogicalBoolean = {
-    SquerylModel.combineExpressions(uniqueQuery(req, sql).flatten)
+    SquerylConversions.combineExpressions(uniqueQuery(req, sql).flatten)
   }
   def searchParams(req: MessageType, sql: T): LogicalBoolean = {
-    SquerylModel.combineExpressions((uniqueQuery(req, sql) ::: searchQuery(req, sql)).flatten)
+    SquerylConversions.combineExpressions((uniqueQuery(req, sql) ::: searchQuery(req, sql)).flatten)
   }
 }

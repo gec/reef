@@ -58,6 +58,7 @@ object ReefServicesList {
     getEntry(Descriptors.entity),
     getEntry(Descriptors.entityEdge),
     getEntry(Descriptors.entityAttributes),
+    getEntry(Descriptors.entityAttribute),
     // TODO: we only need this here to get event publishing to work
     getEntry(Descriptors.measurement))
 

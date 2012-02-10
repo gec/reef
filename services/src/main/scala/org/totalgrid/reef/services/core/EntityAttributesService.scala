@@ -27,72 +27,18 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.totalgrid.reef.models.{ Entity, ApplicationSchema, EntityAttribute => AttrModel }
+import org.totalgrid.reef.models.EntityQuery
 
 import scala.collection.JavaConversions._
 
 import java.util.UUID
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.services.framework.SquerylModel._
 
 class EntityAttributesService extends ServiceEntryPoint[AttrProto] with AuthorizesEverything {
   import EntityAttributesService._
 
   override val descriptor = Descriptors.entityAttributes
-
-  override def putAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
-    callback(source.transaction { context =>
-      authorizeRead(context, req)
-
-      if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
-
-      val entEntry = EntityQuery.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
-
-      val existingAttrs = entEntry.attributes.value
-      val newAtttributes = req.getAttributesList.map { convertProtoToEntry(entEntry.id, _) }.toList
-
-      // cant use diff to calculate difference because the attribute type is a squeryl type and it does
-      // weird things with the hashCodes (apparently used in the diff algorithm)
-      // TODO: look for all usages of diff involving squeryl objects
-      val differences = newAtttributes.filterNot(e => existingAttrs.find(e.equals(_)).isDefined)
-
-      if (!differences.isEmpty || newAtttributes.size != existingAttrs.size) {
-        deleteAllFromEntity(entEntry.id)
-        ApplicationSchema.entityAttributes.insert(newAtttributes)
-        // since changed the entities we need to manually update the lazy var
-        entEntry.attributes.value = newAtttributes
-
-        val status = if (existingAttrs.isEmpty) {
-          authorizeCreate(context, req)
-          Status.CREATED
-        } else {
-          authorizeUpdate(context, req)
-          Status.UPDATED
-        }
-        Response(status, protoFromEntity(entEntry) :: Nil)
-      } else {
-        Response(Status.NOT_MODIFIED, protoFromEntity(entEntry) :: Nil)
-      }
-    })
-  }
-
-  override def deleteAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
-    callback(source.transaction { context =>
-      authorizeDelete(context, req)
-
-      if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
-
-      val entEntry = EntityQuery.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
-
-      val existingAttrs = entEntry.attributes.value
-
-      val status = if (!existingAttrs.isEmpty) {
-        deleteAllFromEntity(entEntry.id)
-        Status.DELETED
-      } else {
-        Status.NOT_MODIFIED
-      }
-      Response(status, protoFromEntity(entEntry) :: Nil)
-    })
-  }
 
   override def getAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
     callback(source.transaction { context =>

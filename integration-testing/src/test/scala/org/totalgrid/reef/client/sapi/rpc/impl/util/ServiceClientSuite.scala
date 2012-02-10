@@ -23,13 +23,13 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionCreationListener, SubscriptionEvent, SubscriptionEventAcceptor }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.standalone.InMemoryNode
 import org.totalgrid.reef.loader.commons.LoaderServicesList
+import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
@@ -55,6 +55,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
 
   // we use options so we can avoid starting the factories until the test is actually run
   private var factoryOption = Option.empty[ReefFactory]
+  private var connectionOption = Option.empty[Connection]
   private var sessionOption = Option.empty[Client]
   private var clientOption = Option.empty[AllScadaService]
 
@@ -62,6 +63,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
 
   def session = sessionOption.get
   def client = clientOption.get
+  def connection = connectionOption.get
 
   override def beforeAll() {
     // gets default connection settings or overrides using system properties
@@ -80,8 +82,9 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
     }
     conn.addServicesList(new LoaderServicesList)
     conn.addServicesList(new ReefServices)
+    connectionOption = Some(conn)
 
-    sessionOption = Some(conn.login(userConfig.getUserName, userConfig.getUserPassword).await)
+    sessionOption = Some(conn.login(userConfig).await)
     clientOption = Some(session.getRpcInterface(classOf[AllScadaService]))
     client.addSubscriptionCreationListener(canceler)
 

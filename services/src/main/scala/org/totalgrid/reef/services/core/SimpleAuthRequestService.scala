@@ -25,10 +25,11 @@ import org.totalgrid.reef.client.service.proto.Auth.{ Agent, AuthToken }
 
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.exception.ReefServiceException
+import com.weiglewilczek.slf4s.Logging
 
 class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
-    extends ServiceEntryPoint[AuthRequest] {
+    extends ServiceEntryPoint[AuthRequest] with Logging {
   override val descriptor = BuiltInDescriptors.authRequest()
 
   override def postAsync(contextSource: RequestContextSource, req: AuthRequest)(callback: (Response[AuthRequest]) => Unit) {
@@ -40,13 +41,18 @@ class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
 
   override def deleteAsync(source: RequestContextSource, req: AuthRequest)(callback: (Response[AuthRequest]) => Unit) {
     val proto = AuthToken.newBuilder.setToken(req.getToken).build
-    val authToken = source.transaction { context =>
-      val existing = model.findRecords(context, proto)
-      if (existing.size != 1) throw new BadRequestException("More than one login matched auth token.")
-      val authTokenRecord = existing.head
-      model.delete(context, authTokenRecord)
-      authTokenRecord
+    try {
+      source.transaction { context =>
+        val existing = model.findRecords(context, proto)
+        existing.foreach(a =>
+          model.delete(context, a))
+
+      }
+    } catch {
+      // we don't want to expose to the user if they actually deleted a token as that reveals too much
+      // information about the system and complicates shutdown code.
+      case rse: ReefServiceException => logger.info("Error deleting auth token: " + rse.getMessage)
     }
-    callback(Response(Envelope.Status.DELETED, req.toBuilder.setToken(authToken.token).build))
+    callback(Response(Envelope.Status.DELETED, req.toBuilder.setToken(req.getToken).build))
   }
 }

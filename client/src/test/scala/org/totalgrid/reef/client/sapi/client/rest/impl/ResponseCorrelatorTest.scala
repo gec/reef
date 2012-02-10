@@ -44,7 +44,7 @@ class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
     rc.register(1.milliseconds, list ::= _)
     list should equal(Nil)
     mock.tick(1.milliseconds)
-    list should equal(List(Left(ResponseTimeout)))
+    list should equal(List(Left(ResponseTimeout(1.milliseconds))))
   }
 
   test("Marshall responses to executor") {

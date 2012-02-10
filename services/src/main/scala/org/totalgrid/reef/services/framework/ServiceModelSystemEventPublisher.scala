@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.event.AttributeList
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.models.Entity
-import org.totalgrid.reef.services.framework.SquerylModel._
+import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.exception.InternalServiceException
 
 trait SystemEventCreator {

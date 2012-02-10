@@ -24,6 +24,7 @@ import net.agileautomata.executor4s.Executor
 
 import collection.immutable.Set
 import org.totalgrid.reef.client.exception.ServiceIOException
+import org.totalgrid.reef.broker.memory.MemoryBrokerState.SideEffectHolder
 
 class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Executor) extends BrokerConnection {
 
@@ -73,8 +74,11 @@ class MemoryBrokerConnection(factory: MemoryBrokerConnectionFactory, exe: Execut
   def unbindQueue(queue: String, exchange: String, key: String = "#") =
     state.factory.update(_.unbindQueue(queue, exchange, key))
 
-  def publish(exchange: String, key: String, b: Array[Byte], replyTo: Option[BrokerDestination] = None) =
-    state.factory.update(state => state.publish(exchange, key, BrokerMessage(b, replyTo)))
+  def publish(exchange: String, key: String, b: Array[Byte], replyTo: Option[BrokerDestination] = None) = {
+    val sideEffects = new SideEffectHolder
+    state.factory.update(state => state.publish(exchange, key, BrokerMessage(b, replyTo), sideEffects))
+    sideEffects.execute()
+  }
 
   class Subscription(queue: String) extends BrokerSubscription {
     def close() = factory.update(_.dropQueue(queue))

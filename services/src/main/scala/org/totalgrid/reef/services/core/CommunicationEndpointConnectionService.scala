@@ -37,6 +37,7 @@ import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessExc
 // implicit proto properties
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.client.sapi.types.Optional._
+import org.totalgrid.reef.models.UUIDConversions._
 
 class CommunicationEndpointConnectionService(protected val model: CommunicationEndpointConnectionServiceModel)
     extends SyncModeledServiceBase[ConnProto, FrontEndAssignment, CommunicationEndpointConnectionServiceModel]

@@ -4,11 +4,11 @@
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
  * work for additional information regarding copyright ownership. Green Energy
- * Corp licenses this file to you under the GNU Affero General Public License
- * Version 3.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.gnu.org/licenses/agpl.html
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -23,6 +23,7 @@ import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.util.PropertyLoading
+import net.agileautomata.executor4s._
 
 object MeasurementStoreFinder extends Logging {
 
@@ -37,25 +38,42 @@ object MeasurementStoreFinder extends Logging {
     val historian = PropertyLoading.getString("org.totalgrid.reef.mstore.historianImpl", config)
     val currentValue = PropertyLoading.getString("org.totalgrid.reef.mstore.currentValueImpl", config)
 
-    // if the two impls are the same get a single measurementstore that does both
-    if (historian == currentValue) getImplementation(context, historian, Some(true), Some(true))
-    else {
-      // otherwise load both implementations and return the mixed store
-      val historianStore = getImplementation(context, historian, Some(true), None)
-      val currentStore = getImplementation(context, currentValue, None, Some(true))
+    def fail() {
+      throw new IllegalArgumentException("Measurement store implementation not found, make sure packages are active and installed. " +
+        " historian: " + historian + " realtime: " + currentValue)
+    }
 
-      new MixedMeasurementStore(historianStore, currentStore)
+    // if the two impls are the same get a single measurementstore that does both
+    if (historian == currentValue) {
+      val store = getImplementation(context, historian, Some(true), Some(true))
+
+      if (store.isEmpty) fail()
+
+      store.get
+    } else {
+
+      // otherwise load both implementations and return the mixed store
+      // first try to find implementation that doesn't do both, then one that does both if it can't find it
+      val historianStore = getImplementation(context, historian, Some(true), Some(false)).orElse(
+        getImplementation(context, historian, Some(true), None))
+      val currentStore = getImplementation(context, currentValue, Some(false), Some(true)).orElse(
+        getImplementation(context, currentValue, None, Some(true)))
+
+      if (historianStore.isEmpty || currentStore.isEmpty) fail()
+
+      // don't actually make the executor unless connect is called
+      val executorSource = { Executors.newResizingThreadPool(5.minutes) }
+
+      new MixedMeasurementStore(executorSource, historianStore.get, currentStore.get)
     }
   }
 
   /**
    * get a particular implementation of MeasurementStore with the specific historian and realtime values
    */
-  private def getImplementation(context: BundleContext, implementation: String, historian: Option[Boolean], realtime: Option[Boolean]): MeasurementStore = {
+  private def getImplementation(context: BundleContext, implementation: String, historian: Option[Boolean], realtime: Option[Boolean]): Option[MeasurementStore] = {
 
-    def showOptions = "implementation: " + implementation + " hist: " + historian + " realtime: " + realtime
-
-    val serviceOptions = context findServices withInterface[MeasurementStore] withFilter
+    val serviceOptions = context findServices withInterface[MeasurementStoreProvider] withFilter
       "impl" === implementation andApply { (service, properties) =>
         // filtering doesn't work as expected, seems to do an "or" rather than an "and"
         if (properties.get("impl").get != implementation) None
@@ -63,9 +81,6 @@ object MeasurementStoreFinder extends Logging {
         else if (realtime.isDefined && properties.get("realtime").get != realtime.get) None
         else Some(service)
       }
-    serviceOptions.flatten match {
-      case x :: tail => x
-      case _ => throw new IllegalArgumentException("Measurement store implementation not found, make sure package is installed: " + showOptions)
-    }
+    serviceOptions.flatten.headOption.map { _.createStore }
   }
 }

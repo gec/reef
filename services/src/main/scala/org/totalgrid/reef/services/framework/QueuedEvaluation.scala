@@ -36,6 +36,16 @@ trait QueuedEvaluation {
    *   @param fun queued code block
    */
   def queuePostTransaction(fun: => Unit): Unit
+
+  /**
+   * when the standard event publishing is done, we often delay "rendering" the message until
+   * later in the transaction (after all objects have been created) but we don't want to actually
+   * publish anything (real side-effect) until after the transaction. In that case after rendering
+   * we delay the actual publishing with a queuePostTransaction. This function makes it simple
+   * for non "EventQueuingObserver" classes to insert their events in the right order with those
+   * events.
+   */
+  def queueLast(fun: => Unit): Unit = queueInTransaction(queuePostTransaction(fun))
 }
 
 /**

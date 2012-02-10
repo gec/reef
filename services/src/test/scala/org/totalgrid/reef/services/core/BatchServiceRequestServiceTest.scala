@@ -29,20 +29,18 @@ import java.util.UUID
 import org.totalgrid.reef.client.proto.Envelope.{ SelfIdentityingServiceRequest, BatchServiceRequest }
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
-import org.totalgrid.reef.services.ServiceBootstrap
 import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command }
 import org.totalgrid.reef.client.service.proto.Commands.CommandLock
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
+import org.totalgrid.reef.models.{ CoreServicesSchema, DatabaseUsingTestBaseNoTransaction }
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceRequestServiceTest extends DatabaseUsingTestBaseNoTransaction {
 
   override def beforeEach() {
-    ServiceBootstrap.resetDb(dbConnection)
+    CoreServicesSchema.prepareDatabase(dbConnection)
   }
 
   val env = BasicRequestHeaders.empty.setUserName("user")

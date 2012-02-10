@@ -39,11 +39,21 @@ import org.totalgrid.reef.client.sapi.types.Optional._
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
 
-class ProcessStatusService(val model: ProcessStatusServiceModel)
+class ProcessStatusService(val model: ProcessStatusServiceModel, useServerTime: Boolean = true)
     extends SyncModeledServiceBase[StatusSnapshot, HeartbeatStatus, ProcessStatusServiceModel]
     with DefaultSyncBehaviors {
 
   override val descriptor = Descriptors.statusSnapshot
+
+  override protected def preUpdate(context: RequestContext, request: StatusSnapshot, existing: HeartbeatStatus) = {
+    // ignore any time sent to us, use our own clock for consistency
+    if (useServerTime) {
+      request.toBuilder.setTime(System.currentTimeMillis()).build
+    } else {
+      // in tests we want to accept whatever time is sent to us
+      request
+    }
+  }
 }
 
 class ProcessStatusServiceModel(
@@ -63,14 +73,20 @@ class ProcessStatusServiceModel(
         logger.info("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime))
         hbeat.timeoutAt = ss.getTime + hbeat.periodMS * 2
         // don't publish a modify
-        ApplicationSchema.heartbeats.update(hbeat)
+        try {
+          ApplicationSchema.heartbeats.update(hbeat)
+        } catch {
+          // if we have deleted the application we need to fail any remaining heartbeats
+          case ex: RuntimeException => throw new BadRequestException("Application deleted")
+        }
         (hbeat, true)
       } else {
         logger.info("App " + hbeat.instanceName.value + ": is shutting down at " + ss.getTime)
-        takeApplicationOffline(context, hbeat, ss.getTime)
+        handleOfflineHeartbeat(context, hbeat, ss.getTime)
       }
     } else {
-      throw new BadRequestException("App " + ss.getInstanceName + ": is marked offline but got message!")
+      if (ss.getOnline) throw new BadRequestException("App " + ss.getInstanceName + ": is marked offline but got message. Application should be restarted and reregistered.")
+      else (hbeat, false)
     }
   }
 
@@ -96,14 +112,18 @@ class ProcessStatusServiceModel(
     ret
   }
 
-  def takeApplicationOffline(context: RequestContext, hbeat: HeartbeatStatus, now: Long) = {
+  def handleOfflineHeartbeat(context: RequestContext, hbeat: HeartbeatStatus, now: Long = System.currentTimeMillis) = {
 
-    logger.debug("App " + hbeat.instanceName + ": is being marked offline at " + now)
     val ret = update(context, new HeartbeatStatus(hbeat.applicationId, hbeat.periodMS, now, false, hbeat.processId), hbeat)
 
-    notifyModels(context, hbeat.application.value, false, hbeat.application.value.capabilities.value.toList.map { _.capability })
+    takeApplicationOffline(context, hbeat.application.value)
 
     ret
+  }
+
+  def takeApplicationOffline(context: RequestContext, app: ApplicationInstance) {
+    logger.debug("App " + app.instanceName + ": is being marked offline")
+    notifyModels(context, app, false, app.capabilities.value.toList.map { _.capability })
   }
 
   def notifyModels(context: RequestContext, app: ApplicationInstance, online: Boolean, capabilities: List[String]) {

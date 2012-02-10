@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.3</version>
+        <version>0.4.4</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-metrics</artifactId>
@@ -30,7 +30,7 @@
                         <Bundle-Name>Reef Metrics Provider</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <Export-Package>
-                            org.totalgrid.reef.metrics.*
+                            org.totalgrid.reef.metrics;version="${reef.version}"
                         </Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>
@@ -47,6 +47,11 @@
     </build>
     <dependencies>
 
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-metrics-client</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util</artifactId>

@@ -23,12 +23,13 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
 import org.totalgrid.reef.benchmarks.FailedBenchmarkException
+import org.totalgrid.reef.util.Timing.Stopwatch
 
 class EndpointStateTransitionTimer(result: SubscriptionResult[List[EndpointConnection], EndpointConnection], endpointUuids: List[ReefUUID]) extends SubscriptionEventAcceptor[EndpointConnection] {
 
   case class TimingInfo(var stateTime: Option[Long], var enabledTime: Option[Long], var routingKeyTime: Option[Long])
 
-  var startTime = System.nanoTime()
+  val stopwatch = new Stopwatch()
   val endpointStateMap = result.getResult.filter { e => endpointUuids.find(_ == e.getEndpoint.getUuid).isDefined }.map { e =>
     e.getEndpoint.getUuid -> (e, TimingInfo(None, None, None))
   }.toMap
@@ -42,9 +43,9 @@ class EndpointStateTransitionTimer(result: SubscriptionResult[List[EndpointConne
       case Some(tuple) =>
         val e = tuple._1
         val timing = tuple._2
-        if (update.getState != e.getState) timing.stateTime = Some(System.nanoTime() - startTime)
-        if (update.getEnabled != e.getEnabled) timing.enabledTime = Some(System.nanoTime() - startTime)
-        if (update.getRouting.getServiceRoutingKey != e.getRouting.getServiceRoutingKey) timing.routingKeyTime = Some(System.nanoTime() - startTime)
+        if (update.getState != e.getState) timing.stateTime = Some(stopwatch.elapsed)
+        if (update.getEnabled != e.getEnabled) timing.enabledTime = Some(stopwatch.elapsed)
+        if (update.getRouting.getServiceRoutingKey != e.getRouting.getServiceRoutingKey) timing.routingKeyTime = Some(stopwatch.elapsed)
         m + (update.getEndpoint.getUuid -> (update, timing))
       case None =>
         // not one of the endpoints we are monitoring
@@ -53,7 +54,7 @@ class EndpointStateTransitionTimer(result: SubscriptionResult[List[EndpointConne
   }
 
   def start {
-    startTime = System.nanoTime()
+    stopwatch.reset()
   }
 
   def checkAllState(enabled: Boolean, state: EndpointConnection.State) {
@@ -78,7 +79,7 @@ class EndpointStateTransitionTimer(result: SubscriptionResult[List[EndpointConne
     val map = syncVar.current
     map.map {
       case (uuid, tuple) =>
-        EndpointCycleReading(tuple._1.getEndpoint.getName, tuple._1.getEndpoint.getProtocol, tuple._1.getState, tuple._2.stateTime.get / 1000000)
+        EndpointCycleReading(tuple._1.getEndpoint.getName, tuple._1.getEndpoint.getProtocol, tuple._1.getState, tuple._2.stateTime.get)
     }.toList
   }
 

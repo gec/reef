@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.3</version>
+        <version>0.4.4</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-measurementstore-api</artifactId>
@@ -31,7 +31,7 @@
                         <Bundle-Activator>org.totalgrid.reef.measurementstore.activator.InMemoryMeasurementStoreActivator</Bundle-Activator>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <Export-Package>
-                            org.totalgrid.reef.measurementstore.*
+                            org.totalgrid.reef.measurementstore.*;version="${reef.version}"
                         </Export-Package>
                         <DynamicImport-Package>net.sf.cglib.*</DynamicImport-Package>
                         <_nouses>true</_nouses>
@@ -42,7 +42,7 @@
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
-                    <header>../AGPL_FILE_HEADER</header>
+                    <header>../APACHE_FILE_HEADER</header>
                 </configuration>
             </plugin>
             <plugin>

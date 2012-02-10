@@ -25,6 +25,9 @@ CREATE DATABASE reef_t;
 GRANT ALL PRIVILEGES ON DATABASE reef_d TO core;
 GRANT ALL PRIVILEGES ON DATABASE reef_t TO core;
 
+CREATE DATABASE reef2_t;
+GRANT ALL PRIVILEGES ON DATABASE reef2_t TO core;
+
 DELIM
 sudo su postgres -c "psql < /tmp/postgres.sql" && rm /tmp/postgres.sql
 

@@ -23,6 +23,8 @@ import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, Command
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.models.UUIDConversions._
+
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
 

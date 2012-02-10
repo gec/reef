@@ -29,18 +29,18 @@ import org.totalgrid.reef.client.service.proto.Application.{ ApplicationConfig, 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.Event
 
-import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.client.service.proto.Descriptors
 
-import org.totalgrid.reef.services.{ ConnectionFixture, ServiceBootstrap }
+import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
+import org.totalgrid.reef.models.{ CoreServicesSchema, DatabaseUsingTestBaseNoTransaction }
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransaction {
 
   override def beforeEach() {
-    ServiceBootstrap.resetDb(dbConnection)
+    CoreServicesSchema.prepareDatabase(dbConnection)
   }
 
   class Fixture(amqp: Connection) {
@@ -54,7 +54,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
 
     val modelFac = new ModelFactories(deps)
 
-    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
+    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus, false), contextSource)
 
     val applicationConfigService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
 

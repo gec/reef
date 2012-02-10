@@ -19,6 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.models.{ ApplicationSchema, Point, Entity }
+import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -33,7 +34,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
-import util.UUIDConversions._
+import org.totalgrid.reef.models.UUIDConversions._
 import java.util.UUID
 
 // implicit proto properties
@@ -98,7 +99,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
   }
 
   override def postCreate(context: RequestContext, entry: Point) {
-    markPointsOffline(entry :: Nil)
+    markPointsOffline(entry :: Nil, context)
   }
 
   override def preDelete(context: RequestContext, entry: Point) {
@@ -114,7 +115,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
     entry.triggers.value.foreach { t => triggerModel.delete(context, t) }
     entry.overrides.value.foreach { o => overrideModel.delete(context, o) }
 
-    measurementStore.remove(entry.entityName :: Nil)
+    removePointMeasurements(entry :: Nil, context)
 
     entityModel.delete(context, entry.entity.value)
   }

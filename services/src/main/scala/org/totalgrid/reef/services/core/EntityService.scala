@@ -27,6 +27,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.models.{ EntityTypeMetaModel, EntityToTypeJoins, ApplicationSchema, Entity }
+import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 
 object EntityService {

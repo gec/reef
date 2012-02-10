@@ -20,6 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Events._
 import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, EventConfigStore, Entity }
+import org.totalgrid.reef.models.EntityQuery
 
 import org.totalgrid.reef.services.framework._
 
@@ -33,6 +34,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 //import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.models.UUIDConversions._
 
 import org.totalgrid.reef.event.AttributeList
 import org.totalgrid.reef.services.core.util.MessageFormatter

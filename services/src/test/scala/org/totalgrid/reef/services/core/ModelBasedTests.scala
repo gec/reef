@@ -33,7 +33,7 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.client.service.proto.Model
 
 @RunWith(classOf[JUnitRunner])
-class ModelBasedTests extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+class ModelBasedTests extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   override def beforeAll() {
     super.beforeAll()

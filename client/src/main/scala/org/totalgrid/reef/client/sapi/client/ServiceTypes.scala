@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.client
 
-import net.agileautomata.executor4s.{ Failure, Success }
+import net.agileautomata.executor4s.{ TimeInterval, Failure, Success }
 import org.totalgrid.reef.client.SubscriptionEvent
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 import org.totalgrid.reef.client.exception.ExpectationException
@@ -28,11 +28,6 @@ import org.totalgrid.reef.client.exception.ExpectationException
 case class Request[+A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders = BasicRequestHeaders.empty)
 
 object Response {
-
-  def convert[A](option: Option[Response[A]]): Response[A] = option match {
-    case Some(x) => x
-    case None => ResponseTimeout
-  }
 
   def apply[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, list: List[A] = Nil, error: String = ""): Response[A] = {
     if (StatusCodes.isSuccess(status)) SuccessResponse(status, list)
@@ -98,7 +93,8 @@ sealed case class FailureResponse(status: Envelope.Status = Envelope.Status.INTE
   override def toString = "Request failed with status: " + status + ", msg: " + error
 }
 
-object ResponseTimeout extends FailureResponse(Envelope.Status.RESPONSE_TIMEOUT)
+sealed case class ResponseTimeout(interval: TimeInterval) extends FailureResponse(Envelope.Status.RESPONSE_TIMEOUT,
+  "Timed out waiting for response after: " + interval)
 
 case class Event[A](event: Envelope.SubscriptionEventType, value: A) extends SubscriptionEvent[A] {
 

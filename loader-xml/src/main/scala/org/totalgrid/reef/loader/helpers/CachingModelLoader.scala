@@ -48,9 +48,9 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
     autoFlush
   }
 
-  def putOrThrow(entityAttributes: EntityAttributes) {
-    puts ::= entityAttributes;
-    modelContainer.add(entityAttributes);
+  def putOrThrow(entityAttribute: EntityAttribute) {
+    puts ::= entityAttribute;
+    modelContainer.add(entityAttribute);
     autoFlush
   }
 

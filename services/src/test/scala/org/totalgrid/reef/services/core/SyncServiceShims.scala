@@ -23,6 +23,7 @@ import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.sapi.client.impl.SynchronizedPromise
 import org.totalgrid.reef.services.{ ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
+import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 
@@ -73,5 +74,20 @@ class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders:
     val context = new DependenciesRequestContext(dependencies)
     context.modifyHeaders(_.merge(commonHeaders))
     context
+  }
+}
+
+trait SyncServicesTestHelpers { self: DatabaseUsingTestBaseNoTransaction =>
+
+  def getRequestContextSource() = {
+    val headers = BasicRequestHeaders.empty.setUserName("user")
+    new MockRequestContextSource(new ServiceDependenciesDefaults(dbConnection), headers)
+  }
+  lazy val defaultContextSource = getRequestContextSource()
+  def sync[A <: AnyRef](service: ServiceEntryPoint[A]): SyncService[A] = {
+    sync(service, defaultContextSource)
+  }
+  def sync[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource): SyncService[A] = {
+    new SyncService(service, contextSource)
   }
 }

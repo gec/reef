@@ -37,7 +37,7 @@ import org.totalgrid.reef.event.EventType.eventTypeToString
 import java.util.{ Calendar }
 
 @RunWith(classOf[JUnitRunner])
-class EventQueryServiceTest extends DatabaseUsingTestBase {
+class EventQueryServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   // Need some well known times in the past... all based on NOW

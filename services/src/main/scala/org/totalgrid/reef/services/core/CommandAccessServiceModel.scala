@@ -25,6 +25,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ Command => FepCommandProt
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandLock => AccessProto }
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.models.UUIDConversions._
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.{ BadRequestException, UnauthorizedException }

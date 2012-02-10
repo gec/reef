@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.3</version>
+        <version>0.4.4</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-services</artifactId>
@@ -30,8 +30,7 @@
                         <Bundle-Activator>org.totalgrid.reef.services.activator.ServiceActivator</Bundle-Activator>
                         <Export-Package>
                             !org.totalgrid.reef.services.activator,
-                            org.totalgrid.reef.services.*,
-                            org.totalgrid.reef.models
+                            org.totalgrid.reef.services.*;version="${reef.version}"
                         </Export-Package>
                         <Private-Package>org.totalgrid.reef.services.activator</Private-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
@@ -53,6 +52,12 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-application-framework</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-services-db-schema</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -103,6 +108,13 @@
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-postgresql</artifactId>
             <version>${reef.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-services-db-schema</artifactId>
+            <version>${reef.version}</version>
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
     </dependencies>

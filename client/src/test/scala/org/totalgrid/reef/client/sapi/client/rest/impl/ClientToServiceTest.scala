@@ -45,7 +45,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     val executor = Executors.newResizingThreadPool(5.minutes)
     var binding: Option[SubscriptionBinding] = None
     try {
-      val conn = new DefaultConnection(b, executor, 100)
+      val conn = new DefaultConnection(b, executor, if (attachService) 1000 else 100)
       conn.addServiceInfo(ExampleServiceList.info)
       binding = if (attachService) Some(conn.bindService(new SomeIntegerIncrementService(conn), executor, new AnyNodeDestination, true))
       else Some(conn.bindService(new BlackHoleService(SomeIntegerTypeDescriptor), executor, new AnyNodeDestination, true))
@@ -153,7 +153,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
 
   def testTimeout(c: Client) {
     val i = SomeInteger(1)
-    c.put(i).await should equal(Response(Envelope.Status.RESPONSE_TIMEOUT))
+    c.put(i).await.status should equal(Envelope.Status.RESPONSE_TIMEOUT)
   }
 
   test("Failures timeout sucessfully") {

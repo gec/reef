@@ -20,8 +20,8 @@ package org.totalgrid.reef.benchmarks
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.benchmarks.measurements.ConcurrentMeasurementPublishingBenchmark
-import org.totalgrid.reef.benchmarks.system.EndpointLoaderBenchmark
+import org.totalgrid.reef.benchmarks.measurements._
+import org.totalgrid.reef.benchmarks.system._
 
 @RunWith(classOf[JUnitRunner])
 class ConcurrentMeasurementPublishingTest extends BenchmarkTestBase {
@@ -34,14 +34,14 @@ class ConcurrentMeasurementPublishingTest extends BenchmarkTestBase {
     writeFiles("measSetup", setupReadings)
   }
 
-  val endpoints = 15
-  val pointsPerEndpoint = 30
-  //val parallelisms = List(1, 5, 10, 15)
-  val parallelisms = List(5, 10)
-  val batchSizes = List(1000)
-  val totalMeasurements = 10000
+  val endpoints = 20
+  val pointsPerEndpoint = 20
+  val parallelisms = List(5, 10, 20)
+  val batchSizes = List(25)
+  val totalMeasurements = 5000
   val measurementsImported = totalMeasurements * parallelisms.size * batchSizes.size
   val endpointNames = (1 to endpoints).map { i => "TestEndpoint" + i }.toList
+  val pointNames = endpointNames.map { ModelCreationUtilities.getPointNames(_, pointsPerEndpoint) }.flatten
 
   test("Setup " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points") {
     setupReadings :::= runBenchmark(new EndpointLoaderBenchmark(endpointNames, pointsPerEndpoint, 5, 50, true, false))
@@ -53,6 +53,18 @@ class ConcurrentMeasurementPublishingTest extends BenchmarkTestBase {
         measReadings :::= runBenchmark(new ConcurrentMeasurementPublishingBenchmark(endpointNames, totalMeasurements, threads, batchSize))
       }
     }
+  }
+
+  val partialPointNames = BenchmarkUtilities.takeRandom(20, pointNames)
+  test("Measurement Statistics") {
+    setupReadings :::= runBenchmark(new MeasurementStatBenchmark(partialPointNames))
+  }
+  test("Measurement History") {
+    setupReadings :::= runBenchmark(new MeasurementHistoryBenchmark(partialPointNames, List(10, 1000), true))
+  }
+  test("Measurement CurrentValue") {
+    val pointsEach = MeasurementCurrentValueBenchmark.testSizes(pointNames.size)
+    setupReadings :::= runBenchmark(new MeasurementCurrentValueBenchmark(pointNames, pointsEach, 5))
   }
 
   test("Deleting " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points and " + measurementsImported + " measurements") {

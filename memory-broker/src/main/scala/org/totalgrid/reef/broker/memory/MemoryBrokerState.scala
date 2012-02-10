@@ -25,6 +25,24 @@ import org.totalgrid.reef.broker._
 // classes are 100% immutable and safe to read on multiple threads or to use with STM
 object MemoryBrokerState {
 
+  /**
+   * side effects to outside systems (callbacks, IO etc) should be done outside of the "critial
+   * section" during updates. This should also make the system more usable under STM (if we can
+   * reset this object each time STM fails the transaction)
+   */
+  class SideEffectHolder {
+
+    private val delayedOperations = scala.collection.mutable.Queue.empty[() => Unit]
+
+    def enqueue(fun: => Unit) {
+      delayedOperations.enqueue(() => fun)
+    }
+
+    def execute() {
+      delayedOperations.foreach(_())
+    }
+  }
+
   def matches(routingKey: String, bindingKey: String): Boolean = {
     val r = routingKey.split('.')
     val b = bindingKey.split('.')
@@ -47,9 +65,9 @@ object MemoryBrokerState {
     private def withQueueAndExchange[A](queue: String, exchange: String)(fun: (Queue, Exchange) => A): A =
       withQueue(queue)(q => withExchange(exchange)(ex => fun(q, ex)))
 
-    def publish(exchange: String, key: String, msg: BrokerMessage): State = withExchange(exchange) { ex =>
+    def publish(exchange: String, key: String, msg: BrokerMessage, sideEffectHolder: SideEffectHolder): State = withExchange(exchange) { ex =>
       val tuples = ex.getMatches(key).map { name =>
-        withQueue(name)(q => (name, q.publish(msg)))
+        withQueue(name)(q => (name, q.publish(msg, sideEffectHolder)))
       }
       this.copy(queues = queues ++ tuples)
     }
@@ -121,11 +139,13 @@ object MemoryBrokerState {
   // each queue needs to use a seperate strand so messages arrive in the order they were sent
   case class Queue(name: String, exe: Strand, unread: ScalaQueue[BrokerMessage] = ScalaQueue.empty[BrokerMessage], consumers: List[BrokerMessageConsumer] = Nil) {
 
-    def publish(msg: BrokerMessage): Queue = consumers match {
+    def publish(msg: BrokerMessage, sideEffectHolder: SideEffectHolder): Queue = consumers match {
       case Nil =>
         this.copy(unread = unread.enqueue(msg))
       case next :: tail =>
-        exe.execute(next.onMessage(msg))
+        sideEffectHolder.enqueue {
+          exe.execute(next.onMessage(msg))
+        }
         this.copy(consumers = tail ::: List(next)) //moves x to end of the list
     }
 

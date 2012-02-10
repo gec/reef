@@ -30,6 +30,7 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
+import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.sapi.types.Optional._
 
 import scala.collection.JavaConversions._
@@ -90,6 +91,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   }
 
   override def preDelete(context: RequestContext, sql: ApplicationInstance) {
+    procStatusModel.takeApplicationOffline(context, sql)
     procStatusModel.delete(context, sql.heartbeat.value)
   }
 
@@ -143,6 +145,7 @@ trait ApplicationConfigConversion
       .setHeartbeatCfg(h)
       .setOnline(hbeat.isOnline)
       .setTimesOutAt(hbeat.timeoutAt)
+      .setProcessId(hbeat.processId)
 
     entry.capabilities.value.foreach(x => b.addCapabilites(x.capability))
     b.build

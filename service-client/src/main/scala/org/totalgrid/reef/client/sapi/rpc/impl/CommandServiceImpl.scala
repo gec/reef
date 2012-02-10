@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID, Command
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.{ MultiRequestHelper, HasAnnotatedOperations }
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
 import org.totalgrid.reef.client.SubscriptionBinding
 import org.totalgrid.reef.client.sapi.client.rest.impl.BatchServiceRestOperations
@@ -123,6 +123,18 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     _.get(CommandRequestBuilders.getByEntityName(name)).map(_.one)
   }
 
+  override def getCommandByUuid(uuid: ReefUUID) = ops.operation("Couldn't get command with uuid: " + uuid) {
+    _.get(CommandRequestBuilders.getByEntityId(uuid)).map(_.one)
+  }
+
+  override def getCommandsByNames(names: List[String]) = ops.operation("Couldn't get commands with names: " + names) { _ =>
+    batchGets(names.map { CommandRequestBuilders.getByEntityName(_) })
+  }
+
+  override def getCommandsByUuids(uuids: List[ReefUUID]) = ops.operation("Couldn't get commands with uuids: " + uuids) { _ =>
+    batchGets(uuids.map { CommandRequestBuilders.getByEntityId(_) })
+  }
+
   override def getCommandsOwnedByEntity(parentUuid: ReefUUID) = {
     ops.operation("Couldn't find commands owned by parent entity: " + parentUuid.getValue) {
       _.get(CommandRequestBuilders.getOwnedByEntityWithUuid(parentUuid)).map(_.many)
@@ -143,7 +155,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
       val batchClient = new BatchServiceRestOperations(client)
       def getCommandWithUuid(uuid: ReefUUID) = batchClient.get(CommandRequestBuilders.getByEntityId(uuid)).map(_.one)
-      MultiRequestHelper.batchScatterGatherQuery(entityList, getCommandWithUuid _, batchClient.flush _)
+      MultiRequestHelper.batchScatterGatherQuery(client, entityList, getCommandWithUuid _, batchClient.flush _)
     }
   }
 

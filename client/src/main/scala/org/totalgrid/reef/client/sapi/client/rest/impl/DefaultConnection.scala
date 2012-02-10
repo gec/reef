@@ -32,6 +32,7 @@ import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Rout
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
+import org.totalgrid.reef.client.settings.UserSettings
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -73,20 +74,25 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
   def login(authToken: String): Client = createClient(authToken, Strand(executor))
 
+  def login(userSettings: UserSettings) = login(userSettings.getUserName, userSettings.getUserPassword)
+
   def login(userName: String, password: String): Promise[Client] = {
     val strand = Strand(executor)
-    val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).build
-    def convert(response: Response[AuthRequest]): Result[Client] = response.one.map(r => createClient(r.getToken, strand))
-    Promise.from(request(Envelope.Verb.POST, agent, BasicRequestHeaders.empty, strand).map(convert))
+    DefaultAnnotatedOperations.safeOperation("Error logging in with name: " + userName, strand) {
+      val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).build
+      def convert(response: Response[AuthRequest]): Result[Client] = response.one.map(r => createClient(r.getToken, strand))
+      request(Envelope.Verb.POST, agent, BasicRequestHeaders.empty, strand).map(convert)
+    }
   }
 
   def logout(authToken: String): Promise[Boolean] = logout(authToken, Strand(executor))
   def logout(client: Client): Promise[Boolean] = logout(client.getHeaders.getAuthToken, client)
 
   private def logout(authToken: String, strand: Executor): Promise[Boolean] = {
-    val agent = AuthRequest.newBuilder.setToken(authToken).build
-    def convert(response: Response[AuthRequest]): Result[Boolean] = response.one.map(r => true)
-    Promise.from(request(Envelope.Verb.DELETE, agent, BasicRequestHeaders.empty, strand).map(convert))
+    DefaultAnnotatedOperations.safeOperation("Error revoking auth token.", strand) {
+      val agent = AuthRequest.newBuilder.setToken(authToken).build
+      request(Envelope.Verb.DELETE, agent, BasicRequestHeaders.empty, strand).map(r => r.one.map { _ => true })
+    }
   }
 
   private def createClient(authToken: String, strand: Strand) = {

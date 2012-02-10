@@ -33,7 +33,7 @@ import org.totalgrid.reef.services.core.SubscriptionTools.MockContextSource
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 
 @RunWith(classOf[JUnitRunner])
-class ConfigFileServiceTest extends DatabaseUsingTestBase {
+class ConfigFileServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   def makeConfigFile(name: String, mime: String, data: String, owner: Option[Entity] = None) = {
     val cfb = ConfigFile.newBuilder.setName(name).setMimeType(mime).setFile(data)

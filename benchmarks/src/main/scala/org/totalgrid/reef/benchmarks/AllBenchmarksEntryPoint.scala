@@ -30,11 +30,16 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.loader.commons.LoaderServicesList
 
+import MeasurementCurrentValueBenchmark._
+import java.util.Properties
+
 object AllBenchmarksEntryPoint {
 
   def main(args: Array[String]) {
 
     val properties = PropertyReader.readFromFile("benchmarksTarget.cfg")
+
+    val testOptions = PropertyReader.readFromFile("org.totalgrid.reef.benchmarks.cfg")
 
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
@@ -45,53 +50,80 @@ object AllBenchmarksEntryPoint {
 
       val connection = factory.connect()
 
-      runAllTests(connection, userSettings)
+      runAllTests(connection, userSettings, testOptions)
 
     } finally {
       factory.terminate()
     }
   }
 
-  def runAllTests(connection: Connection, userSettings: UserSettings) {
-    val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+  def runAllTests(connection: Connection, userSettings: UserSettings, properties: Properties) {
+    val client = connection.login(userSettings).await
     client.addServicesList(new LoaderServicesList())
-    client.setHeaders(client.getHeaders.setTimeout(20000))
+    client.setHeaders(client.getHeaders.setTimeout(60000))
     client.setHeaders(client.getHeaders.setResultLimit(10000))
     val services = client.getRpcInterface(classOf[AllScadaService])
 
     val stream = Some(Console.out)
 
-    val endpoints = services.getEndpoints().await.filter(_.getProtocol == "benchmark")
+    var tests = List.empty[BenchmarkTest]
 
-    if (endpoints.isEmpty) throw new FailedBenchmarkException("No endpoints with protocol benchmark on test system")
+    val options = new SimpleOptionsHandler(properties, "org.totalgrid.reef.benchmarks")
 
-    val endpointNames = endpoints.map { _.getName }
-    val allPoints = endpoints.map { e => services.getPointsBelongingToEndpoint(e.getUuid).await }.flatten.map { _.getName }
+    if (options.getBool("live.enabled")) {
+      val c = options.subOptions("live")
+      val allPoints = services.getPoints().await.map { _.getName }
 
-    // test no more than 20 points
-    val points = takeRandom(20, allPoints)
+      tests ::= new SystemStateBenchmark(c.getInt("requestAttempts"))
+      tests ::= new MeasurementStatBenchmark(takeRandom(c.getInt("measStatPoints"), allPoints))
+      tests ::= new MeasurementHistoryBenchmark(takeRandom(c.getInt("measStatPoints"), allPoints), c.getIntList("measHistorySizes"), true)
+      tests ::= new MeasurementCurrentValueBenchmark(allPoints, testSizes(allPoints.size), c.getInt("measCurrentValueAttempts"))
 
-    val totalMeasurements = 50000
-    val concurrentEndpointNames = (1 to 10).map { i => "Endpoint" + i }.toList
-    val pointsPerEndpoint = 30
-    val concurrency = 5
-    val batchSize = 50
+      if (c.getBool("endpointManagementEnabled")) {
+        val protocols = c.getStringList("endpointManagementProtocols")
+        val endpointNames = protocols.map { p => services.getEndpoints().await.filter(_.getProtocol == p).map { _.getName } }.flatten
 
-    val tests = List(
-      new SystemStateBenchmark(5),
-      new MeasurementStatBenchmark(points),
-      new MeasurementHistoryBenchmark(points, List(10, 1000), true),
-      new EndpointManagementBenchmark(endpointNames, 5),
-      new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, true, false),
-      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 1, 25),
-      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 5, 25),
-      new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, 10, 25),
-      new MeasurementPublishingBenchmark(concurrentEndpointNames, 1000, 5, false),
-      new MeasurementPublishingBenchmark(concurrentEndpointNames, 10, 5, false),
-      new MeasurementPublishingBenchmark(concurrentEndpointNames, 10, 5, true),
-      new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint, concurrency, batchSize, false, true))
+        if (!endpointNames.isEmpty) {
+          tests ::= new EndpointManagementBenchmark(endpointNames, c.getInt("endpointManagementCycles"))
+        }
+      }
+    }
 
-    val allResults = tests.map(_.runTest(client, stream)).flatten
+    if (options.getBool("measthroughput.enabled")) {
+      val c = options.subOptions("measthroughput")
+
+      val concurrentEndpointNames = (1 to c.getInt("numEndpoints")).map { i => "Endpoint" + i }.toList
+      val pointsPerEndpoint = c.getInt("numPointsPerEndpoint")
+      val pointNames = concurrentEndpointNames.map { ModelCreationUtilities.getPointNames(_, pointsPerEndpoint) }.flatten
+
+      val endpointLoadingWriters = c.getInt("endpointWriters")
+      val endpointLoadingBatchSize = c.getInt("endpointBatchSize")
+
+      val totalMeasurements = c.getInt("publishMeasTotal")
+      val publishingWriters = c.getIntList("publishMeasWriters")
+      val publishingBatchSizes = c.getIntList("publishMeasBatchSizes")
+
+      if (c.getBool("addEndpoints")) {
+        tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint,
+          endpointLoadingWriters, endpointLoadingBatchSize, true, false)
+      }
+      publishingWriters.foreach { writers =>
+        publishingBatchSizes.foreach { batchSize =>
+          tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, writers, batchSize)
+        }
+      }
+      if (c.getBool("measTestReads")) {
+        tests ::= new MeasurementStatBenchmark(takeRandom(c.getInt("measStatPoints"), pointNames))
+        tests ::= new MeasurementHistoryBenchmark(takeRandom(c.getInt("measHistoryPoints"), pointNames), c.getIntList("measHistorySizes"), false)
+        tests ::= new MeasurementCurrentValueBenchmark(pointNames, testSizes(pointNames.size), c.getInt("measCurrentValueAttempts"))
+      }
+      if (c.getBool("removeEndpoints")) {
+        tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint,
+          endpointLoadingWriters, endpointLoadingBatchSize, false, true)
+      }
+    }
+
+    val allResults = tests.reverse.map(_.runTest(client, stream)).flatten
     outputResults(allResults)
   }
 
@@ -101,9 +133,10 @@ object AllBenchmarksEntryPoint {
 
     val histogramResults = resultsByFileName.map {
       case (csvName, results) =>
-        Histogram.getHistograms(results)
+        Histogram.getHistograms(csvName, results)
     }.toList.flatten
 
+    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, "averages")
     val teamCity = new TeamCityStatisticsXml("teamcity-info.xml")
     histogramResults.foreach { h =>
       h.outputsWithLabels.foreach { case (label, value) => teamCity.addRow(label, value) }

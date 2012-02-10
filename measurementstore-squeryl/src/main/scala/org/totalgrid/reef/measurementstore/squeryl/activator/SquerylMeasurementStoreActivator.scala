@@ -20,7 +20,7 @@ package org.totalgrid.reef.measurementstore.squeryl.activator
 
 import org.osgi.framework.{ BundleContext, BundleActivator }
 import com.weiglewilczek.scalamodules._
-import org.totalgrid.reef.measurementstore.MeasurementStore
+import org.totalgrid.reef.measurementstore.MeasurementStoreProvider
 import org.totalgrid.reef.measurementstore.squeryl.SqlMeasurementStore
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
@@ -34,15 +34,15 @@ class SquerylMeasurementStoreActivator extends BundleActivator {
       val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
       DbConnector.connect(sql, context)
     }
-    val historianMeasurementStore = new SqlMeasurementStore(connectFunction _, true)
-    val realtimeMeasurementStore = new SqlMeasurementStore(connectFunction _, false)
+    val historianMeasurementStore = MeasurementStoreProvider(new SqlMeasurementStore(connectFunction _, true))
+    val realtimeMeasurementStore = MeasurementStoreProvider(new SqlMeasurementStore(connectFunction _, false))
 
     val commonOptions = Map[String, Any]("impl" -> "squeryl", "realtime" -> true)
     val historianOptions = commonOptions + ("historian" -> true)
     val realtimeOptions = commonOptions + ("historian" -> false)
 
-    context.createService(historianMeasurementStore, historianOptions, interface[MeasurementStore])
-    context.createService(realtimeMeasurementStore, realtimeOptions, interface[MeasurementStore])
+    context.createService(historianMeasurementStore, historianOptions, interface[MeasurementStoreProvider])
+    context.createService(realtimeMeasurementStore, realtimeOptions, interface[MeasurementStoreProvider])
 
   }
 

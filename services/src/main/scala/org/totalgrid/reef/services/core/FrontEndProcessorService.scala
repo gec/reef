@@ -33,6 +33,7 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import SquerylModel._ // implict asParam
 import org.totalgrid.reef.client.sapi.types.Optional._
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 
 class FrontEndProcessorService(protected val model: FrontEndProcessorServiceModel)

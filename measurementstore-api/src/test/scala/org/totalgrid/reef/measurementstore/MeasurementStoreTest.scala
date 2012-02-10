@@ -4,11 +4,11 @@
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
  * work for additional information regarding copyright ownership. Green Energy
- * Corp licenses this file to you under the GNU Affero General Public License
- * Version 3.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.gnu.org/licenses/agpl.html
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -18,16 +18,13 @@
  */
 package org.totalgrid.reef.measurementstore
 
+import org.scalatest._
 import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import scala.annotation._
-
-import org.totalgrid.reef.util.Timing
 import org.totalgrid.reef.client.service.proto.Measurements
-import org.scalatest._
+import net.agileautomata.executor4s.testing._
 
 @RunWith(classOf[JUnitRunner])
 class InMemoryMeasurementStoreTest extends MeasurementStoreTest {
@@ -38,7 +35,11 @@ class InMemoryMeasurementStoreTest extends MeasurementStoreTest {
 class MixedMemoryMeasStoreTest extends MeasurementStoreTest {
   val currentMeas = new InMemoryMeasurementStore(true)
   val historian = new InMemoryMeasurementStore(false)
-  val cm = new MixedMeasurementStore(historian, currentMeas)
+  val cm = {
+    val c = new MixedMeasurementStore(new MockExecutorService(new InstantExecutor()), historian, currentMeas)
+    c.connect
+    c
+  }
 }
 
 abstract class MeasurementStoreTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {

@@ -21,8 +21,6 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.client.exception.ReefServiceException
-import org.totalgrid.reef.client.sapi.client.Response
-import org.totalgrid.reef.util.AsyncValue
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
@@ -30,23 +28,12 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
   import org.totalgrid.reef.measproc.ProtoHelper._
-  import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-
-  import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 
   class BatchFixture(amqp: Connection) extends CoordinatorFixture(amqp) {
-
-    val batchService = new MeasurementBatchService()
 
     def addFepAndMeasProc() {
       addFep("fep", List("benchmark"))
       addMeasProc("meas")
-    }
-
-    def publishMeas(meas: MeasurementBatch): MeasurementBatch = {
-      val result = new AsyncValue[Response[MeasurementBatch]]
-      batchService.putAsync(contextSource, meas)(result.set)
-      result.await().expectOne()
     }
   }
 
@@ -66,9 +53,14 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
     ConnectionFixture.mock() { amqp =>
       val coord = new BatchFixture(amqp)
 
+      val measurements = coord.subscribeMeasurements()
+      measurements.size should equal(0)
+
       coord.addDevice("dev1")
+      measurements.size should equal(1)
       coord.addFepAndMeasProc()
 
+      measurements.size should equal(1)
       coord.pointsInDatabase should equal(1)
       coord.pointsWithBadQuality should equal(1)
 
@@ -77,6 +69,7 @@ class MeasurementBatchServiceTest extends EndpointRelatedTestBase {
       coord.publishMeas(makeBatch(makeInt("dev1.test_point", 10)))
 
       mb.waitFor({ _.size == 1 }, 1000)
+      measurements.size should equal(2)
 
       val (device, meas) = mb.current.head
 

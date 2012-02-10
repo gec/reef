@@ -67,7 +67,8 @@ object ServiceFactory {
 
         val client = connection.login(authToken).getRpcInterface(classOf[AllScadaService])
         val heartbeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg, exe)
-        val providers = new ServiceProviders(dbConnection, connection, measStore, serviceOptions, SqlAuthzService, metricsHolder, authToken)
+        val providers = new ServiceProviders(dbConnection, connection, measStore, serviceOptions,
+          SqlAuthzService, metricsHolder, authToken, exe)
 
         val serviceContext = new ServiceContext(connection, exe)
 
@@ -85,6 +86,8 @@ object ServiceFactory {
             providers.coordinators.foreach { _.stopProcess() }
             mgr.stop()
             heartbeater.stop()
+
+            measStore.disconnect()
           }
         }
       }

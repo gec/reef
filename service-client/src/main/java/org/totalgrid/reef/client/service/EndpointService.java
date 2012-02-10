@@ -64,6 +64,18 @@ public interface EndpointService
     Endpoint getEndpointByUuid( ReefUUID endpointUuid ) throws ReefServiceException;
 
     /**
+     * @param names name of endpoint
+     * @return the endpoint with that name or throws an exception
+     */
+    List<Endpoint> getEndpointsByNames( List<String> names ) throws ReefServiceException;
+
+    /**
+     * @param endpointUuids uuid of endpoint
+     * @return the endpoint with that uuid or throws an exception
+     */
+    List<Endpoint> getEndpointsByUuids( List<ReefUUID> endpointUuids ) throws ReefServiceException;
+
+    /**
      * disables automatic protocol adapter assignment and begins stopping any running protocol adapters.
      * service NOTE doesn't wait for protocol adapter to report a state change so don't assume state will have changed
      *

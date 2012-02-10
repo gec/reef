@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.PointService
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.sapi.client.rpc.framework.{ MultiRequestHelper, HasAnnotatedOperations }
 import org.totalgrid.reef.client.sapi.client.rest.impl.BatchServiceRestOperations
 
 trait PointServiceImpl extends HasAnnotatedOperations with PointService {
@@ -42,6 +42,14 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
 
   override def getPointByUuid(uuid: ReefUUID) = ops.operation("Point not found with uuid: " + uuid) {
     _.get(PointRequestBuilders.getById(uuid)).map(_.one)
+  }
+
+  override def getPointsByNames(names: List[String]) = ops.operation("Points not found with names: " + names) { _ =>
+    batchGets(names.map { PointRequestBuilders.getByName(_) })
+  }
+
+  override def getPointsByUuids(uuids: List[ReefUUID]) = ops.operation("Points not found with uuids: " + uuids) { _ =>
+    batchGets(uuids.map { PointRequestBuilders.getById(_) })
   }
 
   override def getPointsOwnedByEntity(parentEntity: Entity) = {
@@ -70,7 +78,7 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
 
       val batchClient = new BatchServiceRestOperations(client)
       def getPointWithUuid(uuid: ReefUUID) = batchClient.get(PointRequestBuilders.getById(uuid)).map(_.one)
-      MultiRequestHelper.batchScatterGatherQuery(entityList, getPointWithUuid _, batchClient.flush _)
+      MultiRequestHelper.batchScatterGatherQuery(client, entityList, getPointWithUuid _, batchClient.flush _)
     }
   }
 }

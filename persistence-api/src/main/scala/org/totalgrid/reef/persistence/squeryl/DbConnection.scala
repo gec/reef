@@ -20,6 +20,7 @@ package org.totalgrid.reef.persistence.squeryl
 
 import org.squeryl.PrimitiveTypeMode
 import org.squeryl.Session
+import java.sql.Connection
 
 /**
  * contains the session factory necessary to talk to the database. Handles the setting up of the
@@ -38,6 +39,12 @@ trait DbConnection {
    * will open a new transaction if one doesn't already exist, otherwise goes into same transaction
    */
   def inTransaction[A](fun: => A): A
+
+  /**
+   * get the underlying jdbc Connection for use in low-level tasks like schema setup, cleanup.
+   * Handled in a block because we need to return the connection to the session pool when we are done
+   */
+  def underlyingConnection[A](fun: (Connection) => A): A
 }
 
 /**
@@ -62,4 +69,18 @@ class SessionDbConnection(sessionFactory: () => Session) extends DbConnection {
     else transaction(fun)
 
   }
+
+  def underlyingConnection[A](fun: (Connection) => A) = {
+    val c = if (Session.hasCurrentSession) Session.currentSession.connection
+    else sessionFactory().connection
+
+    try {
+      fun(c)
+    } finally {
+      // return the connection to the pool
+      c.close()
+    }
+
+  }
+
 }

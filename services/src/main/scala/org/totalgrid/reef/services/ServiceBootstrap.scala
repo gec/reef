@@ -99,14 +99,4 @@ object ServiceBootstrap {
     }
   }
 
-  /**
-   * drops and re-creates all of the tables in the database.
-   */
-  def resetDb(dbConnection: DbConnection) {
-    import org.totalgrid.reef.models._
-
-    dbConnection.transaction {
-      ApplicationSchema.reset
-    }
-  }
 }

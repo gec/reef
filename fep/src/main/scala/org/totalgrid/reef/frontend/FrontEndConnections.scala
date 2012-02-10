@@ -35,7 +35,7 @@ import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler, Protocol }
 import org.totalgrid.reef.client.service.proto.Commands
 
 // Data structure for handling the life cycle of connections
-class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServices, client: Client) extends KeyedMap[EndpointConnection] {
+class FrontEndConnections(comms: Seq[Protocol], newClient: => Client) extends KeyedMap[EndpointConnection] {
 
   case class EndpointComponent(commandAdapter: SubscriptionBinding)
 
@@ -57,17 +57,20 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
 
   def addEntry(c: EndpointConnection) = try {
 
+    val client = newClient
+    val services = client.getRpcInterface(classOf[FrontEndProviderServices])
+
     val protocol = getProtocol(c.getEndpoint.getProtocol)
     val endpoint = c.getEndpoint
 
     val endpointName = c.getEndpoint.getName
 
-    val batchPublisher = newMeasBatchPublisher(c.getRouting.getServiceRoutingKey)
-    val endpointListener = newEndpointStatePublisher(c.getId, endpointName)
+    val batchPublisher = newMeasBatchPublisher(services, c.getRouting.getServiceRoutingKey)
+    val endpointListener = newEndpointStatePublisher(services, c.getId, endpointName)
 
     val channelName = if (c.getEndpoint.hasChannel) {
       val port = c.getEndpoint.getChannel
-      val channelListener = newChannelStatePublisher(port.getUuid, port.getName)
+      val channelListener = newChannelStatePublisher(services, port.getUuid, port.getName)
       protocol.addChannel(port, channelListener, client)
       port.getName
     } else {
@@ -107,7 +110,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
 
   // TODO -fail the process if we can't publish measurements or state?
 
-  private def newMeasBatchPublisher(routingKey: String) = new Publisher[MeasurementBatch] {
+  private def newMeasBatchPublisher(services: FrontEndProviderServices, routingKey: String) = new Publisher[MeasurementBatch] {
     def publish(value: MeasurementBatch) = {
       services.publishMeasurements(value, new AddressableDestination(routingKey)).extract match {
         case Success(x) => logger.debug("Published a measurement batch of size: " + value.getMeasCount)
@@ -116,7 +119,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
     }
   }
 
-  private def newEndpointStatePublisher(connectionId: ReefID, endpointName: String) = new Publisher[EndpointConnection.State] {
+  private def newEndpointStatePublisher(services: FrontEndProviderServices, connectionId: ReefID, endpointName: String) = new Publisher[EndpointConnection.State] {
     def publish(state: EndpointConnection.State) = {
       services.alterEndpointConnectionState(connectionId, state).extract match {
         case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
@@ -125,7 +128,7 @@ class FrontEndConnections(comms: Seq[Protocol], services: FrontEndProviderServic
     }
   }
 
-  private def newChannelStatePublisher(channelUuid: ReefUUID, channelName: String) = new Publisher[CommChannel.State] {
+  private def newChannelStatePublisher(services: FrontEndProviderServices, channelUuid: ReefUUID, channelName: String) = new Publisher[CommChannel.State] {
     def publish(state: CommChannel.State) = {
       services.alterCommunicationChannelState(channelUuid, state).extract match {
         case Success(x) => logger.info("Updated channel state: " + x.getName + " state: " + x.getState)

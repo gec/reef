@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.metrics
 
+import client.MetricsMapHelpers
 import java.util.concurrent.atomic.AtomicInteger
 import com.weiglewilczek.slf4s.Logging
 

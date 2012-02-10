@@ -27,9 +27,9 @@ import org.squeryl.dsl.ast.{ OrderByArg, ExpressionNode, LogicalBoolean }
 import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventStore }
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.models.{ SquerylConversions, ApplicationSchema, EventStore, EntityQuery }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -113,7 +113,7 @@ class EventQueryService
 
     val entries =
       from(ApplicationSchema.events)(row =>
-        where(SquerylModel.combineExpressions(buildQuery(row, select).flatten))
+        where(SquerylConversions.combineExpressions(buildQuery(row, select).flatten))
           select (row)
           orderBy timeOrder(row.time, select.ascending)).page(0, limit)
 

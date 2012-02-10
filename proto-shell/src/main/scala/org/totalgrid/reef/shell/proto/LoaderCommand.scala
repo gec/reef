@@ -57,8 +57,8 @@ class LoadConfigCommand extends ReefCommandSupport {
 @Command(scope = "reef", name = "unload", description = "Remove all equipment, endpoints and messages")
 class UnloadConfigCommand extends ReefCommandSupport {
 
-  @GogoOption(name = "-batchSize", description = "Upload batch size, 0 disables all batching", required = false, multiValued = false)
-  var batchSize = 25
+  @GogoOption(name = "-batchSize", description = "Upload batch size, 0 disables all batching.", required = false, multiValued = false)
+  var batchSize = 0
 
   override def doCommand(): Unit = {
     val loaderServices = new LoaderServicesImpl(reefClient)

@@ -28,6 +28,7 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable
 import org.totalgrid.reef.client.AddressableDestination
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.util.Timing.Stopwatch
 
 /**
  * this benchmark tests how long it takes to publish a total number of measurements to the server.
@@ -40,11 +41,21 @@ import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
  */
 class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], totalMeas: Long, concurrency: Int, batchSize: Int) extends BenchmarkTest {
 
-  case class ConcurrentMeasurementReading(operation: String, concurrency: Int, batchSize: Int, time: Long) extends BenchmarkReading {
+  case class ConcurrentMeasurementReading(concurrency: Int, batchSize: Int, time: Long, firstMessage: Long, lastMessage: Long) extends BenchmarkReading {
     def csvName = "concurrentPublishing"
 
-    def testParameterNames = List("operation", "concurrency", "batchSize")
-    def testParameters = List(operation, concurrency, batchSize)
+    def testParameterNames = List("concurrency", "batchSize", "totalMeas")
+    def testParameters = List(concurrency, batchSize, totalMeas)
+
+    def testOutputNames = List("time", "firstMessage", "lastMessage", "spread")
+    def testOutputs = List(time, firstMessage, lastMessage, lastMessage - firstMessage)
+  }
+
+  case class OverallConcurrentMeasurementReading(concurrency: Int, batchSize: Int, time: Long) extends BenchmarkReading {
+    def csvName = "concurrentPublishOverall"
+
+    def testParameterNames = List("concurrency", "batchSize", "totalMeas")
+    def testParameters = List(concurrency, batchSize, totalMeas)
 
     def testOutputNames = List("time")
     def testOutputs = List(time)
@@ -67,11 +78,17 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
       e.getName -> (connection, points)
     }.toMap
 
+    val allPointNames = pointsForEndpoints.values.map { _._2 }.flatten.toList
+    val sub = services.subscribeToMeasurementsByNames(allPointNames).await
+    val roundtripTimer = new ConcurrentRoundtripTimer(client, sub)
+
     stream.foreach { _.println("Publishing: " + totalMeas + " measurements using batchSize: " + batchSize + " concurrency: " + concurrency) }
-    publishMeasurements(client, pointsForEndpoints)
+    val results = publishMeasurements(client, pointsForEndpoints, roundtripTimer)
+    roundtripTimer.cancel()
+    results
   }
 
-  private def publishMeasurements(client: Client, pointsForEndpoints: Map[String, (EndpointConnection, List[String])]) = {
+  private def publishMeasurements(client: Client, pointsForEndpoints: Map[String, (EndpointConnection, List[String])], roundtripTimer: ConcurrentRoundtripTimer) = {
 
     val batches = (totalMeas / batchSize).toInt
     val endpointNames = Stream.continually(pointsForEndpoints.keys).flatten.take(batches)
@@ -83,21 +100,24 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
       val (connection, pointsOnEndpoint) = pointsForEndpoints(endpointName)
       val measurementProcessorDestination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
 
-      val measurements = MeasurementUtility.makeMeasurements(pointsOnEndpoint, batchSize)
-
-      () => publishingClient.publishMeasurements(measurements.toList, measurementProcessorDestination)
+      () => {
+        val measurements = MeasurementUtility.makeMeasurements(pointsOnEndpoint, batchSize)
+        val roundtripPromise = roundtripTimer.timeRoundtrip(measurements.toList)
+        publishingClient.publishMeasurements(measurements.toList, measurementProcessorDestination)
+        roundtripPromise
+      }
     }
 
-    val start = System.nanoTime()
+    val stopwatch = new Stopwatch
     val results = ModelCreationUtilities.parallelExecutor(client, concurrency, batchPublishers)
-    val overallTime = (System.nanoTime() - start) / 1000000
+    val overallTime = stopwatch.elapsed
 
     val readings = mutable.Queue.empty[BenchmarkReading]
-    readings.enqueue(new ConcurrentMeasurementReading("overall", concurrency, batchSize, overallTime))
+    readings.enqueue(new OverallConcurrentMeasurementReading(concurrency, batchSize, overallTime))
 
     results.foreach {
-      case (time, _) =>
-        readings.enqueue(new ConcurrentMeasurementReading("write", concurrency, batchSize, time))
+      case (time, timerResults) =>
+        readings.enqueue(new ConcurrentMeasurementReading(concurrency, batchSize, time, timerResults.firstMessage, timerResults.lastMessage))
     }
     readings.toList
   }

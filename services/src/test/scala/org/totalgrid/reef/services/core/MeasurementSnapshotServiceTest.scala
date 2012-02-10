@@ -35,7 +35,7 @@ class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
 }
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase {
+class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   def makeMeas(name: String, time: Int) = {
     val meas = Measurements.Measurement.newBuilder

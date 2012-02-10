@@ -51,7 +51,7 @@ class SquerylBackedMeasurementStreamCoordinator(
 
     // we always mark new endpoints offline to start
     val offlineTime = Some(now)
-    markOffline(ce)
+    markOffline(ce, context)
 
     measProcModel.create(context, new MeasProcAssignment(ce.id, serviceRoutingKey, measProcId, measProcAssignedTime, None))
     fepConnection.create(context, new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, offlineTime, None))
@@ -66,7 +66,7 @@ class SquerylBackedMeasurementStreamCoordinator(
     fepConnection.delete(context, fepProcAssignment)
 
     // then either assign the endpoint to a compatible FEP or no FEP
-    val assigned = determineFepAssignment(fepProcAssignment.copy(applicationId = None), ce)
+    val assigned = determineFepAssignment(context, fepProcAssignment.copy(applicationId = None), ce)
     fepConnection.create(context, assigned.getOrElse(new FrontEndAssignment(ce.id, initialConnectionState, fepProcAssignment.enabled, None, None, None, Some(System.currentTimeMillis), None)))
   }
 
@@ -92,7 +92,7 @@ class SquerylBackedMeasurementStreamCoordinator(
   /**
    * determine the least loaded FEP to talk to our endpoint
    */
-  private def determineFepAssignment(assign: FrontEndAssignment, ce: CommunicationEndpoint): Option[FrontEndAssignment] = {
+  private def determineFepAssignment(context: RequestContext, assign: FrontEndAssignment, ce: CommunicationEndpoint): Option[FrontEndAssignment] = {
 
     // if the measuremntProcessor has collected all its resources we can assign an fep by giving it a service routing key
     val measAssign: MeasProcAssignment = ce.measProcAssignment.value
@@ -108,7 +108,7 @@ class SquerylBackedMeasurementStreamCoordinator(
     val assignedTime = applicationId.map { x => System.currentTimeMillis }
     if (assign.applicationId != applicationId || assign.serviceRoutingKey != serviceRoutingKey) {
       val now = System.currentTimeMillis
-      markOffline(ce)
+      markOffline(ce, context)
       val newAssign = assign.copy(
         applicationId = applicationId,
         assignedTime = assignedTime,
@@ -126,7 +126,7 @@ class SquerylBackedMeasurementStreamCoordinator(
    */
   private def checkFepAssignment(context: RequestContext, assign: FrontEndAssignment, ce: CommunicationEndpoint, retry: Boolean = true) {
     try {
-      val newAssign = determineFepAssignment(assign, ce)
+      val newAssign = determineFepAssignment(context, assign, ce)
       // update the fep assignment if it changed
       newAssign.foreach(newAssignment => exclusiveUpdateFep(context, assign, newAssignment))
     } catch {
@@ -150,11 +150,11 @@ class SquerylBackedMeasurementStreamCoordinator(
     val online = sql.state == onlineState
     if (online) {
       if (existing.onlineTime == None && sql.onlineTime != None) {
-        markOnline(endpoint)
+        markOnline(endpoint, context)
       }
     } else {
       // Workaround: can't check offlineTime because assignment may have reset it. Just do it twice.
-      markOffline(endpoint)
+      markOffline(endpoint, context)
     }
     if (sql.enabled != existing.enabled) {
       checkFepAssignment(context, sql, endpoint)

@@ -32,6 +32,7 @@ import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
 import org.totalgrid.reef.services.metrics.MetricsServiceWrapper
 import org.totalgrid.reef.persistence.squeryl.DbConnection
+import net.agileautomata.executor4s.Executor
 
 /**
  * list of all of the service providers in the system
@@ -43,9 +44,10 @@ class ServiceProviders(
     serviceConfiguration: ServiceOptions,
     authzService: AuthService,
     metricsPublisher: IMetricsSink,
-    authToken: String) {
+    authToken: String,
+    executor: Executor) {
 
-  private val eventPublisher = new LocalSystemEventSink
+  private val eventPublisher = new LocalSystemEventSink(executor)
   private val dependencies = new ServiceDependencies(dbConnection, connection, connection, cm, eventPublisher, authToken)
 
   private val contextSource = new DependenciesSource(dependencies)
@@ -68,6 +70,7 @@ class ServiceProviders(
     new EntityEdgeService(modelFac.edges),
     new EntityService(modelFac.entities),
     new EntityAttributesService,
+    new EntityAttributeService(modelFac.attributes),
     new MeasurementHistoryService(wrappedHistorian),
     new MeasurementSnapshotService(wrappedDb),
     new MeasurementStatisticsService(wrappedHistorian),

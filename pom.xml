@@ -6,7 +6,7 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4.3</version>
+	<version>0.4.4</version>
 
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,7 +15,7 @@
         <slf4s.version>1.0.6</slf4s.version>
         <scalamodules.version>2.0.3</scalamodules.version>
         <qpid.version>0.10</qpid.version>
-		<reef.version>0.4.3</reef.version>
+		<reef.version>0.4.4</reef.version>
         <squeryl.version>0.9.5-RC1</squeryl.version>
         <cglib.version>2.2</cglib.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
@@ -24,7 +24,7 @@
         <maven-assembly-plugin.version>2.2.2</maven-assembly-plugin.version>
 		<maven-bundle.version>2.1.0</maven-bundle.version>
 		<felix-core.version>1.4.0</felix-core.version>
-        <executor4s.version>0.1.9</executor4s.version>
+        <executor4s.version>0.1.10</executor4s.version>
         <karaf.version>2.2.4</karaf.version>
         <karaf.console.version>${karaf.version}</karaf.console.version>
         <scalatest.version>1.6.1</scalatest.version>
@@ -47,6 +47,7 @@
         <mina-core.version>1.0.1</mina-core.version>
         <backport-util-concurrent.version>2.2</backport-util-concurrent.version>
         <geronimo-jms_1.1_spec.version>1.0</geronimo-jms_1.1_spec.version>
+        <liquibase.version>2.0.4-OSGI</liquibase.version>
     </properties>
 
 	<modules>
@@ -62,6 +63,8 @@
 		<module>util</module>
 		<module>util-osgi</module>
 		<module>metrics</module>
+        <module>metrics-client</module>
+        <module>metrics-service</module>
 		<module>broker</module>
         <module>qpid-broker</module>
 		<module>persistence-api</module>
@@ -70,6 +73,7 @@
 		<module>measurementstore-squeryl</module>
         <module>memory-broker</module>
 		<module>application-framework</module>
+        <module>application-whiteboard</module>
 		<module>proto-shell</module>
         <module>http-bridge/http-bridge</module>
         <module>http-bridge/js-service-client</module>
@@ -82,6 +86,7 @@
 		<module>default-simulator</module>
 		<module>example-simulator</module>
 		<module>protocol-dnp3</module>
+        <module>services-db-schema</module>
 		<module>services</module>
 		<module>admin-shell</module>
         <module>standalone-node</module>
@@ -110,6 +115,15 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+
+        <repository>
+            <id>third-party-snapshot</id>
+            <name>https://repo.totalgrid.org-snapshots</name>
+            <url>https://repo.totalgrid.org/artifactory/third-party-snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
 
 		<repository>
 			<id>scala-tools-releases</id>

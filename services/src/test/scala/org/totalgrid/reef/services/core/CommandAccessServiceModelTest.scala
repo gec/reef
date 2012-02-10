@@ -51,7 +51,7 @@ class CommandTestRig(dbConnection: DbConnection) {
 }
 
 @RunWith(classOf[JUnitRunner])
-class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+class CommandLockServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction with SyncServicesTestHelpers {
 
   import AccessProto._
 

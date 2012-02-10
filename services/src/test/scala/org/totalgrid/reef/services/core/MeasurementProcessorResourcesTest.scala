@@ -25,13 +25,14 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point, Entity }
 
 import org.totalgrid.reef.services.{ SilentRequestContext, ServiceDependencies, ServiceResponseTestingHelpers }
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase {
+class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
   import org.totalgrid.reef.measproc.ProtoHelper._
   import ServiceResponseTestingHelpers._
 

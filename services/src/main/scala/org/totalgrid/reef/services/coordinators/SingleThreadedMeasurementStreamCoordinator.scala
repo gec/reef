@@ -43,7 +43,7 @@ class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementS
   }
 
   def onMeasProcAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) =
-    handle(context) { (r, c) => r.onMeasProcAppChanged(c, reloadApp(app), added) }
+    handle(context) { (r, c) => r.onMeasProcAppChanged(c, if (added) reloadApp(app) else app, added) }
 
   def onMeasProcAssignmentChanged(context: RequestContext, meas: MeasProcAssignment) =
     handle(context) { (r, c) => r.onMeasProcAssignmentChanged(c, reloadMeas(meas)) }
@@ -52,7 +52,7 @@ class SingleThreadedMeasurementStreamCoordinator(real: SquerylBackedMeasurementS
     handle(context) { (r, c) => r.onFepConnectionChange(c, reloadFep(sql), existing) }
 
   def onFepAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) =
-    handle(context) { (r, c) => r.onFepAppChanged(c, reloadApp(app), added) }
+    handle(context) { (r, c) => r.onFepAppChanged(c, if (added) reloadApp(app) else app, added) }
 
   def onEndpointDeleted(context: RequestContext, ce: CommunicationEndpoint) =
     handle(context) { (r, c) => r.onEndpointDeleted(c, ce) }

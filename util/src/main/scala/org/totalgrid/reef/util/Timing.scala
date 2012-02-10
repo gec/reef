@@ -18,18 +18,37 @@
  */
 package org.totalgrid.reef.util
 
+import org.totalgrid.reef.util.Timing.Stopwatch
+
 /**
  * methods for determining elapsed time for a supplied function.
  */
 object Timing {
 
   /**
+   * very simple class to make measuring elapsed time easier in benchmark and test code
+   */
+  class Stopwatch {
+    private var start = System.nanoTime()
+
+    /**
+     * reset the start time for the elapsed counters
+     */
+    def reset() = start = System.nanoTime()
+
+    /**
+     * returns time in milliseconds
+     */
+    def elapsed = convertNanoToMilli(System.nanoTime() - start)
+  }
+
+  /**
    * Runs a block of code and returns how long it took in milliseconds (not the return value of the block)
    */
   def benchmark[A](fun: => A): Long = {
-    val start = System.nanoTime
+    val stopwatch = new Stopwatch
     fun
-    convertNanoToMilli(System.nanoTime - start)
+    convertNanoToMilli(stopwatch.elapsed)
   }
 
   /**
@@ -42,9 +61,9 @@ object Timing {
    * Runs a block of code and passes the length of time it took to another function
    */
   def time[A](timingFun: Long => Unit)(fun: => A): A = {
-    val start = System.nanoTime
+    val stopwatch = new Stopwatch
     val ret = fun
-    timingFun(convertNanoToMilli(System.nanoTime() - start))
+    timingFun(stopwatch.elapsed)
     ret
   }
 

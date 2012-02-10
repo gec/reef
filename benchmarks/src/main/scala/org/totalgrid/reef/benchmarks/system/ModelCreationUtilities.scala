@@ -25,13 +25,19 @@ import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointOwnership
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.util.Timing.Stopwatch
 
 object ModelCreationUtilities {
+
+  def getPointNames(endpointName: String, pointsPerEndpoint: Int) = {
+    (1 to pointsPerEndpoint).map { i => endpointName + ".TestPoint" + i }
+  }
+
   def addEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
     val loaderServices = client.getRpcInterface(classOf[LoaderServices])
     loaderServices.startBatchRequests()
 
-    val names = (0 to pointsPerEndpoint).map { i => endpointName + ".TestPoint" + i }
+    val names = getPointNames(endpointName, pointsPerEndpoint)
 
     names.map { n => loaderServices.addPoint(Point.newBuilder.setName(n).setType(PointType.ANALOG).setUnit("raw").build) }
 
@@ -49,7 +55,7 @@ object ModelCreationUtilities {
     loaderServices.disableEndpointConnection(uuid).await
     loaderServices.startBatchRequests()
 
-    val names = (0 to pointsPerEndpoint).map { i => endpointName + ".TestPoint" + i }
+    val names = getPointNames(endpointName, pointsPerEndpoint)
 
     loaderServices.delete(Endpoint.newBuilder.setName(endpointName).build)
     names.map { n => loaderServices.delete(Point.newBuilder.setName(n).build) }
@@ -69,12 +75,11 @@ object ModelCreationUtilities {
     val f = client.future[Result[List[(Long, A)]]]
     val prom = Promise.from(f)
 
-    def completed(startTime: Long, a: Promise[A]) {
+    def completed(stopwatch: Stopwatch, a: Promise[A]): Unit = f.synchronized {
       val result = a.extract
       if (result.isSuccess) {
         inProgressOps -= 1
-        val processTime = (System.nanoTime() - startTime) / 1000000
-        timingResults ::= (processTime, result.get)
+        timingResults ::= (stopwatch.elapsed, result.get)
         if (timingResults.size == batchableOperations.size) f.set(Success(timingResults))
         else startNext()
       } else {
@@ -82,14 +87,16 @@ object ModelCreationUtilities {
       }
     }
 
-    def startNext() {
+    def startNext(): Unit = f.synchronized {
       if (inProgressOps < numConcurrent) {
         inProgressOps += 1
-        val startTime = System.nanoTime()
-        val nextOperationToStart = remainingOps.head()
-        remainingOps = remainingOps.tail
-        nextOperationToStart.listen(completed(startTime, _))
-        startNext()
+        val stopwatch = new Stopwatch()
+        val nextOperationToStart = remainingOps.headOption
+        if (nextOperationToStart.isDefined) {
+          remainingOps = remainingOps.tail
+          nextOperationToStart.get().listen(completed(stopwatch, _))
+          startNext()
+        }
       }
     }
 

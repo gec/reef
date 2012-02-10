@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceExc
 import org.squeryl.PrimitiveTypeMode._
 
 @RunWith(classOf[JUnitRunner])
-class EntityEdgeServiceTest extends DatabaseUsingTestBase {
+class EntityEdgeServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   import ApplicationSchema._
 

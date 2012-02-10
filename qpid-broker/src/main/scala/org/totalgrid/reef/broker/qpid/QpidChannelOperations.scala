@@ -127,8 +127,14 @@ object QpidChannelOperations extends Logging {
     try {
       fun
     } catch {
+      case sse: SessionException =>
+        sse.getException.getErrorCode match {
+          case ExecutionErrorCode.NOT_FOUND =>
+            throw new ServiceIOException("Exchange not found. Usually indicates no services node is attached to the broker.", sse)
+        }
+        throw new ServiceIOException("Qpid error during " + msg + " cause: " + sse.getMessage, sse)
       case ex: Exception =>
-        throw new ServiceIOException("Unexpected error during " + msg, ex)
+        throw new ServiceIOException("Unexpected error during " + msg + " cause: " + ex.getMessage, ex)
     }
   }
 }

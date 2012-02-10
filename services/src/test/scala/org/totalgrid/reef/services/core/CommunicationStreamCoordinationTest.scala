@@ -31,6 +31,7 @@ import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.event.EventType
 import java.util.concurrent.TimeUnit
+import org.totalgrid.reef.measproc.ProtoHelper._
 
 @RunWith(classOf[JUnitRunner])
 class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
@@ -205,12 +206,25 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       val fep = coord.addFep("fep")
       val meas = coord.addMeasProc("meas")
 
+      val measurements = coord.subscribeMeasurements()
+      measurements.size should equal(0)
+
+      def checkOld(oldness: Boolean) {
+        measurements.pop(100).getQuality.getDetailQual.getOldData should equal(oldness)
+        measurements.size should equal(0)
+      }
+
       val device = coord.addDnp3Device("dev1")
       coord.pointsInDatabase should equal(1)
+      checkOld(true)
+
       coord.checkAssignments(1, Some(fep), Some(meas))
 
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointDisabled) should equal(0)
       coord.eventSink.getEventCount(EventType.Scada.CommEndpointEnabled) should equal(0)
+
+      coord.publishMeas(makeBatch(makeInt("dev1.test_point", 10)))
+      checkOld(false)
 
       val connection = coord.frontEndConnection.get(EndpointConnection.newBuilder.setEnabled(true).build).expectOne()
       coord.setEndpointEnabled(connection, false)
@@ -220,6 +234,9 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
 
       // check that we have unassigned the fep
       coord.checkAssignments(1, None, Some(meas))
+
+      // since fep is unassigned measurement should be old now
+      checkOld(true)
 
       // we can also now search by enabled == false
       coord.frontEndConnection.get(EndpointConnection.newBuilder.setEnabled(false).build).expectOne()

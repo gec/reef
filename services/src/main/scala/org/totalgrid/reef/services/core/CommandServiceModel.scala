@@ -28,11 +28,12 @@ import org.squeryl.{ Table, Query }
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import SquerylModel._
 
-import org.totalgrid.reef.services.core.util.UUIDConversions._
+import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
+import org.totalgrid.reef.models.EntityQuery
 import java.util.UUID
 
 class CommandService(protected val model: CommandServiceModel)

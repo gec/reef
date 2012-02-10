@@ -1,5 +1,3 @@
-package org.totalgrid.reef.benchmarks.output
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.benchmarks.output
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.benchmarks.output
+
 class DelimitedFileOutput(fileName: String, append: Boolean = true, separator: String = ",") {
 
   val outputStream = new java.io.FileOutputStream(fileName, append)

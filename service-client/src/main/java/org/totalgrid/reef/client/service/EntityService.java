@@ -101,6 +101,24 @@ public interface EntityService
     Entity getEntityByName( String name ) throws ReefServiceException;
 
     /**
+     * Get an entity using its unique identification.
+     *
+     * @param uuids The entity id.
+     * @return The entity object.
+     * @throws org.totalgrid.reef.client.exception.ReefServiceException
+     */
+    List<Entity> getEntitiesByUuids( List<ReefUUID> uuids ) throws ReefServiceException;
+
+    /**
+     * Get an entity using its name.
+     *
+     * @param names The configured name of the entity.
+     * @return The entity object.
+     * @throws org.totalgrid.reef.client.exception.ReefServiceException
+     */
+    List<Entity> getEntitiesByNames( List<String> names ) throws ReefServiceException;
+
+    /**
      * Find an entity using its name, returns null if not found
      *
      * @param name The configured name of the entity.
@@ -222,6 +240,15 @@ public interface EntityService
      * @throws ReefServiceException
      */
     List<Entity> getEntityRelationsForParents( List<ReefUUID> parentUuids, List<EntityRelation> relations ) throws ReefServiceException;
+
+    /**
+     * Collect a more interesting tree structure from a list of specific parent nodes
+     * @param parentNames  list of specific parents we want relations of
+     * @param relations    list of relations we want to use, first entry in the list is relations to
+     * @return  list of entities with of ParentType and their relations below them
+     * @throws ReefServiceException
+     */
+    List<Entity> getEntityRelationsForParentsByName( List<String> parentNames, List<EntityRelation> relations ) throws ReefServiceException;
 
     /**
      * Return a tree of entities based on a complex entity model query. It is usually possible to satisfy most entity requirements

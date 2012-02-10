@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.service.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,8 @@ package org.totalgrid.reef.client.service.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.service.impl
+
 import org.totalgrid.reef.client.SubscriptionCreationListener
 
 import org.totalgrid.reef.client.service._

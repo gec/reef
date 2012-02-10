@@ -52,7 +52,7 @@ object ProtoShellApplication {
 
   def runTerminal(connection: Connection, userSettings: UserSettings, context: String, cancelable: Cancelable) {
     try {
-      val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
+      val client = connection.login(userSettings).await
       val services = client.getRpcInterface(classOf[AllScadaService])
 
       val app = new ProtoShellApplication(client, services, cancelable, userSettings.getUserName, context, client.getHeaders.getAuthToken)

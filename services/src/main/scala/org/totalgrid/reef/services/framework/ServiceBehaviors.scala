@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.services.framework.SquerylModel.NoSearchTermsException
+import org.totalgrid.reef.models.SquerylConversions.NoSearchTermsException
 import org.totalgrid.reef.client.sapi.client.Response
 
 import org.totalgrid.reef.client.proto.Envelope

@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.3</version>
+        <version>0.4.4</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -32,12 +32,12 @@
                     <instructions>
                         <Bundle-Name>Reef Client API</Bundle-Name>
                         <Export-Package>
-                            org.totalgrid.reef.client,
-                            org.totalgrid.reef.client.factory,
-                            org.totalgrid.reef.client.javaimpl,
-                            org.totalgrid.reef.client.sapi.client.*,
-                            org.totalgrid.reef.client.sapi.service,
-                            org.totalgrid.reef.client.sapi.client.factory,
+                            org.totalgrid.reef.client;version="${reef.version}",
+                            org.totalgrid.reef.client.factory;version="${reef.version}",
+                            org.totalgrid.reef.client.javaimpl;version="${reef.version}",
+                            org.totalgrid.reef.client.sapi.client.*;version="${reef.version}",
+                            org.totalgrid.reef.client.sapi.service;version="${reef.version}",
+                            org.totalgrid.reef.client.sapi.client.factory;version="${reef.version}",
                         </Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
@@ -54,24 +54,6 @@
 					</excludes>
                     <header>../APACHE_FILE_HEADER</header>
                 </configuration>
-            </plugin>
-            <plugin>
-                <!-- https://github.com/gec/maven-protoc-plugin -->
-                <groupId>com.google.protobuf.tools</groupId>
-                <artifactId>maven-protoc-plugin</artifactId>
-                <version>${maven-protoc-plugin.version}</version>
-                <configuration>
-                    <protoSourceRoot>src\main\proto</protoSourceRoot>
-                    <outputDirectory>target\generated-sources\java</outputDirectory>
-                </configuration>
-               <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -21,10 +21,13 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.client.service.proto.Alarms._
 import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto }
 import org.totalgrid.reef.models.{ EventConfigStore, ApplicationSchema, AlarmModel, EventStore }
+import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.models.UUIDConversions._
+import org.totalgrid.reef.models.SquerylConversions
 import org.squeryl.Table
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Descriptors
@@ -193,7 +196,7 @@ trait AlarmQueries {
   def findRecords(context: RequestContext, req: Alarm): List[AlarmModel] = {
 
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
-      where(SquerylModel.combineExpressions(uniqueQuery(req, alarm) :::
+      where(SquerylConversions.combineExpressions(uniqueQuery(req, alarm) :::
         uniqueEventQuery(event, req.event) :::
         searchQuery(req, alarm) :::
         searchEventQuery(event, req.event)) and
@@ -220,7 +223,7 @@ trait AlarmQueries {
 
   def findRecord(context: RequestContext, req: Alarm): Option[AlarmModel] = {
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
-      where(SquerylModel.combineExpressions(uniqueQuery(req, alarm) :::
+      where(SquerylConversions.combineExpressions(uniqueQuery(req, alarm) :::
         uniqueEventQuery(event, req.event)) and
         alarm.eventId === event.id)
         select ((alarm, event))

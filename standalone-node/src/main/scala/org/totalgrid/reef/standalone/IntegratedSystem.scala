@@ -24,8 +24,6 @@ import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.services.{ ServiceBootstrap, ServiceOptions }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.services.activator.{ ServiceFactory, ServiceModulesFactory }
-import org.totalgrid.reef.measproc.activator.ProcessingActivator
-import org.totalgrid.reef.entry.FepEntry
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.shell.proto.ProtoShellApplication
@@ -33,6 +31,11 @@ import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderServicesList }
 import org.totalgrid.reef.client.settings.util.{ PropertyLoading, PropertyReader }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.models.CoreServicesSchema
+import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnectedApplicationManager }
+import net.agileautomata.executor4s.testing.InstantExecutor
+import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
+import org.totalgrid.reef.entry.FepConnectedApplication
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
@@ -58,9 +61,10 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     logger.info("Resetting database and measurement store")
     val dbConnection = DbConnector.connect(sql)
     measurementStore.connect()
-    ServiceBootstrap.resetDb(dbConnection)
+    CoreServicesSchema.prepareDatabase(dbConnection)
     ServiceBootstrap.seed(dbConnection, userSettings.getUserPassword)
     measurementStore.reset()
+    measurementStore.disconnect()
   }
 
   // we don't use ConnectionCloseManagerEx because it doesn't start things in the order they were added
@@ -70,13 +74,17 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
 
   nodeSettings.foreach { nodeSettings =>
 
+    val appManagerSettings = new ApplicationManagerSettings(userSettings, nodeSettings)
+    val applicationManager = new SimpleConnectedApplicationManager(exe, manager, appManagerSettings)
+    applicationManager.start()
+
     manager.addConsumer(ServiceFactory.create(options, userSettings, nodeSettings, modules))
 
-    manager.addConsumer(ProcessingActivator.createMeasProcessor(userSettings, nodeSettings, measurementStore))
+    applicationManager.addConnectedApplication(new MeasurementProcessorConnectedApplication(measurementStore))
 
     // we need to load the protocol separately for each node
     loadProtocols(properties, exe).foreach { protocol =>
-      manager.addConsumer(FepEntry.createFepConsumer(userSettings, nodeSettings, protocol))
+      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol))
     }
   }
 

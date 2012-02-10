@@ -28,7 +28,7 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import collection.JavaConversions._
 
-import org.totalgrid.reef.measurementstore.{ MeasurementStore, InMemoryMeasurementStore }
+import org.totalgrid.reef.measurementstore.{ MeasSink, InMemoryMeasurementStore }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.client.proto.Envelope
@@ -75,8 +75,9 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
   }
 
-  class MockMeasProc(measProcConnection: SyncService[MeasurementProcessingConnection], rtDb: MeasurementStore, amqp: Connection, client: Client) {
+  class MockMeasProc(measProcConnection: SyncService[MeasurementProcessingConnection], rtDb: MeasSink, amqp: Connection, client: Client) {
 
+    // endpoint name, measurementbatch
     val mb = new SyncVar(Nil: List[(String, MeasurementBatch)])
 
     def onMeasProcAssign(event: Event[MeasurementProcessingConnection]): Unit = {
@@ -87,7 +88,8 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
       val measProc = new MeasBatchProcessor {
         def process(m: MeasurementBatch) {
           rtDb.set(m.getMeasList.toList)
-          mb.atomic(x => ((measProcAssign.getLogicalNode.getName, m) :: x).reverse)
+          val endpointName = measProcAssign.getLogicalNode.getName
+          mb.atomic(x => ((endpointName, m) :: x).reverse)
         }
       }
 
@@ -128,6 +130,8 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     val commandService = new SyncService(new CommandService(modelFac.cmds), contextSource)
     val frontEndConnection = new SyncService(new CommunicationEndpointConnectionService(modelFac.fepConn), contextSource)
     val measProcConnection = new SyncService(new MeasurementProcessingConnectionService(modelFac.measProcConn), contextSource)
+    val measSnapshotService = new SyncService(new MeasurementSnapshotService(rtDb), contextSource)
+    val batchService = new SyncService(new MeasurementBatchService(), contextSource)
 
     var measProcMap = Map.empty[String, MockMeasProc]
 
@@ -158,7 +162,16 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     }
     def setupMockMeasProc(name: String, meas: ApplicationConfig) {
 
-      val mockMeas = new MockMeasProc(measProcConnection, rtDb, amqp, client)
+      val measSink = new MeasSink {
+        def set(meas: Seq[Measurement]) {
+          rtDb.set(meas)
+          meas.foreach { m =>
+            amqp.publishEvent(Envelope.SubscriptionEventType.MODIFIED, m, m.getName)
+          }
+        }
+      }
+
+      val mockMeas = new MockMeasProc(measProcConnection, measSink, amqp, client)
 
       val env = getSubscriptionQueue(client, Descriptors.measurementProcessingConnection, mockMeas.onMeasProcAssign _)
 
@@ -269,6 +282,17 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     def bindCommandHandler(service: SyncServiceBase[UserCommandRequest], key: String) {
       amqp.bindService(service, client, new AddressableDestination(key), false)
+    }
+
+    def subscribeMeasurements() = {
+      val (updates, env) = getEventQueue(client, Descriptors.measurement)
+      measSnapshotService.get(MeasurementSnapshot.newBuilder.addPointNames("*").build, env).expectMany()
+      updates.size should equal(0)
+      updates
+    }
+
+    def publishMeas(meas: MeasurementBatch): MeasurementBatch = {
+      batchService.put(meas).expectOne()
     }
   }
 }

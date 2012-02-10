@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.3</version>
+        <version>0.4.4</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -30,7 +30,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>Memory Broker</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.broker.memory</Export-Package>
+                        <Export-Package>org.totalgrid.reef.broker.memory;version="${reef.version}"</Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
                     </instructions>
