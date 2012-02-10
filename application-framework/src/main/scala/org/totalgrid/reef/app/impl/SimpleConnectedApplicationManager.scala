@@ -68,11 +68,11 @@ class SimpleConnectedApplicationManager(executor: Executor, provider: Connection
     }
   }
 
-  def start() = this.synchronized {
+  override def afterStart() = this.synchronized {
     provider.addConsumer(this)
   }
 
-  def stop() = this.synchronized {
+  override def beforeStop() = this.synchronized {
     provider.removeConsumer(this)
 
     connectionStopped()
