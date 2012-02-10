@@ -30,16 +30,16 @@ public interface Resources
     /**
      * @return A publisher used to update the state of the endpoint
      */
-    Publisher<FEP.EndpointConnection.State> GetEndpointStatePublisher();
+    Publisher<FEP.EndpointConnection.State> getEndpointStatePublisher();
 
     /**
      * @return A publisher used to update the state of the communication channel
      */
-    Publisher<FEP.CommChannel.State> GetChannelStatePublisher();
+    Publisher<FEP.CommChannel.State> getChannelStatePublisher();
 
     /**
      * @return A publisher used to update measurement values
      */
-    Publisher<Measurements.MeasurementBatch> GetMeasurementBatchPublisher();
+    Publisher<Measurements.MeasurementBatch> getMeasurementBatchPublisher();
 
 }
