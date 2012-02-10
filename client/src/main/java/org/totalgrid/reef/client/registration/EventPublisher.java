@@ -16,25 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client;
+package org.totalgrid.reef.client.registration;
 
-import org.totalgrid.reef.client.internal.ProviderFactory;
+import org.totalgrid.reef.client.proto.Envelope;
 
-/**
- * ServiceProviderFactories are created by "service-client" packages to implement one or more
- * service interfaces.
- *
- * Currently these service providers are only creatable in scala because they use the scala
- * implementation of Client that has more low-level functions.
- */
-public interface ServiceProviderFactory extends ProviderFactory
+public interface EventPublisher
 {
-    /**
-     * Currently we are passing the scala client to the rpc factoryies and casting to
-     * break the circular dependency between the scala and java clients.
-     *
-     * Once the java Client interface has all of the functions on the scala client we
-     * can fix this interface
-     */
-    Object createRpcProvider( Client client );
+
+    <T> void publishEvent( Envelope.SubscriptionEventType eventType, T eventMessage, String routingKey );
 }

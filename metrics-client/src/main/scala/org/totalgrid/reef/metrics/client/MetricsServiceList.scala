@@ -21,8 +21,9 @@ package org.totalgrid.reef.metrics.client
 import impl.MetricsServiceImpl
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.types.{ ServiceInfo, ServiceTypeInformation }
-import org.totalgrid.reef.client.{ ServiceProviderFactory, ServiceProviderInfo, ServicesList }
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList }
+import org.totalgrid.reef.client.internal.ProviderFactory
+import org.totalgrid.reef.client.sapi.client.rest.{ ServiceProviderFactory, Client }
 
 class MetricsServiceList extends ServicesList {
 
@@ -37,9 +38,9 @@ class MetricsServiceList extends ServicesList {
 
   class MetricsProviderInfo extends ServiceProviderInfo {
 
-    def getFactory: ServiceProviderFactory = {
+    def getFactory: ProviderFactory = {
       new ServiceProviderFactory {
-        def createRpcProvider(client: AnyRef): AnyRef = {
+        def createRpcProvider(client: Client): AnyRef = {
           new MetricsServiceImpl(client.asInstanceOf[Client])
         }
       }

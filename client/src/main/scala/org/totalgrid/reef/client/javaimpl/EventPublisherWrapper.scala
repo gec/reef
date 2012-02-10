@@ -16,26 +16,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest
+package org.totalgrid.reef.client.javaimpl
 
-import org.totalgrid.reef.client.{ ServiceProviderInfo }
+import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
+import org.totalgrid.reef.client.registration.EventPublisher
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
+import java.lang.String
 
-trait RpcProvider {
-  def getRpcInterface[A](klass: Class[A]): A
-}
+class EventPublisherWrapper(connection: SConnection) extends EventPublisher {
 
-/**
- * helper object to make defining a provider nice looking in scala
- */
-object RpcProvider {
-  def apply(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = {
-    new ServiceProviderInfo {
-      override val getFactory = new ServiceProviderFactory {
-        def createRpcProvider(client: Client) = fun(client.asInstanceOf[Client])
-      }
-
-      import scala.collection.JavaConversions._
-      override def getInterfacesImplemented = interfaces
-    }
+  def publishEvent[T](eventType: SubscriptionEventType, eventMessage: T, routingKey: String) {
+    connection.publishEvent(eventType, eventMessage, routingKey)
   }
 }

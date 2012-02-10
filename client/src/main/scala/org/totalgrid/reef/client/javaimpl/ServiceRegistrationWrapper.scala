@@ -16,26 +16,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest
+package org.totalgrid.reef.client.javaimpl
 
-import org.totalgrid.reef.client.{ ServiceProviderInfo }
+import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
+import org.totalgrid.reef.client.{ SubscriptionBinding, Routable }
+import org.totalgrid.reef.client.registration.{ EventPublisher, Service, ServiceRegistration }
+import org.totalgrid.reef.client.types.TypeDescriptor
+import net.agileautomata.executor4s.Executor
 
-trait RpcProvider {
-  def getRpcInterface[A](klass: Class[A]): A
-}
+class ServiceRegistrationWrapper(conn: SConnection, exe: Executor) extends ServiceRegistration {
 
-/**
- * helper object to make defining a provider nice looking in scala
- */
-object RpcProvider {
-  def apply(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = {
-    new ServiceProviderInfo {
-      override val getFactory = new ServiceProviderFactory {
-        def createRpcProvider(client: Client) = fun(client.asInstanceOf[Client])
-      }
+  def getEventPublisher: EventPublisher = new EventPublisherWrapper(conn)
 
-      import scala.collection.JavaConversions._
-      override def getInterfacesImplemented = interfaces
-    }
+  def bindService[A](service: Service, desc: TypeDescriptor[A], destination: Routable, competing: Boolean): SubscriptionBinding = {
+    val srv = new ServiceWrapper(service, desc)
+    conn.bindService(srv, exe, destination, competing)
   }
 }
