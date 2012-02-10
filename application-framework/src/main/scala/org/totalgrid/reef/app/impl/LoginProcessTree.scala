@@ -57,6 +57,7 @@ class LoginProcessTree(connection: Connection,
   class LoginTask extends RetryableProcess("Attempting to login user: " + managerSettings.userSettings.getUserName) {
 
     override def setupRetryDelay = managerSettings.retryLoginInitialDelayMs
+    override def setupRetryDelayMax = managerSettings.retryLoginMaxDelayMs
 
     private var client = Option.empty[Client]
     private var childTask = Option.empty[Process]

@@ -22,6 +22,7 @@ import com.weiglewilczek.slf4s.Logging
 
 import net.agileautomata.executor4s._
 import scala.collection.immutable.Queue
+import scala.util.Random
 
 /**
  * this is a wrapper used by the ProcessManager to manage the lifecycle of the user code in
@@ -36,6 +37,7 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
   var isStopping = true
   var isFailed = false
   var retryTimer = Option.empty[Timer]
+  var nextRetryDelay = payloadLogic.setupRetryDelay
 
   def shouldBeStarted = this.synchronized {
     val parentRunning = parent.map { _.isActive }.getOrElse(true)
@@ -70,6 +72,7 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
         setupFuture = None
         r match {
           case Success(_) =>
+            nextRetryDelay = payloadLogic.setupRetryDelay
             if (!isStopping) {
               logger.debug(name + " started")
               isActive = true
@@ -79,17 +82,12 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
               cleanupProcess()
             }
           case Failure(ex) =>
-            p.reportError(payloadLogic, "Failure during " + name + " : " + ex.getMessage, Some(ex))
+            p.reportError(payloadLogic, "Failure during " + name, Some(ex))
+            logger.info(name + " failed setup. " + ex.getMessage, ex)
             if (payloadLogic.setupExceptionIsFailure) {
               fail()
             } else {
-              val delayTime = payloadLogic.setupRetryDelay.milliseconds
-              retryTimer = Some(exe.schedule(delayTime) {
-                logger.debug(name + " retrying setup.")
-                start()
-              })
-              logger.debug(name + " failed setup. " + ex.getMessage, ex)
-              logger.debug(name + " retrying setup in: " + delayTime)
+              scheduleRetrySetup(false)
             }
         }
         notify()
@@ -123,7 +121,7 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
     } catch {
       case ex: Exception =>
         logger.warn("Exception during process " + name + " cleanup: " + ex.getMessage, ex)
-        p.reportError(payloadLogic, "Failure during " + name + " cleanup: " + ex.getMessage, Some(ex))
+        p.reportError(payloadLogic, "Failure during " + name + " cleanup", Some(ex))
     }
   }
 
@@ -155,18 +153,24 @@ class TaskState(val payloadLogic: Process, p: ProcessManager, exe: Executor) ext
 
   def fail() = this.synchronized {
     isFailed = true
-    logger.debug(name + " failed!")
+    logger.info(name + " failed!")
     stop()
     stopChildren()
     failParent()
     if (payloadLogic.retryAfterFailure) {
-      val delayTime = payloadLogic.setupRetryDelay.milliseconds
-      retryTimer = Some(exe.schedule(delayTime) {
-        logger.debug(name + " retrying setup after failure.")
-        start()
-      })
-      logger.debug(name + " retrying setup after failure in: " + delayTime)
+      scheduleRetrySetup(true)
     }
+  }
+
+  private def scheduleRetrySetup(isFailure: Boolean) {
+    val extraMessage = if (isFailure) " after failure" else ""
+    val delay = (Random.nextInt(nextRetryDelay.toInt) + 1).milliseconds
+    nextRetryDelay = (nextRetryDelay * 2).min(payloadLogic.setupRetryDelayMax)
+    retryTimer = Some(exe.schedule(delay) {
+      logger.debug(name + " retrying setup" + extraMessage)
+      start()
+    })
+    logger.info(name + " retrying setup" + extraMessage + " in: " + delay)
   }
 
   def setParent(p: TaskState) = this.synchronized {

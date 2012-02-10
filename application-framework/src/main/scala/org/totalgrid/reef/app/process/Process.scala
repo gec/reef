@@ -61,10 +61,17 @@ trait Process {
   def setupExceptionIsFailure = true
 
   /**
-   * if we are configured to retry setup after a failure we will use this delay to determine how long
-   * to wait. Specific classes should override this value.
+   * Initial max time to wait until retrying the setup procedure (random number between 0 and setupRetryDelay)
+   * Note that the time we will wait is a random amount, this helps mitigate the "stampeding herd" problem
+   * where you have many clients all resending the same request at the same time and smooths out the traffic.
    */
   def setupRetryDelay: Long = 1000
+
+  /**
+   * After every failure we double the maximum time we might wait before retrying our connection upto this max
+   * value.
+   */
+  def setupRetryDelayMax: Long = 60000
 
   /**
    * should we consider a failure to be terminal and not retry
