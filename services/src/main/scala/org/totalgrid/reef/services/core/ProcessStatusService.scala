@@ -85,7 +85,7 @@ class ProcessStatusServiceModel(
         handleOfflineHeartbeat(context, hbeat, ss.getTime)
       }
     } else {
-      if (ss.getOnline) throw new BadRequestException("App " + ss.getInstanceName + ": is marked offline but got message!")
+      if (ss.getOnline) throw new BadRequestException("App " + ss.getInstanceName + ": is marked offline but got message. Application should be restarted and reregistered.")
       else (hbeat, false)
     }
   }
