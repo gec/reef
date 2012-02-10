@@ -9,7 +9,53 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.4.4-SNAPSHOT
+Version 0.4.4 - February 10, 2012
+==============
+
+This release was focused on bug fixes, stability and most importantly performance. This release contains some
+large changes to measurement throughput and application startup but may possibly have introduced new issues.
+Applications are encouraged to take advantage of the ConnectedApplication and ApplicationConnectionManager classes
+to make their applications more error tolerant.
+
+(Requires resetdb on server after upgrade.)
+
+### Major Features:
+
+* Added support for liquibase for schema generation and migration (not enabled by default)
+* Metrics service now exposes service for remotely retrieving metrics (now supported in CLI)
+* Reworked how applications register and maintain connection to server. If heartbeats fail they will automatically restart.
+* Implemented an ApplicationConnectionManager that provides an easy way to write applications that want to know if reef goes down.
+
+### Service/API Updates:
+
+* Added batch gets commands to Command, Point, Endpoint and Entity services (getXbyNames)
+* Better error messages on login/logout, timeout and qpid errors.
+* reef:resetdb uses password from o.t.r.user.cfg file by default
+* added get/findApplicationByName/Uuid functions to ApplicationService
+
+### Bug Fixes:
+
+* Fixed accidental synchronization in measurement processor that was effectively making it single threaded.
+* MixedMeasurementStores write to the multiple stores in parallel.
+* Heartbeat service ignores time sent to it by clients (clock mismatch caused apps to be marked offline)
+* reef:unload uses batchsize of 1 by default (avoids timeouts while deleting points with many measurements)
+* When an endpoint goes offline a measurement message is published
+* Mitigated "spammed auth" issues by indexing table, moving event generation to another thread,
+
+### Reef Internals:
+
+* Entities Atttributes are now are correctly eventted (and subscribable)
+* Added more benchmark tests and made benchmark tests externally configurable.
+* Bundles all publish correct version number in OSGi
+* Database connections are now explict (no more SessionFactory singleton)
+* MeasurementStores are now published to OSGi using factory class MeasurementStoreProvider
+
+### Upstream project versions
+
+* Liquibase : 2.0.4-OSGI - Fork of main liquibase project: https://github.com/liquibase/liquibase/pull/26
+* Executor4s : 0.1.10 - upgraded to get default exception logging
+
+Version 0.4.3 - January 24, 2012
 ==============
 
 ### Major Features:
@@ -44,7 +90,7 @@ Version 0.4.4-SNAPSHOT
 
 * Squeryl : 0.9.5-RC1 - Back on mainline project and used manual session management
 
-Version 0.4.2
+Version 0.4.2  - January 4, 2012
 ==============
 
 Bugfix and stability release. (Requires resetdb on server after upgrade.)
@@ -77,7 +123,7 @@ Bugfix and stability release. (Requires resetdb on server after upgrade.)
 
 * Executor4s : 0.1.9 - upgraded to get exceptions on deadlocks
 
-Version 0.4.1
+Version 0.4.1 - December 20, 2011
 ==============
 
 Update focused on stability improvements and command service updates. It is recommend that all applications
@@ -122,7 +168,7 @@ insertion order.
 
 * Updated to executor4s 0.1.9-RC5
 
-Version 0.4.0
+Version 0.4.0 - December 7, 2011
 ==============
 
 Major refactoring of communication client and threading structure. See MIGRATION_STEPS.markdown
@@ -157,7 +203,7 @@ for help in updating an application from 0.3.x.
 * Added many more integration tests for dnp3 and model loading and upload, fixed many endpoint related bugs.
 * Upgraded to karaf 2.2.4 from 2.2.2
 
-Version 0.3.3
+Version 0.3.3  - November 9, 2011
 ==============
 
 Minor bug fix and feature release.
@@ -172,7 +218,7 @@ Minor bug fix and feature release.
 * Added alterEndpointConnectionState calls to EndpointManagerService
 * Added bindCommandHandler() implementation to CommandService
 
-Version 0.3.2
+Version 0.3.2  - October 10, 2011
 ==============
 
 Minor bug fix release.
@@ -185,7 +231,7 @@ Minor bug fix release.
 * Minor fixes to entity and entity attributes services
 
 
-Version 0.3.1
+Version 0.3.1  - September 3, 2011
 ==============
 
 ### Major Features:
@@ -248,7 +294,7 @@ Version 0.3.1
 * Measproc/FEP correctly ignore connections received during shutdown
 * Event services gracefully handles missing attributes when rendering events
 
-Version 0.3.0
+Version 0.3.0 - April 29, 2011
 ==============
 
 Primarily Service and API refinements and refactorings.
@@ -294,7 +340,7 @@ Primarily Service and API refinements and refactorings.
 
 ### Bug Fixes:
 
-Version 0.2.3
+Version 0.2.3  - March 2, 2011
 ==============
 
 Primarily a stability and usability release, very limited new functionality.
@@ -418,12 +464,6 @@ Version 0.0.1
 ### Major changes:
 * Entity queries (list of substations, list of equipment in substations, points in substations, commands under points etc)
 * Points and Measurements (including subscriptions)
-
-
-RoadMap
-=============
-
-* 
 
 #### Formatting
 
