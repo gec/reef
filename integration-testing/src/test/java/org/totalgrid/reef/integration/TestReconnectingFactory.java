@@ -39,6 +39,10 @@ public class TestReconnectingFactory
     @Test
     public void testConnect() throws Exception
     {
+        // don't run connect test unless were trying to talk to a real amqp node
+        if ( System.getProperty( "remote-test" ) == null )
+            return;
+
         final AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
         final UserSettings userSettings = new UserSettings( PropertyReader.readFromFile( "../org.totalgrid.reef.test.cfg" ) );
 

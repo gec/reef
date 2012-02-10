@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.2</version>
+        <version>0.4.3</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -22,7 +22,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>${mavenBundleVersion}</version>
+                <version>${maven-bundle.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -61,12 +61,19 @@
         <dependency>
             <groupId>org.apache.karaf.shell</groupId>
             <artifactId>org.apache.karaf.shell.console</artifactId>
-            <version>2.2.0</version>
+            <version>${karaf.console.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.karaf.shell</groupId>
+            <artifactId>org.apache.karaf.shell.commands</artifactId>
+            <version>${karaf.console.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
-            <version>${felixCoreVersion}</version>
+            <version>${felix-core.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

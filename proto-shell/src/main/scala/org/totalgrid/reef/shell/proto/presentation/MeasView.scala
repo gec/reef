@@ -18,8 +18,10 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement, Quality }
 import org.totalgrid.reef.util.Table
+import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementStatistics, Measurement, Quality }
+
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 object MeasView {
 
@@ -142,6 +144,17 @@ object MeasView {
         ("Unit" :: unit(m) :: Nil) ::
         ("Quality" :: longQuality(m) :: Nil) ::
         ("Time" :: timeString(m) :: Nil) :: Nil
+
+    val justLines = Table.justifyColumns(lines)
+    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+  }
+
+  def printStats(s: MeasurementStatistics) = {
+
+    val lines =
+      ("Name" :: s.getPoint.getName :: Nil) ::
+        ("Count" :: s.count.getOrElse("[disabled]").toString :: Nil) ::
+        ("Oldest Time" :: s.oldestTime.map(new java.util.Date(_).toString).getOrElse("[disabled]") :: Nil) :: Nil
 
     val justLines = Table.justifyColumns(lines)
     Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))

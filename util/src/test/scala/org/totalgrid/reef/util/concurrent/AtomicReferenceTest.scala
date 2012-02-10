@@ -20,10 +20,11 @@ package org.totalgrid.reef.util.concurrent
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.test.MockitoFunSuite
+import org.scalatest.FunSuite
+import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
-class AtomicReferenceTest extends MockitoFunSuite {
+class AtomicReferenceTest extends FunSuite with ShouldMatchers {
 
   test("atomicRefWithNone") {
     val ref = new AtomicReference[Object](None)

@@ -24,10 +24,6 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.sapi.client.impl.SynchronizedPromise
 import org.totalgrid.reef.services.{ ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
 
-object SyncService {
-  def apply[A <: AnyRef](service: ServiceEntryPoint[A]) = new SyncService(service, SyncServiceShims.getRequestContextSource(SyncServiceShims.getRequestEnv))
-}
-
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 
   def get(req: A): Response[A] = get(req, BasicRequestHeaders.empty)
@@ -69,23 +65,13 @@ class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders:
   ServiceBootstrap.defineEventExchanges(dependencies.connection)
 
   def transaction[A](f: RequestContext => A) = {
+    val context = getContext
+    ServiceTransactable.doTransaction(dependencies.dbConnection, context.operationBuffer, { b: OperationBuffer => f(context) })
+  }
+
+  def getContext = {
     val context = new DependenciesRequestContext(dependencies)
     context.modifyHeaders(_.merge(commonHeaders))
-    ServiceTransactable.doTransaction(context.operationBuffer, { b: OperationBuffer => f(context) })
+    context
   }
-}
-
-object SyncServiceShims {
-
-  implicit def getRequestEnv: BasicRequestHeaders = BasicRequestHeaders.empty.setUserName("user")
-
-  implicit def getRequestContextSource(implicit headers: BasicRequestHeaders) = {
-    new MockRequestContextSource(new ServiceDependenciesDefaults, headers)
-  }
-
-  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit contextSource: RequestContextSource) = new SyncService[A](service, contextSource)
-}
-
-object CustomServiceShims {
-  implicit def toSyncService[A <: AnyRef](service: ServiceEntryPoint[A])(implicit contextSource: RequestContextSource) = new SyncService[A](service, contextSource)
 }

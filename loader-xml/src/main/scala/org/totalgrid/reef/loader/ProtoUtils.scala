@@ -21,7 +21,7 @@ package org.totalgrid.reef.loader
 import equipment._
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
-import org.totalgrid.reef.client.service.proto.Processing._
+import org.totalgrid.reef.client.service.proto.Processing.{ Filter => FilterProto, _ }
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
 
@@ -101,7 +101,11 @@ object ProtoUtils {
     /* transformation triggers should be between 100-200 */
     val SCALING = 150
     val ENUM_TRANSFORM = 151
-    /* transformation triggers should be between 400-500 */
+
+    /* filtering needs to be done after conversion, before alarming */
+    val FILTER = 200
+
+    /* alarm triggers should be between 400-500 */
     val UNEXPECTED = 450
     val REGULAR_RANGE = 451
   }
@@ -134,6 +138,64 @@ object ProtoUtils {
     addActions(name, proto, actionSet, defaultPriority)
 
     proto
+  }
+
+  def filterDefault(pointName: String): Trigger.Builder = {
+    val name = pointName + ".filter"
+
+    val f = FilterProto.newBuilder.setType(FilterProto.FilterType.DUPLICATES_ONLY).build()
+
+    val suppressAction = Action.newBuilder
+      .setActionName(name)
+      .setType(ActivationType.LOW)
+      .setSuppress(true)
+
+    Trigger.newBuilder
+      .setTriggerName(name)
+      .addActions(suppressAction)
+      .setFilter(f)
+      .setPriority(DefaultPriorities.FILTER)
+  }
+
+  def toTrigger(pointName: String, filter: Filter, pointType: PointTypeProto): Option[Trigger.Builder] = {
+
+    if (filter.isAllowDuplicates) {
+      if (filter.isSetDeadband) {
+        throw new Exception("Filter for point: '" + pointName + "' cannot allow duplicates and have deadband")
+      }
+      None
+    } else {
+
+      val name = pointName + ".filter"
+
+      val f = FilterProto.newBuilder
+
+      if (pointType == PointTypeProto.ANALOG || pointType == PointTypeProto.COUNTER) {
+
+        f.setType(FilterProto.FilterType.DEADBAND)
+        val v = if (filter.isSetDeadband) {
+          filter.getDeadband
+        } else {
+          0
+        }
+        f.setDeadbandValue(v)
+
+      } else {
+        f.setType(FilterProto.FilterType.DUPLICATES_ONLY)
+      }
+
+      val suppressAction = Action.newBuilder
+        .setActionName(name)
+        .setType(ActivationType.LOW)
+        .setSuppress(true)
+
+      Some(Trigger.newBuilder
+        .setTriggerName(name)
+        .addActions(suppressAction)
+        .setFilter(f)
+        .setPriority(DefaultPriorities.FILTER))
+    }
+
   }
 
   def toTrigger(pointName: String, enumTransform: Transform, unit: String): Trigger.Builder = {

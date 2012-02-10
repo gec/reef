@@ -52,75 +52,77 @@ import org.totalgrid.reef.models.{
 object AuthTokenService {
   import org.totalgrid.reef.models.{ Agent, AuthPermission, PermissionSet, PermissionSetJoin, AgentPermissionSetJoin }
 
-  def seed(systemPassword: String) {
+  def seedPermissionSet(context: RequestContext, entityModel: EntityServiceModel, name: String, defaultExpirationTime: Long) = {
+    val entity = entityModel.findOrCreate(context, name, "PermissionSet" :: Nil, None)
+    val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
+    permissionSet.entity.value = entity
+    permissionSet
+  }
 
-    inTransaction {
-      if (ApplicationSchema.agents.Count.head == 0) {
+  def seed(context: RequestContext, systemPassword: String) {
 
-        val system = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("system", systemPassword))
+    val entityModel = new EntityServiceModel
+    val agentModel = new AgentServiceModel
 
-        //val core = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("core", "core"))
-        //val op = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("operator", "operator"))
-        //val guest = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("guest", "guest"))
+    if (ApplicationSchema.agents.Count.head == 0) {
 
-        val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
-        val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
-        val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
+      val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", systemPassword))
 
-        val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
+      val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
+      val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
+      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
 
-        val timeout = 18144000000L // one month
+      val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
 
-        val read_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("read_only", timeout))
-        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
-        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
-        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
+      val timeout = 18144000000L // one month
 
-        val all_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("all", timeout))
-        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
+      val read_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "read_only", timeout))
+      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
+      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
+      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
 
-        //ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, core.id))
-        //ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, core.id))
-        //ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, op.id))
-        //ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, guest.id))
-        ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
+      val all_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "all", timeout))
+      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
 
-      }
+      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
+
     }
   }
 
-  def seedTesting() {
-    inTransaction {
-      if (ApplicationSchema.agents.Count.head == 0) {
+  def seedTesting(context: RequestContext) {
 
-        val system = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("system", "system"))
+    val entityModel = new EntityServiceModel
+    val agentModel = new AgentServiceModel
 
-        val core = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("core", "core"))
-        val op = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("operator", "operator"))
-        val guest = ApplicationSchema.agents.insert(Agent.createAgentWithPassword("guest", "guest"))
+    if (ApplicationSchema.agents.Count.head == 0) {
 
-        val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
-        val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
-        val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
+      val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", "system"))
 
-        val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
+      val core = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "core", "core"))
+      val op = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "operator", "operator"))
+      val guest = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "guest", "guest"))
 
-        val timeout = 18144000000L // one month
+      val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
+      val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
+      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
 
-        val read_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("read_only", timeout))
-        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
-        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
-        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
+      val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
 
-        val all_set = ApplicationSchema.permissionSets.insert(PermissionSet.newInstance("all", timeout))
-        ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
+      val timeout = 18144000000L // one month
 
-        ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, core.id))
-        ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, core.id))
-        ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, op.id))
-        ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, guest.id))
-        ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
-      }
+      val read_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "read_only", timeout))
+      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
+      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
+      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
+
+      val all_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "all", timeout))
+      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
+
+      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, core.id))
+      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, core.id))
+      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, op.id))
+      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, guest.id))
+      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
     }
   }
 }
@@ -165,7 +167,7 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
 }
 
 class AuthTokenServiceModel
-    extends SquerylServiceModel[AuthToken, AuthTokenModel]
+    extends SquerylServiceModel[Long, AuthToken, AuthTokenModel]
     with EventedServiceModel[AuthToken, AuthTokenModel]
     with AuthTokenConversions
     with ServiceModelSystemEventPublisher {

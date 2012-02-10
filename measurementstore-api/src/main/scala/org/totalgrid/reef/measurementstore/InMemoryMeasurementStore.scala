@@ -22,9 +22,11 @@ import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Mea
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.TreeMap
+import scala.collection.mutable
 
 class MeasStorage(var startingValue: Meas, currentValueOnly: Boolean) {
   var historicValues = TreeMap.empty[Long, ListBuffer[Meas]]
+  var lastWrittenValue = startingValue
 
   addMeas(startingValue)
 
@@ -34,11 +36,7 @@ class MeasStorage(var startingValue: Meas, currentValueOnly: Boolean) {
       case Some(l) => l += meas
       case None => historicValues += (meas.getTime -> ListBuffer(meas))
     }
-
-  }
-
-  def currentValue: Meas = {
-    historicValues.get(historicValues.lastKey).get.lastOption.get
+    lastWrittenValue = meas
   }
 
   def getInRange(begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
@@ -55,40 +53,47 @@ class MeasStorage(var startingValue: Meas, currentValueOnly: Boolean) {
 
 class InMemoryMeasurementStore(currentValueOnly: Boolean = false) extends MeasurementStore {
 
-  var values = Map.empty[String, MeasStorage]
+  var values = mutable.Map.empty[String, MeasStorage]
 
-  def get(names: Seq[String]): Map[String, Meas] = {
-    values.filterKeys(names.contains).map { x => x._1 -> x._2.currentValue }
+  def get(names: Seq[String]): Map[String, Meas] = this.synchronized {
+    values.filterKeys(names.contains).map { x => x._1 -> x._2.lastWrittenValue }.toMap
   }
   def set(meas: Seq[Meas]): Unit = {
-    meas.foreach(m => values.get(m.getName) match {
-      case Some(hist) => hist.addMeas(m)
-      case None => values = values + (m.getName -> new MeasStorage(m, currentValueOnly))
-    })
+    meas.foreach { m =>
+      val storage = this.synchronized {
+        values.get(m.getName) match {
+          case Some(hist) => Some(hist)
+          case None =>
+            values.put(m.getName, new MeasStorage(m, currentValueOnly))
+            None
+        }
+      }
+      storage.foreach { _.addMeas(m) }
+    }
   }
 
-  def getInRange(name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
+  def getInRange(name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = this.synchronized {
     checkHistorian
     values.get(name).map { _.getInRange(begin, end, max, ascending) }.getOrElse(Nil)
   }
 
-  def numValues(name: String): Int = {
+  def numValues(name: String): Int = this.synchronized {
     checkHistorian
     values.get(name).map { _.numValues }.getOrElse(0)
   }
 
-  def remove(names: Seq[String]): Unit = {
+  def remove(names: Seq[String]): Unit = this.synchronized {
     names.foreach { name =>
-      values -= name
+      values.remove(name)
     }
   }
 
-  def numPoints(): Int = {
+  def numPoints(): Int = this.synchronized {
     values.size
   }
 
-  def allCurrent(): Seq[Meas] = {
-    values.map { x => x._2.currentValue }.toList
+  def allCurrent(): Seq[Meas] = this.synchronized {
+    values.map { x => x._2.lastWrittenValue }.toList
   }
 
   def connect() = {}

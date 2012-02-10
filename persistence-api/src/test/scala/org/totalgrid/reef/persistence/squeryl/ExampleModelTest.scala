@@ -41,17 +41,14 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
 
   def getDbInfo: DbInfo
 
-  override def beforeAll() {
-    import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-    DbConnector.connect(getDbInfo)
-  }
+  lazy val db: DbConnection = DbConnector.connect(getDbInfo)
 
   override def beforeEach() {
-    transaction { FooSchema.reset }
+    db.transaction { FooSchema.reset }
   }
 
   test("FooSchema1") {
-    transaction {
+    db.transaction {
       FooSchema.foos.insert(new Foo("test"))
 
       val foos = FooSchema.foos.where(f => f.value === "test")
@@ -60,7 +57,7 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
   }
 
   test("FooSchema2") {
-    transaction {
+    db.transaction {
       val foo1 = FooSchema.foos.insert(new Foo("test"))
       val foo2 = FooSchema.foos.insert(new Foo("testa"))
 
@@ -72,7 +69,7 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
   // the following 3 tests prove the nested transaction bug with squeryl
   // https://github.com/max-l/Squeryl/issues#issue/79
   test("Excepting out of nested transaction") {
-    transaction {
+    db.transaction {
       FooSchema.reset
       val foo1 = FooSchema.foos.insert(new Foo("test"))
       FooSchema.foos.where(f => f.value === "test").size should equal(1)
@@ -86,7 +83,7 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
   }
 
   test("Returning out of nested transaction") {
-    transaction {
+    db.transaction {
       FooSchema.reset
       val foo1 = FooSchema.foos.insert(new Foo("test"))
       FooSchema.foos.where(f => f.value === "test").size should equal(1)
@@ -98,20 +95,20 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
   }
 
   test("Returning out of sibling transaction") {
-    transaction {
+    db.transaction {
       FooSchema.reset
       val foo1 = FooSchema.foos.insert(new Foo("test"))
       FooSchema.foos.where(f => f.value === "test").size should equal(1)
 
       doSomething(false)
     }
-    transaction {
+    db.transaction {
       FooSchema.foos.where(f => f.value === "test").size should equal(1)
     }
   }
 
   test("Empty list inhibition with iterable") {
-    transaction {
+    db.transaction {
       FooSchema.reset
       val foo1 = FooSchema.foos.insert(new Foo("test1"))
 
@@ -136,7 +133,7 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
   }
 
   test("Empty list inhibition inside join") {
-    transaction {
+    db.transaction {
       FooSchema.reset
       val foo1 = FooSchema.foos.insert(new Foo("test1", 100))
       val foo2 = FooSchema.foos.insert(new Foo("test1", 150))
@@ -171,7 +168,7 @@ abstract class ExampleModelTest extends FunSuite with ShouldMatchers with Before
   }
 
   def doSomething(except: Boolean): Int = {
-    transaction {
+    db.transaction {
       if (except) throw new Exception()
       return 1
     }

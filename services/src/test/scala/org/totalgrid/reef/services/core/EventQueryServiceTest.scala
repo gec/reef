@@ -35,7 +35,6 @@ import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
 
 import java.util.{ Calendar }
-import org.totalgrid.reef.services.core.SyncServiceShims._
 
 @RunWith(classOf[JUnitRunner])
 class EventQueryServiceTest extends DatabaseUsingTestBase {
@@ -72,7 +71,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
 
   override def beforeAll() {
     super.beforeAll()
-    transaction { seedEventTable }
+    dbConnection.transaction { seedEventTable }
   }
 
   def seedEventTable() {
@@ -120,15 +119,15 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
 
   import EventType._
 
+  val service = sync(new EventQueryService)
+
   test("FailPutEventList") {
-    val service = new EventQueryService
 
     val resp = service.put(makeEL(0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY))
     resp.status should equal(Envelope.Status.NOT_ALLOWED)
   }
 
   test("SimpleQueries") {
-    val service = new EventQueryService
 
     // Select EventType only.
     //
@@ -171,7 +170,6 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
   }
 
   test("QueriesWithSets") {
-    val service = new EventQueryService
 
     val empty = List[String]()
     val anyEventType = List[EventType]()
@@ -194,7 +192,6 @@ class EventQueryServiceTest extends DatabaseUsingTestBase {
   }
 
   test("QueriesWithTime") {
-    val service = new EventQueryService
 
     var resp = service.get(makeEL(0, 0, None, USER_ANY, ENTITY_ANY)).expectOne()
     resp.getEventsCount should equal(9)

@@ -40,14 +40,14 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransaction {
 
   override def beforeEach() {
-    ServiceBootstrap.resetDb
+    ServiceBootstrap.resetDb(dbConnection)
   }
 
   class Fixture(amqp: Connection) {
 
     val start = System.currentTimeMillis
 
-    val deps = new ServiceDependenciesDefaults(amqp, amqp)
+    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp)
     val headers = BasicRequestHeaders.empty.setUserName("user1")
 
     val contextSource = new MockRequestContextSource(deps, headers)

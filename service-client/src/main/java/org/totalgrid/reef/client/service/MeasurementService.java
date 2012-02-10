@@ -22,7 +22,9 @@ import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.Routable;
 import org.totalgrid.reef.client.SubscriptionCreator;
 import org.totalgrid.reef.client.SubscriptionResult;
+import org.totalgrid.reef.client.service.proto.Measurements;
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement;
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics;
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch;
 import org.totalgrid.reef.client.service.proto.Model.Point;
 
@@ -109,6 +111,32 @@ public interface MeasurementService extends SubscriptionCreator
     List<Measurement> getMeasurementHistory( Point point, long from, long to, boolean returnNewest, int limit ) throws ReefServiceException;
 
     /**
+     * Get a list of recent measurements for a point.
+     *
+     * @param limit  Max number of measurements returned
+     */
+    List<Measurement> getMeasurementHistoryByName( String pointName, int limit ) throws ReefServiceException;
+
+    /**
+     * Get a list of historical measurements that were recorded on or after the specified time.
+     *
+     * @param since  Return measurements on or after this date/time (in milliseconds).
+     * @param limit  max number of measurements returned
+     */
+    List<Measurement> getMeasurementHistoryByName( String pointName, long since, int limit ) throws ReefServiceException;
+
+    /**
+     * Get a list of historical measurements for the specified time span.
+     *
+     * @param from         Return measurements on or after this time (milliseconds)
+     * @param to           Return measurements on or before this time (milliseconds)
+     * @param returnNewest If there are more measurements than the specified limit, return the newest (true) or oldest (false).
+     * @param limit        Max number of measurements returned
+     */
+    List<Measurement> getMeasurementHistoryByName( String pointName, long from, long to, boolean returnNewest, int limit )
+        throws ReefServiceException;
+
+    /**
      * Get the most recent measurements for a point and subscribe to receive updates for
      * measurement changes.
      *
@@ -124,6 +152,24 @@ public interface MeasurementService extends SubscriptionCreator
      * @param limit  Max number of measurements returned
      */
     SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistory( Point point, long since, int limit )
+        throws ReefServiceException;
+
+    /**
+     * Get the most recent measurements for a point and subscribe to receive updates for
+     * measurement changes.
+     *
+     * @param limit  Max number of measurements returned
+     */
+    SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistoryByName( String pointName, int limit ) throws ReefServiceException;
+
+    /**
+     * Get the most recent measurements for a point and subscribe to receive updates for
+     * measurement changes.
+     *
+     * @param since  Return measurements on or after this time (milliseconds)
+     * @param limit  Max number of measurements returned
+     */
+    SubscriptionResult<List<Measurement>, Measurement> subscribeToMeasurementHistoryByName( String pointName, long since, int limit )
         throws ReefServiceException;
 
     /**
@@ -167,4 +213,16 @@ public interface MeasurementService extends SubscriptionCreator
      * @return a Boolean that will always be true (otherwise an exception has been thrown), included for api consistency only
      */
     Boolean publishMeasurements( MeasurementBatch batch, Routable destination ) throws ReefServiceException;
+
+    /**
+     * returns statistics on the point including oldest measurement, and total count
+     * @return measurement statistics proto
+     */
+    MeasurementStatistics getMeasurementStatisticsByPoint( Point point ) throws ReefServiceException;
+
+    /**
+     * returns statistics on the point including oldest measurement, and total count
+     * @return measurement statistics proto
+     */
+    MeasurementStatistics getMeasurementStatisticsByName( String pointName ) throws ReefServiceException;
 }

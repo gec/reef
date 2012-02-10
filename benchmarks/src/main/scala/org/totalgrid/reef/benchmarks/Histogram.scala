@@ -55,6 +55,14 @@ object Histogram {
 
   }
 
+  def getHistograms(resultsByFileName: Map[String, List[BenchmarkReading]]): List[Histogram] = {
+
+    resultsByFileName.map {
+      case (csvName, results) =>
+        getHistograms(results)
+    }.toList.flatten
+  }
+
   def getLong(obj: Any): Option[Long] = obj match {
     case n: Number => Some(n.longValue)
     case b: Boolean => Some(if (b) 1L else 0L)

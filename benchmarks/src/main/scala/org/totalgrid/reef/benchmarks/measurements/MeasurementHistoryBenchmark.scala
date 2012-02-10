@@ -20,7 +20,7 @@ package org.totalgrid.reef.benchmarks.measurements
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
-import org.totalgrid.reef.benchmarks.{ BenchmarkReading, BenchmarkTest }
+import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.util.Timing
 import collection.mutable.Queue
 import org.totalgrid.reef.client.service.proto.Model.Point
@@ -35,20 +35,21 @@ case class MeasurementHistoryReading(pointName: String, operation: String, time:
   def testOutputs = List(pointName, time)
 }
 
-class MeasurementHistoryBenchmark(points: List[Point], sizes: List[Int], getAll: Boolean) extends BenchmarkTest {
+class MeasurementHistoryBenchmark(pointNames: List[String], sizes: List[Int], getAll: Boolean) extends AllScadaServicesTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 
-    stream.foreach { _.println("Collecting historian stats for: " + points.size + " points using sizes: " + sizes) }
+    stream.foreach { _.println("Collecting historian stats for: " + pointNames.size + " points using sizes: " + sizes) }
 
     val readings = Queue.empty[BenchmarkReading]
 
-    points.foreach { p =>
-      stream.foreach { _.println("Getting historian readings for: " + p.getName) }
+    pointNames.foreach { pointName =>
+      stream.foreach { _.println("Getting historian readings for: " + pointName) }
       def time[A](name: String)(fun: => A): A = {
-        Timing.time { t => readings.enqueue(new MeasurementHistoryReading(p.getName, name, t)) } {
+        Timing.time { t => readings.enqueue(new MeasurementHistoryReading(pointName, name, t)) } {
           fun
         }
       }
+      val p = client.getPointByName(pointName).await
       sizes.foreach { size =>
         time("oldest" + size + "Meas") {
           client.getMeasurementHistory(p, 0, Long.MaxValue, false, size).await

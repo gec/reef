@@ -57,3 +57,5 @@ org.totalgrid.reef.shell.proto.AgentPermissionsCreateCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsDeleteCommand
 org.totalgrid.reef.shell.proto.AgentCreateCommand
 org.totalgrid.reef.shell.proto.AgentDeleteCommand
+
+org.apache.karaf.shell.commands.LogoutAction

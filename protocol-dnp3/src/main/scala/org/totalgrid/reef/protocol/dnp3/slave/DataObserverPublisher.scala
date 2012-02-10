@@ -32,7 +32,7 @@ class DataObserverPublisher(mappingProto: IndexMapping, dataObserver: IDataObser
   }.toMap
 
   def publishMeasurements(measurements: List[Measurement]) {
-    inTransaction {
+    dnp3Transaction {
       measurements.foreach { meas =>
         mapping.get(meas.getName) match {
           case Some(measMap) =>
@@ -55,7 +55,7 @@ class DataObserverPublisher(mappingProto: IndexMapping, dataObserver: IDataObser
     }
   }
 
-  private def inTransaction(func: => Unit) {
+  private def dnp3Transaction(func: => Unit) {
     val transaction = new Transaction
     transaction.Start(dataObserver)
     try {

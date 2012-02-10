@@ -46,28 +46,25 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
 
   def getDbInfo: DbInfo
 
-  override def beforeAll() {
-    import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-    DbConnector.connect(getDbInfo)
-  }
+  lazy val db: DbConnection = DbConnector.connect(getDbInfo)
 
   override def beforeEach() {
-    transaction { AccessSchema.reset }
+    db.transaction { AccessSchema.reset }
   }
 
   def testFun(id: Long, fun: AccessTable => Boolean) = (f: AccessTable => AccessTable) => {
-    exclusiveAccess(AccessSchema.acs, id, (a: AccessTable) => a, fun)(a => {
+    exclusiveAccess(db, AccessSchema.acs, id, (a: AccessTable) => a, fun)(a => {
       f(a)
     })
   }
   def testFunMulti(ids: List[Long], fun: AccessTable => Boolean) = (f: List[AccessTable] => List[AccessTable]) => {
-    exclusiveAccess(AccessSchema.acs, ids, (a: AccessTable) => a, fun)(a => {
+    exclusiveAccess(db, AccessSchema.acs, ids, (a: AccessTable) => a, fun)(a => {
       f(a)
     })
   }
 
   test("Precondition not met") {
-    val id = transaction {
+    val id = db.transaction {
       AccessSchema.acs.insert(new AccessTable(0)).id
     }
     val accessor = testFun(id, _.value == 1)
@@ -77,7 +74,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
     }
   }
   test("Precondition not met (multi)") {
-    transaction {
+    db.transaction {
       AccessSchema.acs.insert(new AccessTable(0)).id
       AccessSchema.acs.insert(new AccessTable(0)).id
       AccessSchema.acs.insert(new AccessTable(0)).id
@@ -90,7 +87,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
   }
 
   test("PostCondition not met") {
-    val id = transaction {
+    val id = db.transaction {
       AccessSchema.acs.insert(new AccessTable(1)).id
     }
     val accessor = testFun(id, _.value == 1)
@@ -110,7 +107,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
 
   test("PostCondition not met (multi)") {
 
-    val ids: List[Long] = transaction {
+    val ids: List[Long] = db.transaction {
       AccessSchema.acs.insert(new AccessTable(1)).id ::
         AccessSchema.acs.insert(new AccessTable(1)).id ::
         AccessSchema.acs.insert(new AccessTable(1)).id :: Nil
@@ -148,7 +145,7 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
   }
 
   test("Row is locked") {
-    val id = transaction {
+    val id = db.transaction {
       AccessSchema.acs.insert(new AccessTable(0)).id
     }
 
@@ -181,10 +178,10 @@ abstract class ExclusiveAccessTest extends FunSuite with ShouldMatchers with Bef
   }
 
   test("Other rows unlocked") {
-    val id1 = transaction {
+    val id1 = db.transaction {
       AccessSchema.acs.insert(new AccessTable(0)).id
     }
-    val id2 = transaction {
+    val id2 = db.transaction {
       AccessSchema.acs.insert(new AccessTable(0)).id
     }
 

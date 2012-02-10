@@ -20,7 +20,7 @@ package org.totalgrid.reef.app
 
 import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.broker.BrokerConnection
+import org.totalgrid.reef.broker.{ BrokerConnectionFactory, BrokerConnection }
 import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.util.Lifecycle
 import org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
@@ -31,13 +31,15 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
  * handles the connection to an amqp broker, passing the valid and created Connection to the
  * applicationCreator function
  */
-class ConnectionCloseManagerEx(amqpSettings: AmqpSettings, exe: Executor)
+class ConnectionCloseManagerEx(broker: BrokerConnectionFactory, exe: Executor)
     extends ConnectionWatcher
+    with ConnectionProvider
     with Lifecycle
     with Logging {
 
-  private val fac = new QpidBrokerConnectionFactory(amqpSettings)
-  private val factory = new DefaultReconnectingFactory(fac, exe, 1000, 10000)
+  def this(amqpSettings: AmqpSettings, exe: Executor) = this(new QpidBrokerConnectionFactory(amqpSettings), exe)
+
+  private val factory = new DefaultReconnectingFactory(broker, exe, 1000, 10000)
   factory.addConnectionWatcher(this)
 
   private var connection = Option.empty[BrokerConnection]
@@ -69,7 +71,7 @@ class ConnectionCloseManagerEx(amqpSettings: AmqpSettings, exe: Executor)
     connection = None
     cancelDelays()
     if (!expected) {
-      logger.warn("Connection to broker " + amqpSettings + " lost.")
+      logger.warn("Connection to broker " + broker + " lost.")
       consumers.keys.foreach { doBrokerConnectionLost(_) }
     }
   }

@@ -27,7 +27,6 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.services.core.SyncServiceShims._
 
 class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
   var begin: Long = -1
@@ -67,15 +66,15 @@ class MeasurementHistoryServiceTest extends DatabaseUsingTestBase {
   test("History Service defaults are sensible") {
     val points = Map("meas1" -> List(getMeas("meas1", 0, 1), getMeas("meas1", 1, 1)))
     val historian = new FakeHistorian(points)
-    val service = new MeasurementHistoryService(historian)
+    val service = sync(new MeasurementHistoryService(historian))
 
     val getMeas1 = service.get(MeasurementHistory.newBuilder.setPointName("meas1").build).expectOne()
     getMeas1.getMeasurementsCount() should equal(2)
 
-    validateHistorian(historian, 0, Long.MaxValue, service.HISTORY_LIMIT, false)
+    validateHistorian(historian, 0, Long.MaxValue, 10000, false)
 
     service.get(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build).expectOne()
-    validateHistorian(historian, 10, 1000, service.HISTORY_LIMIT, false)
+    validateHistorian(historian, 10, 1000, 10000, false)
 
     service.get(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build).expectOne()
     validateHistorian(historian, 0, Long.MaxValue, 99, false)

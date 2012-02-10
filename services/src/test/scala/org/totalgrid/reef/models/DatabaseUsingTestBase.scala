@@ -22,11 +22,27 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FunSuite }
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
 import org.totalgrid.reef.services.ServiceBootstrap
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.services.core.{ SyncService, ServiceDependenciesDefaults, MockRequestContextSource }
+import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
 
 abstract class DatabaseUsingTestBaseNoTransaction extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
+  lazy val dbConnection = DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
   override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
-    ServiceBootstrap.resetDb
+    ServiceBootstrap.resetDb(dbConnection)
+  }
+
+  // TODO: move defaultContextSource and ServiceDependenciesDefaults to trait the tests can include
+  def getRequestContextSource() = {
+    val headers = BasicRequestHeaders.empty.setUserName("user")
+    new MockRequestContextSource(new ServiceDependenciesDefaults(dbConnection), headers)
+  }
+  lazy val defaultContextSource = getRequestContextSource()
+  def sync[A <: AnyRef](service: ServiceEntryPoint[A]): SyncService[A] = {
+    sync(service, defaultContextSource)
+  }
+  def sync[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource): SyncService[A] = {
+    new SyncService(service, contextSource)
   }
 }
 

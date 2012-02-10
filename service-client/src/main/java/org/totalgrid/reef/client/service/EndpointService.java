@@ -106,6 +106,14 @@ public interface EndpointService
     EndpointConnection getEndpointConnectionByUuid( ReefUUID endpointUuid ) throws ReefServiceException;
 
     /**
+     * Get current endpoint connection state for an endpoint
+     *
+     * @param endpointName name of endpoint
+     * @return the connection object representing the current connection state
+     */
+    EndpointConnection getEndpointConnectionByEndpointName( String endpointName ) throws ReefServiceException;
+
+    /**
      * Protocol Adapters will update the endpoint connection state to indicate when the endpoint
      * changes communication state.
      * @param connectionId  string id for the endpoint connection

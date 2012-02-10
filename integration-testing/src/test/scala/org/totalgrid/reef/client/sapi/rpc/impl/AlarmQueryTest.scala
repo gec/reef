@@ -18,63 +18,20 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.client.exception.ReefServiceException
 
-import org.totalgrid.reef.client.sapi.rpc.impl.builders.AlarmListRequestBuilders
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 @RunWith(classOf[JUnitRunner])
-class AlarmQueryTest
-    extends ClientSessionSuite("AlarmQuery.xml", "Alarm Query",
-      <div>
-        <p>
-          Use<span class="proto">AlarmList</span>
-          to query alarms. The same proto
-        is returned by the query and will contain the selected Alarms.
-        </p>
-        <p>
-          The<span class="proto">AlarmList</span>
-          request must contain an
-          <span class="proto">AlarmSelect</span>
-          which may specify a list of alarm states and an<span class="proto">EventSelect</span>
-          .
-        </p>
-        <p>
-          The<span class="proto">AlarmSelect</span>
-          proto may specify a list of alarm states and an<span class="proto">EventSelect</span>
-          .
-          The<span class="proto">EventSelect</span>
-          contains several fields
-        that specify what alarms should be selected by the query. Each field is
-        'AND'ed with every other field.
-        </p>
-        <p>See<a href="https://github.com/gec/reef/blob/master/schema/proto/Alarms.proto">Alarms.proto</a></p>
-      </div>)
-    with ShouldMatchers {
+class AlarmQueryTest extends ServiceClientSuite {
 
-  test("Get all alarms (limit 2)") {
-    val desc = "Get all alarms by specifying a wildcard AlarmSelect (except a limit of 2 records returned)."
+  test("Get alarms") {
+    val alarm = client.getActiveAlarms(1).await.head
 
-    recorder.addExplanation("Get all alarms", desc)
-    session.get(AlarmListRequestBuilders.getAll(2)).await.expectOne
-  }
-
-  test("Get all unacknowledged alarms") {
-    val desc = "Get unacknowledged alarms (limit 2). Need to specify the two unacknowledged states."
-
-    recorder.addExplanation("Get unacknowledged alarms", desc)
-    session.get(AlarmListRequestBuilders.getUnacknowledged(2)).await.expectOne
-  }
-
-  test("Get alarms with multiple selects") {
-
-    val desc = "Get unacknowledged alarms with type 'Scada.OutOfNominal' (limit 2)"
-
-    recorder.addExplanation("Get alarms with multiple selects", desc)
-    session.get(AlarmListRequestBuilders.getUnacknowledgedWithType("Scada.OutOfNominal", 2)).await.expectOne
+    // TODO: fix AlarmService.getAlarmById to use ReefId
+    client.getAlarmById(alarm.getId.getValue).await
   }
 
   test("Test alarm failure") {

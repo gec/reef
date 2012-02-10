@@ -53,6 +53,7 @@ abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperati
   override def ops = currentOpsMode
 
   def startBatchRequests() {
+    // TODO: add clearBatchRequests and checking that batched operations have been flushed
     flushableOps = Some(new BatchServiceRestOperations(client))
     currentOpsMode = new DefaultAnnotatedOperations(flushableOps.get, client)
   }
@@ -64,6 +65,12 @@ abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperati
     flushableOps match {
       case None => throw new BadRequestException("No batch requests configured")
       case Some(op) => op.flush()
+    }
+  }
+  def batchedFlushBatchRequests(size: Int) = {
+    flushableOps match {
+      case None => throw new BadRequestException("No batch requests configured")
+      case Some(op) => op.batchedFlush(size)
     }
   }
 

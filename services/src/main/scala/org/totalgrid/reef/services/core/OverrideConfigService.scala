@@ -42,11 +42,22 @@ class OverrideConfigService(protected val model: OverrideConfigServiceModel)
 }
 
 class OverrideConfigServiceModel
-    extends SquerylServiceModel[MeasOverride, OverrideConfig]
+    extends SquerylServiceModel[Long, MeasOverride, OverrideConfig]
     with EventedServiceModel[MeasOverride, OverrideConfig]
     with SimpleModelEntryCreation[MeasOverride, OverrideConfig]
     with OverrideConfigConversion
     with ServiceModelSystemEventPublisher {
+
+  def createModelEntry(context: RequestContext, rawProto: MeasOverride): OverrideConfig = {
+    val point = PointTiedModel.lookupPoint(rawProto.getPoint)
+    val proto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)).build
+    val over = new OverrideConfig(
+      point.id,
+      proto.toByteString.toByteArray)
+    over.point.value = point
+    over.proto.value = proto
+    over
+  }
 
   override protected def preCreate(context: RequestContext, entry: OverrideConfig): OverrideConfig = {
     if (entry.isOperatorBlockRequest)
@@ -98,16 +109,5 @@ trait OverrideConfigConversion
 
   def convertToProto(sql: OverrideConfig): MeasOverride = {
     sql.proto.value
-  }
-
-  def createModelEntry(rawProto: MeasOverride): OverrideConfig = {
-    val point = PointTiedModel.lookupPoint(rawProto.getPoint)
-    val proto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)).build
-    val over = new OverrideConfig(
-      point.id,
-      proto.toByteString.toByteArray)
-    over.point.value = point
-    over.proto.value = proto
-    over
   }
 }

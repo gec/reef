@@ -19,33 +19,33 @@
 package org.totalgrid.reef.services.framework
 
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Table
 import com.google.protobuf.GeneratedMessage
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.{ EntityBasedModel, ModelWithUUID, ModelWithId }
 import org.totalgrid.reef.client.service.proto.Model.ReefID
+import org.squeryl.{ KeyedEntity, Table }
+import org.totalgrid.reef.models.{ ModelWithIdBase, EntityBasedModel, ModelWithUUID, ModelWithId }
 
 /**
  * Supertype for Proto/Squeryl models
  */
-trait SquerylServiceModel[ServiceType <: GeneratedMessage, SqlType <: ModelWithId]
+trait SquerylServiceModel[SqlKeyType, ServiceType <: GeneratedMessage, SqlType <: ModelWithIdBase[SqlKeyType]]
     extends ServiceModel[ServiceType, SqlType]
-    with BasicSquerylModel[SqlType] { self: ModelObserver[SqlType] =>
+    with BasicSquerylModel[SqlKeyType, SqlType] { self: ModelObserver[SqlType] =>
 }
 
 /**
  * Interface for Squeryl-typed CRUD operations
  */
-trait SquerylModel[SqlType <: ModelWithId] extends ModelCrud[SqlType]
+trait SquerylModel[SqlKeyType, SqlType <: ModelWithIdBase[SqlKeyType]] extends ModelCrud[SqlType]
 
 /**
  * Implementation of CRUD (with lifecycle hooks) for Squeryl backend. Concrete classes
  * must provide Squeryl table reference as well as an implementation of ModelObserver
  */
-trait BasicSquerylModel[SqlType <: ModelWithId]
-    extends SquerylModel[SqlType]
+trait BasicSquerylModel[SqlKeyType, SqlType <: ModelWithIdBase[SqlKeyType]]
+    extends SquerylModel[SqlKeyType, SqlType]
     with ModelHooks[SqlType] with Logging { self: ModelObserver[SqlType] =>
 
   /**
@@ -115,8 +115,8 @@ trait BasicSquerylModel[SqlType <: ModelWithId]
     val ids = existing.map(_.id)
 
     // Select for update
-    val objList = table.where(c => c.id in ids).forUpdate.toList
-    val list = table.where(c => c.id in ids).toList
+    val objList = table.where(c => c.getIn(ids)).forUpdate.toList
+    val list = table.where(c => c.getIn(ids)).toList
 
     // Fail if we have nothing
     if (objList.size < ids.size) throw new ObjectMissingException("Cannot find objects with ids: " + ids)

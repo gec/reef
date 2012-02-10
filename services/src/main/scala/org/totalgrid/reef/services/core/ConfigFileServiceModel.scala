@@ -41,9 +41,12 @@ class ConfigFileService(protected val model: ConfigFileServiceModel)
 }
 
 class ConfigFileServiceModel
-    extends SquerylServiceModel[ConfigProto, ConfigFile]
+    extends SquerylServiceModel[Long, ConfigProto, ConfigFile]
     with EventedServiceModel[ConfigProto, ConfigFile]
     with ConfigFileConversion {
+
+  val entityModel = new EntityServiceModel
+  val edgeModel = new EntityEdgeServiceModel
 
   val table = ApplicationSchema.configFiles
 
@@ -52,7 +55,7 @@ class ConfigFileServiceModel
       logger.debug("addOwningEntity(): configFileProto: " + configFileProto + ", entity: " + entity)
 
       // add the entity to the config file protos so if we need to create it the ownership is set
-      val configFile: ConfigProto = configFileProto.toBuilder.clearEntities.addEntities(EntityQueryManager.entityToProto(entity)).build
+      val configFile: ConfigProto = configFileProto.toBuilder.clearEntities.addEntities(EntityQuery.entityToProto(entity)).build
 
       findRecord(context, configFile) match {
         case Some(found) => updateUsingEntities(context, configFile, found, found.owners.value)
@@ -79,7 +82,7 @@ class ConfigFileServiceModel
     }
 
     // make the entity entry for the config file
-    val entity = EntityQueryManager.findOrCreateEntity(name, "ConfigurationFile" :: Nil, uuid)
+    val entity = entityModel.findOrCreate(context, name, "ConfigurationFile" :: Nil, uuid)
 
     val sql = create(context, createModelEntry(configFileProto, entity))
     updateUsingEntities(context, configFileProto, sql, Nil) // add entity edges
@@ -99,13 +102,13 @@ class ConfigFileServiceModel
   }
 
   override def postDelete(context: RequestContext, sql: ConfigFile) {
-    EntityQueryManager.deleteEntity(sql.entity.value)
+    entityModel.delete(context, sql.entity.value)
   }
 
   private def updateUsingEntities(context: RequestContext, configFileProto: ConfigProto, sql: ConfigFile, existingEntities: List[Entity]) {
 
     val updatedEntities = configFileProto.getEntitiesList.toList.map { e =>
-      EntityQueryManager.findEntity(e).getOrElse(
+      EntityQuery.findEntity(e).getOrElse(
         throw new BadRequestException("Cant find entity: " + e))
     }
     val newEntitites = updatedEntities.diff(existingEntities)
@@ -117,7 +120,7 @@ class ConfigFileServiceModel
   }
 
   private def addUserEntity(context: RequestContext, configFile: Entity, user: Entity): Unit = {
-    EntityQueryManager.addEdge(user, configFile, "uses")
+    edgeModel.addEdge(context, user, configFile, "uses")
   }
 }
 
@@ -132,8 +135,8 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
 
     // when searching we go through all the entities in the proto constucting the intersection of the used config files
-    val entities = EntityQueryManager.findEntities { proto.getEntitiesList.toList }
-    val configEntityIds = entities.map { e => EntityQueryManager.getChildrenOfType(e.id, "uses", "ConfigurationFile").map { _.id } }.flatten
+    val entities = proto.getEntitiesList.toList.map { EntityQuery.findEntity(_) }.flatten
+    val configEntityIds = entities.map { e => EntityQuery.getChildrenOfType(e.id, "uses", "ConfigurationFile").map { _.id } }.flatten
     // if we have specified entities only return matching config files they own (which will be zero if configEntityIds.size == 0)
     val query = if (entities.isEmpty) Nil else Some(sql.entityId in configEntityIds) :: Nil
 
@@ -169,7 +172,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
       .setMimeType(entry.mimeType)
       .setFile(entry.file)
 
-    entry.owners.value.sortBy(_.name).foreach(e => configProtoBuilder.addEntities(EntityQueryManager.entityToProto(e)))
+    entry.owners.value.sortBy(_.name).foreach(e => configProtoBuilder.addEntities(EntityQuery.entityToProto(e)))
 
     configProtoBuilder.build
   }

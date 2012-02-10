@@ -20,14 +20,14 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.client.proto.Envelope.Verb
 import net.agileautomata.executor4s.Future
 import org.totalgrid.reef.client.sapi.client.{ Response, RequestSpy }
 import org.totalgrid.reef.client.service.entity.EntityRelation
 
 @RunWith(classOf[JUnitRunner])
-class RequestSpyTest extends ClientSessionSuite("RequestSpy.xml", "RequestSpy", <div/>) {
+class RequestSpyTest extends ServiceClientSuite {
 
   class CountingRequestSpy extends RequestSpy {
     var count = 0

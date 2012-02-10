@@ -24,16 +24,17 @@ import org.squeryl.PrimitiveTypeMode._
 
 import org.totalgrid.reef.client.service.proto.Model.{ Command => CommandProto }
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest, CommandLock }
-import CommandLock._
+import org.totalgrid.reef.client.service.proto.Commands.CommandLock._
 
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 @RunWith(classOf[JUnitRunner])
 class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
 
-  class TestRig extends CommandTestRig {
+  class TestRig(dbConnection: DbConnection) extends CommandTestRig(dbConnection) {
 
     val cid = seed("cmd01").id
     def cmd = ApplicationSchema.commands.where(c => c.id === cid).single
@@ -53,15 +54,16 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
 
   private def cmdReq = CommandRequest.newBuilder.setCommand(CommandProto.newBuilder.setName("cmd01")).build
 
-  val env = BasicRequestHeaders.empty.setUserName("user01")
-  val context = new HeadersRequestContext(env)
+  val userName = "user"
+
+  val context = defaultContextSource.getContext
 
   private def insert(r: TestRig, time: Long) = {
-    r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", "user01", CommandStatus.EXECUTING.getNumber, time, cmdReq.toByteString.toByteArray, None))
+    r.userRequests.table.insert(new UserCommandModel(r.cmd.id, "", userName, CommandStatus.EXECUTING.getNumber, time, cmdReq.toByteString.toByteArray, None))
   }
 
   def markCompleted(status: CommandStatus) {
-    val r = new TestRig
+    val r = new TestRig(dbConnection)
 
     val inserted = insert(r, 5000 + System.currentTimeMillis)
 
@@ -71,7 +73,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     entries.length should equal(1)
     val entry = entries.head
     entry.commandId should equal(r.cmd.id)
-    entry.agent should equal("user01")
+    entry.agent should equal(userName)
     entry.status should equal(status.getNumber)
   }
 
@@ -83,7 +85,7 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
   }
 
   test("Mark expired") {
-    val r = new TestRig
+    val r = new TestRig(dbConnection)
 
     val inserted = insert(r, System.currentTimeMillis - 5000)
 
@@ -93,40 +95,40 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
     entries.length should equal(1)
     val entry = entries.head
     entry.commandId should equal(r.cmd.id)
-    entry.agent should equal("user01")
+    entry.agent should equal(userName)
     entry.status should equal(CommandStatus.TIMEOUT.getNumber)
   }
 
   def failScenario(mode: AccessMode, time: Long, user: String) {
-    val r = new TestRig
+    val r = new TestRig(dbConnection)
     r.scenario(mode, time, user)
 
     intercept[ReefServiceException] {
-      r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
+      r.userRequests.issueCommand(context, "cmd01", "", userName, 5000, cmdReq)
     }
   }
 
   test("Request") {
-    val r = new TestRig
+    val r = new TestRig(dbConnection)
     val time = System.currentTimeMillis + 40000
-    r.scenario(AccessMode.ALLOWED, time, "user01")
+    r.scenario(AccessMode.ALLOWED, time, userName)
 
-    r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
+    r.userRequests.issueCommand(context, "cmd01", "", userName, 5000, cmdReq)
 
     val entries = ApplicationSchema.userRequests.where(t => true === true).toList
     entries.length should equal(1)
     val entry = entries.head
     entry.commandId should equal(r.cmd.id)
-    entry.agent should equal("user01")
+    entry.agent should equal(userName)
     entry.status should equal(CommandStatus.EXECUTING.getNumber)
   }
 
   test("Fail, blocked") {
-    failScenario(AccessMode.BLOCKED, System.currentTimeMillis + 40000, "user01")
+    failScenario(AccessMode.BLOCKED, System.currentTimeMillis + 40000, userName)
   }
 
   test("Fail, expired") {
-    failScenario(AccessMode.ALLOWED, System.currentTimeMillis - 40000, "user01")
+    failScenario(AccessMode.ALLOWED, System.currentTimeMillis - 40000, userName)
   }
 
   test("Fail, wrong user") {
@@ -134,9 +136,9 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
   }
 
   test("Cannot delete command with outstanding select") {
-    val r = new TestRig
+    val r = new TestRig(dbConnection)
     val time = System.currentTimeMillis + 40000
-    val select = r.scenario(AccessMode.ALLOWED, time, "user01")
+    val select = r.scenario(AccessMode.ALLOWED, time, userName)
 
     intercept[BadRequestException] {
       r.commands.delete(context, r.cmd)
@@ -148,24 +150,24 @@ class UserCommandRequestServiceModelTest extends DatabaseUsingTestBase with RunT
   }
 
   test("Can delete command with expired select") {
-    val r = new TestRig
+    val r = new TestRig(dbConnection)
     val time = System.currentTimeMillis - 40000
-    val select = r.scenario(AccessMode.ALLOWED, time, "user01")
+    val select = r.scenario(AccessMode.ALLOWED, time, userName)
 
     r.commands.delete(context, r.cmd)
   }
 
   test("Deleting command removes history and select") {
-    val r = new TestRig
+    val r = new TestRig(dbConnection)
     val now = System.currentTimeMillis
 
-    val select1 = r.scenario(AccessMode.ALLOWED, now - 40000, "user01")
-    val select2 = r.scenario(AccessMode.ALLOWED, now - 20000, "user01")
-    val select3 = r.scenario(AccessMode.ALLOWED, now + 40000, "user01")
+    val select1 = r.scenario(AccessMode.ALLOWED, now - 40000, userName)
+    val select2 = r.scenario(AccessMode.ALLOWED, now - 20000, userName)
+    val select3 = r.scenario(AccessMode.ALLOWED, now + 40000, userName)
 
-    r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
-    r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
-    r.userRequests.issueCommand(context, "cmd01", "", "user01", 5000, cmdReq)
+    r.userRequests.issueCommand(context, "cmd01", "", userName, 5000, cmdReq)
+    r.userRequests.issueCommand(context, "cmd01", "", userName, 5000, cmdReq)
+    r.userRequests.issueCommand(context, "cmd01", "", userName, 5000, cmdReq)
     r.accesses.removeAccess(context, select3)
 
     val requests = ApplicationSchema.userRequests.where(t => true === true).toList

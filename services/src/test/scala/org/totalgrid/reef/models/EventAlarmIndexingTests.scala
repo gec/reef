@@ -28,22 +28,16 @@ import org.scalatest.junit.JUnitRunner
 import org.squeryl.PrimitiveTypeMode._
 import scala.collection.mutable.ListBuffer
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
-import org.totalgrid.reef.services.core.AlarmQueryService
 import org.totalgrid.reef.client.service.proto.Alarms._
 import org.totalgrid.reef.client.service.proto.Events._
+import org.totalgrid.reef.services.core.{ SyncService, AlarmQueryService }
 
 @RunWith(classOf[JUnitRunner])
-class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
-
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
-    ServiceBootstrap.resetDb
-  }
+class EventAlarmIndexingTests extends DatabaseUsingTestBaseNoTransaction {
 
   test("Seed events") {
 
-    val entCount = transaction {
+    val entCount = dbConnection.transaction {
       from(ApplicationSchema.entities)(e =>
         compute(count())).toInt
     }
@@ -58,14 +52,14 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
         i = i + 1
       }
 
-      transaction {
+      dbConnection.transaction {
         ApplicationSchema.entities.insert(ents.toList)
         val entIds = from(ApplicationSchema.entities)(e => select(e.id)).toList
         ApplicationSchema.entityTypes.insert(entIds.map(new EntityToTypeJoins(_, "type01")))
       }
     }
 
-    val cnt = transaction {
+    val cnt = dbConnection.transaction {
       from(ApplicationSchema.events)(e =>
         compute(count())).toInt
     }
@@ -83,7 +77,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
       var sub: Long = 0
       var time: Long = 0
 
-      val entities = transaction {
+      val entities = dbConnection.transaction {
         from(ApplicationSchema.entities)((e) => select(e)).toList
       }
 
@@ -93,7 +87,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
       while (j < chunks) {
         val l = new ListBuffer[EventStore]
 
-        transaction {
+        dbConnection.transaction {
           var i = 0
           while (i < chunkSize) {
             val typName = "type" + (typ % typeCount)
@@ -119,7 +113,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
       }
     }
 
-    val cntAlarm = transaction {
+    val cntAlarm = dbConnection.transaction {
       from(ApplicationSchema.alarms)(e =>
         compute(count())).toInt
     }
@@ -131,7 +125,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
       var j = 0
       while (j < chunks) {
 
-        transaction {
+        dbConnection.transaction {
 
           val events = from(ApplicationSchema.events)((e) =>
             select(e)).page(j, chunkSize).toList
@@ -155,7 +149,7 @@ class EventAlarmIndexingTests extends FunSuite with ShouldMatchers with BeforeAn
     val alarms = ApplicationSchema.alarms
     val events = ApplicationSchema.events
 
-    val alarmQueryService = new AlarmQueryService
+    val alarmQueryService = sync(new AlarmQueryService)
 
     val query = AlarmList.newBuilder.setSelect(
       AlarmSelect.newBuilder.setEventSelect(

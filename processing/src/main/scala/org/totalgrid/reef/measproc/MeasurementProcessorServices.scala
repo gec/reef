@@ -21,7 +21,6 @@ package org.totalgrid.reef.measproc
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
 
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
@@ -32,9 +31,13 @@ import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.client.{ SubscriptionResult, AddressableDestination }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
+import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig): Promise[SubscriptionResult[List[MeasurementProcessingConnection], MeasurementProcessingConnection]]
+
+  def subscribeToEndpointConnection(endpointUuid: ReefUUID): Promise[SubscriptionResult[List[EndpointConnection], EndpointConnection]]
 
   def subscribeToTriggerSetsForConnection(conn: MeasurementProcessingConnection): Promise[SubscriptionResult[List[TriggerSet], TriggerSet]]
 
@@ -53,6 +56,12 @@ class MeasurementProcessorServicesImpl(client: Client)
   override def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig) = {
     ops.subscription(Descriptors.measurementProcessingConnection, "Couldn't subscribe for endpoints assigned to: " + measProc.getInstanceName) { (sub, client) =>
       client.get(MeasurementProcessingConnection.newBuilder.setMeasProc(measProc).build, sub).map { _.many }
+    }
+  }
+
+  override def subscribeToEndpointConnection(endpointUuid: ReefUUID) = {
+    ops.subscription(Descriptors.endpointConnection, "Couldn't subscribe to endpoint connection for endpoint: " + endpointUuid) { (sub, client) =>
+      client.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build, sub).map(_.many)
     }
   }
 

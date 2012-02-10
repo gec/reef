@@ -9,6 +9,41 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.3
+==============
+
+### Major Features:
+
+* Added measurement stream filtering to deadband out changes and remove duplicates
+* Added reef-http-bridge feature, started javascript bindings
+* Added Measurement Statistics service to report count and oldest measurement
+* Entities and EntityEdges are now are correctly evented (and subscribable)
+
+### Service/API Updates:
+
+* Added getMeasurementHistoryByName overloads
+* Deprecated PointService.getPointsOwnedByEntity(Entity) in favor of passing in ReefUUID, will be removed in 0.5.x
+
+### Bug Fixes:
+
+* Entity types are sorted by string now (order was undefined but usually insertion order before)
+* Current Measurement value requests are returned in order they are requested (order was undefined)
+* Database connection pools size is now configurable
+* Measurement processor and services use separate database connection pools
+* Various fixes to memory broker and in-memory-measurement-store to better simulate production implementations
+
+### Reef Internals:
+
+* BatchServiceRequests now have a batchedFlush command to send
+* Dependencies bundle publishes all packages with correct version numbers
+* Factored version numbers into parent pom file
+* Implemented StandaloneNode for use in standalone tests
+* Removed "recorded proto documentation" from integration tests
+
+### Upstream project versions
+
+* Squeryl : 0.9.5-RC1 - Back on mainline project and used manual session management
+
 Version 0.4.2
 ==============
 

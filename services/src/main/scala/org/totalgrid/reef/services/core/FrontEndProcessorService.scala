@@ -44,7 +44,7 @@ class FrontEndProcessorService(protected val model: FrontEndProcessorServiceMode
 
 class FrontEndProcessorServiceModel(
   coordinator: MeasurementStreamCoordinator)
-    extends SquerylServiceModel[FrontEndProcessor, ApplicationInstance]
+    extends SquerylServiceModel[Long, FrontEndProcessor, ApplicationInstance]
     with EventedServiceModel[FrontEndProcessor, ApplicationInstance]
     with FrontEndProcessorConversion {
 

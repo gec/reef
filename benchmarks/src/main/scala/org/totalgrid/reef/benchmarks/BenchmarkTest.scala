@@ -18,8 +18,9 @@
  */
 package org.totalgrid.reef.benchmarks
 
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Each concrete benchmark test will implement this interface. The classes will be constructed
@@ -27,6 +28,16 @@ import java.io.PrintStream
  * and will leave the system in a good state if at all possible.
  */
 trait BenchmarkTest {
+  def runTest(client: Client, stream: Option[PrintStream]): List[BenchmarkReading]
+}
+
+/**
+ * benchmarks that use AllScadaServices can use this base trait to avoid getRpcInterface calls
+ */
+trait AllScadaServicesTest extends BenchmarkTest {
+  def runTest(client: Client, stream: Option[PrintStream]) = {
+    runTest(client.getRpcInterface(classOf[AllScadaService]), stream)
+  }
   def runTest(client: AllScadaService, stream: Option[PrintStream]): List[BenchmarkReading]
 }
 

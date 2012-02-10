@@ -20,7 +20,6 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
-import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementBatch, MeasurementHistory, MeasurementSnapshot, Measurement }
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.Routable
@@ -28,11 +27,12 @@ import org.totalgrid.reef.client.Routable
 import org.totalgrid.reef.client.exception.ExpectationException
 
 import org.totalgrid.reef.client.sapi.client.rest.RestOperations
-import org.totalgrid.reef.client.sapi.client.{ Subscription, BasicRequestHeaders }
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s.{ Failure, Success, Future, Result }
+import org.totalgrid.reef.client.sapi.client.{ Promise, Subscription, BasicRequestHeaders }
+import org.totalgrid.reef.client.service.proto.Measurements._
 
 trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementService {
 
@@ -91,32 +91,74 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
   }
 
   override def getMeasurementHistory(point: Point, limit: Int) = {
-    ops.operation("Couldn't get measurement history for point: " + point + " limit: " + limit) {
-      measHistoryList(_, MeasurementHistoryRequestBuilders.getByPoint(point, limit))
+    ops.operation("Couldn't get measurement history for point: " + point.getName + " limit: " + limit) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByName(point.getName, limit))
     }
   }
 
   override def getMeasurementHistory(point: Point, since: Long, limit: Int) = {
-    ops.operation("Couldn't get measurement history for point: " + point + " since: " + since + " limit: " + limit) {
-      measHistoryList(_, MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit))
+    ops.operation("Couldn't get measurement history for point: " + point.getName + " since: " + since + " limit: " + limit) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByNameSince(point.getName, since, limit))
     }
   }
 
   override def getMeasurementHistory(point: Point, since: Long, before: Long, returnNewest: Boolean, limit: Int) = {
-    ops.operation("Couldn't get measurement history for point: " + point + " between: " + since + " and: " + before + " limit: " + limit + " returnNewest: " + returnNewest) {
-      measHistoryList(_, MeasurementHistoryRequestBuilders.getByPointBetween(point, since, before, returnNewest, limit))
+    ops.operation("Couldn't get measurement history for point: " + point.getName + " between: " + since + " and: " + before + " limit: " + limit + " returnNewest: " + returnNewest) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByNameBetween(point.getName, since, before, returnNewest, limit))
+    }
+  }
+
+  override def getMeasurementHistoryByName(pointName: String, limit: Int) = {
+    ops.operation("Couldn't get measurement history for point: " + pointName + " limit: " + limit) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByName(pointName, limit))
+    }
+  }
+
+  override def getMeasurementHistoryByName(pointName: String, since: Long, limit: Int) = {
+    ops.operation("Couldn't get measurement history for point: " + pointName + " since: " + since + " limit: " + limit) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByNameSince(pointName, since, limit))
+    }
+  }
+
+  override def getMeasurementHistoryByName(pointName: String, since: Long, before: Long, returnNewest: Boolean, limit: Int) = {
+    ops.operation("Couldn't get measurement history for point: " + pointName + " between: " + since + " and: " + before + " limit: " + limit + " returnNewest: " + returnNewest) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByNameBetween(pointName, since, before, returnNewest, limit))
     }
   }
 
   override def subscribeToMeasurementHistory(point: Point, limit: Int) = {
-    ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + point + " limit: " + limit) { (sub, client) =>
-      measHistoryList(client, MeasurementHistoryRequestBuilders.getByPoint(point, limit), sub)
+    ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + point.getName + " limit: " + limit) { (sub, client) =>
+      measHistoryList(client, MeasurementHistoryRequestBuilders.getByName(point.getName, limit), sub)
+    }
+  }
+
+  override def subscribeToMeasurementHistoryByName(pointName: String, limit: Int) = {
+    ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + pointName + " limit: " + limit) { (sub, client) =>
+      measHistoryList(client, MeasurementHistoryRequestBuilders.getByName(pointName, limit), sub)
     }
   }
 
   override def subscribeToMeasurementHistory(point: Point, since: Long, limit: Int) = {
-    ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + point + " since: " + since + " limit: " + limit) { (sub, client) =>
-      measHistoryList(client, MeasurementHistoryRequestBuilders.getByPointSince(point, since, limit), sub)
+    ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + point.getName + " since: " + since + " limit: " + limit) { (sub, client) =>
+      measHistoryList(client, MeasurementHistoryRequestBuilders.getByNameSince(point.getName, since, limit), sub)
+    }
+  }
+
+  override def subscribeToMeasurementHistoryByName(pointName: String, since: Long, limit: Int) = {
+    ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + pointName + " since: " + since + " limit: " + limit) { (sub, client) =>
+      measHistoryList(client, MeasurementHistoryRequestBuilders.getByNameSince(pointName, since, limit), sub)
+    }
+  }
+
+  def getMeasurementStatisticsByPoint(point: Point): Promise[MeasurementStatistics] = {
+    ops.operation("Couldn't get measurement statistics for point: " + point) { c =>
+      c.get(MeasurementStatistics.newBuilder.setPoint(point).build).map(_.one)
+    }
+  }
+
+  def getMeasurementStatisticsByName(name: String): Promise[MeasurementStatistics] = {
+    ops.operation("Couldn't get measurement statistics for point name: " + name) { c =>
+      c.get(MeasurementStatistics.newBuilder.setPoint(Point.newBuilder.setName(name)).build).map(_.one)
     }
   }
 
@@ -143,5 +185,6 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
   private def measHistoryList(session: RestOperations, request: MeasurementHistory, sub: Subscription[Measurement]) = {
     session.get(request, sub).map(_.one.map(_.getMeasurementsList.toList))
   }
+
 }
 

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.2</version>
+        <version>0.4.3</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -32,10 +32,6 @@
 		<profiles>
 		<profile>
 			<id>no_integration_testing</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
 			<build>
 				<plugins>
 					<plugin>
@@ -53,96 +49,20 @@
 
 		<profile>
 			<id>test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 			<build>
 				<plugins>
 					<plugin>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<includes>
-								<include>**/ModelSetup*.java</include>
-							</includes>
-						</configuration>
 						<executions>
 							<execution>
 								<id>test</id>
 							</execution>
 						</executions>
 					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<version>2.10</version>
-						<configuration>
-							<includes>
-								<include>**/*.java</include>
-							</includes>
-							<excludes>
-								<exclude>**/ModelSetup*.java</exclude>
-							</excludes>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>test</phase>
-								<goals>
-									<goal>integration-test</goal>
-                                    <goal>verify</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-site-plugin</artifactId>
-						<version>2.2</version>
-						<configuration>
-							<siteDirectory>target/site-dir</siteDirectory>
-							<!-- Future updates with collapsible sections.
-<templateDirectory>src/site</templateDirectory>
-<template>site.vm</template>
--->
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>xml-maven-plugin</artifactId>
-                        <version>1.0</version>
-						<executions>
-							<execution>
-								<phase>prepare-package</phase>
-								<goals>
-									<goal>transform</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<transformationSets>
-								<transformationSet>
-									<dir>target/docxml</dir>
-									<stylesheet>serviceToXDoc.xsl</stylesheet>
-									<outputDir>target/site-dir/xdoc</outputDir>
-								</transformationSet>
-							</transformationSets>
-						</configuration>
-					</plugin>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>prepare-package</phase>
-								<configuration>
-									<tasks>
-										<copy todir="target/site-dir">
-											<fileset dir="src/site" includes="**"/>
-										</copy>
-									</tasks>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
+                </plugins>
 			</build>
 		</profile>
 	</profiles>
@@ -166,6 +86,12 @@
             <artifactId>reef-benchmarks</artifactId>
             <version>${reef.version}</version>
 			<scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-standalone-node</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

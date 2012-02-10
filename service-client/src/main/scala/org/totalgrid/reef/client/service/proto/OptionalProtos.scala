@@ -331,6 +331,12 @@ object OptionalProtos {
     val sampling = optionally(_.hasSampling, _.getSampling)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptMeasurementsMeasurement(Some(i)) })
   }
+  implicit def proto2OptMeasurementsMeasurementStatistics(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics): OptMeasurementsMeasurementStatistics = new OptMeasurementsMeasurementStatistics(Some(a))
+  class OptMeasurementsMeasurementStatistics(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics]) extends OptionalStruct(real) {
+    val point = new OptModelPoint(optionally(_.hasPoint, _.getPoint))
+    val count = optionally(_.hasCount, _.getCount)
+    val oldestTime = optionally(_.hasOldestTime, _.getOldestTime)
+  }
   implicit def proto2OptModelReefUUID(a: org.totalgrid.reef.client.service.proto.Model.ReefUUID): OptModelReefUUID = new OptModelReefUUID(Some(a))
   class OptModelReefUUID(real: Option[org.totalgrid.reef.client.service.proto.Model.ReefUUID]) extends OptionalStruct(real) {
     val value = optionally(_.getValue)
@@ -409,6 +415,7 @@ object OptionalProtos {
     val actionName = optionally(_.getActionName)
     val _type = optionally(_.hasType, _.getType)
     val disabled = optionally(_.hasDisabled, _.getDisabled)
+    val suppress = optionally(_.hasSuppress, _.getSuppress)
     val linearTransform = new OptLinearTransform(optionally(_.hasLinearTransform, _.getLinearTransform))
     val qualityAnnotation = new OptMeasurementsQuality(optionally(_.hasQualityAnnotation, _.getQualityAnnotation))
     val stripValue = optionally(_.hasStripValue, _.getStripValue)
@@ -441,6 +448,7 @@ object OptionalProtos {
     val boolValue = optionally(_.hasBoolValue, _.getBoolValue)
     val stringValue = optionally(_.hasStringValue, _.getStringValue)
     val intValue = optionally(_.hasIntValue, _.getIntValue)
+    val filter = new OptFilter(optionally(_.hasFilter, _.getFilter))
   }
   implicit def proto2OptTriggerSet(a: TriggerSet): OptTriggerSet = new OptTriggerSet(Some(a))
   class OptTriggerSet(real: Option[TriggerSet]) extends OptionalStruct(real) {
@@ -467,6 +475,11 @@ object OptionalProtos {
   class OptIntToString(real: Option[IntToString]) extends OptionalStruct(real) {
     val value = optionally(_.getValue)
     val string = optionally(_.getString)
+  }
+  implicit def proto2OptFilter(a: Filter): OptFilter = new OptFilter(Some(a))
+  class OptFilter(real: Option[Filter]) extends OptionalStruct(real) {
+    val _type = optionally(_.hasType, _.getType)
+    val deadbandValue = optionally(_.hasDeadbandValue, _.getDeadbandValue)
   }
   implicit def proto2OptMeasurementProcessingRouting(a: MeasurementProcessingRouting): OptMeasurementProcessingRouting = new OptMeasurementProcessingRouting(Some(a))
   class OptMeasurementProcessingRouting(real: Option[MeasurementProcessingRouting]) extends OptionalStruct(real) {

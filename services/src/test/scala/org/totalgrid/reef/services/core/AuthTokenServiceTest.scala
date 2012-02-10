@@ -31,26 +31,33 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
-import org.totalgrid.reef.services.core.SyncServiceShims._
 import org.totalgrid.reef.services.authz.SqlAuthzService
-import org.totalgrid.reef.services.NullRequestContext
 import org.totalgrid.reef.services.framework.AuthorizesEverything
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
+import org.totalgrid.reef.services.{ SilentRequestContext, NullRequestContext }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   override def beforeAll() {
     super.beforeAll()
-    AuthTokenService.seedTesting()
   }
 
-  class Fixture {
-    val modelFac = new ModelFactories(new ServiceDependenciesDefaults())
-    val authService = new AuthTokenService(modelFac.authTokens)
+  override def beforeEachInTransaction() = {
+    AuthTokenService.seedTesting(new SilentRequestContext)
+  }
 
-    val agentService = new AgentService(modelFac.agents)
-    val permissionSetService = new PermissionSetService(modelFac.permissionSets)
+  class Fixture extends SubscriptionTools.SubscriptionTesting {
+    def _dbConnection = dbConnection
+
+    import SubscriptionTools._
+
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
+
+    val authService = new SyncService(new AuthTokenService(modelFac.authTokens), contextSource)
+
+    val agentService = new SyncService(new AgentService(modelFac.agents), contextSource)
+    val permissionSetService = new SyncService(new PermissionSetService(modelFac.permissionSets), contextSource)
 
     def loginFrom(user: String, location: String) = {
       login(user, user, None, None, location)

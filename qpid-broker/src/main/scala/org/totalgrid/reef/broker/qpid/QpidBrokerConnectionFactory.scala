@@ -85,4 +85,5 @@ class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnection
     }
   }
 
+  override def toString() = config.toString()
 }

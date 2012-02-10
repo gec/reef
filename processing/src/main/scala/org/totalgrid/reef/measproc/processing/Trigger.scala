@@ -47,18 +47,27 @@ object Trigger extends Logging {
    * @param triggers    Triggers associated with the measurement point.
    * @return            Result of trigger/action processing.
    */
-  def processAll(m: Measurement, cache: ObjectCache[Boolean], triggers: List[Trigger]): Measurement = {
-    triggers.foldLeft(m) { (meas, trigger) =>
+  def processAll(m: Measurement, cache: ObjectCache[Boolean], triggers: List[Trigger]): Option[Measurement] = {
+    val r = triggers.foldLeft(m) { (meas, trigger) =>
       // Evaluate trigger
       logger.debug("Applying trigger: " + trigger + " to meas: " + meas)
-      val (result, stopProcessing) = trigger.process(meas, cache)
+
+      trigger.process(meas, cache) match {
+        case None => return None
+        case Some((result, true)) => return Some(result)
+        case Some((result, false)) => result
+      }
+
+      /*val (result, stopProcessing) = trigger.process(meas, cache)
 
       // Either continue folding or return immediately if the trigger requires us to stop processing
       logger.debug("Result: " + result + ", stop: " + stopProcessing)
       if (stopProcessing) return result
-      else result
+      else result*/
     }
+    Some(r)
   }
+
 }
 
 /**
@@ -72,7 +81,7 @@ trait Trigger {
    * @param cache     Previous trigger state cache.
    * @return          Measurement result, flag to stop further processing.
    */
-  def process(m: Measurement, cache: ObjectCache[Boolean]): (Measurement, Boolean)
+  def process(m: Measurement, cache: ObjectCache[Boolean]): Option[(Measurement, Boolean)]
 }
 
 /**
@@ -87,7 +96,7 @@ class BasicTrigger(
   stopProcessing: Option[Action.ActivationType])
     extends Trigger with Logging {
 
-  def process(m: Measurement, cache: ObjectCache[Boolean]): (Measurement, Boolean) = {
+  def process(m: Measurement, cache: ObjectCache[Boolean]): Option[(Measurement, Boolean)] = {
 
     // Get the previous state of this trigger
     val prev = cache.get(cacheID) getOrElse false
@@ -102,12 +111,27 @@ class BasicTrigger(
 
     // Allow actions to determine if they should evaluate, roll up a result measurement
     //info("Trigger state: " + state)
-    val res = actions.foldLeft(m) { (meas, action) => action.process(meas, state, prev) }
 
-    // Check stop processing flag (default to continue processing)
-    val stopProc = stopProcessing.map(_(state, prev)) getOrElse false
+    def evalActions(meas: Measurement, a: List[Action]): Option[Measurement] = a match {
+      case Nil => Some(meas)
+      case head :: tail => {
+        head.process(meas, state, prev).flatMap(next => evalActions(next, tail))
+      }
+    }
 
-    (res, stopProc)
+    evalActions(m, actions).map { result =>
+      // Check stop processing flag (default to continue processing)
+      val stopProc = stopProcessing.map(_(state, prev)) getOrElse false
+      (result, stopProc)
+    }
+    /*evalActions(m, actions) match {
+      case None => (m, true)
+      case Some(result) => {
+        // Check stop processing flag (default to continue processing)
+        val stopProc = stopProcessing.map(_(state, prev)) getOrElse false
+        (result, stopProc)
+      }
+    }*/
   }
 
   override def toString = cacheID + " (" + actions.mkString(", ") + ")"

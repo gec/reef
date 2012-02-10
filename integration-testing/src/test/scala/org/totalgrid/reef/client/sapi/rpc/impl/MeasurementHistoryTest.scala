@@ -27,18 +27,11 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.SubscriptionEvent
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ClientSessionSuite }
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{ SubscriptionEventAcceptorShim, ServiceClientSuite }
 import net.agileautomata.commons.testing.SynchronizedList
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementHistoryTest
-    extends ClientSessionSuite("MeasurementHistory.xml", "MeasurementHistory",
-      <div>
-        <p>
-          The MeasurementHistory service provides the historical state of measurements.
-        </p>
-      </div>)
-    with ShouldMatchers {
+class MeasurementHistoryTest extends ServiceClientSuite {
 
   test("Get History") {
     val point = PointRequestBuilders.getByName("StaticSubstation.Line02.Current")
@@ -52,22 +45,22 @@ class MeasurementHistoryTest
     val startValue = original.getDoubleVal
     val history = for (i <- 1 to 10) yield original.toBuilder.setDoubleVal(startValue + i).setTime(now + i).build
 
-    recorder.addExplanation("Create Short History", "Create a 10 point fake history, 1 measurement per millisecond")
+    // "Create a 10 point fake history, 1 measurement per millisecond"
     client.publishMeasurements(history.toList).await
 
-    recorder.addExplanation("Get last 3 points of history", "Get the most recent 3 measurements")
+    // "Get the most recent 3 measurements"
     val last3 = client.getMeasurementHistory(point, 3).await
     last3.map { _.getDoubleVal } should equal(List(startValue + 8, startValue + 9, startValue + 10))
 
     val list = new SynchronizedList[Double]
 
-    recorder.addExplanation("Get measurements since time", "Should be only two measurements since we limited since to the last 2 fake entries we made.")
+    // "Should be only two measurements since we limited since to the last 2 fake entries we made."
     val last2 = client.subscribeToMeasurementHistory(point, now + 9, 100).await
     last2.getResult.map { _.getDoubleVal } should equal(List(startValue + 9, startValue + 10))
 
     last2.getSubscription.start(new SubscriptionEventAcceptorShim[Measurement]({ ea: SubscriptionEvent[Measurement] => list.append(ea.getValue.getDoubleVal) }))
 
-    recorder.addExplanation("Get measurements in range", "We can ask for a specific time range of measurements, this implies not getting live data.")
+    // "Get measurements in range", "We can ask for a specific time range of measurements, this implies not getting live data.")
     val middle = client.getMeasurementHistory(point, now + 3, now + 5, true, 100).await
     middle.map { _.getDoubleVal } should equal(List(startValue + 3, startValue + 4, startValue + 5))
 
@@ -88,10 +81,9 @@ class MeasurementHistoryTest
 
   test("Bad Requests") {
 
-    val point = PointRequestBuilders.getByName("StaticSubstation.Line02.Current")
+    val point = client.getPoints().await.head
 
     intercept[BadRequestException] {
-      recorder.addExplanation("Bad Request: Over Limit", "Try to request a billion measurements.")
       client.getMeasurementHistory(point, 1000000000).await
     }
   }

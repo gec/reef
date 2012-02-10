@@ -28,4 +28,8 @@ trait BrokerConnectionFactory {
   @throws(classOf[ReefServiceException])
   def connect: BrokerConnection
 
+  /**
+   * factories should identify themselves (where they are connecting to) if toString is called
+   */
+  override def toString(): String
 }

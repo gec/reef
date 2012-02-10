@@ -82,4 +82,8 @@ trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
     _.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build).map(_.one)
   }
 
+  override def getEndpointConnectionByEndpointName(endpointName: String) = ops.operation("Couldn't get endpoint connection uuid: " + endpointName) {
+    _.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setName(endpointName)).build).map(_.one)
+  }
+
 }

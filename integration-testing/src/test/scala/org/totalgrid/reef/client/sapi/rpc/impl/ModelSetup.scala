@@ -23,15 +23,16 @@ import org.totalgrid.reef.loader.LoadManager
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
-import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderClient, ModelDeleter }
+import org.totalgrid.reef.loader.commons.{ LoaderServices, ModelDeleter }
 import org.totalgrid.reef.util.Timing
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{ EndpointConnectionStateMap, ServiceClientSuite }
 
 @RunWith(classOf[JUnitRunner])
-class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></div>) {
+class ModelSetup extends ServiceClientSuite {
 
   test("Delete model") {
-    LoaderClient.prepareClient(session)
 
     val loaderServices = session.getRpcInterface(classOf[LoaderServices])
     loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
@@ -40,8 +41,6 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
   }
 
   test("Load mainstreet model") {
-
-    LoaderClient.prepareClient(session)
 
     val loaderServices = session.getRpcInterface(classOf[LoaderServices])
 
@@ -52,7 +51,6 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
   }
 
   test("Delete mainstreet model") {
-    LoaderClient.prepareClient(session)
 
     val loaderServices = session.getRpcInterface(classOf[LoaderServices])
     loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
@@ -61,8 +59,6 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
   }
 
   test("Load integration model") {
-
-    LoaderClient.prepareClient(session)
 
     val loaderServices = session.getRpcInterface(classOf[LoaderServices])
 
@@ -77,5 +73,13 @@ class ModelSetup extends ClientSessionSuite("Setup.xml", "Model Setup", <div></d
     Timing.time("25 entry batch") {
       LoadManager.loadFile(loaderServices, fileName, false, false, false, 25)
     }
+  }
+
+  test("Wait for Endpoints online") {
+    val result = client.subscribeToEndpointConnections().await
+
+    val map = new EndpointConnectionStateMap(result)
+
+    map.checkAllState(true, EndpointConnection.State.COMMS_UP)
   }
 }

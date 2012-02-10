@@ -30,10 +30,13 @@ trait BatchOperations {
 
   def startBatchRequests()
   def stopBatchRequests()
-  def flushBatchRequests(): Future[Response[BatchServiceRequest]]
+  def flushBatchRequests(): Promise[BatchServiceRequest]
+  def batchedFlushBatchRequests(batchSize: Int): Promise[Boolean]
 }
 
 object BatchOperations {
+
+  // TODO: replace BatchOperations.batchOperations with batchedFlushBatchRequests()
   def batchOperations[A <: BatchOperations](client: A, uploadActions: scala.List[A => Promise[_]], batchSize: Int) {
 
     try {
@@ -43,13 +46,13 @@ object BatchOperations {
         i = i + 1
         if (batchSize > 0) {
           action(client)
-          if (i % batchSize == 0) client.flushBatchRequests().await.expectOne
+          if (i % batchSize == 0) client.flushBatchRequests().await
         } else {
           action(client).await
         }
       }
       if (batchSize > 0) {
-        client.flushBatchRequests().await.expectOne
+        client.flushBatchRequests().await
       }
     } finally {
       if (batchSize > 0) client.stopBatchRequests()

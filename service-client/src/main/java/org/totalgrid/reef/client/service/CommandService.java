@@ -252,6 +252,11 @@ public interface CommandService
 
     /**
      * Get a list of all command locks in system
+     * Represents the "access table" for the system. Access entries have one or two
+     * modes, "allowed" and "blocked". Commands cannot be issued unless they have an
+     * "allowed" entry. This "selects" the command for operation by a single user, for
+     * as long as access is held. "Block" allows selects to be disallowed for commands;
+     * meaning no users can access/issue the commands.
      * @throws ReefServiceException if an error occurs
      */
     List<CommandLock> getCommandLocks() throws ReefServiceException;

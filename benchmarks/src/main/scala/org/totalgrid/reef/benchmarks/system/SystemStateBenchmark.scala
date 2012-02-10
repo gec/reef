@@ -18,11 +18,13 @@
  */
 package org.totalgrid.reef.benchmarks.system
 
-import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
+import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
 import collection.mutable.Queue
 import org.totalgrid.reef.util.Timing
+
+import scala.collection.JavaConversions._
 
 case class SystemStat(statName: String, value: Long) extends BenchmarkReading {
   def csvName = "systemStats"
@@ -46,7 +48,7 @@ case class SystemTimingStat(request: String, time: Long) extends BenchmarkReadin
   def testOutputs = List(time)
 }
 
-class SystemStateBenchmark(runs: Int) extends BenchmarkTest {
+class SystemStateBenchmark(runs: Int) extends AllScadaServicesTest {
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 
     val readings = Queue.empty[BenchmarkReading]
@@ -90,7 +92,7 @@ class SystemStateBenchmark(runs: Int) extends BenchmarkTest {
       time("allPermissionSets") { client.getPermissionSets().await }
       val applications = time("allApplications") { client.getApplications().await }
 
-      applications.groupBy { _.getCapabilites(0) }.foreach {
+      applications.groupBy { _.getCapabilitesList.toList.headOption.getOrElse("none") }.foreach {
         case (capability, apps) =>
           readings.enqueue(new SystemStat("appsCapability" + capability, apps.size))
           readings.enqueue(new SystemStat("appsCapability", apps.size))

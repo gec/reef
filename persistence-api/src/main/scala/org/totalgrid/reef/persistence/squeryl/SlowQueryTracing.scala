@@ -36,7 +36,7 @@ trait SlowQueryTracing extends DatabaseAdapter with Logging {
     }
   }
 
-  override def exec[A](s: Session, sw: StatementWriter)(block: => A): A = {
+  override def exec[A](s: Session, sw: StatementWriter)(block: Iterable[AnyRef] => A): A = {
     val timingFun = monitorSlowQueries(slowQueryTimeMilli, sw) _
     Timing.time[A](timingFun) {
       super.exec[A](s, sw)(block)

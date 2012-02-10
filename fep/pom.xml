@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.2</version>
+        <version>0.4.3</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-fep</artifactId>
@@ -22,7 +22,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>${mavenBundleVersion}</version>
+                <version>${maven-bundle.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
-            <version>${felixCoreVersion}</version>
+            <version>${felix-core.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

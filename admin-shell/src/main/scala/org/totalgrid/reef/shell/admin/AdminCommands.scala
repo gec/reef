@@ -56,15 +56,15 @@ class ResetDatabaseCommand extends ReefCommandSupport {
 
     val bundleContext = getBundleContext()
 
-    DbConnector.connect(sql, bundleContext)
+    val dbConnection = DbConnector.connect(sql, bundleContext)
 
     val mstore = MeasurementStoreFinder.getInstance(bundleContext)
 
     mstore.connect()
 
     try {
-      ServiceBootstrap.resetDb()
-      ServiceBootstrap.seed(systemPassword)
+      ServiceBootstrap.resetDb(dbConnection)
+      ServiceBootstrap.seed(dbConnection, systemPassword)
       println("Cleared and updated jvm database")
 
       if (mstore.reset) {

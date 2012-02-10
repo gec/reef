@@ -33,12 +33,13 @@ import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 /**
  * gets other modules used by the services so can implemented via OSGI or directly
  */
 trait ServiceModulesFactory {
-  def getDbConnector(): Unit
+  def getDbConnector(): DbConnection
 
   def getMeasStore(): MeasurementStore
 
@@ -53,9 +54,9 @@ object ServiceFactory {
         val connection = new DefaultConnection(brokerConnection, exe, 5000)
         connection.addServicesList(new ReefServices)
 
-        modules.getDbConnector()
+        val dbConnection = modules.getDbConnector()
 
-        val (appConfig, authToken) = ServiceBootstrap.bootstrapComponents(connection, userSettings, nodeSettings)
+        val (appConfig, authToken) = ServiceBootstrap.bootstrapComponents(dbConnection, connection, userSettings, nodeSettings)
 
         val metricsHolder = MetricsSink.getInstance(appConfig.getInstanceName)
 
@@ -66,7 +67,7 @@ object ServiceFactory {
 
         val client = connection.login(authToken).getRpcInterface(classOf[AllScadaService])
         val heartbeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg, exe)
-        val providers = new ServiceProviders(connection, measStore, serviceOptions, SqlAuthzService, metricsHolder, authToken)
+        val providers = new ServiceProviders(dbConnection, connection, measStore, serviceOptions, SqlAuthzService, metricsHolder, authToken)
 
         val serviceContext = new ServiceContext(connection, exe)
 

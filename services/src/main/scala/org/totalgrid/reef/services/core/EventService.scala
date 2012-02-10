@@ -66,7 +66,7 @@ class EventService(protected val model: EventServiceModel)
 // The business model for managing incoming events and deciding whether they are Alarms, Events, or Logs.
 // This will use the ConfigService to determine what is an Alarm, Event, or Log.
 class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel: AlarmServiceModel)
-    extends SquerylServiceModel[Event, EventStore]
+    extends SquerylServiceModel[Long, Event, EventStore]
     with EventedServiceModel[Event, EventStore]
     with EventConversion {
 
@@ -131,7 +131,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
     val renderedMessage = renderEventMessage(request, resource)
 
     // if the raw event had the entity filled out try to find that entity
-    val entity = request.entity.map(EntityQueryManager.findEntity(_)).getOrElse(None)
+    val entity = request.entity.map(EntityQuery.findEntity(_)).getOrElse(None)
 
     val (eventStore, alarmOption) = makeEvent(context, designation, request, severity, entity, renderedMessage, userId, alarmState)
     eventStore
@@ -196,7 +196,7 @@ trait EventConversion
   def makeSubscribeKeys(req: Event): List[String] = {
 
     // just get top level entities from query, skip subscribe on descendents
-    val entities = req.entity.map { EntityQueryManager.protoTreeQuery(_).map { _.ent } }.getOrElse(Nil)
+    val entities = req.entity.map { EntityQuery.protoTreeQuery(_).map { _.ent } }.getOrElse(Nil)
 
     val keys = if (entities.size > 0) entities.map(getRoutingKey(req, _))
     else getRoutingKey(req) :: Nil
@@ -207,7 +207,7 @@ trait EventConversion
   // Derive a SQL expression from the proto. Used by GET. 
   def searchQuery(proto: Event, sql: EventStore) = {
     proto.eventType.asParam(sql.eventType === _) :: proto.severity.asParam(sql.severity === _) :: proto.subsystem.asParam(sql.subsystem === _) ::
-      proto.userId.asParam(sql.userId === _) :: proto.entity.map(ent => sql.entityId in EntityQueryManager.idsFromProtoQuery(ent)) :: Nil
+      proto.userId.asParam(sql.userId === _) :: proto.entity.map(ent => sql.entityId in EntityQuery.idsFromProtoQuery(ent)) :: Nil
   }
 
   def uniqueQuery(proto: Event, sql: EventStore) = {
@@ -260,7 +260,7 @@ trait EventConversion
 
     entry.deviceTime.foreach(b.setDeviceTime(_))
     entry.entity.value // force it to try to load the related entity for now
-    entry.entity.asOption.foreach(_.foreach(x => b.setEntity(EntityQueryManager.entityToProto(x).build)))
+    entry.entity.asOption.foreach(_.foreach(x => b.setEntity(EntityQuery.entityToProto(x).build)))
     if (entry.args.length > 0) {
       b.setArgs(AttributeListProto.parseFrom(entry.args))
     }

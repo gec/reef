@@ -48,7 +48,7 @@ public class ReefConnectionFactory implements ConnectionFactory
     public ReefConnectionFactory( AmqpSettings settings, ServicesList list )
     {
         brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
-        exe = Executors.newResizingThreadPool( new Minutes( 1 ) );
+        exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
         servicesList = list;
     }
 

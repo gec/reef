@@ -20,18 +20,22 @@ package org.totalgrid.reef.measurementstore.squeryl
 
 import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 import org.squeryl.PrimitiveTypeMode._
+import scala.collection.mutable
 
 /**
  * operations on the SqlMeasurementStoreSchema that implement the MeasurementStore interface. All operations
  * assume they are being run from inside a database transaction.
  */
 trait SqlMeasurementStoreOperations {
-  private def makeUpdate(m: Meas, pNameMap: Map[String, Long]): Measurement = {
-    new Measurement(pNameMap.get(m.getName).get, m.getTime, m.toByteString.toByteArray)
+
+  case class MeasId(var pointId: Long, meas: Meas)
+
+  private def makeUpdate(m: Meas, pNameMap: mutable.Map[String, MeasId]): Measurement = {
+    new Measurement(pNameMap.get(m.getName).get.pointId, m.getTime, m.toByteString.toByteArray)
   }
 
-  private def makeCurrentValue(m: Meas, pNameMap: Map[String, Long]): CurrentValue = {
-    new CurrentValue(pNameMap.get(m.getName).get, m.toByteString.toByteArray)
+  private def makeCurrentValue(measId: MeasId): CurrentValue = {
+    new CurrentValue(measId.pointId, measId.meas.toByteString.toByteArray)
   }
 
   def reset(): Boolean = {
@@ -63,35 +67,38 @@ trait SqlMeasurementStoreOperations {
 
   def set(meas: Seq[Meas], includeHistory: Boolean) {
     // setup list of all the points we are trying to find ids for
-    var insertedMeas: Map[String, Long] = meas.map { _.getName -> (-1: Long) }.toMap
+    val measToInsert = mutable.Map.empty[String, MeasId]
+    meas.foreach { m => measToInsert.put(m.getName, MeasId(-1, m)) }
 
     // ask db for points it has, update the map with those ids
-    val pNames = SqlMeasurementStoreSchema.names.where(n => n.name in insertedMeas.keys).toList
-    pNames.foreach { p => insertedMeas = insertedMeas - p.name + (p.name -> p.id) }
+    val pNames = SqlMeasurementStoreSchema.names.where(n => n.name in measToInsert.keys).toList
+    pNames.foreach { p => measToInsert.get(p.name).get.pointId = p.id }
 
-    // make a list of all of the new Points we need to add to the database
-    val newNames = insertedMeas.foldLeft(Nil: List[Option[MeasName]]) { (list, entry) =>
-      (if (entry._2 != -1) None else Some(new MeasName(entry._1))) :: list
-    }.flatten
+    val (newMeas, updates) = measToInsert.partition(e => e._2.pointId == -1)
 
-    if (newNames.nonEmpty) {
+    if (newMeas.nonEmpty) {
       // if we have new measNames to add do so, then read them back out to get the ids
-      SqlMeasurementStoreSchema.names.insert(newNames)
-      val addedNames = SqlMeasurementStoreSchema.names.where(n => n.name in newNames.map { _.name }).toList
-      addedNames.foreach { p => insertedMeas = insertedMeas - p.name + (p.name -> p.id) }
+      SqlMeasurementStoreSchema.names.insert(newMeas.keys.map { new MeasName(_) })
+      val addedNames = SqlMeasurementStoreSchema.names.where(n => n.name in newMeas.keys).toList
+      addedNames.foreach { p => measToInsert.get(p.name).get.pointId = p.id }
 
-      val addedCurrentValues = addedNames.map { p => new CurrentValue(p.id, new Array[Byte](0)) }
+      val addedCurrentValues = newMeas.map { case (name, measId) => makeCurrentValue(measId) }.toList
       SqlMeasurementStoreSchema.currentValues.insert(addedCurrentValues)
     }
 
     if (includeHistory) {
       // create the list of measurements to upload
-      val toInsert = meas.map { makeUpdate(_, insertedMeas) }.toList
+      val toInsert = meas.map { makeUpdate(_, measToInsert) }.toList
       SqlMeasurementStoreSchema.updates.insert(toInsert)
     }
 
-    val toUpdate = meas.map { makeCurrentValue(_, insertedMeas) }.toList
-    SqlMeasurementStoreSchema.currentValues.update(toUpdate)
+    // something odd occurs with parellel writes and we get batch update exceptions
+    // when inserting and updating in the same transaction so we manually update and insert
+    // if inserting any new values. Should go away when we implement "add" for measusment store and
+    // eliminate the "lazy" adding we are doing now.
+    // TODO: refactor MeasurementStore to not allow "lazy adding of measurements"
+    val toUpdate = updates.map { case (name, measId) => makeCurrentValue(measId) }.toList
+    SqlMeasurementStoreSchema.currentValues.forceUpdate(toUpdate)
   }
 
   def get(names: Seq[String]): Map[String, Meas] = {
@@ -102,7 +109,7 @@ trait SqlMeasurementStoreOperations {
 
     val ids = insertedMeas.keys.toList
     val cvs = from(SqlMeasurementStoreSchema.currentValues)(cv =>
-      where(cv.id in ids) select (cv.id, cv.proto))
+      where(cv.pointId in ids) select (cv.pointId, cv.proto))
     cvs.foreach { case (pid, proto) => m = m + (insertedMeas.get(pid).get -> Meas.parseFrom(proto)) }
 
     m

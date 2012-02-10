@@ -256,6 +256,12 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory]
     def id = "measurement_history"
   }
+  def measurementStatistics() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics]
+    def id = "measurement_statistics"
+  }
   def reefUUID() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Model.ReefUUID] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.Model.ReefUUID): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Model.ReefUUID.parseFrom(bytes)
@@ -375,6 +381,12 @@ object Descriptors {
     def deserialize(bytes: Array[Byte]) = IntToString.parseFrom(bytes)
     def getKlass = classOf[IntToString]
     def id = "int_to_string"
+  }
+  def filter() = new TypeDescriptor[Filter] {
+    def serialize(typ: Filter): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = Filter.parseFrom(bytes)
+    def getKlass = classOf[Filter]
+    def id = "filter"
   }
   def measurementProcessingRouting() = new TypeDescriptor[MeasurementProcessingRouting] {
     def serialize(typ: MeasurementProcessingRouting): Array[Byte] = typ.toByteArray

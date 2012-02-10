@@ -38,25 +38,26 @@ object ExclusiveAccess {
   class InvalidUpdateException(msg: String) extends ExclusiveAccessException(msg)
 
   def exclusiveAccess[A <: KeyedEntity[Long]](
+    dbConnection: DbConnection,
     table: Table[A],
     id: Long,
     updateFun: A => Any,
     acquireCondition: A => Boolean)(lockFun: A => A): A = {
 
     // Wrap/unwrap in list
-    val list = exclusiveAccess(table, List(id), updateFun, acquireCondition) { list =>
+    val list = exclusiveAccess(dbConnection, table, List(id), updateFun, acquireCondition) { list =>
       List(lockFun(list.head))
     }
     list.head
   }
 
-  def exclusiveAccess[A <: KeyedEntity[Long]](
+  def exclusiveAccess[A <: KeyedEntity[Long]](dbConnection: DbConnection,
     table: Table[A],
     ids: List[Long],
     updateFun: A => Any,
     acquireCondition: A => Boolean)(lockFun: List[A] => List[A]): List[A] = {
 
-    transaction {
+    dbConnection.transaction {
       // Select for update
       val objList = table.where(c => c.id in ids).forUpdate.toList
 

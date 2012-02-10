@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, Relationship => RelationshipProto }
 import org.totalgrid.reef.client.service.proto.Events.{ Event => EventProto, EventList => EventListProto }
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, Entity }
@@ -34,12 +33,13 @@ import org.totalgrid.reef.client.service.proto.Utils.{ AttributeList, Attribute 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.services.{ SilentRequestContext, ConnectionFixture }
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   class AlarmTestFixture(amqp: Connection) {
-    val deps = new ServiceDependenciesDefaults(amqp, amqp)
+    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp)
     val env = BasicRequestHeaders.empty.setUserName("user")
     val contextSource = new MockRequestContextSource(deps, env)
 
@@ -52,6 +52,9 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
     val eventQuery = new SyncService(new EventQueryService, contextSource)
     val alarmQuery = new SyncService(new AlarmQueryService, contextSource)
 
+    val edgeModel = new EntityEdgeServiceModel
+    val context = new SilentRequestContext
+
     def publishEvent(evt: EventProto): EventProto = {
       events.put(evt).expectOne()
     }
@@ -61,22 +64,22 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
       seed("SubA")
       seed("SubB")
 
-      EntityQueryManager.addEntity("Orphan", "Orphan")
+      EntityTestSeed.addEntity("Orphan", "Orphan")
     }
     def seed(name: String) {
-      val subId = EntityQueryManager.addEntity(name, "Substation" :: "EquipmentGroup" :: Nil)
+      val subId = EntityTestSeed.addEntity(name, "Substation" :: "EquipmentGroup" :: Nil)
       seedDevice(subId, name + "-DeviceA", "Line")
       seedDevice(subId, name + "-DeviceB", "Line")
     }
     def seedDevice(subId: Entity, name: String, typ: String) {
-      val devId = EntityQueryManager.addEntity(name, typ :: "Equipment" :: Nil)
-      val toSubId = EntityQueryManager.addEdge(subId, devId, "owns")
+      val devId = EntityTestSeed.addEntity(name, typ :: "Equipment" :: Nil)
+      val toSubId = edgeModel.addEdge(context, subId, devId, "owns")
       seedPoint(subId, devId, name + "-PointA", "owns")
       seedPoint(subId, devId, name + "-PointB", "owns")
     }
     def seedPoint(subId: Entity, devId: Entity, name: String, rel: String) {
-      val pointId = EntityQueryManager.addEntity(name, "Point")
-      val toDevId = EntityQueryManager.addEdge(devId, pointId, rel)
+      val pointId = EntityTestSeed.addEntity(name, "Point")
+      val toDevId = edgeModel.addEdge(context, devId, pointId, rel)
     }
 
     val client = amqp.login("")

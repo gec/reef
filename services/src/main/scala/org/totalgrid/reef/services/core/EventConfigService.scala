@@ -76,15 +76,14 @@ object EventConfigService {
     import org.squeryl.PrimitiveTypeMode._
     import org.totalgrid.reef.models.ApplicationSchema
 
-    inTransaction {
-      if (ApplicationSchema.eventConfigs.Count.head == 0) {
-        // TODO: make a default event config for handling unknown events
+    if (ApplicationSchema.eventConfigs.Count.head == 0) {
+      // TODO: make a default event config for handling unknown events
 
-        val ecs = builtInEventConfigurations().values
+      val ecs = builtInEventConfigurations().values
 
-        ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
-      }
+      ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
     }
+
   }
 }
 
@@ -126,7 +125,7 @@ class EventConfigService(protected val model: EventConfigServiceModel)
 }
 
 class EventConfigServiceModel
-    extends SquerylServiceModel[EventConfig, EventConfigStore]
+    extends SquerylServiceModel[Long, EventConfig, EventConfigStore]
     with EventedServiceModel[EventConfig, EventConfigStore]
     with SimpleModelEntryCreation[EventConfig, EventConfigStore]
     with EventConfigConversion {
@@ -141,8 +140,25 @@ class EventConfigServiceModel
     result.headOption getOrElse (1, EventConfig.Designation.ALARM.getNumber, Alarm.State.UNACK_SILENT.getNumber, "")
   }
 
-  override def updateModelEntry(proto: EventConfig, existing: EventConfigStore): EventConfigStore = {
-    createModelEntry(proto, existing.builtIn)
+  override def updateModelEntry(context: RequestContext, proto: EventConfig, existing: EventConfigStore): EventConfigStore = {
+    createModelEntry(context, proto, existing.builtIn)
+  }
+
+  override def createModelEntry(context: RequestContext, proto: EventConfig): EventConfigStore = createModelEntry(context, proto, false)
+
+  def createModelEntry(context: RequestContext, proto: EventConfig, builtIn: Boolean): EventConfigStore = {
+    // If it's not an alarm, set the state to 0.
+    val state = proto.getDesignation match {
+      case EventConfig.Designation.ALARM => proto.getAlarmState.getNumber
+      case _ => -1
+    }
+
+    EventConfigStore(proto.getEventType,
+      proto.getSeverity,
+      proto.getDesignation.getNumber,
+      state,
+      proto.getResource,
+      builtIn)
   }
 
   override def delete(context: RequestContext, entry: EventConfigStore) = {
@@ -180,22 +196,6 @@ trait EventConfigConversion
       entry.designation != existing.designation ||
       entry.resource != existing.resource ||
       entry.severity != existing.severity
-  }
-
-  def createModelEntry(proto: EventConfig): EventConfigStore = createModelEntry(proto, false)
-  def createModelEntry(proto: EventConfig, builtIn: Boolean): EventConfigStore = {
-    // If it's not an alarm, set the state to 0.
-    val state = proto.getDesignation match {
-      case EventConfig.Designation.ALARM => proto.getAlarmState.getNumber
-      case _ => -1
-    }
-
-    EventConfigStore(proto.getEventType,
-      proto.getSeverity,
-      proto.getDesignation.getNumber,
-      state,
-      proto.getResource,
-      builtIn)
   }
 
   def convertToProto(entry: EventConfigStore): EventConfig = {

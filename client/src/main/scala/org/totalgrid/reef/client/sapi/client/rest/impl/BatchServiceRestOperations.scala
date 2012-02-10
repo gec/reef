@@ -57,34 +57,68 @@ class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with Se
 
   def subscribe[A](descriptor: TypeDescriptor[A]) = client.subscribe(descriptor)
 
+  /**
+   * send all of the pending requests in a single BatchServiceRequests
+   */
   def flush() = {
+    doBatchRequest(grabPendingRequests(), None)
+  }
 
-    val requests = pendingRequests.toList
-    pendingRequests.clear()
+  /**
+   * sends all of the pending requests in multiple BatchServiceRequests of no more than batchSize operations per request.
+   * Future blocks until all of the operations have completed (which may take a long time)
+   */
+  def batchedFlush(batchSize: Int) = {
 
-    val b = BatchServiceRequest.newBuilder
-    requests.foreach { o => b.addRequests(o.request) }
-    val request = b.build
+    def startNextBatch(future: SettableFuture[Response[Boolean]], pending: List[RequestWithFuture[_]], failure: Option[FailureResponse]) {
 
-    val batchFuture = client.request(Envelope.Verb.POST, request, None)
+      if (pending.isEmpty || failure.isDefined) {
+        future.set(failure.getOrElse(SuccessResponse(list = List(true))))
+      } else {
+        val (inProgress, remaining) = pending.splitAt(batchSize)
 
-    batchFuture.listen {
-      _ match {
-        case SuccessResponse(status, batchResults) =>
-          val resultAndFuture = batchResults.head.getRequestsList.toList.map { _.getResponse }.zip { requests }
-          resultAndFuture.foreach {
-            case (response, reqWithFuture) => applyResponse(response, reqWithFuture)
-          }
-          SuccessResponse(status, batchResults)
-        case fail: FailureResponse =>
-          requests.foreach { _.future.set(fail) }
-          // make sure all of the sub future listen() calls have fired
-          requests.foreach { _.future.await }
-          fail
+        doBatchRequest(inProgress, Some(startNextBatch(future, remaining, _)))
       }
     }
 
-    batchFuture
+    val overallFuture = client.future[Response[Boolean]]
+
+    startNextBatch(overallFuture, grabPendingRequests(), None)
+
+    Promise.from(overallFuture.map { _.one })
+  }
+
+  private def grabPendingRequests() = {
+    val pending = pendingRequests.toList
+    pendingRequests.clear()
+    pending
+  }
+
+  private def doBatchRequest(inProgress: List[RequestWithFuture[_]], onResult: Option[(Option[FailureResponse]) => Unit]) = {
+
+    val b = BatchServiceRequest.newBuilder
+    inProgress.foreach { o => b.addRequests(o.request) }
+    val batchServiceProto = b.build
+
+    val batchFuture = client.request(Envelope.Verb.POST, batchServiceProto, None)
+    batchFuture.listen {
+      _ match {
+        case SuccessResponse(status, batchResults) =>
+          val resultAndFuture = batchResults.head.getRequestsList.toList.map { _.getResponse }.zip { inProgress }
+          resultAndFuture.foreach {
+            case (response, reqWithFuture) => applyResponse(response, reqWithFuture)
+          }
+          onResult.foreach { _(None) }
+          SuccessResponse(status, batchResults)
+        case fail: FailureResponse =>
+          inProgress.foreach { _.future.set(fail) }
+          // make sure all of the sub future listen() calls have fired
+          inProgress.foreach { _.future.await }
+          onResult.foreach { _(Some(fail)) }
+          fail
+      }
+    }
+    Promise.from(batchFuture.map { _.one })
   }
 
   private def applyResponse[A](response: ServiceResponse, reqWithFuture: RequestWithFuture[A]) {

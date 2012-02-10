@@ -24,26 +24,10 @@ import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.ReefServiceException
 
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 @RunWith(classOf[JUnitRunner])
-class CommandLockRequestTest
-    extends ClientSessionSuite("CommandLock.xml", "CommandLock",
-      <div>
-        <p>
-          Represents the "access table" for the system. Access entries have one or two
-  modes, "allowed" and "blocked". Commands cannot be issued unless they have an
-  "allowed" entry. This "selects" the command for operation by a single user, for
-  as long as access is held. "Block" allows selects to be disallowed for commands;
-  meaning no users can access/issue the commands.
-        </p>
-        <p>
-          Multiple commands can be referenced (by name) in the same access entry. User is
-  determined by the request header.
-        </p>
-        <p>If not provided, expire_time will be a server-specified default.</p>
-      </div>)
-    with ShouldMatchers {
+class CommandAccessRequestTest extends ServiceClientSuite {
 
   test("Search") {
     val cmdNames = "SimulatedSubstation.Breaker01.Trip" :: "SimulatedSubstation.Breaker01.Close" :: Nil
@@ -55,10 +39,8 @@ class CommandLockRequestTest
     val secondResp = client.createCommandExecutionLock(cmd1).await
     val thirdResp = client.createCommandDenialLock(cmd0 :: cmd1 :: Nil).await
 
-    recorder.addExplanation("Get by UID", "Search for an access entry by UID.")
     client.getCommandLockById(firstResp.getId).await
 
-    recorder.addExplanation("Get all", "Search for all access entries.")
     client.getCommandLocks().await
 
     // TODO: add getCommandLocksByUser call
@@ -75,14 +57,8 @@ class CommandLockRequestTest
 
     val cmd = client.getCommandByName("StaticSubstation.Breaker02.Trip").await
 
-    recorder.addExplanation("Create allow access", "Create ALLOWED access entry for a command.")
-
     val createResp = client.createCommandExecutionLock(cmd).await
 
-    val delDesc = "The same proto object that was used to create an entry can be used to delete it. " +
-      "The service identifies the object by id, other fields are ignored."
-
-    recorder.addExplanation("Delete access using original object", delDesc)
     client.deleteCommandLock(createResp).await
   }
 
@@ -91,10 +67,8 @@ class CommandLockRequestTest
     val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
     val cmds = cmdNames.map { client.getCommandByName(_).await }
 
-    recorder.addExplanation("Block commands", "Create BLOCKED access for multiple commands.")
     val createdResp = client.createCommandExecutionLock(cmds).await
 
-    recorder.addExplanation("Delete access using UID", "Delete a command access object by UID only.")
     client.deleteCommandLock(createdResp).await
   }
 
@@ -103,10 +77,8 @@ class CommandLockRequestTest
     val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
     val cmds = cmdNames.map { client.getCommandByName(_).await }
 
-    recorder.addExplanation("Select commands", "Create ALLOWED access for multiple commands.")
     val createdResp = client.createCommandExecutionLock(cmds).await
 
-    recorder.addExplanation("Selecing Selected Commands fails", "Trying to reselect the command fails with a non success status code. (Note that this will normally mean a ReefServiceException will be thrown by client code)")
     intercept[ReefServiceException] {
       client.createCommandExecutionLock(cmds.get(0)).await
     }

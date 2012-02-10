@@ -22,11 +22,12 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import collection.immutable.Map
 import collection.immutable.Range.Inclusive
-import org.totalgrid.reef.test.MockitoFunSuite
 import com.weiglewilczek.slf4s.Logging
+import org.scalatest.FunSuite
+import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
-class RandomTest extends MockitoFunSuite with Logging {
+class RandomTest extends FunSuite with Logging with ShouldMatchers {
   test("generate with range 1-2") {
     val numberOfRandomIntsToGenerate: Int = 2
     val expectedRange: Inclusive = 1 to numberOfRandomIntsToGenerate

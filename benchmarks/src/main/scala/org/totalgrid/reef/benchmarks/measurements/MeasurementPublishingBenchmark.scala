@@ -23,11 +23,16 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.{ AnyNodeDestination, AddressableDestination }
 import org.totalgrid.reef.util.Timing
-import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.benchmarks._
 import java.io.PrintStream
 
-class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int, attempts: Int, direct: Boolean) extends BenchmarkTest {
+/**
+ * this benchmark aims to measure how long it takes to complete a measurement roundtrip from publishing to reception by
+ * subscribers to the individual measurements. It is not a good test of measurement through put, just roundtrip time.
+ */
+class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int, attempts: Int, direct: Boolean) extends AllScadaServicesTest {
+
+  import MeasurementUtility._
 
   case class Reading(endpointName: String, direct: Boolean, measurements: Long, publishTime: Long, firstMessageTime: Long, roundtripTime: Long) extends BenchmarkReading {
 
@@ -46,7 +51,7 @@ class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int
 
   def runTest(client: AllScadaService, stream: Option[PrintStream]) = {
 
-    stream.foreach(_.println("Running MeasurementPublishingTests: " + attempts))
+    stream.foreach(_.println("Running MeasurementRoundtripTest. measurements: " + measCount + " attempts: " + attempts + " direct: " + direct))
 
     endpointNames.map { testEndpoint(_, client) }.flatten
   }
@@ -63,13 +68,13 @@ class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int
     }
 
     val sub = client.subscribeToMeasurementsByNames(names).await
-    val originals = sub.getResult
+    val originals = MeasurementUtility.makeMeasurements(names, names.size)
 
     val handler = new MeasurementRoundtripTimer(sub)
 
     (1 to attempts).map { i =>
 
-      val toPublish = updateMeasurements(originals, measCount, System.currentTimeMillis() + i)
+      val toPublish = createStream(originals, measCount, System.currentTimeMillis() + i)
 
       handler.start(toPublish)
       val pubTime = Timing.benchmark {
@@ -81,15 +86,4 @@ class MeasurementPublishingBenchmark(endpointNames: List[String], measCount: Int
     }.toList
   }
 
-  private def updateMeasurements(originals: List[Measurement], size: Int, nowMillis: Long) = {
-    Stream.continually(originals).flatten.take(size).toList.map { m =>
-      if (m.getType == Measurement.Type.DOUBLE)
-        m.toBuilder.setDoubleVal(m.getDoubleVal + 1.0).setTime(nowMillis).build
-      else if (m.getType == Measurement.Type.BOOL)
-        m.toBuilder.setBoolVal(!m.getBoolVal).setTime(nowMillis).build
-      else if (m.getType == Measurement.Type.INT)
-        m.toBuilder.setIntVal(m.getIntVal + 1).setTime(nowMillis).build
-      else m.toBuilder.setTime(nowMillis).build
-    }
-  }
 }

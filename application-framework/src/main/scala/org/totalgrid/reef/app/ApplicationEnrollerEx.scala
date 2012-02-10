@@ -29,6 +29,11 @@ import org.totalgrid.reef.client.sapi.client.rest.Client
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 
+trait ConnectionProvider {
+  def addConsumer(consumer: ConnectionConsumer)
+  def removeConsumer(consumer: ConnectionConsumer)
+}
+
 trait ConnectionConsumer {
   def newConnection(brokerConnection: BrokerConnection, exe: Executor): Cancelable
 }

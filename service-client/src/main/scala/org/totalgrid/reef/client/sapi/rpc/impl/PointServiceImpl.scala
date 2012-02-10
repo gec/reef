@@ -46,7 +46,13 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
 
   override def getPointsOwnedByEntity(parentEntity: Entity) = {
     ops.operation("Couldn't find points owned by parent entity: " + parentEntity) {
-      _.get(PointRequestBuilders.getOwnedByEntity(parentEntity)).map(_.many)
+      _.get(PointRequestBuilders.getOwnedByEntityWithUuid(parentEntity.getUuid)).map(_.many)
+    }
+  }
+
+  override def getPointsOwnedByEntity(parentUuid: ReefUUID) = {
+    ops.operation("Couldn't find points owned by parent entity: " + parentUuid.getValue) {
+      _.get(PointRequestBuilders.getOwnedByEntityWithUuid(parentUuid)).map(_.many)
     }
   }
 

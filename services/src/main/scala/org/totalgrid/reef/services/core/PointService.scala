@@ -27,13 +27,14 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.services.core.util.UUIDConversions._
 
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point => PointProto, Entity => EntityProto }
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
+import util.UUIDConversions._
+import java.util.UUID
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -61,11 +62,13 @@ class PointService(protected val model: PointServiceModel)
 class PointServiceModel(triggerModel: TriggerSetServiceModel,
   overrideModel: OverrideConfigServiceModel,
   val measurementStore: MeasurementStore)
-    extends SquerylServiceModel[PointProto, Point]
+    extends SquerylServiceModel[Long, PointProto, Point]
     with EventedServiceModel[PointProto, Point]
     with SimpleModelEntryCreation[PointProto, Point]
     with PointServiceConversion
     with CommunicationEndpointOfflineBehaviors {
+
+  val entityModel = new EntityServiceModel
 
   /**
    * we override this function so we can publish events with the "abnormalUpdated" part of routing
@@ -75,6 +78,23 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
     val proto = convertToProto(entry)
     val key = getRoutingKey(proto, entry)
     (proto, key :: Nil)
+  }
+
+  def createModelEntry(context: RequestContext, proto: PointProto): Point = {
+    createModelEntry(context, proto.getName, proto.getType, proto.getUnit, proto.uuid)
+  }
+
+  def createModelEntry(context: RequestContext, name: String, _type: PointType, unit: String, uuid: Option[UUID]): Point = {
+    val baseType = _type match {
+      case PointType.ANALOG => "Analog"
+      case PointType.STATUS => "Status"
+      case PointType.COUNTER => "Counter"
+    }
+    val types = "Point" :: baseType :: Nil
+    val ent = entityModel.findOrCreate(context, name, types, uuid)
+    val p = new Point(ent.id, _type.getNumber, unit, false)
+    p.entity.value = ent
+    p
   }
 
   override def postCreate(context: RequestContext, entry: Point) {
@@ -96,7 +116,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
 
     measurementStore.remove(entry.entityName :: Nil)
 
-    EntityQueryManager.deleteEntity(entry.entity.value)
+    entityModel.delete(context, entry.entity.value)
   }
 }
 
@@ -136,11 +156,11 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Point")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })),
-      proto.entity.map(ent => sql.entityId in EntityQueryManager.typeIdsFromProtoQuery(ent, "Point")))
+      proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Point")))
   }
 
   def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
-    proto.endpoint.map(logicalNode => sql.entityId in EntityQueryManager.findIdsOfChildren(logicalNode, "source", "Point")))
+    proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Point")))
 
   def isModified(entry: Point, existing: Point): Boolean = {
     entry.abnormal != existing.abnormal
@@ -151,18 +171,14 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
 
     b.setUuid(makeUuid(sql))
     b.setName(sql.entityName)
-    sql.entity.asOption.foreach(e => b.setEntity(EntityQueryManager.entityToProto(e)))
+    sql.entity.asOption.foreach(e => b.setEntity(EntityQuery.entityToProto(e)))
 
     sql.logicalNode.value // autoload logicalNode
-    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQueryManager.minimalEntityToProto(ln).build) } }
+    sql.logicalNode.asOption.foreach { _.foreach { ln => b.setEndpoint(EntityQuery.minimalEntityToProto(ln).build) } }
     b.setAbnormal(sql.abnormal)
     b.setType(PointType.valueOf(sql.pointType))
     b.setUnit(sql.unit)
     b.build
-  }
-
-  def createModelEntry(proto: PointProto): Point = {
-    Point.newInstance(proto.name.get, false, None, proto.getType, proto.getUnit, proto.uuid)
   }
 
 }
@@ -184,8 +200,8 @@ object PointTiedModel {
   def populatedPointProto(point: Point): PointProto.Builder = {
     val pb = PointProto.newBuilder
     pb.setName(point.entityName).setUuid(makeUuid(point))
-    pb.setEntity(EntityQueryManager.entityToProto(point.entity.value))
-    point.logicalNode.value.foreach(p => pb.setEndpoint(EntityQueryManager.entityToProto(p)))
+    pb.setEntity(EntityQuery.entityToProto(point.entity.value))
+    point.logicalNode.value.foreach(p => pb.setEndpoint(EntityQuery.entityToProto(p)))
     pb
   }
 }

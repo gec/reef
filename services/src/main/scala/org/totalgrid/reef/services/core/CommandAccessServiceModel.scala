@@ -33,7 +33,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, CommandLockModel => Access
 import java.util.Date
 
 class CommandLockServiceModel
-    extends SquerylServiceModel[AccessProto, AccessModel]
+    extends SquerylServiceModel[Long, AccessProto, AccessModel]
     with EventedServiceModel[AccessProto, AccessModel]
     with CommandLockConversion {
 

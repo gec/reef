@@ -22,7 +22,6 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.persistence.squeryl._
-import postgresql.PostgresqlReset
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MixedMeasurementStore, MeasurementStoreTest, RTDatabaseReadPerformanceTestBase }
 
 trait SqlMeasStoreTestFixture {
@@ -32,7 +31,6 @@ trait SqlMeasStoreTestFixture {
       DbConnector.connect(conn_info)
     }, includeHistory)
     store.connect()
-    PostgresqlReset.reset()
     store.reset()
     store
   }

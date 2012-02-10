@@ -18,30 +18,16 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import scala.collection.JavaConversions._
+
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementRequestBuilders
-
-import org.totalgrid.reef.benchmarks.measurements.MeasurementRoundtripTimer
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ClientSessionSuite
-
-import org.totalgrid.reef.util.{ SyncVar, Timing }
-import org.totalgrid.reef.client._
+import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 
 @RunWith(classOf[JUnitRunner])
-class MeasurementBatchTest
-    extends ClientSessionSuite("MeasurementBatch.xml", "MeasurementBatch",
-      <div>
-        <p>
-          The MeasurementSnapshot service provides the current state of measurements. The request contains the
-          list of measurement names, the response contains the requested measurement objects.
-        </p>
-      </div>)
-    with ShouldMatchers {
+class MeasurementBatchTest extends ServiceClientSuite {
 
   def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil).await
   def putAll(m: List[Measurement]) = client.publishMeasurements(m).await
@@ -50,8 +36,6 @@ class MeasurementBatchTest
     val pointName = "StaticSubstation.Line02.Current"
     // read the current value so we can edit it
     val original = client.getMeasurementByName(pointName).await
-
-    recorder.addExplanation("Put measurement", "Put a single new measurement.")
 
     // double the value and post it
     val updated = original.toBuilder.setDoubleVal(original.getDoubleVal * 2).setTime(System.currentTimeMillis).build
@@ -66,49 +50,10 @@ class MeasurementBatchTest
 
     val updated = updateMeasurements(originals.toList, System.currentTimeMillis())
 
-    recorder.addExplanation("Put multiple measurements", "Put multiple new measurements in a single MeasurementBatch.")
     putAll(updated)
 
     val reverted = originals.map { m => m.toBuilder.setTime(System.currentTimeMillis).build }.toList
     putAll(reverted)
-  }
-
-  test("Batch publishing speed") {
-    val names = List("StaticSubstation.Line02.Current")
-
-    val points = names.map { client.getPointByName(_).await }
-
-    val connection = client.getEndpointConnectionByUuid(points.head.getEndpoint.getUuid).await
-
-    val sub = client.subscribeToMeasurementsByNames(names).await
-    var originals = sub.getResult
-
-    val now = System.currentTimeMillis() + 1
-
-    val handler = new MeasurementRoundtripTimer(sub)
-
-    println("isDirect,size,pubTime,firstMessage,roundtrip,hist")
-    (1 to 24).foreach { i =>
-      val size = originals.size
-
-      val dest = if (i % 2 == 0) new AddressableDestination(connection.getRouting.getServiceRoutingKey) else new AnyNodeDestination()
-
-      originals = updateMeasurements(originals, now)
-      handler.start(originals)
-      val pubTime = Timing.benchmark {
-        client.publishMeasurements(originals, dest).await
-      }
-      val roundtripTime = handler.await
-
-      val getHistoryTime = Timing.benchmark {
-        val history = client.getMeasurementHistory(points.head, size).await
-        history.map { _.getDoubleVal } should equal(originals.map { _.getDoubleVal })
-      }
-
-      println((i % 2 == 0) + "," + size + "," + pubTime + "," + handler.firstMessage.get + "," + roundtripTime + "," + getHistoryTime)
-
-      if (i % 2 == 0) originals :::= originals
-    }
   }
 
   def updateMeasurements(originals: List[Measurement], nowMillis: Long) = {

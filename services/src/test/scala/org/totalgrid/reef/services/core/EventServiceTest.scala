@@ -35,7 +35,7 @@ import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestExc
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 
   class Fixture {
-    val dependencies = new ServiceDependenciesDefaults()
+    val dependencies = new ServiceDependenciesDefaults(dbConnection)
     val factories = new ModelFactories(dependencies)
     val headers = BasicRequestHeaders.empty.setUserName("user")
     val contextSource = new MockRequestContextSource(dependencies, headers)

@@ -21,28 +21,31 @@ package org.totalgrid.reef.measproc.pipeline
 import org.totalgrid.reef.client.service.proto.Events
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementBatch, Measurement }
-import org.totalgrid.reef.measproc.{ MeasBatchProcessor, processing, MeasProcObjectCaches }
+import org.totalgrid.reef.measproc._
 
 class MeasProcessingPipeline(
     caches: MeasProcObjectCaches,
     publish: Measurement => Unit,
     eventSink: Events.Event.Builder => Unit,
-    pointNames: List[String]) extends MeasBatchProcessor with MetricsHookContainer {
+    pointNames: List[String],
+    endpointName: String) extends MeasBatchProcessor with MetricsHookContainer {
 
   // pipeline ends up being defined backwards, output from each step is wired into input of previous step
   // basicProcessingNode -> overrideProc -> triggerProc -> batchOutput
 
+  val lastCacheManager = new LastMeasurementCacheManager(endpointName)
+
   val batchOutput = new ProcessedMeasBatchOutputCache(publish, eventSink, caches.measCache)
 
-  val triggerFactory = new processing.TriggerProcessingFactory(batchOutput.delayedEventSink)
+  val triggerFactory = new processing.TriggerProcessingFactory(batchOutput.delayedEventSink, lastCacheManager.cache)
   val triggerProc = new processing.TriggerProcessor(batchOutput.pubMeas, triggerFactory, caches.stateCache)
   val overProc = new processing.OverrideProcessor(overrideProcess, caches.overCache, caches.measCache.get)
-  val measurementFilter = new processing.MeasurementFilter(overProc.process, pointNames)
+  val measWhiteList = new processing.MeasurementWhiteList(overProc.process, pointNames)
 
   // start the pipeline
-  val processor = new MeasPipelinePump(measurementFilter.process, batchOutput.flushCache)
+  val processor = new MeasPipelinePump(measWhiteList.process, batchOutput.flushCache)
 
-  addHookedObject(processor :: overProc :: triggerProc :: measurementFilter :: Nil)
+  addHookedObject(processor :: overProc :: triggerProc :: measWhiteList :: Nil)
 
   // Each MeasOverride add/remove is processed seperatley (not in a meas batch)
   def overrideProcess(m: Measurement, flushNow: Boolean) {

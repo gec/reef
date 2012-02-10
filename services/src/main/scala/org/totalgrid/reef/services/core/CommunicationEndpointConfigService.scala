@@ -44,13 +44,16 @@ class CommEndCfgServiceModel(
   pointModel: PointServiceModel,
   portModel: FrontEndPortServiceModel,
   coordinator: MeasurementStreamCoordinator)
-    extends SquerylServiceModel[CommEndCfgProto, CommunicationEndpoint]
+    extends SquerylServiceModel[Long, CommEndCfgProto, CommunicationEndpoint]
     with EventedServiceModel[CommEndCfgProto, CommunicationEndpoint]
     with CommEndCfgServiceConversion {
 
+  val entityModel = new EntityServiceModel
+  val edgeModel = new EntityEdgeServiceModel
+
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
     import org.totalgrid.reef.services.core.util.UUIDConversions._
-    val ent = EntityQueryManager.findOrCreateEntity(proto.getName, "CommunicationEndpoint" :: "LogicalNode" :: Nil, proto.uuid)
+    val ent = entityModel.findOrCreate(context, proto.getName, "CommunicationEndpoint" :: "LogicalNode" :: Nil, proto.uuid)
     val sql = create(context, createModelEntry(context, proto, ent))
     setLinkedObjects(context, sql, proto, ent)
     coordinator.onEndpointCreated(context, sql)
@@ -78,12 +81,12 @@ class CommEndCfgServiceModel(
   }
 
   override def postDelete(context: RequestContext, sql: CommunicationEndpoint) {
-    EntityQueryManager.deleteEntity(sql.entity.value) // delete entity which will also sever all "source" and "uses" links
+    entityModel.delete(context, sql.entity.value) // delete entity which will also sever all "source" and "uses" links
   }
 
-  private def findEntites(names: List[String], typ: String): List[Entity] = {
+  private def findEntities(names: List[String], typ: String): List[Entity] = {
     if (!names.isEmpty) {
-      val entities = EntityQueryManager.findEntities(names, typ :: Nil).toList
+      val entities = EntityQuery.findEntities(names, typ :: Nil).toList
       val missing = names.diff(entities.map(_.name))
       if (!missing.isEmpty) throw new BadRequestException("Trying to set endpoint for unknown " + typ + ": " + missing)
       entities
@@ -95,11 +98,11 @@ class CommEndCfgServiceModel(
   import org.totalgrid.reef.client.service.proto.OptionalProtos._
   def setLinkedObjects(context: RequestContext, sql: CommunicationEndpoint, request: CommEndCfgProto, entity: Entity) {
 
-    val pointEntities = findEntites(request.ownerships.points.getOrElse(Nil), "Point")
-    val commandEntities = findEntites(request.ownerships.commands.getOrElse(Nil), "Command")
+    val pointEntities = findEntities(request.ownerships.points.getOrElse(Nil), "Point")
+    val commandEntities = findEntities(request.ownerships.commands.getOrElse(Nil), "Command")
 
     val (relationship, exclusive) = if (sql.dataSource) ("source", true) else ("sink", false)
-    EntityQueryManager.addEdges(entity, pointEntities ::: commandEntities, relationship, exclusive)
+    edgeModel.addEdges(context, entity, pointEntities ::: commandEntities, relationship, exclusive)
 
     configModel.addOwningEntity(context, request.getConfigFilesList.toList, entity)
   }

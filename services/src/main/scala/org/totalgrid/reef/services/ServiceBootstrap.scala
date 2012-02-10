@@ -23,7 +23,6 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.client.service.proto.Auth.{ AuthToken, Agent }
 
-import org.totalgrid.reef.persistence.squeryl.postgresql.PostgresqlReset
 import org.totalgrid.reef.services.framework.RequestContextSourceWithHeaders
 import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.client.sapi.client.rest.Connection
@@ -32,6 +31,7 @@ import org.totalgrid.reef.services.core.{ ModelFactories, ApplicationConfigServi
 import org.totalgrid.reef.client.service.list.ReefServicesList
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
+import org.totalgrid.reef.persistence.squeryl.DbConnection
 
 object ServiceBootstrap {
 
@@ -59,8 +59,8 @@ object ServiceBootstrap {
    * use to enroll ourselves as an application to get the CoreApplicationComponents without
    * repeating that setup logic somewhere else
    */
-  def bootstrapComponents(connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
-    val dependencies = new RequestContextDependencies(connection, connection, "", new SilentEventSink)
+  def bootstrapComponents(dbConnection: DbConnection, connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
+    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink)
 
     // define the events exchanges before "logging in" which will generate some events
     defineEventExchanges(connection)
@@ -74,7 +74,7 @@ object ServiceBootstrap {
     val login = buildLogin(systemUser)
     val authToken = authService.put(contextSource, login).expectOne
 
-    val config = ApplicationConfigBuilders.makeProto(appSettings, appSettings.getDefaultNodeName + "_services", List("Services"))
+    val config = ApplicationConfigBuilders.makeProto(appSettings, appSettings.getDefaultNodeName + "-Services", List("Services"))
     val appConfig = applicationConfigService.put(contextSource, config).expectOne
 
     // the measurement batch service acts as a type of manual FEP
@@ -90,22 +90,22 @@ object ServiceBootstrap {
   /**
    * sets up the default users and low level configurations for the system
    */
-  def seed(systemPassword: String) {
-    core.EventConfigService.seed()
-    core.EntityService.seed()
-    core.AuthTokenService.seed(systemPassword)
+  def seed(dbConnection: DbConnection, systemPassword: String) {
+    val context = new SilentRequestContext
+    dbConnection.transaction {
+      core.EventConfigService.seed()
+      core.EntityService.seed()
+      core.AuthTokenService.seed(context, systemPassword)
+    }
   }
 
   /**
    * drops and re-creates all of the tables in the database.
    */
-  def resetDb() {
-    import org.squeryl.PrimitiveTypeMode._
+  def resetDb(dbConnection: DbConnection) {
     import org.totalgrid.reef.models._
 
-    PostgresqlReset.reset()
-
-    transaction {
+    dbConnection.transaction {
       ApplicationSchema.reset
     }
   }

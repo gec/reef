@@ -35,22 +35,18 @@ import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command }
 import org.totalgrid.reef.client.service.proto.Commands.CommandLock
 
 import scala.collection.JavaConversions._
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.{ BeforeAndAfterEach, BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
 
 @RunWith(classOf[JUnitRunner])
-class BatchServiceRequestServiceTest extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {
+class BatchServiceRequestServiceTest extends DatabaseUsingTestBaseNoTransaction {
 
-  override def beforeAll() {
-    DbConnector.connect(DbInfo.loadInfo("../org.totalgrid.reef.test.cfg"))
-  }
   override def beforeEach() {
-    ServiceBootstrap.resetDb
+    ServiceBootstrap.resetDb(dbConnection)
   }
 
   val env = BasicRequestHeaders.empty.setUserName("user")
-  val deps = new ServiceDependenciesDefaults()
+  val deps = new ServiceDependenciesDefaults(dbConnection)
   val contextSource = new MockRequestContextSource(deps, env)
 
   val modelFac = new ModelFactories(deps)

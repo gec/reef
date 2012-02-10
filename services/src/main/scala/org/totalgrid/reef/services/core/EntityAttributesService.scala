@@ -44,7 +44,7 @@ class EntityAttributesService extends ServiceEntryPoint[AttrProto] with Authoriz
 
       if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
 
-      val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
+      val entEntry = EntityQuery.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
       val newAtttributes = req.getAttributesList.map { convertProtoToEntry(entEntry.id, _) }.toList
@@ -80,7 +80,7 @@ class EntityAttributesService extends ServiceEntryPoint[AttrProto] with Authoriz
 
       if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
 
-      val entEntry = EntityQueryManager.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
+      val entEntry = EntityQuery.findEntity(req.getEntity) getOrElse { throw new BadRequestException("Entity does not exist.") }
 
       val existingAttrs = entEntry.attributes.value
 
@@ -160,14 +160,14 @@ object EntityAttributesService {
 
   def protoFromEntity(entry: Entity): AttrProto = {
     AttrProto.newBuilder
-      .setEntity(EntityQueryManager.entityToProto(entry))
+      .setEntity(EntityQuery.entityToProto(entry))
       .addAllAttributes(entry.attributes.value.map(convertToProto(_)))
       .build
   }
 
   def protoFromEntity(entry: Entity, attrList: List[AttrModel]): AttrProto = {
     AttrProto.newBuilder
-      .setEntity(EntityQueryManager.entityToProto(entry))
+      .setEntity(EntityQuery.entityToProto(entry))
       .addAllAttributes(attrList.map(convertToProto(_)))
       .build
   }
