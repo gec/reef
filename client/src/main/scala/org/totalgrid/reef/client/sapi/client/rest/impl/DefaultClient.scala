@@ -28,6 +28,7 @@ import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor 
 import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList, Routable }
 import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo }
 import org.totalgrid.reef.client.settings.UserSettings
+import org.totalgrid.reef.client.javaimpl.ClientWrapper
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RequestSpyHook with ExecutorDelegate {
 
@@ -56,7 +57,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
   final override def login(userSettings: UserSettings) = conn.login(userSettings)
 
   final override def addRpcProvider(info: ServiceProviderInfo) = conn.addRpcProvider(info)
-  final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, this)
+  final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, this, new ClientWrapper(this))
 
   final override def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = conn.addServiceInfo(info)
   final override def getServiceInfo[A](klass: Class[A]) = conn.getServiceInfo(klass)
