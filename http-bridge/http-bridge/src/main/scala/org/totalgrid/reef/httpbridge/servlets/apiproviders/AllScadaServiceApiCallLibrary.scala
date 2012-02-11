@@ -119,7 +119,10 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   // Can't encode createCommandExecutionLock : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
   // Can't encode createCommandExecutionLock : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
   // Can't encode deleteCommandLock : Can't encode type: org.totalgrid.reef.client.service.proto.Commands.CommandLock
-  // Can't encode deleteCommandLock : Can't encode type: org.totalgrid.reef.client.service.proto.Model.ReefID
+  single("deleteCommandLock", classOf[org.totalgrid.reef.client.service.proto.Commands.CommandLock], args => {
+    val a0 = args.getId("commandId")
+    (c) => c.deleteCommandLock(a0)
+  })
   multi("clearCommandLocks", classOf[org.totalgrid.reef.client.service.proto.Commands.CommandLock], args => { (c) =>
     c.clearCommandLocks()
   })
@@ -131,7 +134,10 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   multi("getCommandLocks", classOf[org.totalgrid.reef.client.service.proto.Commands.CommandLock], args => { (c) =>
     c.getCommandLocks()
   })
-  // Can't encode getCommandLockById : Can't encode type: org.totalgrid.reef.client.service.proto.Model.ReefID
+  single("getCommandLockById", classOf[org.totalgrid.reef.client.service.proto.Commands.CommandLock], args => {
+    val a0 = args.getId("id")
+    (c) => c.getCommandLockById(a0)
+  })
   // Can't encode findCommandLockOnCommand : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
   // Can't encode getCommandLocksOnCommands : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
   multi("getCommandHistory", classOf[org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest], args => { (c) =>
@@ -264,7 +270,7 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a0 = args.getString("endpointName")
     (c) => c.getEndpointConnectionByEndpointName(a0)
   })
-  // Can't encode alterEndpointConnectionState : Can't encode type: org.totalgrid.reef.client.service.proto.Model.ReefID
+  // Can't encode alterEndpointConnectionState : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
   ////////////////////
   // EntityService
   ////////////////////
@@ -367,7 +373,12 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a2 = args.getLong("value")
     (c) => c.setEntityAttribute(a0, a1, a2)
   })
-  // Can't encode setEntityAttribute : Can't encode type: double
+  single("setEntityAttribute", classOf[org.totalgrid.reef.client.service.proto.Model.EntityAttributes], args => {
+    val a0 = args.getUuid("uuid")
+    val a1 = args.getString("name")
+    val a2 = args.getDouble("value")
+    (c) => c.setEntityAttribute(a0, a1, a2)
+  })
   single("setEntityAttribute", classOf[org.totalgrid.reef.client.service.proto.Model.EntityAttributes], args => {
     val a0 = args.getUuid("uuid")
     val a1 = args.getString("name")
@@ -439,7 +450,10 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   ////////////////////
   // EventService
   ////////////////////
-  // Can't encode getEventById : Can't encode type: org.totalgrid.reef.client.service.proto.Model.ReefID
+  single("getEventById", classOf[org.totalgrid.reef.client.service.proto.Events.Event], args => {
+    val a0 = args.getId("id")
+    (c) => c.getEventById(a0)
+  })
   multi("getRecentEvents", classOf[org.totalgrid.reef.client.service.proto.Events.Event], args => {
     val a0 = args.getInt("limit")
     (c) => c.getRecentEvents(a0)

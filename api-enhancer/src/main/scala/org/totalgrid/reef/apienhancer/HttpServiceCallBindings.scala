@@ -131,9 +131,9 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
       "boolean" -> "Boolean",
       "long" -> "Long",
       "String" -> "String",
-      //"double" -> "Double",
+      "double" -> "Double",
       // "byte" -> "ByteArray",
-      // "ReefID" -> "Id",
+      "ReefID" -> "Id",
       "ReefUUID" -> "Uuid")
 
     val (argumentType, pluralizer) = if (ptype.asParameterizedType() != null) {

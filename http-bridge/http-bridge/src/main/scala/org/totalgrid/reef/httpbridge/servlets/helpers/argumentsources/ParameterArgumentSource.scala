@@ -30,30 +30,39 @@ import org.totalgrid.reef.client.exception.{ InternalServiceException, BadReques
  */
 class ParameterArgumentSource(req: HttpServletRequest) extends ArgumentSource {
 
-  private def convertToValuesFromString[A](valuesAsStrings: List[String], klass: Class[A]): List[A] = {
-    val result = klass match {
-      case StringClass => valuesAsStrings
-      case IntClass => valuesAsStrings.map { _.toInt }
-      case LongClass => valuesAsStrings.map { _.toLong }
-      case BooleanClass => valuesAsStrings.map { _.toBoolean }
-      case ReefUuidClass => valuesAsStrings.map { ReefUUID.newBuilder.setValue(_).build }
-      case ReefIdClass => valuesAsStrings.map { ReefID.newBuilder.setValue(_).build }
-      case MessageClass => throw new BadRequestException("Cannot handle 'object' types using GET interface, use POST instead")
-      case _ => throw new InternalServiceException("Unknown argument class: " + klass.getName)
+  private def convertToValuesFromString[A](valuesAsStrings: List[String], klass: Class[A], parameterName: String): List[A] = {
+    try {
+      valuesAsStrings.find(_.length() == 0).foreach { _ =>
+        throw new BadRequestException("Can't include blank value for parameter: " + parameterName)
+      }
+      val result = klass match {
+        case StringClass => valuesAsStrings
+        case IntClass => valuesAsStrings.map { _.toInt }
+        case LongClass => valuesAsStrings.map { _.toLong }
+        case DoubleClass => valuesAsStrings.map { _.toDouble }
+        case BooleanClass => valuesAsStrings.map { _.toBoolean }
+        case ReefUuidClass => valuesAsStrings.map { ReefUUID.newBuilder.setValue(_).build }
+        case ReefIdClass => valuesAsStrings.map { ReefID.newBuilder.setValue(_).build }
+        case MessageClass => throw new BadRequestException("Cannot handle Protobuf types using URL encoding, use JSON+POST instead")
+        case _ => throw new InternalServiceException("Unknown argument class: " + klass.getName)
+      }
+      result.map { klass.cast(_) }
+    } catch {
+      case ex: Exception =>
+        throw new BadRequestException("Error parsing parameter: " + parameterName + " into type " + klass.getSimpleName + " : " + ex.getMessage)
     }
-    result.map { klass.cast(_) }
   }
 
   def findArgument[A](name: String, klass: Class[A]) = {
     val parameterStrings = Option(req.getParameter(name)).toList
 
-    convertToValuesFromString(parameterStrings, klass).headOption
+    convertToValuesFromString(parameterStrings, klass, name).headOption
   }
 
   def findArguments[A](name: String, klass: Class[A]) = {
     val parameterStrings = Option(req.getParameterValues(name)).orElse(
       Option(req.getParameterValues(name + "[]"))).map { _.toList }.getOrElse(List())
 
-    convertToValuesFromString(parameterStrings, klass)
+    convertToValuesFromString(parameterStrings, klass, name)
   }
 }
