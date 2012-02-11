@@ -50,12 +50,10 @@ class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider
     val function = Option(req.getPathInfo).getOrElse("").stripPrefix("/")
     val apiCall = apiCallProvider.prepareApiCall(function, argumentSource)
 
-    if (apiCall.isEmpty) throw new BadRequestException("Unknown function: " + function)
-
     val client = connection.getAuthenticatedClient(authToken)
     client.setHeaders(headers.setAuthToken(authToken))
 
-    apiCall.get match {
+    apiCall match {
       case SingleResultApiCall(func) => printSingleOutput(req, resp, func(client).await)
       case OptionalResultApiCall(func) => printOutput(req, resp, func(client).await.toList)
       case MultiResultApiCall(func) => printOutput(req, resp, func(client).await)
