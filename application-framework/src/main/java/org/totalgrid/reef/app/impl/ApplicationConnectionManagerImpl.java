@@ -69,7 +69,7 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
     public synchronized void onApplicationStartup( Application.ApplicationConfig appConfig,
         org.totalgrid.reef.client.sapi.client.rest.Connection newConnection, Client scalaClient )
     {
-        connection = new ConnectionWrapper( newConnection );
+        connection = new ConnectionWrapper( newConnection, executor );
 
         notifyListeners( true );
     }
