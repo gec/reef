@@ -99,7 +99,7 @@ object AllBenchmarksEntryPoint {
       val endpointLoadingWriters = c.getInt("endpointWriters")
       val endpointLoadingBatchSize = c.getInt("endpointBatchSize")
 
-      val totalMeasurements = c.getInt("publishMeasTotal")
+      val totalMeasurements = c.getIntList("publishMeasTotal")
       val publishingWriters = c.getIntList("publishMeasWriters")
       val publishingBatchSizes = c.getIntList("publishMeasBatchSizes")
 
@@ -107,9 +107,11 @@ object AllBenchmarksEntryPoint {
         tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint,
           endpointLoadingWriters, endpointLoadingBatchSize, true, false)
       }
-      publishingWriters.foreach { writers =>
-        publishingBatchSizes.foreach { batchSize =>
-          tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, writers, batchSize)
+      totalMeasurements.foreach{ measurements =>
+        publishingWriters.foreach { writers =>
+          publishingBatchSizes.foreach { batchSize =>
+            tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, measurements, writers, batchSize)
+          }
         }
       }
       if (c.getBool("measTestReads")) {
@@ -124,10 +126,10 @@ object AllBenchmarksEntryPoint {
     }
 
     val allResults = tests.reverse.map(_.runTest(client, stream)).flatten
-    outputResults(allResults)
+    outputResults(allResults, options.getString("outputFileBaseName"))
   }
 
-  def outputResults(allResults: List[BenchmarkReading]) {
+  def outputResults(allResults: List[BenchmarkReading], baseName : String) {
 
     val resultsByFileName = allResults.groupBy(_.csvName)
 
@@ -136,7 +138,7 @@ object AllBenchmarksEntryPoint {
         Histogram.getHistograms(csvName, results)
     }.toList.flatten
 
-    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, "averages")
+    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, baseName + "averages")
     val teamCity = new TeamCityStatisticsXml("teamcity-info.xml")
     histogramResults.foreach { h =>
       h.outputsWithLabels.foreach { case (label, value) => teamCity.addRow(label, value) }
@@ -145,7 +147,7 @@ object AllBenchmarksEntryPoint {
 
     resultsByFileName.foreach {
       case (csvName, results) =>
-        val output = new DelimitedFileOutput(csvName + ".csv", false)
+        val output = new DelimitedFileOutput(baseName + csvName + ".csv", false)
 
         output.addRow(results.head.columnNames)
         results.foreach { r => output.addRow(r.values.map { _.toString }) }

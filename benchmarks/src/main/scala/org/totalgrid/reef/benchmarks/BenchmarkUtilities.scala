@@ -49,7 +49,7 @@ object BenchmarkUtilities {
     }
   }
 
-  def writeHistogramCsvFiles(histogramResults: List[Histogram], baseName: String = "historgrams") {
+  def writeHistogramCsvFiles(histogramResults: List[Histogram], baseName: String = "histograms") {
 
     val output = new DelimitedFileOutput(baseName + ".csv", false)
 
