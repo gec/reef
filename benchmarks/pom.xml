@@ -3,7 +3,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>reef-benchmarks</artifactId>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
 	<parent>
 		<groupId>org.totalgrid.reef</groupId>
 		<artifactId>reef-scala-base</artifactId>
@@ -28,6 +28,22 @@
 					<header>../APACHE_FILE_HEADER</header>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${maven-bundle.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>Reef Benchmarking Utilities</Bundle-Name>
+                        <Export-Package>
+                            org.totalgrid.reef.benchmarks.*;version="${reef.version}"
+                        </Export-Package>
+                        <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
+                        <_nouses>true</_nouses>
+                    </instructions>
+                </configuration>
+            </plugin>
 			<!--<plugin>-->
 				<!--<artifactId>maven-assembly-plugin</artifactId>-->
 				<!--<version>2.2</version>-->

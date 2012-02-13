@@ -26,7 +26,6 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.services.activator.{ ServiceFactory, ServiceModulesFactory }
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
-import org.totalgrid.reef.shell.proto.ProtoShellApplication
 import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderServicesList }
 import org.totalgrid.reef.client.settings.util.{ PropertyLoading, PropertyReader }
@@ -93,12 +92,6 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     clientConnection.addServicesList(new ReefServices)
     clientConnection.addServicesList(new LoaderServicesList)
     clientConnection
-  }
-
-  def runTerminal() {
-
-    System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
-    ProtoShellApplication.runTerminal(connection(), userSettings, brokerConnection.toString(), NullCancelable)
   }
 
   def loadModel(modelFile: String) {

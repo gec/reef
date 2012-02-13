@@ -215,7 +215,7 @@ class MeasStatCommand extends ReefCommandSupport {
   }
 }
 
-@Command(scope = "meas", name = "download", description = "Download all measurements for a point to CSV file.")
+@Command(scope = "meas", name = "download", description = "Download all measurements for a point to CSV file.\n Ex: meas:download -s \"2012-02-10 00:00\" PV.csv LV.Line_PV.kW_tot")
 class MeasDownloadCommand extends ReefCommandSupport {
 
   @Argument(index = 0, name = "fileName", description = "Absolute filename to write csv file.", required = true, multiValued = false)

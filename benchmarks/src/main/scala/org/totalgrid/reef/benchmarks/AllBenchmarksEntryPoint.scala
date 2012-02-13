@@ -27,7 +27,7 @@ import org.totalgrid.reef.benchmarks.system._
 import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
 import org.totalgrid.reef.client.service.list.ReefServices
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.loader.commons.LoaderServicesList
 
 import MeasurementCurrentValueBenchmark._
@@ -49,16 +49,16 @@ object AllBenchmarksEntryPoint {
     try {
 
       val connection = factory.connect()
+      val client = connection.login(userSettings).await
 
-      runAllTests(connection, userSettings, testOptions)
+      runAllTests(client, testOptions)
 
     } finally {
       factory.terminate()
     }
   }
 
-  def runAllTests(connection: Connection, userSettings: UserSettings, properties: Properties) {
-    val client = connection.login(userSettings).await
+  def runAllTests(client: Client, properties: Properties) {
     client.addServicesList(new LoaderServicesList())
     client.setHeaders(client.getHeaders.setTimeout(60000))
     client.setHeaders(client.getHeaders.setResultLimit(10000))

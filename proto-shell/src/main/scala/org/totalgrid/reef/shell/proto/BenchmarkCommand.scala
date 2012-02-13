@@ -16,13 +16,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.simulator.random
+package org.totalgrid.reef.shell.proto
 
-import org.totalgrid.reef.protocol.simulator.SimulatorPlugin
+import org.totalgrid.reef.benchmarks.AllBenchmarksEntryPoint
+import org.totalgrid.reef.client.settings.util.PropertyReader
+import org.apache.felix.gogo.commands.{ Argument, Command }
 
-trait ControllableSimulator extends SimulatorPlugin {
-  def getRepeatDelay: Long
-  def setUpdateDelay(newDelay: Long)
-  def setChangeProbability(prob: Double)
+@Command(scope = "reef", name = "benchmark", description = "Runs the benchmark suite")
+class BenchmarkCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "configFile", description = "Configuration file path", required = false, multiValued = false)
+  var configFile: String = "etc/org.totalgrid.reef.benchmarks.cfg"
+
+  override def doCommand(): Unit = {
+
+    val testOptions = PropertyReader.readFromFile(configFile)
+
+    AllBenchmarksEntryPoint.runAllTests(reefClient, testOptions)
+  }
 }
-
