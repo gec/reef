@@ -132,37 +132,18 @@
         };
 
         var getMeasurements = function() {
-            $.ajax({
-                url: settings.server + "/api/getMeasurementsByNames",
-                data: {
-                    pointNames: settings.point_names
-                },
-                type: 'GET',
-                dataType: 'json',
-                success: function(json_data, textStatus) {
-                    // if the server is totally unavailable success is called with null data and textStatus "success"
-                    // that is strange, though possibly a caching issue
-                    if (json_data) {
-                        var measurements = json_data.results;
-                        settings.display_function(enhanceMeasurements(measurements));
-                    }else{
-                        settings.error_function("Couldn't connect to server.");
-                    }
-                },
-                error: function(XMLHttpRequest, textStatus, errorThrown) {
-                    var msg = XMLHttpRequest.status + " " + XMLHttpRequest.statusText + " ";
-                    var text = XMLHttpRequest.responseText;
-                    if (errorThrown && errorThrown.message) {
-                        msg += errorThrown.message;
-                    }
-                    settings.error_function(msg);
-                }
-            });
+           settings.client.getMeasurementsByNames(settings.point_names,
+            function(measurements){
+                settings.display_function(enhanceMeasurements(measurements));
+            }, function(errorString){
+                settings.error_function(errorString);
+            }
+            );
         };
 
         var settings = $.extend({
             // address of the server to query
-            'server': '',
+            'client': undefined,
             // list of point names, must include atleast one point name
             'pointNames': [],
             // enables live-updates via polling, do not poll more often than once a second
@@ -197,8 +178,8 @@
         if (settings.point_names.length === 0) {
             throw "No points requested";
         }
-        if (settings.server === '') {
-            throw "No server configured";
+        if (settings.client === undefined) {
+            throw "No client configured";
         }
 
         return this.each(function() {

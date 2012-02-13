@@ -23,7 +23,9 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-        <script language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js" ></script>
+        <script language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js" ></script>
+        <script language="javascript" src="./reef.client.js"></script>
+        <script language="javascript" src="./reef.client.core-services.js"></script>
         <script language="javascript" src="./reef.widget.measurement.js"></script>
         <link rel="stylesheet" type="text/css" href="./reef.widget.measurement.css" media="screen" />
 
@@ -33,11 +35,20 @@
     <body>
 
         <div id="data_div" style="width:500px;" ></div>
+        <div id="error_div" style="width:500px;" ></div>
 
         <script type="text/javascript">
         $(document).ready(function(){
-            $('#data_div').displayMeasurements({
+            var client = $.reefClient({
                 'server'     : 'http://127.0.0.1:8886',
+                'error_div'  : $('#error_div'),
+                'autoLogin' : {
+                    'name' : 'system',
+                    'password' : 'system'
+                }
+            });
+            $('#data_div').displayMeasurements({
+                'client'     : client,
                 'point_names' : [
                     'SimulatedSubstation.Line01.Current',
                     'StaticSubstation.Line02.Current',
