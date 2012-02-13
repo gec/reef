@@ -20,9 +20,9 @@ package org.totalgrid.reef.httpbridge.servlets
 
 import javax.servlet.http.{ HttpServletResponse, HttpServletRequest }
 import org.totalgrid.reef.httpbridge.ManagedConnection
-import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.httpbridge.servlets.helpers.argumentsources.ParameterArgumentSource
 import org.totalgrid.reef.httpbridge.servlets.helpers._
+import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
 
 /**
  * Proxies calls from the client, and prepares the apporiate ArgumentSource based on the method and
@@ -54,9 +54,15 @@ class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider
     client.setHeaders(headers.setAuthToken(authToken))
 
     apiCall match {
-      case SingleResultApiCall(func) => printSingleOutput(req, resp, func(client).await)
-      case OptionalResultApiCall(func) => printOutput(req, resp, func(client).await.toList)
-      case MultiResultApiCall(func) => printOutput(req, resp, func(client).await)
+      case SingleResultApiCall(func) =>
+        resp.setHeader(RETURN_STYLE, "SINGLE")
+        printSingleOutput(req, resp, func(client).await)
+      case OptionalResultApiCall(func) =>
+        resp.setHeader(RETURN_STYLE, "SINGLE")
+        printOutput(req, resp, func(client).await.toList)
+      case MultiResultApiCall(func) =>
+        resp.setHeader(RETURN_STYLE, "MULTI")
+        printOutput(req, resp, func(client).await)
     }
 
     resp.setStatus(200)

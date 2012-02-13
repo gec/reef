@@ -32,6 +32,7 @@ trait ServletErrorHandler extends Logging {
     try {
       // set the origin header on all requests (even error cases)
       resp.setHeader(ORIGIN_HEADER, "*")
+      resp.setHeader("Access-Control-Expose-Headers", CUSTOM_HEADERS.mkString(", "))
       // IE likes to aggressively cache ajax requests
       resp.setHeader("Cache-Control", "max-age=0,no-cache,no-store")
       fun

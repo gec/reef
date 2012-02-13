@@ -29,10 +29,15 @@ abstract class ServletBase extends HttpServlet with DataFormatter with ServletEr
    * browsers that implement CORS will send an OPTION request to the server first:
    * https://developer.mozilla.org/En/HTTP_access_control
    * http://enable-cors.org/
+   *
+   * Expose headers support is forthcoming, fixed in webkit in January 2012
+   * https://bugs.webkit.org/show_bug.cgi?id=41210
+   * http://code.google.com/p/chromium/issues/detail?id=87338
    */
   override def doOptions(req: HttpServletRequest, resp: HttpServletResponse) {
     resp.setHeader(ORIGIN_HEADER, "*")
     resp.setHeader("Access-Control-Allow-Headers", CUSTOM_HEADERS.mkString(", "))
+    resp.setHeader("Access-Control-Expose-Headers", CUSTOM_HEADERS.mkString(", "))
     resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
     resp.setStatus(200)
   }
