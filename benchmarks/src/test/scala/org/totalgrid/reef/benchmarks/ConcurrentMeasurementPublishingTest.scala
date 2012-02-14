@@ -50,7 +50,7 @@ class ConcurrentMeasurementPublishingTest extends BenchmarkTestBase {
   parallelisms.foreach { threads =>
     batchSizes.foreach { batchSize =>
       test("Publishing " + totalMeasurements + " measurements in batches of: " + batchSize + "  with " + threads + " threads") {
-        measReadings :::= runBenchmark(new ConcurrentMeasurementPublishingBenchmark(endpointNames, totalMeasurements, threads, batchSize))
+        measReadings :::= runBenchmark(new ConcurrentMeasurementPublishingBenchmark(endpointNames, totalMeasurements, threads, batchSize, 0))
       }
     }
   }

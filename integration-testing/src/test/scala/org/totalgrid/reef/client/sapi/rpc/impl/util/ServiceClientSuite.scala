@@ -30,22 +30,10 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.standalone.InMemoryNode
 import org.totalgrid.reef.loader.commons.LoaderServicesList
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
+import org.totalgrid.reef.client.sapi.client.SubscriptionCanceler
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
-}
-
-class SubscriptionCanceler extends SubscriptionCreationListener {
-
-  var subs = List.empty[SubscriptionBinding]
-
-  def onSubscriptionCreated(binding: SubscriptionBinding) = this.synchronized {
-    subs ::= binding
-  }
-
-  def cancel() = this.synchronized {
-    subs.foreach { _.cancel() }
-  }
 }
 
 abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with ShouldMatchers {

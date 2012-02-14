@@ -104,6 +104,7 @@ object AllBenchmarksEntryPoint {
       val totalMeasurements = c.getIntList("publishMeasTotal")
       val publishingWriters = c.getIntList("publishMeasWriters")
       val publishingBatchSizes = c.getIntList("publishMeasBatchSizes")
+      val subscribers = c.getIntList("subscribers")
 
       if (c.getBool("addEndpoints")) {
         tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint,
@@ -112,7 +113,9 @@ object AllBenchmarksEntryPoint {
       totalMeasurements.foreach { measurements =>
         publishingWriters.foreach { writers =>
           publishingBatchSizes.foreach { batchSize =>
-            tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, measurements, writers, batchSize)
+            subscribers.foreach { subs =>
+              tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, measurements, writers, batchSize, subs)
+            }
           }
         }
       }

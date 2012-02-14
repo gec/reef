@@ -26,9 +26,11 @@ import org.totalgrid.reef.client.sapi.client.rest.Client
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import org.totalgrid.reef.client.AddressableDestination
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.Timing.Stopwatch
+import org.totalgrid.reef.client.sapi.client.SubscriptionCanceler
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, AddressableDestination }
 
 /**
  * this benchmark tests how long it takes to publish a total number of measurements to the server.
@@ -39,13 +41,13 @@ import org.totalgrid.reef.util.Timing.Stopwatch
  *   differing usage patterns depending on usage, time of day, polling rates, etc.
  * - Measurements are all different, no filtering is done, real world streams often have lots of redundant information
  */
-class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], totalMeas: Long, concurrency: Int, batchSize: Int) extends BenchmarkTest {
+class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], totalMeas: Long, concurrency: Int, batchSize: Int, subscribers: Int) extends BenchmarkTest {
 
   case class ConcurrentMeasurementReading(concurrency: Int, batchSize: Int, time: Long, firstMessage: Long, lastMessage: Long) extends BenchmarkReading {
     def csvName = "concurrentPublishing"
 
-    def testParameterNames = List("concurrency", "batchSize", "totalMeas")
-    def testParameters = List(concurrency, batchSize, totalMeas)
+    def testParameterNames = List("concurrency", "batchSize", "totalMeas", "subscribers")
+    def testParameters = List(concurrency, batchSize, totalMeas, subscribers)
 
     def testOutputNames = List("time", "firstMessage", "lastMessage", "spread")
     def testOutputs = List(time, firstMessage, lastMessage, lastMessage - firstMessage)
@@ -54,8 +56,8 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
   case class OverallConcurrentMeasurementReading(concurrency: Int, batchSize: Int, time: Long) extends BenchmarkReading {
     def csvName = "concurrentPublishOverall"
 
-    def testParameterNames = List("concurrency", "batchSize", "totalMeas")
-    def testParameters = List(concurrency, batchSize, totalMeas)
+    def testParameterNames = List("concurrency", "batchSize", "totalMeas", "subscribers")
+    def testParameters = List(concurrency, batchSize, totalMeas, subscribers)
 
     def testOutputNames = List("time")
     def testOutputs = List(time)
@@ -82,10 +84,35 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
     val sub = services.subscribeToMeasurementsByNames(allPointNames).await
     val roundtripTimer = new ConcurrentRoundtripTimer(client, sub)
 
-    stream.foreach { _.println("Publishing: " + totalMeas + " measurements using batchSize: " + batchSize + " concurrency: " + concurrency) }
+    if (subscribers > 0) stream.foreach { _.println("Starting " + subscribers + " extra measurement listeners") }
+    // we use a different client because we want to make sure these events are handled
+    // on different thread than our main test readings
+    val subscriptionCanceler = startFakeSubscribers(client.spawn(), allPointNames)
+
+    stream.foreach {
+      _.println("Publishing: " + totalMeas + " measurements using batchSize: " + batchSize +
+        " concurrency: " + concurrency + " subscribers: " + subscribers + " points: " + allPointNames.size)
+    }
     val results = publishMeasurements(client, pointsForEndpoints, roundtripTimer)
     roundtripTimer.cancel()
+    subscriptionCanceler.cancel()
     results
+  }
+
+  private def startFakeSubscribers(subClient: Client, allPointNames: List[String]) = {
+
+    val subServices = subClient.getRpcInterface(classOf[AllScadaService])
+    val subscriptionCanceler = new SubscriptionCanceler
+    subClient.addSubscriptionCreationListener(subscriptionCanceler)
+    (0 to (subscribers - 1)).foreach { i =>
+      val sub = subServices.subscribeToMeasurementsByNames(allPointNames).await.getSubscription
+      sub.start(new SubscriptionEventAcceptor[Measurement] {
+        def onEvent(event: SubscriptionEvent[Measurement]) {
+          // just throw it away, we just need to make sure the queues are all flowing
+        }
+      })
+    }
+    subscriptionCanceler
   }
 
   private def publishMeasurements(client: Client, pointsForEndpoints: Map[String, (EndpointConnection, List[String])], roundtripTimer: ConcurrentRoundtripTimer) = {
