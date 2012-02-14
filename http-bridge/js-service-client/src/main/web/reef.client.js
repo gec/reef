@@ -64,12 +64,10 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function(jsonData, textStatus, jqXhdr) {
-                    // if the server is totally unavailable success is called with null data and textStatus "success"
-                    // that is strange, though possibly a caching issue
                     if (jsonData) {
-                        options.handleData(jsonData, jqXhdr);
+                        options.resultFuture.resolve(jsonData, jqXhdr);
                     } else {
-                        options.handleError("Couldn't connect to server.");
+                        options.resultFuture.reject("No data returned");
                     }
 
                     // kick off the next request (if theres any queued)
@@ -80,7 +78,10 @@
                     if (errorThrown) {
                         msg += " " + errorThrown;
                     }
-                    options.handleError(msg);
+                    if(XMLHttpRequest.status == 0) {
+                        msg = "Couldn't connect to server.";
+                    }
+                    options.resultFuture.reject(msg);
                     // kick off the next request (if theres any queued)
                     $(clientObject).dequeue();
                 }
@@ -98,43 +99,34 @@
         };
 
         var apiRequest = function(options) {
-            var requestName = options.request;
-            var requestData = options.data;
-            var onData = options.success;
-
-            var onError = settings.error_function;
-            if (options.error !== undefined) {
-                onError = options.error;
-            }
+            var future = $.Deferred()
 
             enqueueRequest({
-                url: settings.server + "/api/" + requestName,
-                data: requestData,
-                handleData: function(jsonData, jqXhdr) {
-
-                    // TODO: expose headers support is coming
-                    //var style = jqXhdr.getResponseHeader("REEF_RETURN_STYLE");
-                    var style = options.style;
-                    switch (style) {
-                    case "MULTI":
-                        onData(jsonData.results);
-                        break;
-                    case "SINGLE":
-                        onData(jsonData);
-                        break;
-                    default:
-                        onError("unknown return style");
-                    }
-                },
-                handleError: onError
+                url: settings.server + "/api/" + options.request,
+                data: options.data,
+                resultFuture: future
             });
-
+            return future.pipe(function(jsonData, jqXhdr) {
+                // TODO: expose headers support is coming
+                //var style = jqXhdr.getResponseHeader("REEF_RETURN_STYLE");
+                var style = options.style;
+                switch (style) {
+                case "MULTI":
+                return jsonData.results;
+                case "SINGLE":
+                return jsonData;
+                default:
+                throw "unknown return style";
+                }
+            });
         };
 
         var login = function(userName, userPassword) {
             if (settings.authToken) {
                 throw "Already logged in, logout first";
             }
+
+            var future = $.Deferred();
 
             enqueueRequest({
                 url: settings.server + "/login",
@@ -144,12 +136,13 @@
                 },
                 type: 'GET',
                 dataType: 'text',
-                handleData: function(jsonData, jqXhdr) {
-                    //console.log("Logged in: " + userName);
-                    settings.authToken = jsonData;
-                },
-                handleError: settings.error_function
+                resultFuture: future
             });
+            return future.pipe(function(jsonData, jqXhdr) {
+                console.log("Logged in: " + userName);
+                settings.authToken = jsonData;
+                return clientObject;
+           });
 
         };
         clientObject = {
