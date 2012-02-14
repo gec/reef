@@ -57,7 +57,7 @@ public class ReefConnectionFactory implements ConnectionFactory
         org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection scalaConnection;
         scalaConnection = new DefaultConnection( brokerConnectionFactory.connect(), exe, 5000 );
         scalaConnection.addServicesList( servicesList );
-        return new ConnectionWrapper( scalaConnection );
+        return new ConnectionWrapper( scalaConnection, exe );
     }
 
     public void terminate()

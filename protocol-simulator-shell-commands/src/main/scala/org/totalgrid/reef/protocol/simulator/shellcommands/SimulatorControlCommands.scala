@@ -16,13 +16,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.simulator.random
+package org.totalgrid.reef.protocol.simulator.shellcommands
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
 
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.util.Table
+import org.totalgrid.reef.protocol.simulator.ControllableSimulator
 
 trait SimulatorControlCommands { self: OsgiCommandSupport =>
 

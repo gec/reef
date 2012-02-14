@@ -27,11 +27,14 @@ import org.totalgrid.reef.benchmarks.system._
 import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
 import org.totalgrid.reef.client.service.list.ReefServices
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.loader.commons.LoaderServicesList
 
 import MeasurementCurrentValueBenchmark._
 import java.util.Properties
+import org.totalgrid.reef.metrics.client.{ MetricsMapHelpers, MetricsService, MetricsServiceList }
+
+import BenchmarkUtilities._
 
 object AllBenchmarksEntryPoint {
 
@@ -49,17 +52,18 @@ object AllBenchmarksEntryPoint {
     try {
 
       val connection = factory.connect()
+      val client = connection.login(userSettings).await
 
-      runAllTests(connection, userSettings, testOptions)
+      runAllTests(client, testOptions)
 
     } finally {
       factory.terminate()
     }
   }
 
-  def runAllTests(connection: Connection, userSettings: UserSettings, properties: Properties) {
-    val client = connection.login(userSettings).await
+  def runAllTests(client: Client, properties: Properties) {
     client.addServicesList(new LoaderServicesList())
+    client.addServicesList(new MetricsServiceList())
     client.setHeaders(client.getHeaders.setTimeout(60000))
     client.setHeaders(client.getHeaders.setResultLimit(10000))
     val services = client.getRpcInterface(classOf[AllScadaService])
@@ -99,17 +103,22 @@ object AllBenchmarksEntryPoint {
       val endpointLoadingWriters = c.getInt("endpointWriters")
       val endpointLoadingBatchSize = c.getInt("endpointBatchSize")
 
-      val totalMeasurements = c.getInt("publishMeasTotal")
+      val totalMeasurements = c.getIntList("publishMeasTotal")
       val publishingWriters = c.getIntList("publishMeasWriters")
       val publishingBatchSizes = c.getIntList("publishMeasBatchSizes")
+      val subscribers = c.getIntList("subscribers")
 
       if (c.getBool("addEndpoints")) {
         tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint,
           endpointLoadingWriters, endpointLoadingBatchSize, true, false)
       }
-      publishingWriters.foreach { writers =>
-        publishingBatchSizes.foreach { batchSize =>
-          tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, totalMeasurements, writers, batchSize)
+      totalMeasurements.foreach { measurements =>
+        publishingWriters.foreach { writers =>
+          publishingBatchSizes.foreach { batchSize =>
+            subscribers.foreach { subs =>
+              tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, measurements, writers, batchSize, subs)
+            }
+          }
         }
       }
       if (c.getBool("measTestReads")) {
@@ -123,40 +132,51 @@ object AllBenchmarksEntryPoint {
       }
     }
 
-    val allResults = tests.reverse.map(_.runTest(client, stream)).flatten
-    outputResults(allResults)
+    val baseName = options.getString("outputFileBaseName")
+    val metricsClient = client.getRpcInterface(classOf[MetricsService])
+
+    def runAllTests() = tests.reverse.map(_.runTest(client, stream)).flatten
+
+    val allResults = if (options.getBool("collectServerSideMetrics")) {
+      captureServerSideMetrics(metricsClient, baseName + "serverSideMetrics.csv") {
+        runAllTests()
+      }
+    } else {
+      runAllTests()
+    }
+    outputResults(allResults, baseName)
   }
 
-  def outputResults(allResults: List[BenchmarkReading]) {
+  def captureServerSideMetrics[A](metricsClient: MetricsService, fileName: String)(fun: => A) = {
+    val initialSnapshot = MetricsMapHelpers.fromProto(metricsClient.getMetrics())
+    try {
+      fun
+    } finally {
+      val postTestSnapshot = MetricsMapHelpers.fromProto(metricsClient.getMetrics())
+      val differences = MetricsMapHelpers.difference(initialSnapshot, postTestSnapshot)
+
+      val output = new DelimitedFileOutput(fileName, false)
+      output.addRow(List("name", "value"))
+      stableForeach(postTestSnapshot) { (name, value) =>
+        output.addRow(List(name, value.toString))
+      }
+      stableForeach(differences) { (name, value) =>
+        output.addRow(List(name + "-diff", value.toString))
+      }
+      output.close()
+    }
+  }
+
+  def outputResults(allResults: List[BenchmarkReading], baseName: String) {
 
     val resultsByFileName = allResults.groupBy(_.csvName)
 
-    val histogramResults = resultsByFileName.map {
-      case (csvName, results) =>
-        Histogram.getHistograms(csvName, results)
-    }.toList.flatten
+    val histogramResults = Histogram.getHistograms(resultsByFileName)
 
-    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, "averages")
-    val teamCity = new TeamCityStatisticsXml("teamcity-info.xml")
-    histogramResults.foreach { h =>
-      h.outputsWithLabels.foreach { case (label, value) => teamCity.addRow(label, value) }
-    }
-    teamCity.close()
+    writeHistogramCsvFiles(histogramResults, baseName + "averages")
+    writeTeamCityFile(histogramResults)
 
-    resultsByFileName.foreach {
-      case (csvName, results) =>
-        val output = new DelimitedFileOutput(csvName + ".csv", false)
-
-        output.addRow(results.head.columnNames)
-        results.foreach { r => output.addRow(r.values.map { _.toString }) }
-        output.close()
-    }
+    writeCsvFiles(resultsByFileName, baseName)
   }
 
-  def takeRandom[A](max: Int, list: List[A]): List[A] = {
-    if (list.size < max) list
-    else {
-      scala.util.Random.shuffle(list).take(max)
-    }
-  }
 }

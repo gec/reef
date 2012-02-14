@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.4-SNAPSHOT</version>
+        <version>0.4.5-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-standalone-node</artifactId>
@@ -48,6 +48,12 @@
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-loader-xml</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-default-simulator</artifactId>
@@ -75,6 +81,12 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-postgresql</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-metrics-service</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>

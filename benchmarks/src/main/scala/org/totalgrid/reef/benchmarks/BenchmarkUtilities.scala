@@ -39,17 +39,16 @@ object BenchmarkUtilities {
   }
 
   def writeCsvFiles(resultsByFileName: Map[String, scala.List[BenchmarkReading]], baseName: String = "") {
-    resultsByFileName.foreach {
-      case (csvName, results) =>
-        val output = new DelimitedFileOutput(baseName + csvName + ".csv", false)
+    stableForeach(resultsByFileName) { (csvName, results) =>
+      val output = new DelimitedFileOutput(baseName + csvName + ".csv", false)
 
-        output.addRow(results.head.columnNames)
-        results.foreach { r => output.addRow(r.values.map { _.toString }) }
-        output.close()
+      output.addRow(results.head.columnNames)
+      results.foreach { r => output.addRow(r.values.map { _.toString }) }
+      output.close()
     }
   }
 
-  def writeHistogramCsvFiles(histogramResults: List[Histogram], baseName: String = "historgrams") {
+  def writeHistogramCsvFiles(histogramResults: List[Histogram], baseName: String = "histograms") {
 
     val output = new DelimitedFileOutput(baseName + ".csv", false)
 
@@ -69,6 +68,16 @@ object BenchmarkUtilities {
     writeHistogramCsvFiles(histogramResults)
 
     writeCsvFiles(resultsByFileName)
+  }
+
+  def stableForeach[A](collection: Map[String, A])(fun: (String, A) => Unit) {
+    stableMap[A, Unit](collection)(fun)
+  }
+
+  def stableMap[A, B](collection: Map[String, A])(fun: (String, A) => B) = {
+    collection.keys.toList.sorted.map { name =>
+      fun(name, collection(name))
+    }
   }
 
   def takeRandom[A](max: Int, list: List[A]): List[A] = {

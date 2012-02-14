@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.4-SNAPSHOT</version>
+        <version>0.4.5-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
@@ -33,6 +33,7 @@
                         <Bundle-Name>Reef Client API</Bundle-Name>
                         <Export-Package>
                             org.totalgrid.reef.client;version="${reef.version}",
+                            org.totalgrid.reef.client.internal;version="${reef.version}",
                             org.totalgrid.reef.client.factory;version="${reef.version}",
                             org.totalgrid.reef.client.javaimpl;version="${reef.version}",
                             org.totalgrid.reef.client.sapi.client.*;version="${reef.version}",

@@ -53,8 +53,8 @@ final class FepActivator extends ConnectedApplicationBundleActivator {
         addProtocol(wrapper, appManager)
       case ServiceRemoved(p, _) =>
         wrapperMap.get(p).foreach { x =>
-            wrapperMap -= p
-            removeProtocol(x, appManager)
+          wrapperMap -= p
+          removeProtocol(x, appManager)
         }
 
     }

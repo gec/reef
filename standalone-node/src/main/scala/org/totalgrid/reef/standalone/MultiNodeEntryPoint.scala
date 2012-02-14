@@ -19,8 +19,9 @@
 package org.totalgrid.reef.standalone
 
 import net.agileautomata.executor4s._
+import org.totalgrid.reef.util.ShutdownHook
 
-object MultiNodeEntryPoint {
+object MultiNodeEntryPoint extends ShutdownHook {
 
   def main(args: Array[String]) = {
     val exe = Executors.newResizingThreadPool(5.minutes)
@@ -29,9 +30,9 @@ object MultiNodeEntryPoint {
     try {
       system.start()
 
-      system.runTerminal()
-
-      system.stop()
+      waitForShutdown {
+        system.stop()
+      }
     } finally {
       exe.terminate()
     }
