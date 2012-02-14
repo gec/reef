@@ -32,6 +32,7 @@ import org.totalgrid.reef.loader.commons.LoaderServicesList
 
 import MeasurementCurrentValueBenchmark._
 import java.util.Properties
+import org.totalgrid.reef.metrics.client.{ MetricsMapHelpers, MetricsService, MetricsServiceList }
 
 object AllBenchmarksEntryPoint {
 
@@ -60,6 +61,7 @@ object AllBenchmarksEntryPoint {
 
   def runAllTests(client: Client, properties: Properties) {
     client.addServicesList(new LoaderServicesList())
+    client.addServicesList(new MetricsServiceList())
     client.setHeaders(client.getHeaders.setTimeout(60000))
     client.setHeaders(client.getHeaders.setResultLimit(10000))
     val services = client.getRpcInterface(classOf[AllScadaService])
@@ -107,7 +109,7 @@ object AllBenchmarksEntryPoint {
         tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint,
           endpointLoadingWriters, endpointLoadingBatchSize, true, false)
       }
-      totalMeasurements.foreach{ measurements =>
+      totalMeasurements.foreach { measurements =>
         publishingWriters.foreach { writers =>
           publishingBatchSizes.foreach { batchSize =>
             tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, measurements, writers, batchSize)
@@ -125,11 +127,42 @@ object AllBenchmarksEntryPoint {
       }
     }
 
-    val allResults = tests.reverse.map(_.runTest(client, stream)).flatten
-    outputResults(allResults, options.getString("outputFileBaseName"))
+    val baseName = options.getString("outputFileBaseName")
+    val metricsClient = client.getRpcInterface(classOf[MetricsService])
+
+    def runAllTests() = tests.reverse.map(_.runTest(client, stream)).flatten
+
+    val allResults = if (options.getBool("collectServerSideMetrics")) {
+      captureServerSideMetrics(metricsClient, baseName + "serverSideMetrics.csv") {
+        runAllTests()
+      }
+    } else {
+      runAllTests()
+    }
+    outputResults(allResults, baseName)
   }
 
-  def outputResults(allResults: List[BenchmarkReading], baseName : String) {
+  def captureServerSideMetrics[A](metricsClient: MetricsService, fileName: String)(fun: => A) = {
+    val initialSnapshot = MetricsMapHelpers.fromProto(metricsClient.getMetrics())
+    try {
+      fun
+    } finally {
+      val postTestSnapshot = MetricsMapHelpers.fromProto(metricsClient.getMetrics())
+      val differences = MetricsMapHelpers.difference(initialSnapshot, postTestSnapshot)
+
+      val output = new DelimitedFileOutput(fileName, false)
+      output.addRow(List("name", "value"))
+      postTestSnapshot.keys.toList.sorted.foreach { name =>
+        output.addRow(List(name, postTestSnapshot(name).toString))
+      }
+      differences.keys.toList.sorted.foreach { name =>
+        output.addRow(List(name + "-diff", differences(name).toString))
+      }
+      output.close()
+    }
+  }
+
+  def outputResults(allResults: List[BenchmarkReading], baseName: String) {
 
     val resultsByFileName = allResults.groupBy(_.csvName)
 

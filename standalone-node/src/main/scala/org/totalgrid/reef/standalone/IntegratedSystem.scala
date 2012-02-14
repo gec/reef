@@ -35,6 +35,7 @@ import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnected
 import net.agileautomata.executor4s.testing.InstantExecutor
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
 import org.totalgrid.reef.entry.FepConnectedApplication
+import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
@@ -85,6 +86,8 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     loadProtocols(properties, exe).foreach { protocol =>
       applicationManager.addConnectedApplication(new FepConnectedApplication(protocol))
     }
+
+    applicationManager.addConnectedApplication(new MetricsServiceApplication)
   }
 
   def connection() = {

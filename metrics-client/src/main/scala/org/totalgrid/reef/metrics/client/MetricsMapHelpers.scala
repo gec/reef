@@ -18,22 +18,41 @@
  */
 package org.totalgrid.reef.metrics.client
 
+import org.totalgrid.reef.metrics.client.proto.Metrics.MetricsRead
+import scala.collection.JavaConversions._
+
 object MetricsMapHelpers {
+
+  def fromProto(rd: MetricsRead): Map[String, Any] = {
+    rd.getResultsList.toList.map(r => (r.getName, r.getValue)).toMap
+  }
 
   /**
    * calculates rate of measurements per second for all int and double fields.
    */
   def changePerSecond(startValues: Map[String, Any], endValues: Map[String, Any], time: Long): Map[String, Any] = {
-    startValues.map {
-      case (name, startVal) =>
-        endValues.get(name) match {
-          case Some(endVal) =>
+    difference(startValues, endValues).map {
+      case (name, difference) =>
+        difference match {
+          case i: Int => Some(name + ".Rate" -> ((difference.asInstanceOf[Int] * 1000) / time).toInt)
+          case d: Double => Some(name + ".Rate" -> ((difference.asInstanceOf[Double] * 1000) / time).toDouble)
+          case _ => None
+        }
+    }.flatten.toMap
+  }
+
+  def difference(startValues: Map[String, Any], endValues: Map[String, Any]): Map[String, Any] = {
+    endValues.map {
+      case (name, endVal) =>
+        startValues.get(name) match {
+          case Some(startVal) =>
             endVal match {
-              case i: Int => Some(name + ".Rate" -> (((i - startVal.asInstanceOf[Int]) * 1000) / time).toInt)
-              case d: Double => Some(name + ".Rate" -> ((d - startVal.asInstanceOf[Double]) * 1000) / time)
+              case i: Int => Some(name -> (i - startVal.asInstanceOf[Int]))
+              case d: Double => Some(name -> (d - startVal.asInstanceOf[Double]))
               case _ => None
             }
-          case None => None
+          // if the value wasn't there at start the entire thing should be considered a change
+          case None => Some(name -> endVal)
         }
     }.flatten.toMap
   }

@@ -18,13 +18,12 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.totalgrid.reef.metrics.client.{ MetricsMapHelpers, CSVMetricPublisher }
 import org.apache.felix.gogo.commands.{ Argument, Command, Option }
-import org.totalgrid.reef.client.service.AllScadaService
 import org.totalgrid.reef.metrics.client.MetricsService
-import org.totalgrid.reef.metrics.client.proto.Metrics.MetricsRead
 import scala.collection.JavaConversions._
+
+import MetricsMapHelpers._
 
 /**
  * base class, keeps the state filters, calculations and output settings
@@ -54,14 +53,9 @@ abstract class MetricsCommands extends ReefCommandSupport {
     }
   }
 
-  import scala.collection.JavaConversions._
   def getMetrics(executeCalculations: Boolean = true) = {
     val rawMetrics = fromProto(metrics.getMetrics())
-    if (executeCalculations) MetricsMapHelpers.performCalculations(rawMetrics, calculations.get) else rawMetrics
-  }
-
-  def fromProto(rd: MetricsRead): Map[String, Any] = {
-    rd.getResultsList.toList.map(r => (r.getName, r.getValue)).toMap
+    if (executeCalculations) performCalculations(rawMetrics, calculations.get) else rawMetrics
   }
 
   def printMetrics(values: Map[String, Any]) {
@@ -118,8 +112,8 @@ class MetricsRates extends MetricsCommands {
     Thread.sleep(time * 1000)
 
     val endValues = getMetrics(false)
-    val pubValues = MetricsMapHelpers.changePerSecond(startValues, endValues, time * 1000)
-    val calcedValues = MetricsMapHelpers.performCalculations(pubValues, calculations.get)
+    val pubValues = changePerSecond(startValues, endValues, time * 1000)
+    val calcedValues = performCalculations(pubValues, calculations.get)
 
     output(calcedValues)
   }
@@ -154,7 +148,7 @@ class MetricsCalcs extends MetricsCommands {
 
   // TODO: implement calculations other than sumCount
   @Option(name = "-sumCount", aliases = Array[String](), description = "Sum up and count matching metrics generating \"key.Sum\" and \"key.Count\" points", required = false, multiValued = false)
-  private var sumAndCount: Boolean = true
+  private var doSumAndCount: Boolean = true
 
   @Option(name = "-dontSave", aliases = Array[String](), description = "Dont run the same calc on future metrics reads", required = false, multiValued = false)
   private var dontSave: Boolean = false
@@ -162,8 +156,8 @@ class MetricsCalcs extends MetricsCommands {
   def doCommand() {
     val preFilteredMetrics = fromProto(metrics.getMetricsWithFilter(key))
 
-    val calcs = MetricsMapHelpers.sumAndCount(preFilteredMetrics, key)
-    val calcsPlusSourceData = MetricsMapHelpers.mergeMap(List(preFilteredMetrics, calcs))
+    val calcs = sumAndCount(preFilteredMetrics, key)
+    val calcsPlusSourceData = mergeMap(List(preFilteredMetrics, calcs))
 
     output(calcsPlusSourceData)
 
@@ -183,7 +177,7 @@ class MetricsThroughput extends MetricsCommands {
   def doCommand() {
 
     val startValues = fromProto(metrics.getMetricsWithFilter(key))
-    val totals = MetricsMapHelpers.performCalculations(startValues, List(key))
+    val totals = performCalculations(startValues, List(key))
 
     println("Totals:")
     output(totals)
@@ -195,9 +189,9 @@ class MetricsThroughput extends MetricsCommands {
 
     val endValues = fromProto(metrics.getMetricsWithFilter(key))
 
-    val valuesWithRates = MetricsMapHelpers.changePerSecond(startValues, endValues, time * 1000)
+    val valuesWithRates = changePerSecond(startValues, endValues, time * 1000)
 
-    val calcedRates = MetricsMapHelpers.performCalculations(valuesWithRates, List(key + ".Rate"))
+    val calcedRates = performCalculations(valuesWithRates, List(key + ".Rate"))
 
     output(calcedRates)
   }

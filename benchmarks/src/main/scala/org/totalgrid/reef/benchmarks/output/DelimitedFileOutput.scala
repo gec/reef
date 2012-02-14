@@ -18,18 +18,17 @@
  */
 package org.totalgrid.reef.benchmarks.output
 
-import java.io.{IOException, File}
-
+import java.io.{ IOException, File }
 
 class DelimitedFileOutput(fileName: String, append: Boolean = true, separator: String = ",") {
 
   val outputFile = new File(fileName)
 
   val directory = outputFile.getParentFile
-  if(!directory.exists() && !directory.mkdirs()){
+  if (!directory.exists() && !directory.mkdirs()) {
     throw new IOException("Can't make directory: " + directory.getAbsolutePath)
   }
-  
+
   val outputStream = new java.io.FileOutputStream(outputFile, append)
   var printStream = new java.io.PrintStream(outputStream)
 
