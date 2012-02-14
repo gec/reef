@@ -34,6 +34,8 @@ import MeasurementCurrentValueBenchmark._
 import java.util.Properties
 import org.totalgrid.reef.metrics.client.{ MetricsMapHelpers, MetricsService, MetricsServiceList }
 
+import BenchmarkUtilities._
+
 object AllBenchmarksEntryPoint {
 
   def main(args: Array[String]) {
@@ -155,11 +157,11 @@ object AllBenchmarksEntryPoint {
 
       val output = new DelimitedFileOutput(fileName, false)
       output.addRow(List("name", "value"))
-      postTestSnapshot.keys.toList.sorted.foreach { name =>
-        output.addRow(List(name, postTestSnapshot(name).toString))
+      stableForeach(postTestSnapshot) { (name, value) =>
+        output.addRow(List(name, value.toString))
       }
-      differences.keys.toList.sorted.foreach { name =>
-        output.addRow(List(name + "-diff", differences(name).toString))
+      stableForeach(differences) { (name, value) =>
+        output.addRow(List(name + "-diff", value.toString))
       }
       output.close()
     }
@@ -169,32 +171,12 @@ object AllBenchmarksEntryPoint {
 
     val resultsByFileName = allResults.groupBy(_.csvName)
 
-    val histogramResults = resultsByFileName.map {
-      case (csvName, results) =>
-        Histogram.getHistograms(csvName, results)
-    }.toList.flatten
+    val histogramResults = Histogram.getHistograms(resultsByFileName)
 
-    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, baseName + "averages")
-    val teamCity = new TeamCityStatisticsXml("teamcity-info.xml")
-    histogramResults.foreach { h =>
-      h.outputsWithLabels.foreach { case (label, value) => teamCity.addRow(label, value) }
-    }
-    teamCity.close()
+    writeHistogramCsvFiles(histogramResults, baseName + "averages")
+    writeTeamCityFile(histogramResults)
 
-    resultsByFileName.foreach {
-      case (csvName, results) =>
-        val output = new DelimitedFileOutput(baseName + csvName + ".csv", false)
-
-        output.addRow(results.head.columnNames)
-        results.foreach { r => output.addRow(r.values.map { _.toString }) }
-        output.close()
-    }
+    writeCsvFiles(resultsByFileName, baseName)
   }
 
-  def takeRandom[A](max: Int, list: List[A]): List[A] = {
-    if (list.size < max) list
-    else {
-      scala.util.Random.shuffle(list).take(max)
-    }
-  }
 }
