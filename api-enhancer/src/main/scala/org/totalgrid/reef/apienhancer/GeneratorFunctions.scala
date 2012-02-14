@@ -33,13 +33,19 @@ trait GeneratorFunctions {
 
     val classFile = new File(packageDir, className + fileEnding)
 
-    if (!classFile.exists || sourceFile.lastModified > classFile.lastModified) {
-      println("Genenerating: " + classFile.getAbsolutePath)
-      val stream = new PrintStream(new FileOutputStream(classFile))
+    writeFileIfNewer(classFile, sourceFile.lastModified) { stream =>
       func(stream, javaPackage)
+    }
+  }
+
+  def writeFileIfNewer(outputFile: File, shouldBeNewerThan: Long)(func: (PrintStream) => Unit) {
+    if (!outputFile.exists || shouldBeNewerThan > outputFile.lastModified) {
+      println("Genenerating: " + outputFile.getAbsolutePath)
+      val stream = new PrintStream(new FileOutputStream(outputFile))
+      func(stream)
       stream.close
     } else {
-      println("Skipping: " + classFile.getAbsolutePath)
+      println("Skipping: " + outputFile.getAbsolutePath)
     }
   }
 
