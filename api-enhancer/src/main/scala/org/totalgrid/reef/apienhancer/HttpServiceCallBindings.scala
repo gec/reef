@@ -134,8 +134,8 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     val data = if (!argStrings.isEmpty) "\t\t\t\tdata: {\n" + argStrings.map { _._1 }.mkString(",\n") + "\n\t\t\t\t},\n" else ""
     val args = if (!argStrings.isEmpty) argStrings.map { _._2 }.mkString(", ") else ""
 
-    "\t\tcalls.%s = function(%s) {\n%s\t\t\treturn client.apiRequest({\n\t\t\t\trequest: \"%s\",\n%s\t\t\t\tstyle: \"%s\""
-      .format(methodName, args, valueExtractors, methodName, data, style) + "\n\t\t\t});\n\t\t};"
+    "%s\n\t\tcalls.%s = function(%s) {\n%s\t\t\treturn client.apiRequest({\n\t\t\t\trequest: \"%s\",\n%s\t\t\t\tstyle: \"%s\""
+      .format(commentString(m.getRawCommentText(), 2), methodName, args, valueExtractors, methodName, data, style) + "\n\t\t\t});\n\t\t};"
   }
 
   /**

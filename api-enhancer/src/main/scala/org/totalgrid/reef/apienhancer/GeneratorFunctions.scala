@@ -49,9 +49,10 @@ trait GeneratorFunctions {
     }
   }
 
-  def commentString(commentText: String): String = {
+  def commentString(commentText: String, numTabs: Int = 0): String = {
+    val tabs = (1 to numTabs).map { i => "\t" }.mkString("")
     val strippedText = commentText.replaceAllLiterally("!api-definition!", "")
-    "/**\n" + strippedText.lines.toList.map { " *" + _ }.mkString("\n") + "\n*/"
+    tabs + "/**\n" + strippedText.lines.toList.map { tabs + " *" + _ }.mkString("\n") + "\n" + tabs + "*/"
   }
 
   /**
