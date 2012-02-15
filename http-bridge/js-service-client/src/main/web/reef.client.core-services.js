@@ -1,21 +1,3 @@
-/*
- * Copyright 2011 Green Energy Corp.
- *
- * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. Green Energy
- * Corp licenses this file to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 (function($) {
 	$.reefServiceList_core = function(client) {
 		var calls = {};
@@ -40,7 +22,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "agent"
 			});
 		};
 		/**
@@ -49,7 +32,8 @@
 		calls.getAgents = function() {
 			return client.apiRequest({
 				request: "getAgents",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "agent"
 			});
 		};
 		/**
@@ -68,7 +52,8 @@
 					password: password,
 					permissionSetNames: permissionSetNames
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "agent"
 			});
 		};
 		// Can't encode deleteAgent : Can't encode type: org.totalgrid.reef.client.service.proto.Auth.Agent
@@ -79,7 +64,8 @@
 		calls.getPermissionSets = function() {
 			return client.apiRequest({
 				request: "getPermissionSets",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "permission_set"
 			});
 		};
 		/**
@@ -92,7 +78,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "permission_set"
 			});
 		};
 		// Can't encode createPermissionSet : Can't encode type: org.totalgrid.reef.client.service.proto.Auth.Permission
@@ -127,7 +114,8 @@
 				data: {
 					id: id
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "alarm"
 			});
 		};
 		/**
@@ -141,7 +129,8 @@
 				data: {
 					limit: limit
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "alarm"
 			});
 		};
 		// Can't encode subscribeToActiveAlarms : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Alarms.Alarm>, org.totalgrid.reef.client.service.proto.Alarms.Alarm>
@@ -158,7 +147,8 @@
 					types: types,
 					recentAlarmLimit: recentAlarmLimit
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "alarm"
 			});
 		};
 		// Can't encode getActiveAlarmsByEntity : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
@@ -183,7 +173,8 @@
 		calls.getApplications = function() {
 			return client.apiRequest({
 				request: "getApplications",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "application_config"
 			});
 		};
 		/**
@@ -197,7 +188,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "application_config"
 			});
 		};
 		/**
@@ -211,7 +203,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "application_config"
 			});
 		};
 		/**
@@ -226,7 +219,8 @@
 				data: {
 					uuid: uuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "application_config"
 			});
 		};
 		////////////////////
@@ -339,7 +333,8 @@
 				data: {
 					commandId: commandId
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "command_lock"
 			});
 		};
 		/**
@@ -353,7 +348,8 @@
 		calls.clearCommandLocks = function() {
 			return client.apiRequest({
 				request: "clearCommandLocks",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "command_lock"
 			});
 		};
 		// Can't encode executeCommandAsControl : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
@@ -373,7 +369,8 @@
 		calls.getCommandLocks = function() {
 			return client.apiRequest({
 				request: "getCommandLocks",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "command_lock"
 			});
 		};
 		/**
@@ -388,7 +385,8 @@
 				data: {
 					id: id
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "command_lock"
 			});
 		};
 		// Can't encode findCommandLockOnCommand : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
@@ -401,7 +399,8 @@
 		calls.getCommandHistory = function() {
 			return client.apiRequest({
 				request: "getCommandHistory",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "user_command_request"
 			});
 		};
 		// Can't encode getCommandHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
@@ -412,7 +411,8 @@
 		calls.getCommands = function() {
 			return client.apiRequest({
 				request: "getCommands",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "command"
 			});
 		};
 		/**
@@ -428,7 +428,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "command"
 			});
 		};
 		/**
@@ -445,7 +446,8 @@
 				data: {
 					uuid: uuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "command"
 			});
 		};
 		/**
@@ -461,7 +463,8 @@
 				data: {
 					names: names
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "command"
 			});
 		};
 		/**
@@ -477,7 +480,8 @@
 				data: {
 					uuids: uuids
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "command"
 			});
 		};
 		/**
@@ -493,7 +497,8 @@
 				data: {
 					parentUUID: parentUUID
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "command"
 			});
 		};
 		/**
@@ -509,7 +514,8 @@
 				data: {
 					endpointUuid: endpointUuid
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "command"
 			});
 		};
 		/**
@@ -525,7 +531,8 @@
 				data: {
 					pointUuid: pointUuid
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "command"
 			});
 		};
 		// Can't encode bindCommandHandler : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionBinding
@@ -545,7 +552,8 @@
 		calls.getCommunicationChannels = function() {
 			return client.apiRequest({
 				request: "getCommunicationChannels",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "comm_channel"
 			});
 		};
 		/**
@@ -559,7 +567,8 @@
 				data: {
 					channelUuid: channelUuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "comm_channel"
 			});
 		};
 		/**
@@ -572,7 +581,8 @@
 				data: {
 					channelName: channelName
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "comm_channel"
 			});
 		};
 		// Can't encode alterCommunicationChannelState : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.CommChannel.State
@@ -588,7 +598,8 @@
 				data: {
 					channelUuid: channelUuid
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "endpoint"
 			});
 		};
 		////////////////////
@@ -615,7 +626,8 @@
 		calls.getConfigFiles = function() {
 			return client.apiRequest({
 				request: "getConfigFiles",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "config_file"
 			});
 		};
 		/**
@@ -628,7 +640,8 @@
 				data: {
 					uuid: uuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "config_file"
 			});
 		};
 		/**
@@ -640,7 +653,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "config_file"
 			});
 		};
 		/**
@@ -652,7 +666,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "config_file"
 			});
 		};
 		/**
@@ -665,7 +680,8 @@
 				data: {
 					entityUuid: entityUuid
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "config_file"
 			});
 		};
 		/**
@@ -679,7 +695,8 @@
 					entityUuid: entityUuid,
 					mimeType: mimeType
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "config_file"
 			});
 		};
 		// Can't encode createConfigFile : Can't encode type: byte[]
@@ -712,7 +729,8 @@
 		calls.getEndpoints = function() {
 			return client.apiRequest({
 				request: "getEndpoints",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "endpoint"
 			});
 		};
 		/**
@@ -725,7 +743,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "endpoint"
 			});
 		};
 		/**
@@ -739,7 +758,8 @@
 				data: {
 					endpointUuid: endpointUuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "endpoint"
 			});
 		};
 		/**
@@ -752,7 +772,8 @@
 				data: {
 					names: names
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "endpoint"
 			});
 		};
 		/**
@@ -765,7 +786,8 @@
 				data: {
 					endpointUuids: endpointUuids
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "endpoint"
 			});
 		};
 		/**
@@ -782,7 +804,8 @@
 				data: {
 					endpointUuid: endpointUuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "endpoint_connection"
 			});
 		};
 		/**
@@ -799,7 +822,8 @@
 				data: {
 					endpointUuid: endpointUuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "endpoint_connection"
 			});
 		};
 		/**
@@ -811,7 +835,8 @@
 		calls.getEndpointConnections = function() {
 			return client.apiRequest({
 				request: "getEndpointConnections",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "endpoint_connection"
 			});
 		};
 		// Can't encode subscribeToEndpointConnections : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.FEP.EndpointConnection>, org.totalgrid.reef.client.service.proto.FEP.EndpointConnection>
@@ -828,7 +853,8 @@
 				data: {
 					endpointUuid: endpointUuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "endpoint_connection"
 			});
 		};
 		/**
@@ -843,7 +869,8 @@
 				data: {
 					endpointName: endpointName
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "endpoint_connection"
 			});
 		};
 		// Can't encode alterEndpointConnectionState : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
@@ -904,7 +931,8 @@
 		calls.getEntities = function() {
 			return client.apiRequest({
 				request: "getEntities",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -921,7 +949,8 @@
 				data: {
 					uuid: uuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -937,7 +966,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -953,7 +983,8 @@
 				data: {
 					uuids: uuids
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -969,7 +1000,8 @@
 				data: {
 					names: names
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -985,7 +1017,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -1001,7 +1034,8 @@
 				data: {
 					typeName: typeName
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -1017,7 +1051,8 @@
 				data: {
 					types: types
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -1041,7 +1076,8 @@
 					relationship: relationship,
 					typeName: typeName
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -1059,7 +1095,8 @@
 					parent: parent,
 					relationship: relationship
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -1080,7 +1117,8 @@
 					relationship: relationship,
 					constrainingTypes: constrainingTypes
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -1100,7 +1138,8 @@
 					relationship: relationship,
 					depth: depth
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -1123,7 +1162,8 @@
 					depth: depth,
 					constrainingTypes: constrainingTypes
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity"
 			});
 		};
 		/**
@@ -1145,7 +1185,8 @@
 					depth: depth,
 					constrainingTypes: constrainingTypes
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "entity"
 			});
 		};
 		// Can't encode getEntityRelationsFromTypeRoots : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
@@ -1168,7 +1209,8 @@
 				data: {
 					uuid: uuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity_attributes"
 			});
 		};
 		/**
@@ -1187,7 +1229,8 @@
 					uuid: uuid,
 					attrName: attrName
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity_attributes"
 			});
 		};
 		/**
@@ -1204,7 +1247,8 @@
 				data: {
 					uuid: uuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity_attributes"
 			});
 		};
 		/**
@@ -1225,7 +1269,8 @@
 					name: name,
 					value: value
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity_attributes"
 			});
 		};
 		/**
@@ -1246,7 +1291,8 @@
 					name: name,
 					value: value
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity_attributes"
 			});
 		};
 		/**
@@ -1267,7 +1313,8 @@
 					name: name,
 					value: value
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity_attributes"
 			});
 		};
 		/**
@@ -1288,7 +1335,8 @@
 					name: name,
 					value: value
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "entity_attributes"
 			});
 		};
 		// Can't encode setEntityAttribute : Can't encode type: byte[]
@@ -1326,7 +1374,8 @@
 		calls.getEventConfigurations = function() {
 			return client.apiRequest({
 				request: "getEventConfigurations",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "event_config"
 			});
 		};
 		/**
@@ -1340,7 +1389,8 @@
 				data: {
 					builtIn: builtIn
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "event_config"
 			});
 		};
 		/**
@@ -1353,7 +1403,8 @@
 				data: {
 					eventType: eventType
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "event_config"
 			});
 		};
 		/**
@@ -1371,7 +1422,8 @@
 					severity: severity,
 					resourceString: resourceString
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "event_config"
 			});
 		};
 		/**
@@ -1389,7 +1441,8 @@
 					severity: severity,
 					resourceString: resourceString
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "event_config"
 			});
 		};
 		/**
@@ -1409,7 +1462,8 @@
 					resourceString: resourceString,
 					audibleAlarm: audibleAlarm
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "event_config"
 			});
 		};
 		// Can't encode setEventConfig : Can't encode type: org.totalgrid.reef.client.service.proto.Alarms.EventConfig.Designation
@@ -1443,7 +1497,8 @@
 					eventType: eventType,
 					subsystem: subsystem
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "event"
 			});
 		};
 		// Can't encode publishEvent : Can't encode type: org.totalgrid.reef.client.service.proto.Utils.Attribute
@@ -1464,7 +1519,8 @@
 					subsystem: subsystem,
 					entityUuid: entityUuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "event"
 			});
 		};
 		/**
@@ -1485,7 +1541,8 @@
 					deviceTime: deviceTime,
 					entityUuid: entityUuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "event"
 			});
 		};
 		// Can't encode publishEvent : Can't encode type: org.totalgrid.reef.client.service.proto.Utils.Attribute
@@ -1512,7 +1569,8 @@
 				data: {
 					id: id
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "event"
 			});
 		};
 		/**
@@ -1526,7 +1584,8 @@
 				data: {
 					limit: limit
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "event"
 			});
 		};
 		// Can't encode subscribeToRecentEvents : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Events.Event>, org.totalgrid.reef.client.service.proto.Events.Event>
@@ -1544,7 +1603,8 @@
 					types: types,
 					limit: limit
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "event"
 			});
 		};
 		// Can't encode searchForEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
@@ -1594,7 +1654,8 @@
 				data: {
 					pointName: pointName
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "measurement"
 			});
 		};
 		/**
@@ -1606,7 +1667,8 @@
 				data: {
 					pointName: pointName
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "measurement"
 			});
 		};
 		/**
@@ -1619,7 +1681,8 @@
 				data: {
 					pointNames: pointNames
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "measurement"
 			});
 		};
 		// Can't encode getMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
@@ -1640,7 +1703,8 @@
 					pointName: pointName,
 					limit: limit
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "measurement"
 			});
 		};
 		/**
@@ -1657,7 +1721,8 @@
 					since: since,
 					limit: limit
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "measurement"
 			});
 		};
 		/**
@@ -1678,7 +1743,8 @@
 					returnNewest: returnNewest,
 					limit: limit
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "measurement"
 			});
 		};
 		// Can't encode subscribeToMeasurementHistory : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
@@ -1699,7 +1765,8 @@
 				data: {
 					pointName: pointName
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "measurement_statistics"
 			});
 		};
 		////////////////////
@@ -1724,7 +1791,8 @@
 		calls.getPoints = function() {
 			return client.apiRequest({
 				request: "getPoints",
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "point"
 			});
 		};
 		/**
@@ -1739,7 +1807,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "point"
 			});
 		};
 		/**
@@ -1754,7 +1823,8 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "point"
 			});
 		};
 		/**
@@ -1770,7 +1840,8 @@
 				data: {
 					uuid: uuid
 				},
-				style: "SINGLE"
+				style: "SINGLE",
+				resultType: "point"
 			});
 		};
 		/**
@@ -1785,7 +1856,8 @@
 				data: {
 					names: names
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "point"
 			});
 		};
 		/**
@@ -1800,7 +1872,8 @@
 				data: {
 					uuids: uuids
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "point"
 			});
 		};
 		// Can't encode getPointsOwnedByEntity : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
@@ -1817,7 +1890,8 @@
 				data: {
 					entityUuid: entityUuid
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "point"
 			});
 		};
 		/**
@@ -1833,7 +1907,8 @@
 				data: {
 					endpointUuid: endpointUuid
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "point"
 			});
 		};
 		/**
@@ -1849,7 +1924,8 @@
 				data: {
 					commandUuid: commandUuid
 				},
-				style: "MULTI"
+				style: "MULTI",
+				resultType: "point"
 			});
 		};
 		$.extend(client, calls);

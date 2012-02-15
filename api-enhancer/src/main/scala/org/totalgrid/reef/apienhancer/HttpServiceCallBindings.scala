@@ -118,10 +118,11 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
 
   def buildClientApiBinding(m: MethodDoc): String = {
     val methodName = m.name
-    val style = m match {
-      case _ if isReturnOptional(m) => "SINGLE"
-      case _ if isReturnList(m) => "MULTI"
-      case _ => "SINGLE"
+
+    val (style, resultType) = m match {
+      case _ if isReturnOptional(m) => ("SINGLE", m.returnType)
+      case _ if isReturnList(m) => ("MULTI", listPayloadType(m.returnType))
+      case _ => ("SINGLE", m.returnType)
     }
 
     val parameterList = m.parameters().toList
@@ -135,8 +136,17 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     val data = if (!argStrings.isEmpty) "\t\t\t\tdata: {\n" + argStrings.map { _._1 }.mkString(",\n") + "\n\t\t\t\t},\n" else ""
     val args = if (!argStrings.isEmpty) argStrings.map { _._2 }.mkString(", ") else ""
 
-    "%s\n\t\tcalls.%s = function(%s) {\n%s\t\t\treturn client.apiRequest({\n\t\t\t\trequest: \"%s\",\n%s\t\t\t\tstyle: \"%s\""
-      .format(commentString(m.getRawCommentText(), 2), methodName, args, valueExtractors, methodName, data, style) + "\n\t\t\t});\n\t\t};"
+    "%s\n\t\tcalls.%s = function(%s) {\n%s\t\t\treturn client.apiRequest({\n\t\t\t\trequest: \"%s\",\n%s\t\t\t\tstyle: \"%s\",\n\t\t\t\tresultType: \"%s\""
+      .format(commentString(m.getRawCommentText(), 2), methodName, args, valueExtractors, methodName, data, style, typeDescriptorId(resultType)) + "\n\t\t\t});\n\t\t};"
+  }
+
+  def typeDescriptorId(typ: Type) = {
+    typ.simpleTypeName().replaceAll(
+      String.format("%s|%s|%s",
+        "(?<=[A-Z])(?=[A-Z][a-z])",
+        "(?<=[^A-Z])(?=[A-Z])",
+        "(?<=[A-Za-z])(?=[^A-Za-z])"),
+      "_").toLowerCase();
   }
 
   /**
