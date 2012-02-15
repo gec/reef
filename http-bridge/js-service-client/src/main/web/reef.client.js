@@ -110,7 +110,8 @@
                 data: options.data,
                 resultFuture: future
             });
-            return future.pipe(function(jsonData, jqXhdr) {
+
+            var parsedPromise = future.pipe(function(jsonData, jqXhdr) {
                 // TODO: expose headers support is coming
                 //var style = jqXhdr.getResponseHeader("REEF_RETURN_STYLE");
                 var style = options.style;
@@ -120,6 +121,12 @@
                 }
                 throw "unknown return style";
             });
+
+            // define a helper that will go and fetch the description for
+            parsedPromise.describeResultType = function(){
+                return describe(options.resultType);
+            };
+            return parsedPromise;
         };
 
         var login = function(userName, userPassword) {
@@ -148,6 +155,22 @@
 
         };
 
+        var describe = function(typeName) {
+
+            var future = $.Deferred();
+
+            enqueueRequest({
+                url: settings.server + "/convert/" + typeName,
+                type: 'GET',
+                dataType: 'json',
+                resultFuture: future
+            });
+            return future.pipe(function(jsonData, jqXhdr) {
+                return jsonData;
+           });
+
+        };
+
         var toString = function(){
             // if(settings.userName === undefined) return settings.server;
             // else return settings.userName + "@" + settings.server;
@@ -157,7 +180,8 @@
         clientObject = {
             'apiRequest': apiRequest,
             'login': login,
-            'toString' : toString
+            'toString' : toString,
+            'describe' : describe
         };
 
         $.each(settings.service_lists, function(i, name){
