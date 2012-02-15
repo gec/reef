@@ -21,9 +21,13 @@ package org.totalgrid.reef.client.javaimpl
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
 import org.totalgrid.reef.client.registration.EventPublisher
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
-import java.lang.String
+import java.lang.{ Class, String }
 
 class EventPublisherWrapper(connection: SConnection) extends EventPublisher {
+
+  def bindQueueByClass[T](subQueue: String, key: String, klass: Class[T]) {
+    connection.bindQueueByClass(subQueue, key, klass)
+  }
 
   def publishEvent[T](eventType: SubscriptionEventType, eventMessage: T, routingKey: String) {
     connection.publishEvent(eventType, eventMessage, routingKey)

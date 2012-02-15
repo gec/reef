@@ -23,5 +23,7 @@ import org.totalgrid.reef.client.proto.Envelope;
 public interface EventPublisher
 {
 
+    <T> void bindQueueByClass( String subQueue, String key, Class<T> klass );
+
     <T> void publishEvent( Envelope.SubscriptionEventType eventType, T eventMessage, String routingKey );
 }

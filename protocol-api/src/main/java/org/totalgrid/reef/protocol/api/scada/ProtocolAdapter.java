@@ -46,7 +46,8 @@ public interface ProtocolAdapter
      * @param resources Feedback publishers for updating measurements and state of the system
      * @return   A command handler object
      */
-    CommandHandler addEndpoint( String endpoint, FEP.CommChannel channel, List<Model.ConfigFile> config, Resources resources ) throws ReefServiceException;
+    CommandHandler addEndpoint( String endpoint, FEP.CommChannel channel, List<Model.ConfigFile> config, Resources resources )
+        throws ReefServiceException;
 
     /**
      * Synchronously stop communication with an endpoint
