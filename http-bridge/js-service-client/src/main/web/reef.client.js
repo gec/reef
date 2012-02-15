@@ -111,13 +111,10 @@
                 //var style = jqXhdr.getResponseHeader("REEF_RETURN_STYLE");
                 var style = options.style;
                 switch (style) {
-                case "MULTI":
-                return jsonData.results;
-                case "SINGLE":
-                return jsonData;
-                default:
-                throw "unknown return style";
+                case "MULTI": return jsonData.results;
+                case "SINGLE": return jsonData;
                 }
+                throw "unknown return style";
             });
         };
 

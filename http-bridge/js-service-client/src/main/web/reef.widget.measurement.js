@@ -132,13 +132,11 @@
         };
 
         var getMeasurements = function() {
-           settings.client.getMeasurementsByNames(settings.point_names,
-            function(measurements){
+            settings.client.getMeasurementsByNames(settings.point_names).done(function(measurements){
                 settings.display_function(enhanceMeasurements(measurements));
-            }, function(errorString){
+            }).fail(function(errorString){
                 settings.error_function(errorString);
-            }
-            );
+            });
         };
 
         var settings = $.extend({
