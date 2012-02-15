@@ -20,6 +20,10 @@
 
     $.reefClient = function(options) {
 
+        // IE8 doesnt work without this flag, just set to true, if its not capable we'll fail anyways
+        // http://graphicmaniacs.com/note/getting-a-cross-domain-json-with-jquery-in-internet-explorer-8-and-later/
+        jQuery.support.cors = true;
+
         var clientObject = {};
 
         var displayError = function(msg) {
@@ -136,7 +140,7 @@
                 resultFuture: future
             });
             return future.pipe(function(jsonData, jqXhdr) {
-                console.log("Logged in: " + userName);
+                // console.log("Logged in: " + userName);
                 settings.authToken = jsonData;
                 return clientObject;
            });
