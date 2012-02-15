@@ -143,7 +143,7 @@
             // address of the server to query
             'client': undefined,
             // list of point names, must include atleast one point name
-            'pointNames': [],
+            'point_names': undefined,
             // enables live-updates via polling, do not poll more often than once a second
             'polling': {
                 'enabled': false,
@@ -173,7 +173,7 @@
             }
         }, options);
 
-        if (settings.point_names.length === 0) {
+        if (settings.point_names === undefined) {
             throw "No points requested";
         }
         if (settings.client === undefined) {

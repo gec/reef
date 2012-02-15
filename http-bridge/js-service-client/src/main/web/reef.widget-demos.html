@@ -23,11 +23,13 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-        <script language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" ></script>
+        <script language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" ></script>
         <script language="javascript" src="./reef.client.js"></script>
         <script language="javascript" src="./reef.client.core-services.js"></script>
         <script language="javascript" src="./reef.widget.measurement.js"></script>
         <link rel="stylesheet" type="text/css" href="./reef.widget.measurement.css" media="screen" />
+        <script language="javascript" src="./reef.widget.endpoint.js"></script>
+        <link rel="stylesheet" type="text/css" href="./reef.widget.endpoint.css" media="screen" />
 
         <title>Javascript Widget Demos</title>
     </head>
@@ -35,6 +37,7 @@
     <body>
 
         <div id="data_div" style="width:500px;" ></div>
+        <div id="endpoint_div" style="width:500px;" ></div>
         <div id="error_div" style="width:500px;" ></div>
 
         <script type="text/javascript">
@@ -47,14 +50,21 @@
                     'password' : 'system'
                 }
             });
-            $('#data_div').displayMeasurements({
+
+            // get some points and make a "current value" display with just those points
+            client.getPoints().done(function(points){
+                var pointNames = $.map(points.slice(-4), function(point){return point.name});
+                if(pointNames.length > 0){
+                    $('#data_div').displayMeasurements({
+                        'client'     : client,
+                        'point_names' : pointNames,
+                        'polling' : {'enabled' : false, 'period' : 1000}
+                    });
+                }
+            });
+
+            $('#endpoint_div').displayEndpoints({
                 'client'     : client,
-                'point_names' : [
-                    'SimulatedSubstation.Line01.Current',
-                    'StaticSubstation.Line02.Current',
-                    'SimulatedSubstation.Breaker01.Bkr',
-                    'StaticSubstation.Breaker02.Bkr',
-                ],
                 'polling' : {'enabled' : false, 'period' : 1000}
             });
         });
