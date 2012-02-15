@@ -27,22 +27,18 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
   class NotEncodableException(msg: String) extends RuntimeException(msg)
 
   private val serverBindingSections = mutable.Queue.empty[(String, Seq[String])]
+  private val clientBindingSections = mutable.Queue.empty[(String, Seq[String])]
 
   private var newestSourceFile: Long = 0
 
   override def finish(rootDir: File) {
 
     val serverBindingFile = new File(rootDir, "../../../http-bridge/http-bridge/src/main/scala/org/totalgrid/reef/httpbridge/servlets/apiproviders/AllScadaServiceApiCallLibrary.scala")
+    val clientBindingFile = new File(rootDir, "../../../http-bridge/js-service-client/src/main/web/reef.client.core-services.js")
     // TODO: re-enable newest file checking once we are generating inside generated-sources
-    if (!serverBindingFile.exists() || serverBindingFile.lastModified() < newestSourceFile || true) {
-      println("Genenerating: " + serverBindingFile.getAbsolutePath)
-      val stream = new PrintStream(new FileOutputStream(serverBindingFile))
-      writeServerBindingFile(stream)
-      stream.close()
-    } else {
-      println("Skipping: " + serverBindingFile.getAbsolutePath)
-    }
-
+    newestSourceFile = System.currentTimeMillis() + 360000
+    writeFileIfNewer(serverBindingFile, newestSourceFile) { writeServerBindingFile(_) }
+    writeFileIfNewer(clientBindingFile, newestSourceFile) { writeClientBindingFile(_) }
   }
 
   def writeServerBindingFile(stream: PrintStream) {
@@ -59,24 +55,40 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     stream.println("}")
   }
 
+  def writeClientBindingFile(stream: PrintStream) {
+    stream.println("(function($) {\n\t$.reefServiceList_core = function(client) {\n\t\tvar calls = {};")
+
+    // sort by class name to keep results stable
+    clientBindingSections.sortWith(_._1 < _._1).foreach(_._2.foreach(stream.println(_)))
+
+    stream.println("\t\t$.extend(client, calls);\n\t};\n})(jQuery);")
+  }
+
   def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) = {
 
     if (sourceFile.lastModified > newestSourceFile) newestSourceFile = sourceFile.lastModified
 
     val serverSideSnippets = mutable.Queue.empty[String]
+    val clientSideSnippets = mutable.Queue.empty[String]
 
-    serverSideSnippets.enqueue("////////////////////\n// " + c.name() + "\n////////////////////")
+    val comment = "\t\t////////////////////\n\t\t// " + c.name() + "\n\t\t////////////////////"
+    serverSideSnippets.enqueue(comment)
+    clientSideSnippets.enqueue(comment)
 
     c.methods.toList.foreach { m =>
       try {
         serverSideSnippets.enqueue(buildServerApiBinding(m))
+        clientSideSnippets.enqueue(buildClientApiBinding(m))
       } catch {
         case nee: NotEncodableException =>
-          serverSideSnippets.enqueue("// Can't encode " + m.name + " : " + nee.getMessage)
+          val errorMsg = "\t\t// Can't encode " + m.name + " : " + nee.getMessage
+          serverSideSnippets.enqueue(errorMsg)
+          clientSideSnippets.enqueue(errorMsg)
       }
     }
 
     serverBindingSections.enqueue((c.name(), serverSideSnippets))
+    clientBindingSections.enqueue((c.name(), clientSideSnippets))
   }
 
   /**
@@ -103,6 +115,29 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
       .format(returnSize, methodName, resultType, argDefinitions, methodName, argCalls)
   }
 
+  def buildClientApiBinding(m: MethodDoc): String = {
+    val methodName = m.name
+    val style = m match {
+      case _ if isReturnOptional(m) => "SINGLE"
+      case _ if isReturnList(m) => "MULTI"
+      case _ => "SINGLE"
+    }
+
+    val parameterList = m.parameters().toList
+
+    // we special case the handling of some objects like uuid
+    val valueExtractors = parameterList.map { extractValue(_) }.flatten.mkString("");
+
+    val argStrings = parameterList.map { p =>
+      ("\t\t\t\t\t%s: %s".format(p.name, p.name), p.name)
+    }
+    val data = if (!argStrings.isEmpty) "\t\t\t\tdata: {\n" + argStrings.map { _._1 }.mkString(",\n") + "\n\t\t\t\t},\n" else ""
+    val args = if (!argStrings.isEmpty) argStrings.map { _._2 }.mkString(", ") else ""
+
+    "\t\tcalls.%s = function(%s) {\n%s\t\t\treturn client.apiRequest({\n\t\t\t\trequest: \"%s\",\n%s\t\t\t\tstyle: \"%s\""
+      .format(methodName, args, valueExtractors, methodName, data, style) + "\n\t\t\t});\n\t\t};"
+  }
+
   /**
    *  we can only handle protobuf return types
    */
@@ -122,6 +157,16 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     val argumentTypes = ptype.asParameterizedType().typeArguments().toList
     if (argumentTypes.size != 1) throw new NotEncodableException("Can't parse list with unhandled types " + ptype + " argumentTypes: " + argumentTypes)
     argumentTypes(0)
+  }
+
+  def extractValue(parameter: Parameter): Option[String] = {
+    val specialCasedTypes = Map(
+      "ReefID" -> "Id",
+      "ReefUUID" -> "Uuid")
+
+    specialCasedTypes.get(parameter.`type`.simpleTypeName).map { t =>
+      "\t\t\tif(%s.value != undefined) %s = %s.value;\n".format(parameter.name, parameter.name, parameter.name)
+    }
   }
 
   def argumentGetter(parameter: Parameter, ptype: Type) = {
