@@ -23,7 +23,20 @@ import org.totalgrid.reef.client.proto.Envelope;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Interface for service implementations.
+ */
 public interface Service
 {
+    /**
+     * Handles a service request. Implementations use the verb, request payload, and headers to provide a
+     * service response, which is sent asynchronously using a callback.
+     *
+     * The response id should be the same as the request id.
+     *
+     * @param request ServiceRequest representing this request
+     * @param headers Request headers extracted from request
+     * @param callback Callback object used to asynchronously respond to request
+     */
     void respond( Envelope.ServiceRequest request, Map<String, List<String>> headers, ServiceResponseCallback callback );
 }

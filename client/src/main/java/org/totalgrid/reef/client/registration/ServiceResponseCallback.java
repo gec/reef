@@ -20,8 +20,15 @@ package org.totalgrid.reef.client.registration;
 
 import org.totalgrid.reef.client.proto.Envelope;
 
+/**
+ * Used to respond to a service request asynchronously.
+ */
 public interface ServiceResponseCallback
 {
-
+    /**
+     * Sends a service response.
+     *
+     * @param response Response to send to the client. Id field should be the same as the request.
+     */
     void onResponse( Envelope.ServiceResponse response );
 }

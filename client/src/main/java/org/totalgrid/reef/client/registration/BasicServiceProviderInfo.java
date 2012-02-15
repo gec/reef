@@ -25,12 +25,18 @@ import org.totalgrid.reef.client.internal.ProviderFactory;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Helper class to build instances of ServiceProviderInfo
+ */
 public class BasicServiceProviderInfo implements ServiceProviderInfo
 {
-
     private final ServiceProviderFactory factory;
     private final List<Class<?>> klasses;
 
+    /**
+     * @param factory Factory to build client implementations
+     * @param klasses List of classes implemented by the client implementation
+     */
     public BasicServiceProviderInfo( ServiceProviderFactory factory, Class<?>... klasses )
     {
         this.factory = factory;

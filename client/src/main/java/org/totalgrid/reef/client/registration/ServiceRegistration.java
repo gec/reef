@@ -22,10 +22,29 @@ import org.totalgrid.reef.client.Routable;
 import org.totalgrid.reef.client.SubscriptionBinding;
 import org.totalgrid.reef.client.types.TypeDescriptor;
 
+/**
+ * Client-based interface for implementers of services. Provides the ability to bind services (listen for service
+ * requests) and publish service subscription events.
+ *
+ */
 public interface ServiceRegistration
 {
-
+    /**
+     * Gets interface for publishing service subscription events.
+     *
+     * @return
+     */
     EventPublisher getEventPublisher();
 
+    /**
+     * Provides the ability to bind services with the broker.
+     *
+     * @param service Service implementation requests will be forwarded to.
+     * @param descriptor Type descriptor for service request/response type.
+     * @param destination Destination type that determines request forwarding (AddressableDestination/AnyNodeDestination).
+     * @param competing
+     * @param <T> Service request/response type.
+     * @return Handle to manage the lifecycle of the binding.
+     */
     <T> SubscriptionBinding bindService( Service service, TypeDescriptor<T> descriptor, Routable destination, boolean competing );
 }

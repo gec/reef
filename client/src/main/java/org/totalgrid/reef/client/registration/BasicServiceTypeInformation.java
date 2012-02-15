@@ -21,13 +21,22 @@ package org.totalgrid.reef.client.registration;
 import org.totalgrid.reef.client.types.ServiceTypeInformation;
 import org.totalgrid.reef.client.types.TypeDescriptor;
 
+/**
+ * Helper class for building ServiceTypeInformation instances.
+ *
+ * @param <T> Main service request/response type
+ * @param <U> Service subscription event type
+ */
 public class BasicServiceTypeInformation<T, U> implements ServiceTypeInformation<T, U>
 {
-
     private final TypeDescriptor<T> requestType;
     private final TypeDescriptor<U> eventType;
     private final String eventExchange;
 
+    /**
+     * @param requestType Type descriptor for request/response type
+     * @param eventType Type descriptor for service subscription event type
+     */
     public BasicServiceTypeInformation( TypeDescriptor<T> requestType, TypeDescriptor<U> eventType )
     {
         this.requestType = requestType;
@@ -35,6 +44,11 @@ public class BasicServiceTypeInformation<T, U> implements ServiceTypeInformation
         this.eventExchange = eventType.id() + "_events";
     }
 
+    /**
+     * @param requestType Type descriptor for request/response type
+     * @param eventType Type descriptor for service subscription event type
+     * @param eventExchange Name of the exchange events are published to
+     */
     public BasicServiceTypeInformation( TypeDescriptor<T> requestType, TypeDescriptor<U> eventType, String eventExchange )
     {
         this.requestType = requestType;
