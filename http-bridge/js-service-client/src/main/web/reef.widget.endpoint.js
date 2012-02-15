@@ -30,7 +30,7 @@
         };
 
         var setTargetDiv = function(text) {
-            var header = "<div class=\"endpoint_widget\"><div class=\"endpoint_widget_header\">Server: " + settings.server + "</div>";
+            var header = "<div class=\"endpoint_widget\"><div class=\"endpoint_widget_header\">Server: " + settings.client.toString() + "</div>";
             var footer = "<div class=\"endpoint_widget_footer\">Powered by Greenbus.</div></div>";
             settings.target_div.html(header + text + footer);
         };

@@ -126,7 +126,7 @@
         };
 
         var setTargetDiv = function(text) {
-            var header = "<div class=\"measurement_widget\"><div class=\"measurement_widget_header\">Server: " + settings.server + "</div>";
+            var header = "<div class=\"measurement_widget\"><div class=\"measurement_widget_header\">Server: " + settings.client.toString() + "</div>";
             var footer = "<div class=\"measurement_widget_footer\">Powered by Greenbus.</div></div>";
             settings.target_div.html(header + text + footer);
         };

@@ -142,13 +142,22 @@
             return future.pipe(function(jsonData, jqXhdr) {
                 // console.log("Logged in: " + userName);
                 settings.authToken = jsonData;
+                settings.userName = userName;
                 return clientObject;
            });
 
         };
+
+        var toString = function(){
+            // if(settings.userName === undefined) return settings.server;
+            // else return settings.userName + "@" + settings.server;
+            return settings.server;
+        };
+
         clientObject = {
             'apiRequest': apiRequest,
-            'login': login
+            'login': login,
+            'toString' : toString
         };
 
         $.each(settings.service_lists, function(i, name){
