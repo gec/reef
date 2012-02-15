@@ -74,6 +74,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     val comment = "\t\t////////////////////\n\t\t// " + c.name() + "\n\t\t////////////////////"
     serverSideSnippets.enqueue(comment)
     clientSideSnippets.enqueue(comment)
+    clientSideSnippets.enqueue(commentString(c.getRawCommentText(), 2))
 
     c.methods.toList.foreach { m =>
       try {

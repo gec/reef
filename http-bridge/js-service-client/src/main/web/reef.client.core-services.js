@@ -23,6 +23,14 @@
 		// AgentService
 		////////////////////
 		/**
+		 * A service interface for managing and retrieving Agents. An Agent has a name,
+		 * password, and a set of permissions in the Reef system. An Agent can be a
+		 * real user that logs into the system or a software service that "owns" an
+		 * agent it uses to access to other services.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
+		/**
 		 * @param name of agent to find
 		 * @return the agent requested or throws exception
 		*/
@@ -93,6 +101,22 @@
 		// AlarmService
 		////////////////////
 		/**
+		 * A service interface for managing and retrieving Alarms. Alarms are special
+		 * system events that require operator intervention. Each alarm has an
+		 * associated event object, but not all events are alarms.
+		 * <p/>
+		 * In contrast to events, alarms have persistent state. The three principal alarm states are unacknowledged,
+		 * acknowledged, and removed. The transitions between these states constitute the alarm lifecycle, and
+		 * manipulation of the states involves user workflow.
+		 * <p/>
+		 * Transitions in alarm state may themselves be events, as they are part of the record of user operations.
+		 * <p/>
+		 * During the configuration process, the system designer decides what events trigger alarms. The primary consumers of
+		 * alarms are operators tasked with monitoring the system in real-time and responding to abnormal conditions.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
+		/**
 		 * Get a single alarm
 		 *
 		 * @param id id of alarm
@@ -144,6 +168,9 @@
 		////////////////////
 		// ApplicationService
 		////////////////////
+		/**
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		// Can't encode registerApplication : Can't encode type: org.totalgrid.reef.client.settings.NodeSettings
 		// Can't encode unregisterApplication : Can't encode type: org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 		// Can't encode sendHeartbeat : Can't encode type: org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
@@ -205,6 +232,19 @@
 		////////////////////
 		// ClientOperations
 		////////////////////
+		/**
+		 * All of the calls to the reef server are implemented by using one of the 4 verbs (GET, PUT, DELETE, POST)
+		 * and a protobuf object that serves as a request. The service APIs provided cover 95% of the use cases we
+		 * expect applications to use but if a particular query is missing from the API we want to provide a way to
+		 * send a custom query to the server. This allows a quick way for an extra request to be implemented for one
+		 * application with needing to wait for an update to this package.
+		 *
+		 * Most clients will not need to use this interface so it has intentionally been left out of the big "rollup"
+		 * traits. This interface can be thought of as the "low-level" interface to reef, an application could be
+		 * constructed entirely using these sorts of queries but it would be much harder than using the semantic APIs.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		// Can't encode getOne : Can't serialize non-protobuf response: T
 		// Can't encode findOne : Can't serialize non-protobuf response: T
 		// Can't encode getMany : Can't serialize non-protobuf response: T
@@ -218,6 +258,68 @@
 		////////////////////
 		// CommandService
 		////////////////////
+		/**
+		 *
+		 * <p>
+		 *   Service for issuing commands and controls on field devices.</p>
+		 *
+		 * <h3>Overview</h3>
+		 *
+		 * <p>SCADA systems use commands to affect changes in the field devices. Commands are usually executed in the field
+		 * by the same equipment that is generating measurements. Each command usually represents one action that can
+		 * be taken in the field like tripping a breaker or raising the setpoint voltage.
+		 *
+		 * <h3>Command</h3>
+		 * <p>
+		 *   The term "command" is a specific command on a specific field device instance. A command "name" is the
+		 *   specific command for a device appended to the device name (ex: "substation1.breaker2.trip").</p>
+		 *
+		 * <h3>Select/Lock a Command</h3>
+		 * <p>
+		 *   An agent cannot execute a command until they first "select" the command to acquire an exclusive
+		 *   lock on the command. The terms "select" and "lock" can be used interchangeably. The exclusive lock
+		 *   is tied to the agent who acquired them and do not need to be passed with the command execute. The
+		 *   agent may execute the command from different login session (ex: two browser windows).</p>
+		 *
+		 * <ul>
+		 *   <li>A select is designed to be held for seconds up to minutes after which time it is deselected automatically.</li>
+		 *   <li>The agent whom created the select should release the select.</li>
+		 *   <li>A select is not automatically released after a command is executed.</li>
+		 *   <li>Command Denial locks do not timeout (see below).</li>
+		 * </ul>
+		 *
+		 * <h4>Usage</h4>
+		 * <p>Issue a command: select, execute, deselect.</p>
+		 * <pre>
+		 *    Command cmd = getCommandByName( "Substation1.Breaker2.Trip");
+		 *    CommandLock lock = createCommandExecutionLock( cmd);
+		 *    executeCommandAsControl( cmd);
+		 *    deleteCommandLock( lock);
+		 * </pre>
+		 *
+		 * <p>Operate all commands on a piece of equipment using one lock.</p>
+		 * <pre>
+		 *    List<Command> cmds = getCommandsOwnedByEntity( "Substation1.Breaker2");
+		 *    CommandLock lock = createCommandExecutionLock( cmds);
+		 *    for(Command c : cmds){
+		 *        executeCommandAsControl( c);
+		 *    }
+		 *    deleteCommandLock( lock);
+		 * </pre>
+		 *
+		 * <h3>Command Denial Lock</h3>
+		 * <p>
+		 *   when an operator needs to make sure no one will execute any of a set of commands they
+		 *   create a system-wide "denial lock" on those commands. This will prevent all operators and
+		 *   applications from issuing a command or selecting those commands. To
+		 *   execute those commands the lock will need to be deleted.</p>
+		 *
+		 * <p>
+		 *   By default, Denial locks do not timeout like "execution locks".</p>
+		 *
+		 *
+		 *  Tag for api-enhancer, do not delete: 
+		*/
 		// Can't encode createCommandExecutionLock : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
 		// Can't encode createCommandExecutionLock : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
 		// Can't encode createCommandExecutionLock : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
@@ -431,6 +533,12 @@
 		// CommunicationChannelService
 		////////////////////
 		/**
+		 * In reef a communication channel is the representation of the "low-level" connection to an external resource
+		 * like a serial port or tcp socket.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
+		/**
 		 *
 		 * @return list of all of the communication channels
 		*/
@@ -486,6 +594,21 @@
 		////////////////////
 		// ConfigFileService
 		////////////////////
+		/**
+		 * Non-exhaustive API for using the reef Config File service, not all valid permutations are reflected here.
+		 * Additional functions are expected to be added by clients who extends this interface and add the needed
+		 * functionality using ConfigFileServiceImpl as a examples of other valid queries. Note that this class is a
+		 * simple interface so it should be easily mockable in test code. Note also that when are using Lists etc. we
+		 * are using the java classes instead of scala versions b/c its easier to use java lists in scala than scala
+		 * lists in java.
+		 * <p/>
+		 * Config files are for larger hunks of opaque data for use by external applications. Config files can be
+		 * used by 0, 1 or many entities. Config files can be searched for by name, id or by entities they are
+		 * related to. Names must be unique system-wide. Searches can all be filtered by mimeType, which can be
+		 * helpful is name is unknown.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		/**
 		 * Get all config files
 		*/
@@ -568,6 +691,21 @@
 		////////////////////
 		// EndpointService
 		////////////////////
+		/**
+		 * Communication Endpoints are the "field devices" that reef communicates with using legacy protocols
+		 * to acquire measurements from the field. Every point and command in the system is associated with
+		 * at most one endpoint at a time. Endpoint includes information about the protocol, associated
+		 * points, associated commands, communication channels, config files.
+		 * <p/>
+		 * For protocols that have reef front-end support there is an auxiliary service associated with Endpoints that
+		 * tracks which front-end each endpoint is assigned to. It also tracks the current state of the legacy protocol
+		 * connection which is how the protocol adapters tell reef if they are successfully communicating with the field
+		 * devices. We can also disable (and re-enable) the endpoint connection attempts, this is useful for devices that
+		 * can only talk with one "master" at a time so we can disable reefs protocol adapters temporarily to allow
+		 * another master to connect.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		/**
 		 * @return list of all endpoints in the system
 		*/
@@ -712,6 +850,51 @@
 		////////////////////
 		// EntityService
 		////////////////////
+		/**
+		 * <p>
+		 *   Service for retrieving entity relationships and storing/retrieving entity attributes.</p>
+		 *
+		 * <p>
+		 *   Note: Many terms for this section are take from <a href="http://en.wikipedia.org/wiki/Graph_theory">graph theory</a>.</p>
+		 *
+		 * <p>
+		 *   The EntityService provides access to the system model. The model is both the pool of
+		 *   "entities" and the relationships (edges) connecting those entities to each other.
+		 *   Entity types include: Agent, Substations, EquipmentGroup, Breaker, Point, etc.
+		 *   Two entities may be related by more than one type of relationship (examples: owns,
+		 *   feedback, etc.)</p>
+		 *
+		 * <p>
+		 *   The specific entities and relationships modeled in a particular reef installation
+		 *   depends on what the system is being used for (ex: SCADA, Hydro, Microgrid, etc.).</p>
+		 *
+		 * <p>
+		 *   Many of the entities in the "entity pool" have more specific type information beyond Entity.
+		 *   An example is Point. There is an Entity representation of a point that is used to
+		 *   describe logical relationships to equipment and commands. At the same time, there is a Point
+		 *   representation available through the PointService that includes added data like whether that
+		 *   point is currently abnormal etc. Clients are expected to use the more specific services for
+		 *   basic relationship queries and to retrieve the detailed information available for each specific type. The
+		 *   EntityService is available for more complex queries that select objects based on the the many
+		 *   relationships between entities. Once these entities are returned, the client can use the
+		 *   type specific services to get more type-specific information.</p>
+		 *
+		 * <p>
+		 *   Examples of relationship types (colors)  are:</p>
+		 *   <ul>
+		 *     <li>owns - used in power systems to model how points and commands are logically considered to be parts of equipment</li>
+		 *     <li>feedback - denotes which Points are affected by which Commands</li>
+		 *     <li>source - denotes the data provider for a Point or Command (communication pathway)</li>
+		 *   </ul>
+		 *
+		 * <p>
+		 * In each installation of Reef there are a further set of constraints applied over this basic model that make the model
+		 * easier to consume and reason about, there should be accompanying documentation that describe what those constraints
+		 * are. In a future release those constraints will themselves be queryable so applications can be more self configuring,
+		 * Currently the developer needs to have a decent idea as to the model to construct a useful query.</p>
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		/**
 		 * Get all entities, should not be used in large systems
 		 *
@@ -1113,6 +1296,31 @@
 		// EventConfigService
 		////////////////////
 		/**
+		 * Event Configs describe all of the types of "well known" event types in the system. When an event occurs,
+		 * 1 of 3 things will occur:
+		 *
+		 * <ol>
+		 * <li>
+		 * <b>Log:</b>
+		 * The event will be logged to a system file but not stored in the events table. This is
+		 * primarily used when we want to suppress events that are deemed unimportant in this installation.
+		 * </li>
+		 * <li>
+		 * <b>Event:</b>
+		 * The event will be stored in the events table. This will generally be visibile on an HMI
+		 * but usually wouldn't be cause a "push" notification to users.
+		 * </li>
+		 * <li>
+		 * <b>Alarm:</b>
+		 * If an event is configured to have type Alarm it is recorded as an event but an alarm
+		 * notification is also generated. This is usually pushed to the users quickly since a user needs to interact
+		 * with the system to silence and/or acknowledge the alarm.
+		 * </li>
+		 * </ol>
+		 *
+		 *  Tag for api-enhancer, do not delete: 
+		*/
+		/**
 		 * get all of the event handling configurations
 		*/
 		calls.getEventConfigurations = function() {
@@ -1209,6 +1417,18 @@
 		////////////////////
 		// EventPublishingService
 		////////////////////
+		/**
+		 * When an application wants to publish an Event they should only supply the interesting
+		 * information they have on hand. The server will set most of the fields when the event is posted
+		 * including:
+		 *  - user_id that created an event (based on the posters auth token)
+		 *  - time when the event occured (actually records when the event service processes the put, if a very specific
+		 *    time is desired use device_time)
+		 *  - severity, rendered, alarm fields are all set based on the matching EventConfig record
+		 *  - id is the Event id, if the returned event doesn't have this field set it means it was logged or dropped
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		// Can't encode publishEvent : Can't encode type: org.totalgrid.reef.client.service.proto.Events.Event
 		/**
 		 * publish the simplest type of event which has no interesting details
@@ -1274,6 +1494,13 @@
 		// EventService
 		////////////////////
 		/**
+		 * This service is used to get and produce Events on the reef system. Events are generated by the system in response
+		 * to unusual or interesting occurances, usually they are interesting to an operator but do not require immediate action.
+		 * When an event is published the system may "upgrade" an Event to also generate an alarm.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
+		/**
 		 * get a single event
 		 *
 		 * @param id event
@@ -1325,6 +1552,18 @@
 		////////////////////
 		// MeasurementOverrideService
 		////////////////////
+		/**
+		 * SCADA systems there is the concept of a stopping the measurement stream from field and publishing another value in
+		 * its place. There are 2 ways this is done, marking a point "Not in Service" (NIS) and "Overriding" the point.
+		 * <p/>
+		 * This is usually done for one of two  reasons*  - A field devices is reporting a bad value (wildly oscillating or pinned to 0) and is generating spurious
+		 * alarms or confusing "advanced apps" that are performing calculations on that value. In this case an operator will
+		 * override that data to its nominal value.
+		 * - Training/Testing purposes, when an operator or integrator is testing alarms/UI/apps its often valuable to just
+		 * be able to quickly override a value and see that the correct behaviors occur.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		// Can't encode setPointOutOfService : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		// Can't encode setPointOverride : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		// Can't encode deleteMeasurementOverride : Can't encode type: org.totalgrid.reef.client.service.proto.Processing.MeasOverride
@@ -1332,6 +1571,19 @@
 		////////////////////
 		// MeasurementService
 		////////////////////
+		/**
+		 * <p>
+		 *   Service for retrieving, subscribing to, and publishing measurements. Clients can retrieve current measurement
+		 *   values for multiple points, read historical values for a single point, or
+		 *   publish measurements in batches.
+		 *   </p>
+		 *
+		 * <p>
+		 *   Asking for unknown points will result in an exception.
+		 *   </p>
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		// Can't encode getMeasurementByPoint : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		/**
 		 * Get the most recent measurement for a point.
@@ -1453,6 +1705,17 @@
 		////////////////////
 		// PointService
 		////////////////////
+		/**
+		 * A Point represents a configured input point for data acquisition. Measurements associated with this
+		 * point all use the point name and id. Once obtaining a Point object you should use the MeasurementService
+		 * to read/subscribe to the measurements for that point.
+		 * <p/>
+		 * Every Point is associated with an Entity of type "Point". The point's location in the system
+		 * model is determined by this entity. Points are also associated with entities designated as
+		 * "logical nodes", which represent the communications interface/source.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
 		/**
 		 * get all points in the system
 		 *
