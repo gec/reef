@@ -41,23 +41,23 @@
         };
 
         var makeEntry = function(endpointConnection, fieldName) {
-          var extraClasses;
+            var extraClasses;
             switch (fieldName) {
-          case "name":
-            return makeTd(fieldName, endpointConnection.endpoint.name);
-          case "state":
+            case "name":
+                return makeTd(fieldName, endpointConnection.endpoint.name);
+            case "state":
                 if (endpointConnection.state === "COMMS_UP") extraClasses = " endpoint_state_ok";
-            else extraClasses = " endpoint_state_bad";
-            return makeTd(fieldName, endpointConnection.state, extraClasses);
-          case "enabled":
+                else extraClasses = " endpoint_state_bad";
+                return makeTd(fieldName, endpointConnection.state, extraClasses);
+            case "enabled":
                 return makeTd(fieldName, endpointConnection.enabled, " endpoint_enabled_" + endpointConnection.enabled);
-          case "button":
+            case "button":
                 if (endpointConnection.enabled) extraClasses = " endpoint_button_disable";
-            else extraClasses = " endpoint_button_enable";
-            return makeTd(fieldName, "toggle", extraClasses);
+                else extraClasses = " endpoint_button_enable";
+                return makeTd(fieldName, "toggle", extraClasses);
             default:
                 throw "Unknown field name";
-          }
+            }
         };
 
         var endpointRow = function(endpointConnection) {
@@ -71,14 +71,14 @@
 
         var headerRow = function() {
             return $.map(settings.display.field_names, function(fieldName) {
-               return makeTd(fieldName, fieldName);
-           }).join("\n");
+                return makeTd(fieldName, fieldName);
+            }).join("\n");
         };
 
         var displayEndpointConnections = function(endpointConnections) {
 
             var tableRows = $.map(endpointConnections, function(endpointConnection) {
-               return endpointRow(endpointConnection);
+                return endpointRow(endpointConnection);
             }).join("\n");
             setTargetDiv("<table class=\"endpoint_table\">" + headerRow() + tableRows + "</table>");
         };
@@ -120,18 +120,18 @@
         return this.each(function() {
             displayError("Connecting");
             $(settings.target_div).on("click", ".endpoint_button", function() {
-               var buttonTd = $(this);
+                var buttonTd = $(this);
 
-               var wasEnabled = buttonTd.hasClass("endpoint_button_disable");
-               var endpointUuid = buttonTd.parent(".endpoint_row").attr('endpointUuid');
+                var wasEnabled = buttonTd.hasClass("endpoint_button_disable");
+                var endpointUuid = buttonTd.parent(".endpoint_row").attr('endpointUuid');
 
-               var result;
-               if (wasEnabled) result = settings.client.disableEndpointConnection(endpointUuid);
-               else result = settings.client.enableEndpointConnection(endpointUuid);
+                var result;
+                if (wasEnabled) result = settings.client.disableEndpointConnection(endpointUuid);
+                else result = settings.client.enableEndpointConnection(endpointUuid);
 
                 result.done(function() {
-                  updateEndpoints();
-               });
+                    updateEndpoints();
+                });
             });
 
             updateEndpoints();
