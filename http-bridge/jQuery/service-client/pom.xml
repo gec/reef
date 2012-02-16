@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.totalgrid.reef</groupId>
-        <artifactId>reef</artifactId>
+        <artifactId>reef-jquery-bindings</artifactId>
         <version>0.4.5-SNAPSHOT</version>
-        <relativePath>../..</relativePath>
+        <relativePath>..</relativePath>
     </parent>
     <artifactId>reef-jquery-service-client</artifactId>
     <packaging>pom</packaging>
@@ -25,7 +25,7 @@
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
-                    <header>../../APACHE_FILE_HEADER</header>
+                    <header>../../../APACHE_FILE_HEADER</header>
                     <excludes>
                         <exclude>src/test/web/lib/*</exclude>
                     </excludes>

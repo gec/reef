@@ -13,5 +13,6 @@
 	<modules>
 		<module>service-client</module>
 		<module>widget-library</module>
+        <module>assembly</module>
 	</modules>
 </project>
