@@ -15,33 +15,11 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dist.name>${project.artifactId}</dist.name>
+        <dist.name>reef-jQuery</dist.name>
     </properties>
 
     <build>
-        <!--<resources>-->
-            <!--<resource>-->
-                <!--<directory>${project.basedir}/src/main/resources</directory>-->
-                <!--<filtering>true</filtering>-->
-                <!--<includes>-->
-                    <!--<include>**/*</include>-->
-                <!--</includes>-->
-            <!--</resource>-->
-        <!--</resources>-->
         <plugins>
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-resources-plugin</artifactId>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>filter</id>-->
-                        <!--<phase>generate-resources</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>resources</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
