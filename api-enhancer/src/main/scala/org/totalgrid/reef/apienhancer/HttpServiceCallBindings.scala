@@ -120,7 +120,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     val methodName = m.name
 
     val (style, resultType) = m match {
-      case _ if isReturnOptional(m) => ("SINGLE", m.returnType)
+      case _ if isReturnOptional(m) => ("OPTIONAL", m.returnType)
       case _ if isReturnList(m) => ("MULTI", listPayloadType(m.returnType))
       case _ => ("SINGLE", m.returnType)
     }

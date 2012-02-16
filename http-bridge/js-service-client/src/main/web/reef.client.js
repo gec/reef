@@ -119,6 +119,9 @@
                 switch (style) {
                 case "MULTI": return jsonData.results;
                 case "SINGLE": return jsonData;
+                case "OPTIONAL" :
+                    if(jsonData.results.length == 0) return undefined;
+                    else return jsonData.results[0];
                 }
                 throw "unknown return style";
             }, settings.error_function);

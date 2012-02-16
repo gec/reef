@@ -80,7 +80,7 @@ test("Logout and relogin", function() {
 });
 
 test("Get Points", function() {
-    expect(8);
+    expect(10);
     stop();
     client.getPoints().done(function(points){
         ok(points.length > 0, "More than 0 points");
@@ -88,10 +88,18 @@ test("Get Points", function() {
         ok(points[0].type, "Points have a field called type");
         ok(points[0].unit, "Points have a field called unit");
         ok(points[0].uuid, "Points have a field called uuid");
-        ct(client.getEntityByUuid(points[0].uuid)).done(function(entity){
+    }).done(function(points){
+        client.getEntityByUuid(points[0].uuid).done(function(entity){
             ok(entity.name, "Entitys have a field called name");
             ok(entity.uuid, "Entitys have a field called uuid");
             equal(entity.name, points[0].name, "Can get entity by uuid with matching name.")
+        });
+    }).done(function(points){
+        client.findPointByName(points[0].name).done(function(point){
+            ok(point !== undefined, "Can find point by name");
+        });
+        ct(client.findPointByName("UnknownPoint")).done(function(point){
+            ok(point === undefined, "Undefined returned for OPTIONAL result");
         });
     });
 });

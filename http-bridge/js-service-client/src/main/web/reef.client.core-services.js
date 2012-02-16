@@ -206,7 +206,7 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE",
+				style: "OPTIONAL",
 				resultType: "application_config"
 			});
 		};
@@ -684,7 +684,7 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE",
+				style: "OPTIONAL",
 				resultType: "config_file"
 			});
 		};
@@ -1035,7 +1035,7 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE",
+				style: "OPTIONAL",
 				resultType: "entity"
 			});
 		};
@@ -1265,7 +1265,7 @@
 				data: {
 					uuid: uuid
 				},
-				style: "SINGLE",
+				style: "OPTIONAL",
 				resultType: "entity_attributes"
 			});
 		};
@@ -1685,7 +1685,7 @@
 				data: {
 					pointName: pointName
 				},
-				style: "SINGLE",
+				style: "OPTIONAL",
 				resultType: "measurement"
 			});
 		};
@@ -1841,7 +1841,7 @@
 				data: {
 					name: name
 				},
-				style: "SINGLE",
+				style: "OPTIONAL",
 				resultType: "point"
 			});
 		};
