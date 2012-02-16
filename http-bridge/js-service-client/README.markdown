@@ -13,17 +13,16 @@ the java client. We provide an auto-generated API layer to most of the functions
 is implemented in a similar fashion to the java client; the largest fundamental difference is there isn't the idea of
 a "connection" to the server that can fail, each request is an independent event.
 
-We chose to write the client using jQuery because it is the most popular framework and has a native promise like ajax
+We chose to write the client using jQuery because it is the most popular framework and has a native promise based ajax
 function (since 1.5.x). This allows us to implement the client in javascript in nearly the identical way as in the java
 client. This should mean that transitioning between the two languages is relatively easy.
 
-This guide is written assuming that the reader is already somewhat familiar with javascript. Below are some helpful links
+This guide is written assuming that the reader is already familiar with javascript. Below are some helpful links
 for the most important jQuery pieces we make use of.
 
 - jQuery ajax: http://api.jquery.com/jQuery.ajax/ (see "Callback function queues" section).
 - Deferred Object (Promise): http://api.jquery.com/category/deferred-object/
 - jQuery plugin guide: http://docs.jquery.com/Plugins/Authoring
-
 
 ### Code Organization
 
@@ -94,7 +93,7 @@ on ajax calls needs to be defined using callbacks (closures). Using promises mak
 because we can making of a request and the handling of the data into separate sections, something that is hard to do
 using naive callbacks.
 
-#### Error Handling
+### Error Handling
 
 We can also attach a failure handler to be notified if the request fails. For each of these handlers we can attach more
 than one callback, they will all be called in the order they were added.
@@ -106,7 +105,45 @@ promise.fail(function(errorMessage){
 });
 ```
 
-We can also include a generic error handler that is notified of all failures.
+We can also include a generic error handler that is notified of all failures (before any custom error handlers).
+
+```javascript
+var client = $.reefClient({
+    'server'     : 'http://127.0.0.1:8886',
+    'error_function'  : function(errorString){
+        console.log("Unexpected error: " + errorString);
+        return errorString;
+    }
+});
+```
+
+### Authorization
+
+The reef http-bridge can be configured to allow generic "read-only" access to the system. If so then the client application
+will not need to do anything special to get access to the resources on the server. If no read-only user is configured or
+the client application needs "write" or "execute" access we can login as a regular user on the system using the reef
+username/password combination. This should only be done inside a secure network or when using HTTPS to avoid sending
+passwords in plaintext.
+
+There is an explicit .login() function on the client that we can call to get an AuthToken for that particular user. Most
+users will find it easier to use the 'auto_login' to start logging in as soon as the client is created.
+
+```javascript
+var client = $.reefClient({
+    'server'     : 'http://127.0.0.1:8886',
+    'auto_login' : {
+        'name' : 'userName',
+        'password' : 'userPassword'
+    }
+});
+// is equivalent to
+client.login('userName', 'userPassword').done(function(authToken){
+    console.log("Logged in with token: " + authToken);
+});
+```
+
+Once we have logged in using either technique the authToken will be maintained by the client and sent with all future
+requests. To dispose of the authToken call .logout() on the client.
 
 ### Examples
 
@@ -125,12 +162,29 @@ client.getPoints().done(function(points){
 };
 ```
 
+### Client Functions
+
+There are only a few base functions on the client. All other calls are added by the ServicesLists.
+
+```javascript
+// base function for making apiRequests, used by the generated api bindings, returns promise with result
+'apiRequest': apiRequest,
+// login a user, two parameters userName and userPassword, returns promise containing authToken
+'login': login,
+// logout the user and delete the authToken, returns promise containing status flag
+'logout' : logout,
+// get the protobuf description of the type, takes object id, returns promise containing JSON formatted decriptor
+'describe' : describe,
+// returns string describing user and server we are using
+'toString' : toString
+```
+
 ### Limitations
 
 - No subscriptions
 - Can't use functions that require passing in complex types (protobuf objects or enums).
 
-## describeResultType()
+#### describeResultType()
 
 All api request promises define the convenience function describeResultType() that makes api calls somewhat reflective.
 The describe call asks the server to describe the data so the describeResultType return value is another promise we

@@ -59,7 +59,7 @@ GET /convert =>
 Returns the protobuf descriptor for the particular proto.
 
 ```
-GET /convert/entity =>
+GET /convert/application_config =>
     {"name":"StatusSnapshot","field":[{"name":"process_id","number":1,"label":"LABEL_OPTIONAL","type":"TYPE_STRING"},
     {"name":"instance_name","number":2,"label":"LABEL_OPTIONAL","type":"TYPE_STRING"},...]}
 ```

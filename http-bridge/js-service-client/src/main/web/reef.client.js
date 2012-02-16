@@ -27,9 +27,10 @@
         var clientObject = {};
 
         var displayError = function(msg) {
-            if(settings.error_div){
+            if(settings.error_div !== undefined){
                 settings.error_div.html("<div class=\"client_error\">" + msg + "</div>");
             }
+            return msg;
         };
 
         var settings = $.extend({
@@ -40,7 +41,7 @@
             // div we want to replace the contents of (if using default displayError)
             'error_div': undefined,
             // username and password to start logging in with
-            'autoLogin' : {
+            'auto_login' : {
                 'name' : undefined,
                 'password' : undefined
             },
@@ -120,7 +121,7 @@
                 case "SINGLE": return jsonData;
                 }
                 throw "unknown return style";
-            });
+            }, settings.error_function);
 
             // define a helper that will go and fetch the description for
             parsedPromise.describeResultType = function(){
@@ -150,8 +151,26 @@
                 // console.log("Logged in: " + userName);
                 settings.authToken = jsonData;
                 settings.userName = userName;
-                return clientObject;
-           });
+                return jsonData;
+           }, settings.error_function);
+
+        };
+
+        var logout = function(userName, userPassword) {
+            if (settings.authToken === undefined) {
+                throw "Already logged in, logout first";
+            }
+
+            var future = $.Deferred();
+
+            future.pipe(function(status){
+                settings.authToken = undefined;
+            }, settings.error_function);
+
+            // TODO: javascript logout needs to delete authToken
+            future.resolve('OK');
+
+            return future;
 
         };
 
@@ -167,7 +186,7 @@
             });
             return future.pipe(function(jsonData, jqXhdr) {
                 return jsonData;
-           });
+           }, settings.error_function);
 
         };
 
@@ -178,10 +197,16 @@
         };
 
         clientObject = {
+            // base function for making apiRequests, used by the generated api bindings, returns promise with result
             'apiRequest': apiRequest,
+            // login a user, two parameters userName and userPassword, returns promise containing authToken
             'login': login,
-            'toString' : toString,
-            'describe' : describe
+            // logout the user and delete the authToken, returns promise containing status flag
+            'logout' : logout,
+            // get the protobuf description of the type, takes object id, returns promise containing JSON formatted decriptor
+            'describe' : describe,
+            // returns string describing user and server we are using
+            'toString' : toString
         };
 
         $.each(settings.service_lists, function(i, name){
@@ -192,8 +217,8 @@
           }
         });
 
-        if(settings.autoLogin && settings.autoLogin.name){
-            clientObject.login(options.autoLogin.name, options.autoLogin.password);
+        if(settings.auto_login && settings.auto_login.name){
+            clientObject.login(options.auto_login.name, options.auto_login.password);
         }
 
         return clientObject;

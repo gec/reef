@@ -18,32 +18,66 @@
  */
 $(document).ready(function(){
 
+var expectError = false;
 var client = $.reefClient({
     'server'     : 'http://127.0.0.1:8886',
     'error_function'  : function(errorString){
-        start();
-        ok(false, errorString);
+        ok(expectError, errorString);
+        return errorString;
     },
-    'autoLogin' : {
+    'auto_login' : {
         'name' : 'system',
         'password' : 'system'
     }
 });
 
+
+// ct is short for ContinueTest, with async callbacks we suspend the test suite running the next suite
+// with the stop() call and will only restart after a start is called, using the always callback makes
+// it easier to make sure start() will get called after the results are handled
+var ct = function(promise){
+    promise.always(function(){
+        start();
+    });
+    return promise;
+}
+
 module("Basic Client Tests");
 
 test("Failed Api calls are caught", function() {
-    expect(2);
+    expect(4);
     stop();
+    expectError = true;
     client.apiRequest({
         request: "madeUpFunctionName"
     }).fail(function(err){
-        start();
         ok(err, "Got an error");
         ok(err.indexOf("madeUpFunctionName") != -1, "Error string includes functionName");
+        expectError = false;
+    }).done(function(result){
+        ok(false, "done shouldn't be called back on a failure");
+    }).always(function(){
+        start();
+        ok(true, "always should always be called");
     });
 });
 
+test("Logout and relogin", function() {
+    expect(5);
+    stop();
+    client.logout().done(function(status){
+        ok(true, "Logged out");
+        expectError = true;
+        client.login('unknownUser','badPassword').fail(function(errorMessage){
+            ok(true, "Fail login of bad user");
+            ct(client.login('system','system')).done(function(authToken){
+                ok(true, "Logged back in");
+                expectError = false;
+                raises(function(){client.login('system','system')});
+            });
+        });
+    });
+});
 
 test("Get Points", function() {
     expect(8);
@@ -54,8 +88,7 @@ test("Get Points", function() {
         ok(points[0].type, "Points have a field called type");
         ok(points[0].unit, "Points have a field called unit");
         ok(points[0].uuid, "Points have a field called uuid");
-        client.getEntityByUuid(points[0].uuid).done(function(entity){
-            start();
+        ct(client.getEntityByUuid(points[0].uuid)).done(function(entity){
             ok(entity.name, "Entitys have a field called name");
             ok(entity.uuid, "Entitys have a field called uuid");
             equal(entity.name, points[0].name, "Can get entity by uuid with matching name.")
@@ -66,8 +99,7 @@ test("Get Points", function() {
 test("Get Commands", function() {
     expect(4);
     stop();
-    client.getCommands().done(function(commands){
-        start();
+    ct(client.getCommands()).done(function(commands){
         ok(commands.length > 0, "More than 0 commands");
         ok(commands[0].name, "Commands have a field called name");
         ok(commands[0].type, "Commands have a field called type");
@@ -78,8 +110,7 @@ test("Get Commands", function() {
 test("Get EntityChildren", function() {
     expect(9);
     stop();
-    client.getEntityChildrenFromTypeRoots("Equipment", "owns", 1, ["Point"]).done(function(equipments){
-        start();
+    ct(client.getEntityChildrenFromTypeRoots("Equipment", "owns", 1, ["Point"])).done(function(equipments){
         ok(equipments.length > 0, "More than 0 Entities with type Equipment");
         ok(equipments[0].relations, "Entities have a field called relations");
 
@@ -93,7 +124,7 @@ test("Get EntityChildren", function() {
 
         var entities = relations[0].entities;
         ok(entities.length > 0, "More than one child Entity");
-        ok($.inArray("Point",entities[0].types), "Related entities are Points");
+        ok($.inArray("Point",entities[0].types) != -1, "Related entities are Points");
 
         //    client.getEntityRelations(entities[0].uuid, "owns:*:false:Equipment").done(function(entity){
         //        start();
