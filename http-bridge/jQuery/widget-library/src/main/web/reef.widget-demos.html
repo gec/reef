@@ -24,8 +24,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <script language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" ></script>
-        <script language="javascript" src="./reef.client.js"></script>
-        <script language="javascript" src="./reef.client.core-services.js"></script>
+        <script language="javascript" src="../../../../service-client/src/main/web/reef.client.js"></script>
+        <script language="javascript" src="../../../../service-client/src/main/web/reef.client.core-services.js"></script>
         <script language="javascript" src="./reef.widget.measurement.js"></script>
         <link rel="stylesheet" type="text/css" href="./reef.widget.measurement.css" media="screen" />
         <script language="javascript" src="./reef.widget.endpoint.js"></script>
@@ -43,12 +43,8 @@
         <script type="text/javascript">
         $(document).ready(function(){
             var client = $.reefClient({
-                'server'     : 'http://127.0.0.1:8886',
-                'error_div'  : $('#error_div'),
-                'auto_login' : {
-                    'name' : 'system',
-                    'password' : 'system'
-                }
+                'server'     : 'http://69.164.158.21:7889',
+                'error_div'  : $('#error_div')
             });
 
             // get some points and make a "current value" display with just those points

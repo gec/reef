@@ -34,7 +34,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
   override def finish(rootDir: File) {
 
     val serverBindingFile = new File(rootDir, "../../../http-bridge/http-bridge/src/main/scala/org/totalgrid/reef/httpbridge/servlets/apiproviders/AllScadaServiceApiCallLibrary.scala")
-    val clientBindingFile = new File(rootDir, "../../../http-bridge/js-service-client/src/main/web/reef.client.core-services.js")
+    val clientBindingFile = new File(rootDir, "../../../http-bridge/jQuery/service-client/src/main/web/reef.client.core-services.js")
     // TODO: re-enable newest file checking once we are generating inside generated-sources
     newestSourceFile = System.currentTimeMillis() + 360000
     writeFileIfNewer(serverBindingFile, newestSourceFile) { writeServerBindingFile(_) }

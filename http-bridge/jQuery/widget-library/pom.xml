@@ -5,9 +5,9 @@
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef</artifactId>
         <version>0.4.5-SNAPSHOT</version>
-        <relativePath>../..</relativePath>
+        <relativePath>../../..</relativePath>
     </parent>
-    <artifactId>reef-js-service-client</artifactId>
+    <artifactId>reef-jquery-widget-library</artifactId>
     <packaging>pom</packaging>
 
     <licenses>
@@ -26,9 +26,6 @@
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
                     <header>../../APACHE_FILE_HEADER</header>
-                    <excludes>
-                        <exclude>src/test/web/lib/*</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

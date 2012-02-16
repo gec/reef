@@ -76,7 +76,7 @@
         <module>application-whiteboard</module>
 		<module>proto-shell</module>
         <module>http-bridge/http-bridge</module>
-        <module>http-bridge/js-service-client</module>
+        <module>http-bridge/jQuery</module>
 		<module>loader-common</module>
 		<module>loader-xml</module>
 		<module>processing</module>
