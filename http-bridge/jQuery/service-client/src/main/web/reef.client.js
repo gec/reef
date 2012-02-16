@@ -66,8 +66,7 @@
 
             // add the standard options
             var requestSettings = $.extend({
-                type: 'GET',
-                dataType: 'json',
+                type: 'POST',
                 success: function(jsonData, textStatus, jqXhdr) {
                     if (jsonData) {
                         options.resultFuture.resolve(jsonData, jqXhdr);
@@ -109,6 +108,9 @@
             enqueueRequest({
                 url: settings.server + "/api/" + options.request,
                 data: options.data,
+                // TODO: when we are able to parse JSON arguments uncomment this
+                //contentType : 'application/json',
+                //processData: false,
                 resultFuture: future
             });
 
