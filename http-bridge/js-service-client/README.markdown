@@ -126,7 +126,8 @@ username/password combination. This should only be done inside a secure network 
 passwords in plaintext.
 
 There is an explicit .login() function on the client that we can call to get an AuthToken for that particular user. Most
-users will find it easier to use the 'auto_login' to start logging in as soon as the client is created.
+users will find it easier to use the 'auto_login' to start logging in as soon as the client is created. Downside is we
+lose the ability to throw a specific error for login failure.
 
 ```javascript
 var client = $.reefClient({
@@ -144,6 +145,10 @@ client.login('userName', 'userPassword').done(function(authToken){
 
 Once we have logged in using either technique the authToken will be maintained by the client and sent with all future
 requests. To dispose of the authToken call .logout() on the client.
+
+Since requests are handled serially we will not attempt the next requested function until the previous one completes.
+This means that we don't need to wait for the login() or auto_login to complete before making a "real" request. If the
+login fails, the next request will fail as not authorized anyways.
 
 ### Examples
 
