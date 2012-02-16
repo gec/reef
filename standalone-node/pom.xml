@@ -48,6 +48,12 @@
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-loader-xml</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-default-simulator</artifactId>
@@ -75,6 +81,12 @@
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-persistence-postgresql</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-metrics-service</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>

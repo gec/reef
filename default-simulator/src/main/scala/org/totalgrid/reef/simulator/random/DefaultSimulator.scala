@@ -30,7 +30,7 @@ import org.totalgrid.reef.protocol.api.Publisher
 import org.totalgrid.reef.simulator.random.RandomValues.RandomValue
 import org.totalgrid.reef.client.service.proto.Commands.CommandStatus
 import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement, MeasurementBatch }
-import org.totalgrid.reef.protocol.simulator.{ SimulatorPluginFactory, SimulatorPlugin }
+import org.totalgrid.reef.protocol.simulator.{ ControllableSimulator, SimulatorPlugin }
 
 final class DefaultSimulator(simName: String, publisher: Publisher[MeasurementBatch], config: SimMapping.SimulatorMapping, exe: Executor, parent: DefaultSimulatorFactory)
     extends SimulatorPlugin with ControllableSimulator with Logging {

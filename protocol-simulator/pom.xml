@@ -52,20 +52,10 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-util</artifactId>
+            <artifactId>reef-util-osgi</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
-      <dependency>
-          <groupId>org.totalgrid.reef</groupId>
-          <artifactId>reef-proto-shell</artifactId>
-          <version>${reef.version}</version>
-      </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>${felix-core.version}</version>
-            <scope>compile</scope>
-        </dependency>
+
     </dependencies>
 </project>

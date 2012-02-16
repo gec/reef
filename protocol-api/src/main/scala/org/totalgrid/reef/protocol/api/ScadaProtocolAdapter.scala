@@ -35,11 +35,11 @@ object ScadaProtocolAdapter {
 
     new Resources {
 
-      def GetEndpointStatePublisher(): Publisher[EndpointConnection.State] = endpoint
+      def getEndpointStatePublisher(): Publisher[EndpointConnection.State] = endpoint
 
-      def GetMeasurementBatchPublisher(): Publisher[MeasurementBatch] = batch
+      def getMeasurementBatchPublisher(): Publisher[MeasurementBatch] = batch
 
-      def GetChannelStatePublisher(): Publisher[CommChannel.State] = channel
+      def getChannelStatePublisher(): Publisher[CommChannel.State] = channel
     }
 }
 

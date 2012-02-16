@@ -18,6 +18,7 @@
 
 	<feature name="reef-remote-shell" version="${reef.version}">
 		<feature>reef-api</feature>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-benchmarks/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-loader-xml/${reef.version}</bundle>
 		<bundle start-level='70'>mvn:org.totalgrid.reef/reef-proto-shell/${reef.version}</bundle>
 	</feature>
@@ -39,6 +40,7 @@
 		<feature>reef-core</feature>
 		<bundle start-level='89'>mvn:org.totalgrid.reef/reef-protocol-simulator/${reef.version}</bundle>
 		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-default-simulator/${reef.version}</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-protocol-simulator-shell-commands/${reef.version}</bundle>
         <bundle start-level='60'>mvn:org.liquibase/liquibase-osgi/${liquibase.version}</bundle>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-services-db-schema/${reef.version}</bundle>
 		<bundle start-level='91'>mvn:org.totalgrid.reef/reef-services/${reef.version}</bundle>

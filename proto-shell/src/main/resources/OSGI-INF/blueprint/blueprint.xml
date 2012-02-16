@@ -51,6 +51,9 @@
         <command name="reef/logout">
             <action class="org.totalgrid.reef.shell.proto.ReefLogoutCommand"/>
         </command>
+        <command name="reef/benchmark">
+            <action class="org.totalgrid.reef.shell.proto.BenchmarkCommand"/>
+        </command>
         <command name="reef/headers">
             <action class="org.totalgrid.reef.shell.proto.ReefHeadersCommand"/>
         </command>

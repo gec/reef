@@ -18,6 +18,8 @@
  */
 package org.totalgrid.reef.client.types;
 
+import java.io.IOException;
+
 /**
  * Describes how to (de)serialize a type and it's class.
  *
@@ -32,7 +34,7 @@ public interface TypeDescriptor<A>
 
     byte[] serialize( A value );
 
-    A deserialize( byte[] bytes );
+    A deserialize( byte[] bytes ) throws IOException;
 
     Class<A> getKlass();
 

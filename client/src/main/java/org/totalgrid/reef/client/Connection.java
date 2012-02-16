@@ -20,6 +20,7 @@ package org.totalgrid.reef.client;
 
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.registration.ServiceRegistration;
 import org.totalgrid.reef.client.settings.UserSettings;
 
 /**
@@ -85,4 +86,6 @@ public interface Connection
      * @param servicesList ServicesList implementation included with the specific client package.
      */
     void addServicesList( ServicesList servicesList );
+
+    ServiceRegistration getServiceRegistration();
 }

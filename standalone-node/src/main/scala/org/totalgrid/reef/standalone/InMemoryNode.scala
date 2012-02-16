@@ -29,7 +29,7 @@ object InMemoryNode {
 
   lazy val connection = systemOption.get.connection()
   lazy val javaConnectionFactory = new ConnectionFactory {
-    lazy val javaConnection = new ConnectionWrapper(connection)
+    lazy val javaConnection = new ConnectionWrapper(connection, exeOption.get)
     def connect() = javaConnection
 
     def terminate() {}

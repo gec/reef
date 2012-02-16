@@ -36,3 +36,9 @@ trait SimulatorPlugin {
   def issue(cr: Commands.CommandRequest): Commands.CommandStatus
 }
 
+trait ControllableSimulator extends SimulatorPlugin {
+  def getRepeatDelay: Long
+  def setUpdateDelay(newDelay: Long)
+  def setChangeProbability(prob: Double)
+}
+

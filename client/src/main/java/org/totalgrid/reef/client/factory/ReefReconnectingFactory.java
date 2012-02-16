@@ -77,7 +77,7 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory, o
         org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection scalaConnection;
         scalaConnection = new DefaultConnection( connection, exe, 5000 );
         scalaConnection.addServicesList( servicesList );
-        Connection c = new ConnectionWrapper( scalaConnection );
+        Connection c = new ConnectionWrapper( scalaConnection, exe );
         for ( ConnectionWatcher cw : watchers )
         {
             cw.onConnectionOpened( c );
