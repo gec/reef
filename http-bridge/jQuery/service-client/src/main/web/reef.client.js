@@ -209,7 +209,14 @@
                 }
                 return sub.failureNotifier;
             };
-            return sub;
+
+            var subscription = {
+                // takes a callback expecting (eventCode, payloadData) and returns a promise representing sub status
+                start : sub.start,
+                // cancels the subscription. If successfully canceled on server side the promise.done() method will be called
+                cancel : sub.cancel
+            };
+            return subscription;
         }
 
         var subscribeApiRequest = function(options) {

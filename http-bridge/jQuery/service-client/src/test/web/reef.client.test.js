@@ -148,7 +148,7 @@ test("Get EntityChildren", function() {
 });
 
 test("Polling Subscribe Api works", function() {
-    expect(5);
+    expect(6);
     stop();
     client.subscribeToMeasurementsByNames(['SimulatedSubstation.Line01.Current']).done(function(subscriptionResult){
         var sub = subscriptionResult.subscription;
@@ -161,8 +161,12 @@ test("Polling Subscribe Api works", function() {
             count = count - 1;
             if(count == 0) {
                 sub.cancel();
-                start();
             }
+        }).done(function(reason){
+            ok(reason.indexOf("cancel") !== -1, "Done is called after subscription is canceled");
+            start();
+        }).fail(function(errString){
+            ok(false, "Subscription fail should not have been called.")
         });
     });
 });
