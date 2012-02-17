@@ -165,12 +165,6 @@
             'client': undefined,
             // list of point names, must include atleast one point name
             'point_names': undefined,
-            // enables live-updates via polling, do not poll more often than once a second
-            'polling': {
-                'enabled': false,
-                'period': 5000,
-                'cancel_polling': function() {}
-            },
             // allow overriding of the display and error routines
             // display_function takes a list of measurements with the enhanced fields ('value', 'quality_string', 'time_string' and 'abnormal')
             'display_function': displayMeasurements,

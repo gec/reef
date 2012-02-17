@@ -43,8 +43,11 @@
         <script type="text/javascript">
         $(document).ready(function(){
             var client = $.reefClient({
-                'server'     : 'http://69.164.158.21:7889',
-                'error_div'  : $('#error_div')
+                'server'     : 'http://127.0.0.1:8886',
+                'error_div'  : $('#error_div'),
+                'auto_login' : {
+                    'name' : 'system', 'password' : 'system'
+                }
             });
 
             // get some points and make a "current value" display with just those points
@@ -60,8 +63,7 @@
             });
 
             $('#endpoint_div').displayEndpoints({
-                'client'     : client,
-                'polling' : {'enabled' : false, 'period' : 1000}
+                'client'     : client
             });
         });
         </script>
