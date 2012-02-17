@@ -28,7 +28,7 @@ import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
  * Proxies calls from the client, and prepares the apporiate ArgumentSource based on the method and
  * headers. This will allow us to provide these Apis for consumption using a number of techniques.
  */
-class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider) extends ClientUsingServletBase(connection) {
+class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider, subscriptionHandler: SubscriptionHandler) extends ClientUsingServletBase(connection) {
 
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse) = handleErrors(resp) {
     val argumentSource = new ParameterArgumentSource(req)
@@ -66,10 +66,10 @@ class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider
       case SubscriptionResultApiCall(func) =>
         resp.setHeader(RETURN_STYLE, "MULTI")
         val subResult = func(client).await
-        //val subToken = subscriptionHandler.addSubscription(subResult.getSubscription)
+        val subToken = subscriptionHandler.addSubscription(subResult.getSubscription)
         // we are "tunneling" the subscription token out through one of the "simple response headers"
         // until the CORS support for expose Headers is up to snuff.
-        resp.setHeader("Pragma", "fakeToken")
+        resp.setHeader("Pragma", subToken)
         printOutput(req, resp, subResult.getResult)
     }
 

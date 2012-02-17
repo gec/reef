@@ -31,6 +31,16 @@ import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.service.proto.Measurements
 import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCallLibrary
+import org.totalgrid.reef.httpbridge.servlets.helpers.SubscriptionHandler
+import com.google.protobuf.Message
+import org.totalgrid.reef.client.Subscription
+
+class NullSubscriptionHandler extends SubscriptionHandler {
+  def addSubscription[A <: Message](subscription: Subscription[A]) = {
+    subscription.cancel()
+    ""
+  }
+}
 
 @RunWith(classOf[JUnitRunner])
 class ApiServletTest extends BaseServletTest {
@@ -43,7 +53,7 @@ class ApiServletTest extends BaseServletTest {
 
   override def beforeEach() {
     super.beforeEach()
-    service = new ApiServlet(connection, new AllScadaServiceApiCallLibrary)
+    service = new ApiServlet(connection, new AllScadaServiceApiCallLibrary, new NullSubscriptionHandler)
     client = Mockito.mock(classOf[Client], new MockitoStubbedOnly())
     services = Mockito.mock(classOf[AllScadaService], new MockitoStubbedOnly())
 

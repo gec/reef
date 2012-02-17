@@ -38,7 +38,7 @@ abstract class ServletBase extends HttpServlet with DataFormatter with ServletEr
     resp.setHeader(ORIGIN_HEADER, "*")
     resp.setHeader("Access-Control-Allow-Headers", CUSTOM_HEADERS.mkString(", "))
     resp.setHeader("Access-Control-Expose-Headers", CUSTOM_HEADERS.mkString(", "))
-    resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+    resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE")
     resp.setStatus(200)
   }
 }
