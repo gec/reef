@@ -82,43 +82,55 @@
             return meas;
         };
 
+        var fillMeasurementDiv = function(meas){
+            var result = "";
+            if (settings.display.name_div) {
+                var meas_name = meas.name;
+                if (settings.display.add_unit_to_name) {
+                    meas_name += " (" + meas.unit + ")";
+                }
+                result += "<div class=\"meas_name\">" + meas_name + "</div>";
+            }
+            if (settings.display.value_div) {
+                var extra_value_class = "";
+                if (meas.abnormal) {
+                    extra_value_class = " meas_abnormal";
+                }
+
+                var value_title_parts = [];
+                if (settings.display.time_in_hover) {
+                    value_title_parts.push(meas.time_string);
+                }
+                if (settings.display.quality_in_hover) {
+                    value_title_parts.push(meas.quality_string);
+                }
+                var value_title_text = value_title_parts.join(" ");
+
+                result += "<div class=\"meas_value meas_type_" + meas.type + extra_value_class + "\" title=\"" + value_title_text + "\">" + meas.value + "</div>";
+            }
+            if (settings.display.quality_div) {
+                result += "<div class=\"meas_quality\">" + meas.quality_string + "</div>";
+            }
+            if (settings.display.time_div) {
+                result += "<div class=\"meas_time\">" + meas.time_string + "</div>";
+            }
+            return result;
+        };
+
+        // can't have a DOM level id with special characters in it.
+        var fixId = function(name){
+            return name.replace(/[!\"#$%&'\(\)\*\+,\.\/:;<=>\?\@\[\\\]\^`\{\|\}~]/g, '');
+        };
+
         var displayMeasurements = function(measurements) {
             var div_data = $.map(measurements, function(meas) {
-                var result = "<div class=\"measurement\">";
-                if (settings.display.name_div) {
-                    var meas_name = meas.name;
-                    if (settings.display.add_unit_to_name) {
-                        meas_name += " (" + meas.unit + ")";
-                    }
-                    result += "<div class=\"meas_name\">" + meas_name + "</div>";
-                }
-                if (settings.display.value_div) {
-                    var extra_value_class = "";
-                    if (meas.abnormal) {
-                        extra_value_class = " meas_abnormal";
-                    }
-
-                    var value_title_parts = [];
-                    if (settings.display.time_in_hover) {
-                        value_title_parts.push(meas.time_string);
-                    }
-                    if (settings.display.quality_in_hover) {
-                        value_title_parts.push(meas.quality_string);
-                    }
-                    var value_title_text = value_title_parts.join(" ");
-
-                    result += "<div class=\"meas_value meas_type_" + meas.type + extra_value_class + "\" title=\"" + value_title_text + "\">" + meas.value + "</div>";
-                }
-                if (settings.display.quality_div) {
-                    result += "<div class=\"meas_quality\">" + meas.quality_string + "</div>";
-                }
-                if (settings.display.time_div) {
-                    result += "<div class=\"meas_time\">" + meas.time_string + "</div>";
-                }
-                result += "</div>";
-                return result;
+               return "<div class=\"measurement\" id=\""+fixId(meas.name)+"\">" + fillMeasurementDiv(meas) + "</div>";
             }).join("\n");
             setTargetDiv(div_data);
+        };
+
+        var updateMeasurement = function(meas){
+            $("#" + fixId(meas.name)).html(fillMeasurementDiv(meas));
         };
 
         var displayError = function(msg) {
@@ -132,8 +144,17 @@
         };
 
         var getMeasurements = function() {
-            settings.client.getMeasurementsByNames(settings.point_names).done(function(measurements){
-                settings.display_function(enhanceMeasurements(measurements));
+            settings.client.subscribeToMeasurementsByNames(settings.point_names).done(function(subscriptionResult){
+
+                // setup the initial display
+                settings.display_function(enhanceMeasurements(subscriptionResult.result));
+
+                // start the subscription
+                subscriptionResult.subscription.start(function(event, meas){
+                    settings.display_update_function(enhanceMeasurement(meas));
+                }).fail(function(errorString){
+                    settings.error_function("Subscription: " + errorString);
+                });
             }).fail(function(errorString){
                 settings.error_function(errorString);
             });
@@ -153,6 +174,8 @@
             // allow overriding of the display and error routines
             // display_function takes a list of measurements with the enhanced fields ('value', 'quality_string', 'time_string' and 'abnormal')
             'display_function': displayMeasurements,
+            // update a single measurement we are already displaying
+            'display_update_function': updateMeasurement,
             // error message takes a string describing the error
             'error_function': displayError,
             // div we want to replace the contents of (if using default displayMeasurements)
@@ -182,15 +205,6 @@
 
         return this.each(function() {
             getMeasurements();
-
-            if (settings.polling && settings.polling.enabled && settings.polling.period) {
-                var timer = setInterval(function() {
-                    getMeasurements();
-                }, settings.polling.period);
-                settings.polling.cancel_polling = function() {
-                    timer.clearInterval();
-                };
-            }
         });
 
     };
