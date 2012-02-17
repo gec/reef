@@ -28,6 +28,10 @@ var client = $.reefClient({
     'auto_login' : {
         'name' : 'system',
         'password' : 'system'
+    },
+    'subscription_polling': {
+        'enabled': true,
+        'period': 10
     }
 });
 
@@ -140,6 +144,26 @@ test("Get EntityChildren", function() {
         //        ok(entity.uuid, "Entitys have a field called uuid");
         //        equal(entity.name, points[0].name, "Can get entity by uuid with matching name.")
         //    });
+    });
+});
+
+test("Polling Subscribe Api works", function() {
+    expect(5);
+    stop();
+    client.subscribeToMeasurementsByNames(['SimulatedSubstation.Line01.Current']).done(function(subscriptionResult){
+        var sub = subscriptionResult.subscription;
+        var results = subscriptionResult.result;
+        notEqual(sub, undefined);
+        notEqual(results, undefined);
+        var count = 3;
+        sub.start( function(event, object){
+            equal(event, 'MODIFIED', "Got subscription event");
+            count = count - 1;
+            if(count == 0) {
+                sub.cancel();
+                start();
+            }
+        });
     });
 });
 
