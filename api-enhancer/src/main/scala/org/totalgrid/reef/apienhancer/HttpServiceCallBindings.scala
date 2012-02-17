@@ -98,6 +98,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
   def buildServerApiBinding(m: MethodDoc): String = {
     val methodName = m.name
     val (returnSize, resultType) = m match {
+      case _ if isReturnSubscription(m) => ("subscription", subscriptionPayloadType(m.returnType))
       case _ if isReturnOptional(m) => ("optional", m.returnType)
       case _ if isReturnList(m) => ("multi", listPayloadType(m.returnType))
       case _ => ("single", m.returnType)
@@ -120,6 +121,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     val methodName = m.name
 
     val (style, resultType) = m match {
+      case _ if isReturnSubscription(m) => ("MULTI", subscriptionPayloadType(m.returnType))
       case _ if isReturnOptional(m) => ("OPTIONAL", m.returnType)
       case _ if isReturnList(m) => ("MULTI", listPayloadType(m.returnType))
       case _ => ("SINGLE", m.returnType)
@@ -135,9 +137,10 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     }
     val data = if (!argStrings.isEmpty) "\t\t\t\tdata: {\n" + argStrings.map { _._1 }.mkString(",\n") + "\n\t\t\t\t},\n" else ""
     val args = if (!argStrings.isEmpty) argStrings.map { _._2 }.mkString(", ") else ""
+    val apiCall = if (isReturnSubscription(m)) "subscribeApiRequest" else "apiRequest"
 
-    "%s\n\t\tcalls.%s = function(%s) {\n%s\t\t\treturn client.apiRequest({\n\t\t\t\trequest: \"%s\",\n%s\t\t\t\tstyle: \"%s\",\n\t\t\t\tresultType: \"%s\""
-      .format(commentString(m.getRawCommentText(), 2), methodName, args, valueExtractors, methodName, data, style, typeDescriptorId(resultType)) + "\n\t\t\t});\n\t\t};"
+    "%s\n\t\tcalls.%s = function(%s) {\n%s\t\t\treturn client.%s({\n\t\t\t\trequest: \"%s\",\n%s\t\t\t\tstyle: \"%s\",\n\t\t\t\tresultType: \"%s\""
+      .format(commentString(m.getRawCommentText(), 2), methodName, args, valueExtractors, apiCall, methodName, data, style, typeDescriptorId(resultType)) + "\n\t\t\t});\n\t\t};"
   }
 
   def typeDescriptorId(typ: Type) = {
@@ -162,6 +165,12 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     } catch {
       case e: Exception => false
     }
+  }
+
+  def subscriptionPayloadType(ptype: Type) = {
+    val argumentTypes = ptype.asParameterizedType().typeArguments().toList
+    if (argumentTypes.size != 2) throw new NotEncodableException("Can't parse subresult with unhandled types " + ptype + " argumentTypes: " + argumentTypes)
+    listPayloadType(argumentTypes(0))
   }
 
   def listPayloadType(ptype: Type) = {

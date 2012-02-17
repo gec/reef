@@ -65,7 +65,10 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a0 = args.getInt("limit")
     (c) => c.getActiveAlarms(a0)
   })
-  // Can't encode subscribeToActiveAlarms : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Alarms.Alarm>, org.totalgrid.reef.client.service.proto.Alarms.Alarm>
+  subscription("subscribeToActiveAlarms", classOf[org.totalgrid.reef.client.service.proto.Alarms.Alarm], args => {
+    val a0 = args.getInt("recentAlarmLimit")
+    (c) => c.subscribeToActiveAlarms(a0)
+  })
   multi("getActiveAlarms", classOf[org.totalgrid.reef.client.service.proto.Alarms.Alarm], args => {
     val a0 = args.getStrings("types")
     val a1 = args.getInt("recentAlarmLimit")
@@ -104,7 +107,7 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   // Can't encode getOne : Can't serialize non-protobuf response: T
   // Can't encode findOne : Can't serialize non-protobuf response: T
   // Can't encode getMany : Can't serialize non-protobuf response: T
-  // Can't encode subscribeMany : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<T>, T>
+  // Can't encode subscribeMany : Can't serialize non-protobuf response: T
   // Can't encode deleteOne : Can't serialize non-protobuf response: T
   // Can't encode deleteMany : Can't serialize non-protobuf response: T
   // Can't encode putOne : Can't serialize non-protobuf response: T
@@ -261,7 +264,9 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   multi("getEndpointConnections", classOf[org.totalgrid.reef.client.service.proto.FEP.EndpointConnection], args => { (c) =>
     c.getEndpointConnections()
   })
-  // Can't encode subscribeToEndpointConnections : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.FEP.EndpointConnection>, org.totalgrid.reef.client.service.proto.FEP.EndpointConnection>
+  subscription("subscribeToEndpointConnections", classOf[org.totalgrid.reef.client.service.proto.FEP.EndpointConnection], args => { (c) =>
+    c.subscribeToEndpointConnections()
+  })
   single("getEndpointConnectionByUuid", classOf[org.totalgrid.reef.client.service.proto.FEP.EndpointConnection], args => {
     val a0 = args.getUuid("endpointUuid")
     (c) => c.getEndpointConnectionByUuid(a0)
@@ -458,15 +463,22 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a0 = args.getInt("limit")
     (c) => c.getRecentEvents(a0)
   })
-  // Can't encode subscribeToRecentEvents : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Events.Event>, org.totalgrid.reef.client.service.proto.Events.Event>
-  // Can't encode subscribeToRecentEvents : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Events.Event>, org.totalgrid.reef.client.service.proto.Events.Event>
+  subscription("subscribeToRecentEvents", classOf[org.totalgrid.reef.client.service.proto.Events.Event], args => {
+    val a0 = args.getInt("limit")
+    (c) => c.subscribeToRecentEvents(a0)
+  })
+  subscription("subscribeToRecentEvents", classOf[org.totalgrid.reef.client.service.proto.Events.Event], args => {
+    val a0 = args.getStrings("types")
+    val a1 = args.getInt("limit")
+    (c) => c.subscribeToRecentEvents(a0, a1)
+  })
   multi("getRecentEvents", classOf[org.totalgrid.reef.client.service.proto.Events.Event], args => {
     val a0 = args.getStrings("types")
     val a1 = args.getInt("limit")
     (c) => c.getRecentEvents(a0, a1)
   })
   // Can't encode searchForEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
-  // Can't encode subscribeToEvents : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Events.Event>, org.totalgrid.reef.client.service.proto.Events.Event>
+  // Can't encode subscribeToEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
   ////////////////////
   // MeasurementOverrideService
   ////////////////////
@@ -491,8 +503,11 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     (c) => c.getMeasurementsByNames(a0)
   })
   // Can't encode getMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
-  // Can't encode subscribeToMeasurementsByPoints : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
-  // Can't encode subscribeToMeasurementsByNames : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
+  // Can't encode subscribeToMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+  subscription("subscribeToMeasurementsByNames", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getStrings("pointNames")
+    (c) => c.subscribeToMeasurementsByNames(a0)
+  })
   // Can't encode getMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
   // Can't encode getMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
   // Can't encode getMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
@@ -515,10 +530,19 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a4 = args.getInt("limit")
     (c) => c.getMeasurementHistoryByName(a0, a1, a2, a3, a4)
   })
-  // Can't encode subscribeToMeasurementHistory : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
-  // Can't encode subscribeToMeasurementHistory : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
-  // Can't encode subscribeToMeasurementHistoryByName : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
-  // Can't encode subscribeToMeasurementHistoryByName : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
+  // Can't encode subscribeToMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+  // Can't encode subscribeToMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+  subscription("subscribeToMeasurementHistoryByName", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getString("pointName")
+    val a1 = args.getInt("limit")
+    (c) => c.subscribeToMeasurementHistoryByName(a0, a1)
+  })
+  subscription("subscribeToMeasurementHistoryByName", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getString("pointName")
+    val a1 = args.getLong("since")
+    val a2 = args.getInt("limit")
+    (c) => c.subscribeToMeasurementHistoryByName(a0, a1, a2)
+  })
   // Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
   // Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
   // Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean

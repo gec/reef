@@ -151,7 +151,21 @@
 				resultType: "alarm"
 			});
 		};
-		// Can't encode subscribeToActiveAlarms : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Alarms.Alarm>, org.totalgrid.reef.client.service.proto.Alarms.Alarm>
+		/**
+		 * Get the most recent alarms and setup a subscription to all future alarms
+		 *
+		 * @param recentAlarmLimit the number of recent alarms.
+		*/
+		calls.subscribeToActiveAlarms = function(recentAlarmLimit) {
+			return client.subscribeApiRequest({
+				request: "subscribeToActiveAlarms",
+				data: {
+					recentAlarmLimit: recentAlarmLimit
+				},
+				style: "MULTI",
+				resultType: "alarm"
+			});
+		};
 		/**
 		 * Get the most recent alarms
 		 *
@@ -260,7 +274,7 @@
 		// Can't encode getOne : Can't serialize non-protobuf response: T
 		// Can't encode findOne : Can't serialize non-protobuf response: T
 		// Can't encode getMany : Can't serialize non-protobuf response: T
-		// Can't encode subscribeMany : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<T>, T>
+		// Can't encode subscribeMany : Can't serialize non-protobuf response: T
 		// Can't encode deleteOne : Can't serialize non-protobuf response: T
 		// Can't encode deleteMany : Can't serialize non-protobuf response: T
 		// Can't encode putOne : Can't serialize non-protobuf response: T
@@ -857,7 +871,19 @@
 				resultType: "endpoint_connection"
 			});
 		};
-		// Can't encode subscribeToEndpointConnections : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.FEP.EndpointConnection>, org.totalgrid.reef.client.service.proto.FEP.EndpointConnection>
+		/**
+		 * Same as getEndpointConnections but subscribes the user to all changes
+		 *
+		 * @return list of all endpoint connection objects
+		 * @see #getEndpointConnections()
+		*/
+		calls.subscribeToEndpointConnections = function() {
+			return client.subscribeApiRequest({
+				request: "subscribeToEndpointConnections",
+				style: "MULTI",
+				resultType: "endpoint_connection"
+			});
+		};
 		/**
 		 * Get current endpoint connection state for an endpoint
 		 *
@@ -1606,8 +1632,38 @@
 				resultType: "event"
 			});
 		};
-		// Can't encode subscribeToRecentEvents : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Events.Event>, org.totalgrid.reef.client.service.proto.Events.Event>
-		// Can't encode subscribeToRecentEvents : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Events.Event>, org.totalgrid.reef.client.service.proto.Events.Event>
+		/**
+		 * get the most recent events and setup a subscription to all future events
+		 *
+		 * @param limit the number of incoming events
+		*/
+		calls.subscribeToRecentEvents = function(limit) {
+			return client.subscribeApiRequest({
+				request: "subscribeToRecentEvents",
+				data: {
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "event"
+			});
+		};
+		/**
+		 * get the most recent events and setup a subscription to all future events
+		 *
+		 * @param types event type names
+		 * @param limit the number of incoming events
+		*/
+		calls.subscribeToRecentEvents = function(types, limit) {
+			return client.subscribeApiRequest({
+				request: "subscribeToRecentEvents",
+				data: {
+					types: types,
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "event"
+			});
+		};
 		/**
 		 * get the most recent events
 		 *
@@ -1626,7 +1682,7 @@
 			});
 		};
 		// Can't encode searchForEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
-		// Can't encode subscribeToEvents : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Events.Event>, org.totalgrid.reef.client.service.proto.Events.Event>
+		// Can't encode subscribeToEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
 		////////////////////
 		// MeasurementOverrideService
 		////////////////////
@@ -1704,8 +1760,21 @@
 			});
 		};
 		// Can't encode getMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
-		// Can't encode subscribeToMeasurementsByPoints : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
-		// Can't encode subscribeToMeasurementsByNames : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
+		// Can't encode subscribeToMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+		/**
+		 * Gets the most recent measurement for a set of points and subscribe to receive updates for
+		 * measurement changes.
+		*/
+		calls.subscribeToMeasurementsByNames = function(pointNames) {
+			return client.subscribeApiRequest({
+				request: "subscribeToMeasurementsByNames",
+				data: {
+					pointNames: pointNames
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
 		// Can't encode getMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		// Can't encode getMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		// Can't encode getMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
@@ -1765,10 +1834,44 @@
 				resultType: "measurement"
 			});
 		};
-		// Can't encode subscribeToMeasurementHistory : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
-		// Can't encode subscribeToMeasurementHistory : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
-		// Can't encode subscribeToMeasurementHistoryByName : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
-		// Can't encode subscribeToMeasurementHistoryByName : Can't serialize non-protobuf response: org.totalgrid.reef.client.SubscriptionResult<java.util.List<org.totalgrid.reef.client.service.proto.Measurements.Measurement>, org.totalgrid.reef.client.service.proto.Measurements.Measurement>
+		// Can't encode subscribeToMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+		// Can't encode subscribeToMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+		/**
+		 * Get the most recent measurements for a point and subscribe to receive updates for
+		 * measurement changes.
+		 *
+		 * @param limit  Max number of measurements returned
+		*/
+		calls.subscribeToMeasurementHistoryByName = function(pointName, limit) {
+			return client.subscribeApiRequest({
+				request: "subscribeToMeasurementHistoryByName",
+				data: {
+					pointName: pointName,
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
+		/**
+		 * Get the most recent measurements for a point and subscribe to receive updates for
+		 * measurement changes.
+		 *
+		 * @param since  Return measurements on or after this time (milliseconds)
+		 * @param limit  Max number of measurements returned
+		*/
+		calls.subscribeToMeasurementHistoryByName = function(pointName, since, limit) {
+			return client.subscribeApiRequest({
+				request: "subscribeToMeasurementHistoryByName",
+				data: {
+					pointName: pointName,
+					since: since,
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
 		// Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
 		// Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
 		// Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean

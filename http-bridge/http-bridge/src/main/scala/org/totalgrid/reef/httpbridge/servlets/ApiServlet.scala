@@ -63,6 +63,14 @@ class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider
       case MultiResultApiCall(func) =>
         resp.setHeader(RETURN_STYLE, "MULTI")
         printOutput(req, resp, func(client).await)
+      case SubscriptionResultApiCall(func) =>
+        resp.setHeader(RETURN_STYLE, "MULTI")
+        val subResult = func(client).await
+        //val subToken = subscriptionHandler.addSubscription(subResult.getSubscription)
+        // we are "tunneling" the subscription token out through one of the "simple response headers"
+        // until the CORS support for expose Headers is up to snuff.
+        resp.setHeader("Pragma", "fakeToken")
+        printOutput(req, resp, subResult.getResult)
     }
 
     resp.setStatus(200)

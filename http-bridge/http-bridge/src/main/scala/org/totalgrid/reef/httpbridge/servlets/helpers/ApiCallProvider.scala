@@ -22,6 +22,7 @@ import com.google.protobuf.Message
 import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.SubscriptionResult
 
 /**
  * ApiCall and its implementations are used to encapsulate an action we can take with a Client
@@ -32,6 +33,7 @@ sealed trait ApiCall
 case class SingleResultApiCall[A <: Message](executeFunction: (Client) => Promise[A]) extends ApiCall
 case class OptionalResultApiCall[A <: Message](executeFunction: (Client) => Promise[Option[A]]) extends ApiCall
 case class MultiResultApiCall[A <: Message](executeFunction: (Client) => Promise[List[A]]) extends ApiCall
+case class SubscriptionResultApiCall[A <: Message](executeFunction: (Client) => Promise[SubscriptionResult[List[A], A]]) extends ApiCall
 
 case class PreparableApiCall[A <: Message](resultClass: Class[A], prepareFunction: (ArgumentSource) => ApiCall)
 
@@ -156,6 +158,11 @@ trait ApiCallLibrary[ServiceClass] extends ApiCallLookup {
     addCall(name, PreparableApiCall(resultClass, preparer))
   }
 
+  protected def subscription[A <: Message](name: String, resultClass: Class[A], prepareFunction: (ArgumentSource) => ((ServiceClass) => Promise[SubscriptionResult[List[A], A]])) = {
+    val preparer = (args: ArgumentSource) => subscriptionCall(prepareFunction(args))
+    addCall(name, PreparableApiCall(resultClass, preparer))
+  }
+
   /**
    * these helper functions allow us to keep the ApiCall interface "ServicesList" agnostic
    * and we convert to specific serviceClass
@@ -168,5 +175,8 @@ trait ApiCallLibrary[ServiceClass] extends ApiCallLookup {
   }
   private def multiCall[A <: Message](executeFunction: (ServiceClass) => Promise[List[A]]) = {
     MultiResultApiCall(c => executeFunction(c.getRpcInterface(serviceClass)))
+  }
+  private def subscriptionCall[A <: Message](executeFunction: (ServiceClass) => Promise[SubscriptionResult[List[A], A]]) = {
+    SubscriptionResultApiCall(c => executeFunction(c.getRpcInterface(serviceClass)))
   }
 }

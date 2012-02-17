@@ -126,4 +126,8 @@ trait GeneratorFunctions {
   def isReturnList(m: MethodDoc) = {
     m.returnType.simpleTypeName == "List"
   }
+
+  def isReturnSubscription(m: MethodDoc) = {
+    m.returnType.simpleTypeName == "SubscriptionResult"
+  }
 }
