@@ -2,6 +2,7 @@
 *.iml
 **/target
 **/**/target
+**/**/**/target
 org.totalgrid.reef.*.cfg
 out
 reef-karaf-*

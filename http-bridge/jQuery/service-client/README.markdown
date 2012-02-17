@@ -2,22 +2,21 @@
 Reef Javascript Support
 =========================
 
-If the server has the http-bridge installed it means we can use any Http client to pull data from the server. In
-particular it makes it very simple to access a small view into the data using javascript.
+The http-bridge is an new bundle for the reef server that can be installed to support http access to the data.
+This provides simple access to key pieces of near realtime information using any http client.
 
 jQuery Client
 =============
 
-We have created a "native", jQuery based, client to the reef services that provides most of the same functionality as
-the java client. We provide an auto-generated API layer to most of the functions in ReefServicesList. The client layer
+We have created a "native", jQuery based, client to the reef services that supports comparable functionality to
+the java client. We provide an auto-generated API layer to a subset of the functions in ReefServicesList. The client layer
 is implemented in a similar fashion to the java client; the largest fundamental difference is there isn't the idea of
 a "connection" to the server that can fail, each request is an independent event.
 
 We chose to write the client using jQuery because it is the most popular framework and has a native promise based ajax
-function. This allows us to implement the client in javascript in nearly the identical way as in the java
-client. This should mean that transitioning between the two languages is relatively easy. I believe this library
-could be ported to another framework or straight javascript easily given a promise implementation and a few utility
-functions (like $.each and $.extend).
+function. This allows us to support easier transitioning between java and jQuery since the client is implemented
+nearly the same in both languages. We believe this library could be ported to another framework or straight javascript
+easily given a promise implementation and a few utility functions (like $.each and $.extend).
 
 The principal author of this client is not a javascript expert so the code in the client and examples should not
 be used as an example of best practices, improvement suggestions are welcome.
@@ -28,6 +27,7 @@ for the most important jQuery pieces we make use of.
 - jQuery ajax: http://api.jquery.com/jQuery.ajax/ (see "Callback function queues" section).
 - Deferred Object (Promise): http://api.jquery.com/category/deferred-object/
 - jQuery plugin guide: http://docs.jquery.com/Plugins/Authoring
+- jQuery tutorial: http://www.jquery-tutorial.net/
 
 > This library should be considered a beta release, expect the functionality to evolve quickly for the next few releases.
 
@@ -38,7 +38,8 @@ The client is split into two major of components:
 - src/main/web/reef.client.js : Core client functionality. Includes 'login' and the base function used by api services
   to make requests to the server.
 - src/main/web/reef.client.core-services.js : Auto-generated functions for all of the compatible functions in
-  ReefServices. This code should never be altered by hand, instead the changes should be made to HttpServiceCallBindings.scala.
+  ReefServices. This code should never be altered by hand, instead the changes should be made to
+  HttpServiceCallBindings.scala within the reef project.
 
 Both of these files are necessary to import and should be includes in your application or served by your server for
 inclusion into your web page. (Do not hotlink against the github resource.)
@@ -51,7 +52,7 @@ inclusion into your web page. (Do not hotlink against the github resource.)
 
 ### Api Requests
 
-The api request definitions in reef.client.core-services.js are auto-generated from the java Api interface files. This
+The api request definitions in reef.client.core-services.js are auto-generated from the java api interface files. This
 means that the reef services javadocs should be used as the primary source of documentation for the functions provided
 by the javascript client. We include the javadoc for each interface and method for convenience but we recommend that
 developers refer to the javadoc api guides when planning out their applications.
@@ -103,16 +104,15 @@ promise.done(function(points){
 });
 ```
 
-The Deferred object nearly exactly matches the Promise class we have in the java client except that it lacks the "await"
-method. This is expected because of the effectively single threaded nature of browser javascript runtimes, all work based
-on ajax calls needs to be defined using callbacks (closures). Using promises makes writing callback heavy code easier
-because we can making of a request and the handling of the data into separate sections, something that is hard to do
-using naive callbacks.
+The Deferred object nearly matches the Promise class we have in the java client except that it lacks the "await"
+method. This is expected because of the single threaded nature of browser javascript runtimes. All work based
+on ajax calls needs to be defined using callbacks (closures). Using promises makes writing callback code easier
+because we can separate the request and the handling of the data. This is harder to do using naive callbacks.
 
 ### Error Handling
 
 We can also attach a failure handler to be notified if the request fails. For each of these handlers we can attach more
-than one callback, they will all be called in the order they were added.
+than one callback, they will all be called in the order added.
 
 ```javascript
 var promise = client.getPoints();
@@ -135,15 +135,15 @@ var client = $.reefClient({
 
 ### Authorization
 
-The reef http-bridge can be configured to allow generic "read-only" access to the system. If so then the client application
-will not need to do anything special to get access to the resources on the server. If no read-only user is configured or
-the client application needs "write" or "execute" access we can login as a regular user on the system using the reef
-username/password combination. This should only be done inside a secure network or when using HTTPS to avoid sending
-passwords in plaintext.
+The reef http-bridge can be configured to allow generic "read-only" access to the system. If so then the client
+application will not need to do anything special to get access to the resources on the server. If no read-only user is
+configured on the bridge and the client application needs "write" or "execute" access it can login as a user on the
+server using standard reef username/password credentials. This should only be done inside a secure network perimeter
+or when using HTTPS to avoid sending passwords in plaintext.
 
 There is an explicit .login() function on the client that we can call to get an AuthToken for that particular user. Most
-users will find it easier to use the 'auto_login' to start logging in as soon as the client is created. Downside is we
-lose the ability to throw a specific error for login failure.
+users will find it easier to use the 'auto_login' to attempt a login as soon as the client is created. The downside is
+that the ability to throw a specific error for login failure is lost.
 
 ```javascript
 var client = $.reefClient({
@@ -160,12 +160,12 @@ client.login('userName', 'userPassword').done(function(authToken){
 });
 ```
 
-Once we have logged in using either technique the authToken will be maintained by the client and sent with all future
+Once logged in using either technique the authToken will be maintained by the client and sent with all future
 requests. To dispose of the authToken call .logout() on the client.
 
-Since requests are handled serially we will not attempt the next requested function until the previous one completes.
-This means that we don't need to wait for the login() or auto_login to complete before making a "real" request. If the
-login fails, the next request will fail as not authorized anyways.
+Since requests are handled serially the next requested function will not be attempted until the previous one completes.
+This means that the script does not need to wait for the login() or auto_login to complete before making a "real"
+request. If the login fails, the next request will fail as not authorized.
 
 ### Subscriptions
 
@@ -230,8 +230,8 @@ subscription data onto a single transport stream.
 
 ### Examples
 
-Retrieve the list of all Points in the system and print their names. Notice we use the done() to get the results of
-request passed into our "payload function" which prints all the point names. We are also using the jQuery helper $.each
+Retrieve the list of all Points in the system and print their names. Notice the use of done() to get the results of
+request passed into the "payload function" which prints all the point names. The jQuery helper $.each is used
 to iterate through the list cleanly.
 
 ```javascript
@@ -240,7 +240,7 @@ client.getPoints().done(function(points){
         console.log(point.name);
     });
 }).fail(function(errString){
-    // we can catch the error for the individual request here.
+    // catch the error for the individual request here.
     console.log("Error getting points: " + errString);
 };
 ```
@@ -269,8 +269,8 @@ There are only a few base functions on the client. All other calls are added by 
 #### describeResultType()
 
 All api request promises define the convenience function describeResultType() that makes api calls somewhat reflective.
-The describe call asks the server to describe the data so the describeResultType return value is another promise we
-need a done() handler to get the payload data. The payload data is the protobuf "self-descriptor" format serialized to JSON.
+The describe call asks the server to describe the data so the describeResultType return value is another promise 
+needing a done() handler to get the payload data. The payload data is the protobuf "self-descriptor" format serialized to JSON.
 
 In most cases it is easier to read the original proto definition files (since they are designed to be human readable).
 Those files are embedded in the javadocs in the *.protodoc packages. This interface is primarily for making "smart"
