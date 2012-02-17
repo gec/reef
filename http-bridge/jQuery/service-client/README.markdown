@@ -14,8 +14,13 @@ is implemented in a similar fashion to the java client; the largest fundamental 
 a "connection" to the server that can fail, each request is an independent event.
 
 We chose to write the client using jQuery because it is the most popular framework and has a native promise based ajax
-function (since 1.5.x). This allows us to implement the client in javascript in nearly the identical way as in the java
-client. This should mean that transitioning between the two languages is relatively easy.
+function. This allows us to implement the client in javascript in nearly the identical way as in the java
+client. This should mean that transitioning between the two languages is relatively easy. I believe this library
+could be ported to another framework or straight javascript easily given a promise implementation and a few utility
+functions (like $.each and $.extend).
+
+The principal author of this client is not a javascript expert so the code in the client and examples should not
+be used as an example of best practices, improvement suggestions are welcome.
 
 This guide is written assuming that the reader is already familiar with javascript. Below are some helpful links
 for the most important jQuery pieces we make use of.
@@ -23,6 +28,8 @@ for the most important jQuery pieces we make use of.
 - jQuery ajax: http://api.jquery.com/jQuery.ajax/ (see "Callback function queues" section).
 - Deferred Object (Promise): http://api.jquery.com/category/deferred-object/
 - jQuery plugin guide: http://docs.jquery.com/Plugins/Authoring
+
+> This library should be considered a beta release, expect the functionality to evolve quickly for the next few releases.
 
 ### Code Organization
 
@@ -32,6 +39,15 @@ The client is split into two major of components:
   to make requests to the server.
 - src/main/web/reef.client.core-services.js : Auto-generated functions for all of the compatible functions in
   ReefServices. This code should never be altered by hand, instead the changes should be made to HttpServiceCallBindings.scala.
+
+Both of these files are necessary to import and should be includes in your application or served by your server for
+inclusion into your web page. (Do not hotlink against the github resource.)
+
+```html
+<script language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" ></script>
+<script language="javascript" src="./reef.client.js"></script>
+<script language="javascript" src="./reef.client.core-services.js"></script>
+```
 
 ### Api Requests
 
@@ -71,7 +87,7 @@ but in most cases there is a related function that has the same effect with simp
 not available please include this comment in any feature requests:
 
 ```javascript
-// Can't encode executeCommandAsControl : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
+// Can't encode executeCommandAsControl : Can't encode type: org.t.reef.client.service.proto.Model.Command
 ```
 
 ### Promises
@@ -138,6 +154,7 @@ var client = $.reefClient({
     }
 });
 // is equivalent to
+var client = $.reefClient({'server' : 'http://127.0.0.1:8886'});
 client.login('userName', 'userPassword').done(function(authToken){
     console.log("Logged in with token: " + authToken);
 });
@@ -149,6 +166,67 @@ requests. To dispose of the authToken call .logout() on the client.
 Since requests are handled serially we will not attempt the next requested function until the previous one completes.
 This means that we don't need to wait for the login() or auto_login to complete before making a "real" request. If the
 login fails, the next request will fail as not authorized anyways.
+
+### Subscriptions
+
+We have support for subscriptions using the jQuery client. We have not implemented any of the more advanced
+transport mechanisms such as comet or websockets yet but we believe the subscription api, from the application
+perspective, is stable. When making a subscription request that would return a SubscriptionResult in java we change
+the callback type to be an object that contains both the results and a subscription object.
+
+```javascript
+var subscriptionObject = {
+    // takes a callback expecting (eventCode, payloadData) and returns a promise
+    // representing subscription status
+    start : sub.start,
+    // cancels the subscription. If successfully canceled on server side the
+    // promise.done() method will be called
+    cancel : sub.cancel
+};
+
+// shape of data returned from subscribeTo* api functions
+subscriptionResult = {
+   result : [data1,data2,data3],
+   subscription : subscriptionObject
+}
+```
+
+The function passed to the subscription start() method will be called for each subscription event along with its
+eventCode: 'ADDED', 'MODIFIED', 'REMOVED' ('NOTE:' Currently the eventCode will always be 'MODIFIED'). The return
+value of the start() call is a promise that can be used to listen for failures during the subscriptions.
+
+```javascript
+val promise = client.subscribeToMeasurementsByNames(['SimulatedSubstation.Line01.Current'])
+promise.done(function(subscriptionResult){
+    // handle initial results
+    var startingMeasurements = subscriptionResult.result;
+    prepareTable(startingMeasurements);
+
+    // attach to subscription
+    var sub = subscriptionResult.subscription;
+    sub.start( function(eventCode, measurement){
+        if(eventCode === 'MODIFIED') updateTable(measurement);
+    }).done(function(reason){
+        // called when the subscription is successfully canceled (during orderly shutdown)
+    }).fail(function(errString){
+        // called if there is a failure maintaining the subscription,
+        // subscription should be considered dead
+    };
+});
+```
+
+When a subscription is no longer needed (leaving page or changing display) it should be canceled. Subscriptions will
+eventually be canceled and discarded by the server but clients cleaning up subscriptions will help maintain good
+performance.
+
+#### Subscription Transports
+
+Currently the "transport" for the subscription data is a naive server side cache which is polled by the client. Each
+subscription is managed independently and no long polling is being done. This is fully functional and all of the data
+is being delivered, it is just not very efficient. Pages with many subscriptions may see poor performance.
+
+In the near future we hope to implement both comet and websocket subscription transports and "multiplex" the
+subscription data onto a single transport stream.
 
 ### Examples
 
@@ -186,7 +264,6 @@ There are only a few base functions on the client. All other calls are added by 
 
 ### Limitations
 
-- No subscriptions
 - Can't use functions that require passing in complex types (protobuf objects or enums).
 
 #### describeResultType()
@@ -237,3 +314,14 @@ client.getApplications().describeResultType().done(function(descriptor){
   ]
 }
 ```
+
+### Compatibility
+
+This library has been developed primarily against chrome v17.0 but passes its unit tests against:
+
+- Chrome 17+
+- Internet Explorer 8
+- Firefox 10.0
+
+We are using jQuery 1.7.1 because of its advanced CORS (Cross-Site-Resource-Sharing) support but most versions
+since 1.5.1 should work if serving the code from the same domain as the bridge.
