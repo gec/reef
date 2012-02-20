@@ -23,6 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
+ * 74 of 179 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]

@@ -31,6 +31,9 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
 
   private var newestSourceFile: Long = 0
 
+  private var totalApiCalls = 0
+  private var nonTranslatedApiCalls = 0
+
   override def finish(rootDir: File) {
 
     val serverBindingFile = new File(rootDir, "../../../http-bridge/http-bridge/src/main/scala/org/totalgrid/reef/httpbridge/servlets/apiproviders/AllScadaServiceApiCallLibrary.scala")
@@ -47,7 +50,8 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     stream.println("import org.totalgrid.reef.httpbridge.servlets.helpers.ApiCallLibrary")
     stream.println("import org.totalgrid.reef.client.sapi.rpc.AllScadaService\n")
 
-    stream.println("/**\n * Auto Generated, do not alter!\n */")
+    stream.println("/**\n * Auto Generated, do not alter!\n * %s of %s calls ported\n */".format(
+      nonTranslatedApiCalls, totalApiCalls))
     stream.println("class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {\n\toverride val serviceClass = classOf[AllScadaService]\n\n")
 
     // sort by class name to keep results stable
@@ -78,6 +82,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
 
     c.methods.toList.foreach { m =>
       try {
+        totalApiCalls += 1
         serverSideSnippets.enqueue(buildServerApiBinding(m))
         clientSideSnippets.enqueue(buildClientApiBinding(m))
       } catch {
@@ -85,6 +90,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
           val errorMsg = "\t\t// Can't encode " + m.name + " : " + nee.getMessage
           serverSideSnippets.enqueue(errorMsg)
           clientSideSnippets.enqueue(errorMsg)
+          nonTranslatedApiCalls += 1
       }
     }
 
