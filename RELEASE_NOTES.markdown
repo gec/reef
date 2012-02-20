@@ -9,6 +9,17 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.5 - February 21, 2012
+==============
+
+This focus is primarily related to the http-bridge and jQuery client.
+
+### Major Features:
+
+* Implemented jQuery based client that handles most of the AllScadaService calls including limited
+  subscription support. (74 of 179)
+* It is now possible to implement a service in java (before it required scala)
+
 Version 0.4.4 - February 10, 2012
 ==============
 

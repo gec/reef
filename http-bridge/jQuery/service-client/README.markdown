@@ -6,7 +6,7 @@ The http-bridge is an new bundle for the reef server that can be installed to su
 This provides simple access to key pieces of near realtime information using any http client.
 
 For information on the configuration, capabilities and installation instructions for the bridge please refer to
-the [http-bridge README](../../http-bridge). That documentation can be considered the "low-level" api for this
+the [http-bridge README](../http-bridge). That documentation can be considered the "low-level" api for this
 client.
 
 jQuery Client
@@ -93,7 +93,7 @@ requests will be failed without sending the request to the server.
 
 > It is important to wait for all of the javascript files to be loaded before trying to start the client. In jQuery
 > the standard way to do this is to perform javascript initialization inside the document.ready() callback.
-> See the [Minimal Widget Demo](../widget-library/src/main/web/reef.widget-demos.html) for a simple skeleton page.
+> See the [Minimal Widget Demo](./widget-library/src/main/web/reef.widget-demos.html) for a simple skeleton page.
 
 ### Api Requests
 
