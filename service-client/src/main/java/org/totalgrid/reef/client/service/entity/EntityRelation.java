@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.client.service.entity;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -174,5 +175,29 @@ public class EntityRelation
         }
 
         return sb.toString();
+    }
+
+    public static EntityRelation fromString( String str )
+    {
+        try
+        {
+            String[] arr = str.split( ":" );
+            if ( arr.length != 4 )
+                throw new IllegalArgumentException( "EntityRelation string should be 4 parts separated by :" );
+            String relationship = arr[0];
+            Boolean child = Boolean.parseBoolean( arr[2] );
+            int depth;
+            if ( "*".compareTo( arr[1] ) == 0 )
+                depth = -1;
+            else
+                depth = Integer.parseInt( arr[1] );
+            String[] types = arr[3].split( "," );
+
+            return new EntityRelation( relationship, Arrays.asList( types ), child, depth );
+        }
+        catch ( NumberFormatException nfe )
+        {
+            throw new IllegalArgumentException( "Cannot parse EntityRelation string" + str + " err: " + nfe.getMessage() );
+        }
     }
 }

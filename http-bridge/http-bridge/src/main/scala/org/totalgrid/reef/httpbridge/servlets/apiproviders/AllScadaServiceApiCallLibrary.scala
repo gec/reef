@@ -347,10 +347,26 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a3 = args.getStrings("constrainingTypes")
     (c) => c.getEntityChildrenFromTypeRoots(a0, a1, a2, a3)
   })
-  // Can't encode getEntityRelationsFromTypeRoots : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
-  // Can't encode getEntityRelations : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
-  // Can't encode getEntityRelationsForParents : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
-  // Can't encode getEntityRelationsForParentsByName : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
+  multi("getEntityRelationsFromTypeRoots", classOf[org.totalgrid.reef.client.service.proto.Model.Entity], args => {
+    val a0 = args.getString("parentType")
+    val a1 = args.getEntityRelations("relations")
+    (c) => c.getEntityRelationsFromTypeRoots(a0, a1)
+  })
+  multi("getEntityRelations", classOf[org.totalgrid.reef.client.service.proto.Model.Entity], args => {
+    val a0 = args.getUuid("parent")
+    val a1 = args.getEntityRelations("relations")
+    (c) => c.getEntityRelations(a0, a1)
+  })
+  multi("getEntityRelationsForParents", classOf[org.totalgrid.reef.client.service.proto.Model.Entity], args => {
+    val a0 = args.getUuids("parentUuids")
+    val a1 = args.getEntityRelations("relations")
+    (c) => c.getEntityRelationsForParents(a0, a1)
+  })
+  multi("getEntityRelationsForParentsByName", classOf[org.totalgrid.reef.client.service.proto.Model.Entity], args => {
+    val a0 = args.getStrings("parentNames")
+    val a1 = args.getEntityRelations("relations")
+    (c) => c.getEntityRelationsForParentsByName(a0, a1)
+  })
   // Can't encode searchForEntityTree : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
   // Can't encode searchForEntities : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
   single("getEntityAttributes", classOf[org.totalgrid.reef.client.service.proto.Model.EntityAttributes], args => {

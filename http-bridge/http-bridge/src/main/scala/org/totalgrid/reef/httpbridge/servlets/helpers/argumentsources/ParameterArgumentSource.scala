@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest
 import org.totalgrid.reef.httpbridge.servlets.helpers.ArgumentSource
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.exception.{ InternalServiceException, BadRequestException }
+import org.totalgrid.reef.client.service.entity.EntityRelation
 
 /**
  * implements ArgumentSource by looking in the request parameters for the arguments. Works
@@ -43,6 +44,7 @@ class ParameterArgumentSource(req: HttpServletRequest) extends ArgumentSource {
         case BooleanClass => valuesAsStrings.map { _.toBoolean }
         case ReefUuidClass => valuesAsStrings.map { ReefUUID.newBuilder.setValue(_).build }
         case ReefIdClass => valuesAsStrings.map { ReefID.newBuilder.setValue(_).build }
+        case EntityRelationClass => valuesAsStrings.map { EntityRelation.fromString(_) }
         case MessageClass => throw new BadRequestException("Cannot handle Protobuf types using URL encoding, use JSON+POST instead")
         case _ => throw new InternalServiceException("Unknown argument class: " + klass.getName)
       }

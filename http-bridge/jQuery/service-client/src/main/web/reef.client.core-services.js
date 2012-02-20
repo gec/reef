@@ -1233,10 +1233,79 @@
 				resultType: "entity"
 			});
 		};
-		// Can't encode getEntityRelationsFromTypeRoots : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
-		// Can't encode getEntityRelations : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
-		// Can't encode getEntityRelationsForParents : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
-		// Can't encode getEntityRelationsForParentsByName : Can't encode type: org.totalgrid.reef.client.service.entity.EntityRelation
+		/**
+		 * Collect a more interesting tree structure
+		 * @param parentType   a type for all of the roots we want to use ("Root")
+		 * @param relations    list of relations we want to use, first entry in the list is relations to
+		 * @return  list of entities with of ParentType and their relations below them
+		 * @throws ReefServiceException
+		*/
+		calls.getEntityRelationsFromTypeRoots = function(parentType, relations) {
+			return client.apiRequest({
+				request: "getEntityRelationsFromTypeRoots",
+				data: {
+					parentType: parentType,
+					relations: relations
+				},
+				style: "MULTI",
+				resultType: "entity"
+			});
+		};
+		/**
+		 * Return a tree of upto depth with all nodes in constraining types related to each other.
+		 * @param parent   UUID for parent we want children for
+		 * @param relations list of relationship types
+		 * @return  list of first level child entities any children they have are contained in the Entity.getRelatations
+		 * @throws ReefServiceException
+		*/
+		calls.getEntityRelations = function(parent, relations) {
+			if(parent.value != undefined) parent = parent.value;
+			return client.apiRequest({
+				request: "getEntityRelations",
+				data: {
+					parent: parent,
+					relations: relations
+				},
+				style: "MULTI",
+				resultType: "entity"
+			});
+		};
+		/**
+		 * Collect a more interesting tree structure from a list of specific parent nodes
+		 * @param parentUuids  list of specific parents we want relations of
+		 * @param relations    list of relations we want to use, first entry in the list is relations to
+		 * @return  list of entities with of ParentType and their relations below them
+		 * @throws ReefServiceException
+		*/
+		calls.getEntityRelationsForParents = function(parentUuids, relations) {
+			return client.apiRequest({
+				request: "getEntityRelationsForParents",
+				data: {
+					parentUuids: parentUuids,
+					relations: relations
+				},
+				style: "MULTI",
+				resultType: "entity"
+			});
+		};
+		/**
+		 * Collect a more interesting tree structure from a list of specific parent nodes
+		 * @param parentNames  list of specific parents we want relations of
+		 * @param relations    list of relations we want to use, first entry in the list is relations to
+		 * @return  list of entities with of ParentType and their relations below them
+		 * @throws ReefServiceException
+		*/
+		calls.getEntityRelationsForParentsByName = function(parentNames, relations) {
+			return client.apiRequest({
+				request: "getEntityRelationsForParentsByName",
+				data: {
+					parentNames: parentNames,
+					relations: relations
+				},
+				style: "MULTI",
+				resultType: "entity"
+			});
+		};
 		// Can't encode searchForEntityTree : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
 		// Can't encode searchForEntities : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
 		/**

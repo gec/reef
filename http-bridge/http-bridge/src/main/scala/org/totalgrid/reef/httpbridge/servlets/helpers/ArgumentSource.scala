@@ -21,6 +21,7 @@ package org.totalgrid.reef.httpbridge.servlets.helpers
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.exception.BadRequestException
 import com.google.protobuf.{ ByteString, Message }
+import org.totalgrid.reef.client.service.entity.EntityRelation
 
 /**
  * An argument source gets the "typed" class for named paramters. These arguments
@@ -54,6 +55,7 @@ trait ArgumentSourceHelpers { self: ArgumentSource =>
   val DoubleClass = classOf[java.lang.Double]
   val ReefUuidClass = classOf[ReefUUID]
   val ReefIdClass = classOf[ReefID]
+  val EntityRelationClass = classOf[EntityRelation]
   val BooleanClass = classOf[java.lang.Boolean]
   //val ByteStringClass = classOf[ByteString]
 
@@ -65,6 +67,7 @@ trait ArgumentSourceHelpers { self: ArgumentSource =>
   def getDouble(name: String) = require(name, findArgument(name, DoubleClass))
   def getString(name: String) = require(name, findArgument(name, StringClass))
   def getUuid(name: String) = require(name, findArgument(name, ReefUuidClass))
+  def getEntityRelation(name: String) = require(name, findArgument(name, EntityRelationClass))
   def getId(name: String) = require(name, findArgument(name, ReefIdClass))
   //def getByteArray(name: String) = require(name, findArgument(name, ByteStringClass)).toByteArray
 
@@ -74,6 +77,7 @@ trait ArgumentSourceHelpers { self: ArgumentSource =>
   def getDoubles(name: String) = require(name, findArguments(name, DoubleClass))
   def getStrings(name: String) = require(name, findArguments(name, StringClass))
   def getUuids(name: String) = require(name, findArguments(name, ReefUuidClass))
+  def getEntityRelations(name: String) = require(name, findArguments(name, EntityRelationClass))
 
   def require[A](name: String, result: Option[A]): A = {
     result.getOrElse(throw new BadRequestException("Missing required argument: " + name))
