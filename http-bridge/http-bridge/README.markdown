@@ -153,12 +153,7 @@ Api
 
 This is the most useful part of the bridge, it provides a semantic layer on the objects to provide much of the same
 functionality as the java service-client apis. We currently support most of the service-client calls where the
-parameters are all simple to represent as strings (and therefore useable in a query string). We currently implement
-around 30% of the api functions in ReefServices with plans to implement all non-subscribe queries once we are auto-
-generating the binding code. (currently the apis are hand rolled).
-
-The goal is to include an interface that provides a listing of all services, their parameters and javadoc description.
-Currently users will need to read the java javadoc and then try the request and see if it has been ported.
+parameters are all simple to represent as strings (and therefore useable in a query string).
 
 Api calls that return exactly one result (getXByName, getXByUuid) will return just that object. Optional returns or lists
 will return a list of results with the name "results".
@@ -174,6 +169,7 @@ Url Encodable Parameter Types:
 - Boolean
 - ReefUUID (just the value portion, not the whole proto)
 - ReefId (just the value portion, not the whole proto)
+- EntityRelation (as a string)
 
 ```
 GET /api/getEntityByName?name=EntityName =>
@@ -197,6 +193,55 @@ POST /api/getMeasurementsByNames
     ]}
 
 ```
+
+Subscribe
+-----------------
+
+When a subscription call is made using the api service we will start a listener for that data and provide that data to
+the client using the best available "transport" mechanism. In the near future we hope to implement support for both
+websocket and "comet" based approaches to pushing data to the client. We also would like to merge all subscriptions for
+a single client into one stream in the future.
+
+Currently we only support a "short polling" based transport. We pass the client back a "subscription token" using the
+"Pragma" response header. (We would like to be using a custom header but we have to tunnel our response through one of
+the CORS "safe headers" because the Access-Control-Expose-Headers support is unreliable in most browsers).
+
+The client is responsible for polling the subscription services with a GET and that "subscription-token" as the address.
+Up-to 100 of the events received will be returned to the client for each request.
+
+```
+POST /api/subscribeToMeasurementsByNames
+{
+  Content-Type: application/url-encoded
+  Accept: application/json
+  data: pointNames=SimulatedSubstation.Breaker01.Bkr&pointNames=SimulatedSubstation.Line01.Current
+} => {
+  Pragma: sub-id-123456-1241234324-23432432,
+  data: {"results":[
+    {"name":"SimulatedSubstation.Breaker01.Bkr","type":"STRING","bool_val":false,"string_val":"TRIPPED","quality":{},"unit":"status","time":1327344297745},
+    {"name":"SimulatedSubstation.Line01.Current","type":"DOUBLE","double_val":15.163,"quality":{},"unit":"A","time":1327344309352}
+  ]}
+}
+
+GET /subscribe/sub-id-123456-1241234324-23432432
+{
+  Accept: application/json
+} => {
+  "results":[
+    {"name":"SimulatedSubstation.Line01.Current","type":"DOUBLE","double_val":15.163,"quality":{},"unit":"A","time":1327344500000}
+  ]
+}
+
+GET /subscribe/sub-id-123456-1241234324-23432432
+{
+  Accept: application/json
+} => {
+  "results":[]
+}
+```
+
+When a client is done with its subscription it should cancel the subscription by making the same request but changing the
+verb from GET to DELETE. This will cancel the subscription and free up the server side resources.
 
 Installation and Configuration
 ===============================
