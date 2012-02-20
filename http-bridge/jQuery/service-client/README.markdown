@@ -5,6 +5,10 @@ Reef Javascript Support
 The http-bridge is an new bundle for the reef server that can be installed to support http access to the data.
 This provides simple access to key pieces of near realtime information using any http client.
 
+For information on the configuration, capabilities and installation instructions for the bridge please refer to
+the [http-bridge README](../../http-bridge). That documentation can be considered the "low-level" api for this
+client.
+
 jQuery Client
 =============
 
@@ -49,6 +53,47 @@ inclusion into your web page. (Do not hotlink against the github resource.)
 <script language="javascript" src="./reef.client.js"></script>
 <script language="javascript" src="./reef.client.core-services.js"></script>
 ```
+
+### Preparing the client
+
+The reef http-bridge can be configured to allow generic "read-only" access to the system. This allows very simple
+web pages to embed data from the server without using the jQuery client and logging in. We can use this same read-only
+user with the jQuery client simply by not attempting to login.
+
+If no read-only user is configured on the bridge or the client application needs "write" or "execute" access it can
+login as a user on the server using standard reef username/password credentials. This should only be done inside a
+secure network perimeter or when using HTTPS to avoid sending passwords in plaintext.
+
+There is an explicit .login() function on the client that we can call to get an AuthToken for that particular user. Most
+users will find it easier to use the 'auto_login' to attempt a login as soon as the client is created. The downside is
+that the ability to throw a specific error for login failure is lost.
+
+```javascript
+var client = $.reefClient({
+    'server'     : 'http://127.0.0.1:8886',
+    'auto_login' : {
+        'name' : 'userName',
+        'password' : 'userPassword'
+    }
+});
+// is equivalent to
+var client = $.reefClient({'server' : 'http://127.0.0.1:8886'});
+client.login('userName', 'userPassword').done(function(authToken){
+    console.log("Logged in with token: " + authToken);
+});
+```
+
+Once logged in using either technique the authToken will be maintained by the client and sent with all future
+requests. To dispose of the authToken call .logout() on the client.
+
+Since requests are handled serially the next requested function will not be attempted until the previous one completes.
+This means that the script does not need to wait for the login() or auto_login to complete before making a "real"
+request. If the login fails, the next request will fail as not authorized. If a login is attempted but fails all future
+requests will be failed without sending the request to the server.
+
+> It is important to wait for all of the javascript files to be loaded before trying to start the client. In jQuery
+> the standard way to do this is to perform javascript initialization inside the document.ready() callback.
+> See the [Minimal Widget Demo](../widget-library/src/main/web/reef.widget-demos.html) for a simple skeleton page.
 
 ### Api Requests
 
@@ -133,39 +178,8 @@ var client = $.reefClient({
 });
 ```
 
-### Authorization
-
-The reef http-bridge can be configured to allow generic "read-only" access to the system. If so then the client
-application will not need to do anything special to get access to the resources on the server. If no read-only user is
-configured on the bridge and the client application needs "write" or "execute" access it can login as a user on the
-server using standard reef username/password credentials. This should only be done inside a secure network perimeter
-or when using HTTPS to avoid sending passwords in plaintext.
-
-There is an explicit .login() function on the client that we can call to get an AuthToken for that particular user. Most
-users will find it easier to use the 'auto_login' to attempt a login as soon as the client is created. The downside is
-that the ability to throw a specific error for login failure is lost.
-
-```javascript
-var client = $.reefClient({
-    'server'     : 'http://127.0.0.1:8886',
-    'auto_login' : {
-        'name' : 'userName',
-        'password' : 'userPassword'
-    }
-});
-// is equivalent to
-var client = $.reefClient({'server' : 'http://127.0.0.1:8886'});
-client.login('userName', 'userPassword').done(function(authToken){
-    console.log("Logged in with token: " + authToken);
-});
-```
-
-Once logged in using either technique the authToken will be maintained by the client and sent with all future
-requests. To dispose of the authToken call .logout() on the client.
-
-Since requests are handled serially the next requested function will not be attempted until the previous one completes.
-This means that the script does not need to wait for the login() or auto_login to complete before making a "real"
-request. If the login fails, the next request will fail as not authorized.
+If we include the optional setting 'error_div' the client will fill in the passed in object with all errors it recieves
+embedded in a div with class "client_error".
 
 ### Subscriptions
 
