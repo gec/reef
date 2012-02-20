@@ -28,7 +28,7 @@
 
         var displayError = function(msg) {
             if (settings.error_div !== undefined) {
-                settings.error_div.html("<div class=\"client_error\">" + msg + "</div>");
+                settings.error_div.prepend("<div class=\"client_error\">" + msg + "</div>");
             }
             return msg;
         };
@@ -66,6 +66,11 @@
                 else {
                     options.headers = authHeader;
                 }
+            }
+            if(settings.authFailed === true){
+                options.resultFuture.reject("Login attempt failed.");
+                $(clientObject).dequeue();
+                return;
             }
 
             // add the standard options
@@ -266,7 +271,12 @@
                 settings.authToken = jsonData;
                 settings.userName = userName;
                 return jsonData;
-            }, settings.error_function);
+            }, function(errString){
+                settings.authToken = undefined;
+                settings.error_function(errString);
+                settings.authFailed = true;
+                return errString;
+            });
 
         };
 
@@ -279,6 +289,7 @@
 
             future.pipe(function(status) {
                 settings.authToken = undefined;
+                settings.authFailed = false;
             }, settings.error_function);
 
             // TODO: javascript logout needs to delete authToken
