@@ -253,7 +253,7 @@
             if (settings.authToken) {
                 throw "Already logged in, logout first";
             }
-
+            settings.authFailed = false;
             var future = $.Deferred();
 
             enqueueRequest({
@@ -281,9 +281,6 @@
         };
 
         var logout = function(userName, userPassword) {
-            if (settings.authToken === undefined) {
-                throw "Already logged in, logout first";
-            }
 
             var future = $.Deferred();
 
