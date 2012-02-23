@@ -28,6 +28,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ PointType => PointTypePro
 import org.totalgrid.reef.loader.equipment._
 
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
+import org.totalgrid.reef.loader.calculations.Calculation
 
 /**
  * EquipmentLoader loads the logical model.
@@ -112,6 +113,12 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     logger.info("load equipment '" + name + "' with profiles: " + profiles.map(_.getName).dropRight(1).mkString(", "))
 
     val childEquipment = profiles.flatMap(_.getEquipment)
+
+    // recursive call to process children
+    // Load all the children and create the edges
+    logger.trace("load equipment: " + name + " children")
+    val children = childEquipment.map(loadEquipment(_, childPrefix, actionModel))
+
     val controls = profiles.flatMap(_.getControl.toList)
     val setpoints = profiles.flatMap(_.getSetpoint.toList)
     val statuses = profiles.flatMap(_.getStatus.toList)
@@ -154,10 +161,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     logger.trace("load equipment: " + name + " points")
     points.map(processPointType(_, entity, childPrefix, actionModel))
 
-    // recursive call to process children
-    // Load all the children and create the edges
-    logger.trace("load equipment: " + name + " children")
-    val children = childEquipment.map(loadEquipment(_, childPrefix, actionModel))
+    // add the edge connecting us to our children
     children.foreach(child => modelLoader.putOrThrow(ProtoUtils.toEntityEdge(entity, child, "owns")))
 
     equipments += (name -> entity)
@@ -259,7 +263,22 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
 
     if (!triggers.isEmpty) addTriggers(commonLoader.triggerCache, point, triggers)
 
+    val calculations = getElements[Calculation](name, pointType, _.getCalculation.toList)
+    calculations.foreach { c => addCalculation(name, childPrefix, c) }
+
     pointEntity
+  }
+
+  def addCalculation(pointName: String, childPrefix: Option[String], calc: Calculation) {
+    exceptionCollector.collect("Calculation for point: " + pointName) {
+      val (calcProto, sourcePoints) = CalculationsLoader.prepareCalculationProto(pointName, childPrefix.getOrElse(""), calc)
+      // modelLoader.putOrThrow(calcProto)
+      val edges = sourcePoints.map { sourceName =>
+        equipmentPointUnits.get(sourceName).getOrElse(throw new LoadingException("Input point unknown: " + sourceName))
+        ProtoUtils.toEntityEdge(sourceName, pointName, "calcs")
+      }
+      edges.foreach { modelLoader.putOrThrow(_) }
+    }
   }
 
   /**

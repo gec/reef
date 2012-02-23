@@ -469,4 +469,13 @@ object ProtoUtils {
 
     proto.build
   }
+
+  def toEntityEdge(parentName: String, childName: String, relationship: String): EntityEdge = {
+    val proto = EntityEdge.newBuilder
+      .setParent(Entity.newBuilder.setName(parentName))
+      .setChild(Entity.newBuilder.setName(childName))
+      .setRelationship(relationship)
+
+    proto.build
+  }
 }
