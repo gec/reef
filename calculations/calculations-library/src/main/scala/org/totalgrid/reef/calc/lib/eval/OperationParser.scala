@@ -1,5 +1,4 @@
 package org.totalgrid.reef.calc.lib.eval
-
 /**
  * Copyright 2011 Green Energy Corp.
  *

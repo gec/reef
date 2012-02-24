@@ -1,5 +1,4 @@
 package org.totalgrid.reef.calc.lib.eval
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +17,7 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 object OperationInterpreter {
 
   case class Fun(fun: String, args: List[Expression]) extends Expression {

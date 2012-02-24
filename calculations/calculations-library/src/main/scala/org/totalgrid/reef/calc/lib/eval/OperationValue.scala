@@ -18,6 +18,13 @@ package org.totalgrid.reef.calc.lib.eval
  * the License.
  */
 
-trait Expression {
-  def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue
-}
+sealed trait OperationValue
+
+case class NumericValue(value: Double) extends OperationValue
+
+case class BooleanValue(value: Boolean) extends OperationValue
+
+case class NumericMeas(value: Double, time: Option[Long]) extends OperationValue
+
+case class BooleanMeas(value: Boolean, time: Option[Long]) extends OperationValue
+

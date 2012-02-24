@@ -18,6 +18,6 @@ package org.totalgrid.reef.calc.lib.eval
  * the License.
  */
 
-trait Expression {
-  def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue
+trait VariableSource {
+  def forName(name: String): OperationValue
 }
