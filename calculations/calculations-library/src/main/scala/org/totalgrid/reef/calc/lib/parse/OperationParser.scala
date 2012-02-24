@@ -21,15 +21,6 @@ package org.totalgrid.reef.calc.lib.parse
 import util.parsing.combinator.syntactical.StandardTokenParsers
 import util.parsing.combinator.JavaTokenParsers
 
-object OperationInterpreter {
-
-  sealed trait Node
-
-  case class Fun(fun: String, args: List[Node]) extends Node
-  case class Infix(op: String, left: Node, right: Node) extends Node
-  case class Const(v: Double) extends Node
-  case class Var(name: String) extends Node
-}
 
 /**
  * expr :: = mult { "+" mult | "-" mult }
@@ -40,33 +31,32 @@ object OperationInterpreter {
  * csv ::= expr { "," expr }
  *
  */
-
 object OperationParser extends JavaTokenParsers {
   import OperationInterpreter._
 
-  def expr: Parser[Node] = mult ~ rep("+" ~ mult ^^ part | "-" ~ mult ^^ part) ^^ multiInfix
-  def mult: Parser[Node] = exp ~ rep("*" ~ exp ^^ part | "/" ~ exp ^^ part) ^^ multiInfix
-  def exp: Parser[Node] = leaf ~ rep("^" ~ leaf ^^ part) ^^ multiInfix
+  def expr: Parser[Expression] = mult ~ rep("+" ~ mult ^^ part | "-" ~ mult ^^ part) ^^ multiInfix
+  def mult: Parser[Expression] = exp ~ rep("*" ~ exp ^^ part | "/" ~ exp ^^ part) ^^ multiInfix
+  def exp: Parser[Expression] = leaf ~ rep("^" ~ leaf ^^ part) ^^ multiInfix
 
-  def leaf: Parser[Node] = constant | fun | variable | "(" ~> expr <~ ")"
+  def leaf: Parser[Expression] = constant | fun | variable | "(" ~> expr <~ ")"
 
-  def fun: Parser[Node] = ident ~ ("(" ~> csv <~ ")") ^^ { case f ~ args => Fun(f, args) }
-  def csv: Parser[List[Node]] = expr ~ rep("," ~> expr) ^^ { case head ~ tail => head :: tail }
+  def fun: Parser[Expression] = ident ~ ("(" ~> csv <~ ")") ^^ { case f ~ args => Fun(f, args) }
+  def csv: Parser[List[Expression]] = expr ~ rep("," ~> expr) ^^ { case head ~ tail => head :: tail }
 
-  def variable: Parser[Node] = ident ^^ { Var(_) }
+  def variable: Parser[Expression] = ident ^^ { Var(_) }
 
-  def constant: Parser[Node] = floatingPointNumber ^^ { x => Const(x.toDouble) }
+  def constant: Parser[Expression] = floatingPointNumber ^^ { x => Const(x.toDouble) }
 
-  case class Part(op: String, right: Node)
+  case class Part(op: String, right: Expression)
 
-  def part: ~[String, Node] => Part = { case op ~ r => Part(op, r) }
+  def part: ~[String, Expression] => Part = { case op ~ r => Part(op, r) }
 
-  def multiInfix: ~[Node, List[Part]] => Node = {
+  def multiInfix: ~[Expression, List[Part]] => Expression = {
     case n ~ Nil => n
     case l ~ reps => reps.foldLeft(l) { case (l, part) => Infix(part.op, l, part.right) }
   }
 
-  def parseFormula(formula: String): Node = {
+  def parseFormula(formula: String): Expression = {
     parseAll(expr, formula) getOrElse { throw new Exception("Bad Parse: " + formula) }
   }
 }
