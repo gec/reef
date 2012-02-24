@@ -1,4 +1,3 @@
-package org.totalgrid.reef.calc.lib.eval
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,20 +16,20 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.calc.lib.eval
 
-sealed trait OperationValue {
-  def toList: List[OperationValue] = List(this)
+object BasicOperations {
+
+  class Sum extends Operation {
+    def names = List("SUM", "+")
+
+    def apply(args: List[OperationValue]): OperationValue = {
+      val result = args.foldLeft(0.0) {
+        case (l, NumericValue(v)) => l + v
+        case (l, NumericMeas(v, _)) => l + v
+        case (l, x) => throw new EvalException("Sum only takes numeric values")
+      }
+      NumericValue(result)
+    }
+  }
 }
-
-case class Range(list: List[OperationValue]) extends OperationValue {
-  override def toList: List[OperationValue] = list
-}
-
-case class NumericValue(value: Double) extends OperationValue
-
-case class BooleanValue(value: Boolean) extends OperationValue
-
-case class NumericMeas(value: Double, time: Option[Long]) extends OperationValue
-
-case class BooleanMeas(value: Boolean, time: Option[Long]) extends OperationValue
-
