@@ -75,6 +75,7 @@ class CalculationConfigServiceModel
       edgeModel.addEdge(context, p.entity.value, ent, "calcs")
     }
     edgeModel.addEdge(context, ent, outputPoint.entity.value, "calcs")
+    edgeModel.addEdge(context, outputPoint.entity.value, ent, "source")
 
     over
   }
