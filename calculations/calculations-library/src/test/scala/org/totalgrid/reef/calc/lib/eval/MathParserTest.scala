@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.calc.lib.parse
+package org.totalgrid.reef.calc.lib.eval
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

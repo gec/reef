@@ -1,3 +1,5 @@
+package org.totalgrid.reef.calc.lib.eval
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,9 +18,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.calc.lib.parse
 
-import util.parsing.combinator.syntactical.StandardTokenParsers
 import util.parsing.combinator.JavaTokenParsers
 
 /**
@@ -31,31 +31,49 @@ import util.parsing.combinator.JavaTokenParsers
  *
  */
 object OperationParser extends JavaTokenParsers {
+
   import OperationInterpreter._
 
   def expr: Parser[Expression] = mult ~ rep("+" ~ mult ^^ part | "-" ~ mult ^^ part) ^^ multiInfix
+
   def mult: Parser[Expression] = exp ~ rep("*" ~ exp ^^ part | "/" ~ exp ^^ part) ^^ multiInfix
+
   def exp: Parser[Expression] = leaf ~ rep("^" ~ leaf ^^ part) ^^ multiInfix
 
   def leaf: Parser[Expression] = constant | fun | variable | "(" ~> expr <~ ")"
 
-  def fun: Parser[Expression] = ident ~ ("(" ~> csv <~ ")") ^^ { case f ~ args => Fun(f, args) }
-  def csv: Parser[List[Expression]] = expr ~ rep("," ~> expr) ^^ { case head ~ tail => head :: tail }
+  def fun: Parser[Expression] = ident ~ ("(" ~> csv <~ ")") ^^ {
+    case f ~ args => Fun(f, args)
+  }
 
-  def variable: Parser[Expression] = ident ^^ { Var(_) }
+  def csv: Parser[List[Expression]] = expr ~ rep("," ~> expr) ^^ {
+    case head ~ tail => head :: tail
+  }
 
-  def constant: Parser[Expression] = floatingPointNumber ^^ { x => Const(x.toDouble) }
+  def variable: Parser[Expression] = ident ^^ {
+    Var(_)
+  }
+
+  def constant: Parser[Expression] = floatingPointNumber ^^ { x =>
+    Const(x.toDouble)
+  }
 
   case class Part(op: String, right: Expression)
 
-  def part: ~[String, Expression] => Part = { case op ~ r => Part(op, r) }
+  def part: ~[String, Expression] => Part = {
+    case op ~ r => Part(op, r)
+  }
 
   def multiInfix: ~[Expression, List[Part]] => Expression = {
     case n ~ Nil => n
-    case l ~ reps => reps.foldLeft(l) { case (l, part) => Infix(part.op, l, part.right) }
+    case l ~ reps => reps.foldLeft(l) {
+      case (l, part) => Infix(part.op, l, part.right)
+    }
   }
 
   def parseFormula(formula: String): Expression = {
-    parseAll(expr, formula) getOrElse { throw new Exception("Bad Parse: " + formula) }
+    parseAll(expr, formula) getOrElse {
+      throw new Exception("Bad Parse: " + formula)
+    }
   }
 }

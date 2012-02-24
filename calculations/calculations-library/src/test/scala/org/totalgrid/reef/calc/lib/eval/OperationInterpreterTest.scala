@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.calc.lib.parse
+package org.totalgrid.reef.calc.lib.eval
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -67,9 +67,11 @@ class OperationInterpreterTest extends FunSuite with ShouldMatchers {
 
     def sum(inputs: List[OperationValue]): OperationValue = inputs match {
       case List(NumericValue(2.0), NumericValue(3.0), NumericValue(35.0)) => NumericValue(40.0)
+      case _ => throw new Exception("wrong")
     }
     def mult: List[OperationValue] => OperationValue = {
       case List(NumericValue(5.0), NumericValue(7.0)) => NumericValue(35.0)
+      case _ => throw new Exception("wrong")
     }
 
     val ops = new OpMap(Map("SUM" -> new Op("SUM", sum), "*" -> new Op("*", mult)))

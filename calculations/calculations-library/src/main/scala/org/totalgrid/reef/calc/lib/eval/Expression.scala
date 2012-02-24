@@ -1,3 +1,5 @@
+package org.totalgrid.reef.calc.lib.eval
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,20 +18,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.calc.lib.parse
-
 trait VariableSource {
   def forName(name: String): OperationValue
 }
 
 sealed trait OperationValue
+
 case class NumericValue(value: Double) extends OperationValue
+
 case class BooleanValue(value: Boolean) extends OperationValue
+
 case class NumericMeas(value: Double, time: Option[Long]) extends OperationValue
+
 case class BooleanMeas(value: Boolean, time: Option[Long]) extends OperationValue
 
 trait Operation {
   def name: String
+
   def apply(inputs: List[OperationValue]): OperationValue
 }
 
