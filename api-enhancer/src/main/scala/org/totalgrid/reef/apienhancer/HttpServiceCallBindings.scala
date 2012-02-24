@@ -51,7 +51,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     stream.println("import org.totalgrid.reef.client.sapi.rpc.AllScadaService\n")
 
     stream.println("/**\n * Auto Generated, do not alter!\n * %s of %s calls ported\n */".format(
-      nonTranslatedApiCalls, totalApiCalls))
+      totalApiCalls - nonTranslatedApiCalls, totalApiCalls))
     stream.println("class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {\n\toverride val serviceClass = classOf[AllScadaService]\n\n")
 
     // sort by class name to keep results stable
