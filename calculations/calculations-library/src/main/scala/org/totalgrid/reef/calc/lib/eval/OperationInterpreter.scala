@@ -22,13 +22,13 @@ object OperationInterpreter {
 
   case class Fun(fun: String, args: List[Expression]) extends Expression {
     def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
-      ops.forName(fun).apply(args.map(_.evaluate(inputs, ops)))
+      ops.forName(fun).apply(args.map(_.evaluate(inputs, ops)).flatMap(_.toList))
     }
   }
 
   case class Infix(op: String, left: Expression, right: Expression) extends Expression {
     def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
-      ops.forName(op).apply(List(left.evaluate(inputs, ops), right.evaluate(inputs, ops)))
+      ops.forName(op).apply(List(left.evaluate(inputs, ops), right.evaluate(inputs, ops)).flatMap(_.toList))
     }
   }
 

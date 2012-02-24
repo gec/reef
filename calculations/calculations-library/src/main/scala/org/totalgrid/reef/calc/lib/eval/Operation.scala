@@ -19,7 +19,7 @@ package org.totalgrid.reef.calc.lib.eval
  */
 
 trait Operation {
-  def name: String
+  def names: List[String]
 
-  def apply(inputs: List[OperationValue]): OperationValue
+  def apply(args: List[OperationValue]): OperationValue
 }

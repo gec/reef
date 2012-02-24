@@ -35,7 +35,7 @@ class OperationInterpreterTest extends FunSuite with ShouldMatchers {
   }
 
   class Op(n: String, f: List[OperationValue] => OperationValue) extends Operation {
-    def name: String = n
+    def names = List(n)
     def apply(inputs: List[OperationValue]): OperationValue = f(inputs)
   }
 
