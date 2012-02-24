@@ -54,6 +54,12 @@
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-protocol-calculator</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
 		<dependency>
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-default-simulator</artifactId>

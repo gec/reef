@@ -25,7 +25,7 @@ object MultiNodeEntryPoint extends ShutdownHook {
 
   def main(args: Array[String]) = {
     val exe = Executors.newResizingThreadPool(5.minutes)
-    val system = new IntegratedSystem(exe, "standalone-node.cfg", true)
+    val system = new IntegratedSystem(exe, "standalone-node.cfg", false)
 
     try {
       system.start()
