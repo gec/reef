@@ -21,49 +21,52 @@ package org.totalgrid.reef.calc.lib.parse
 import util.parsing.combinator.syntactical.StandardTokenParsers
 import util.parsing.combinator.JavaTokenParsers
 
+object OperationInterpreter {
+
+  sealed trait Node
+
+  case class Fun(fun: String, args: List[Node]) extends Node
+  case class Infix(op: String, left: Node, right: Node) extends Node
+  case class Const(v: Double) extends Node
+  case class Var(name: String) extends Node
+}
+
 /**
- *
- * expr ::= ident | ident "(" csv ")"
+ * expr :: = mult { "+" mult | "-" mult }
+ * mult :: = exp { "*" fac | "/" fac | "%" fac }
+ * exp ::= leaf { "^" leaf }
+ * leaf ::= const | fun | var | "(" expr ")"
+ * fun ::= ident "(" csv ")"
  * csv ::= expr { "," expr }
  *
  */
 
 object OperationParser extends JavaTokenParsers {
+  import OperationInterpreter._
 
-  def math: Parser[Any] = term ~ rep("+" ~ term | "-" ~ term)
-  def term: Parser[Any] = factor ~ rep("*" ~ factor | "/" ~ factor)
-  def factor: Parser[Any] = floatingPointNumber | "(" ~ math ~ ")"
-  
-  def expr: Parser[Any] = ident ~ "(" ~ csv ~ ")" | ident
-  def csv: Parser[Any] = expr ~ rep("," ~ expr)
+  def expr: Parser[Node] = mult ~ rep("+" ~ mult ^^ part | "-" ~ mult ^^ part) ^^ multiInfix
+  def mult: Parser[Node] = exp ~ rep("*" ~ exp ^^ part | "/" ~ exp ^^ part) ^^ multiInfix
+  def exp: Parser[Node] = leaf ~ rep("^" ~ leaf ^^ part) ^^ multiInfix
 
-  def test() {
-    val cmd = "SUM ( A, PROD ( B, C ) )"
-    val cmd2 = "SUM(A,PROD (B,C))"
+  def leaf: Parser[Node] = constant | fun | variable | "(" ~> expr <~ ")"
 
-    val mathStr = "(5 * 3) + 2"
-    val mathStr2 = "5 * 3 + 2 "
+  def fun: Parser[Node] = ident ~ ("(" ~> csv <~ ")") ^^ { case f ~ args => Fun(f, args) }
+  def csv: Parser[List[Node]] = expr ~ rep("," ~> expr) ^^ { case head ~ tail => head :: tail }
 
-    //lexical.delimiters ++ List("(", ")")
+  def variable: Parser[Node] = ident ^^ { Var(_) }
 
-    println(parseAll(expr, cmd))
-    println(parseAll(expr, cmd2))
-    
-    println(parseAll(math, mathStr))
-    println(parseAll(math, mathStr2))
-    
-   /* val tokens = new lexical.Scanner(cmd)
-    var tokeTemp = tokens
-    while(!tokeTemp.atEnd) {
-      println(tokeTemp.first)
-      tokeTemp = tokeTemp.rest
-    }*/
+  def constant: Parser[Node] = floatingPointNumber ^^ { x => Const(x.toDouble) }
 
-    //val result = phrase(expr)(tokens)
+  case class Part(op: String, right: Node)
 
-    //val result = expr(tokens)
-    
-    //println(result)
+  def part: ~[String, Node] => Part = { case op ~ r => Part(op, r) }
+
+  def multiInfix: ~[Node, List[Part]] => Node = {
+    case n ~ Nil => n
+    case l ~ reps => reps.foldLeft(l) { case (l, part) => Infix(part.op, l, part.right) }
   }
 
+  def parseFormula(formula: String): Node = {
+    parseAll(expr, formula) getOrElse { throw new Exception("Bad Parse: " + formula) }
+  }
 }
