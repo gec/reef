@@ -78,6 +78,7 @@
         <module>http-bridge/http-bridge</module>
         <module>http-bridge/jQuery</module>
         <module>calculations/calculations-library</module>
+        <module>calculations/protocol-calculator</module>
 		<module>loader-common</module>
 		<module>loader-xml</module>
 		<module>processing</module>

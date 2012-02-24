@@ -184,15 +184,15 @@
             </comm:protocol>
 
             <comm:equipment name="" addParentNames="false">
-                <comm:analog name="Microgrid1.Controllable" unit="status"/>
-                <comm:analog name="Microgrid2.Controllable" unit="status"/>
+                <comm:status name="Microgrid1.Controllable" unit="status"/>
+                <comm:status name="Microgrid2.Controllable" unit="status"/>
             </comm:equipment>
         </comm:endpoint>
 
         <!-- We also split up the calculations so we can make sure we handle more than one calculation endpoint -->
 
         <comm:endpoint name="Microgrid1Calculator">
-            <comm:protocol name="calculated"/>
+            <comm:protocol name="calculator"/>
 
             <comm:equipment name="Microgrid1">
                 <comm:equipment name="Input">
@@ -211,7 +211,7 @@
         </comm:endpoint>
 
         <comm:endpoint name="Microgrid2Calculator">
-            <comm:protocol name="calculated"/>
+            <comm:protocol name="calculator"/>
 
             <comm:equipment name="Microgrid2">
                 <comm:equipment name="Input">
@@ -229,7 +229,7 @@
         </comm:endpoint>
 
         <comm:endpoint name="SystemCalculator">
-            <comm:protocol name="calculated"/>
+            <comm:protocol name="calculator"/>
 
             <comm:equipment name="System">
                 <comm:analog name="AverageStoredEnergy" unit="kWH"/>
