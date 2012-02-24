@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.calc.lib.parse
 
-
 trait VariableSource {
   def forName(name: String): OperationValue
 }
