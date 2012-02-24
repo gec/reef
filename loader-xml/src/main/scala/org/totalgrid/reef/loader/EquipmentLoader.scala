@@ -272,12 +272,10 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
   def addCalculation(pointName: String, childPrefix: Option[String], calc: Calculation) {
     exceptionCollector.collect("Calculation for point: " + pointName) {
       val (calcProto, sourcePoints) = CalculationsLoader.prepareCalculationProto(pointName, childPrefix.getOrElse(""), calc)
-      // modelLoader.putOrThrow(calcProto)
-      val edges = sourcePoints.map { sourceName =>
+      modelLoader.putOrThrow(calcProto)
+      sourcePoints.foreach { sourceName =>
         equipmentPointUnits.get(sourceName).getOrElse(throw new LoadingException("Input point unknown: " + sourceName))
-        ProtoUtils.toEntityEdge(sourceName, pointName, "calcs")
       }
-      edges.foreach { modelLoader.putOrThrow(_) }
     }
   }
 
