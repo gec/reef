@@ -100,6 +100,7 @@
  * }
  * 
  * message Calculation{
+ *     optional org.totalgrid.reef.client.service.proto.Model.ReefUUID          uuid               = 9;
  *     optional org.totalgrid.reef.client.service.proto.Model.Point             output_point       = 1;
  *     optional bool              accumulate         = 2;
  * 

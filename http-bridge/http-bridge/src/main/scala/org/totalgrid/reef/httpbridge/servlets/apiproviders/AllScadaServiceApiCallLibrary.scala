@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 74 of 179 calls ported
+ * 113 of 189 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -102,6 +102,42 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a0 = args.getUuid("uuid")
     (c) => c.getApplicationByUuid(a0)
   })
+  ////////////////////
+  // CalculationService
+  ////////////////////
+  multi("getCalculations", classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation], args => { (c) =>
+    c.getCalculations()
+  })
+  single("getCalculationByUuid", classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation], args => {
+    val a0 = args.getUuid("uuid")
+    (c) => c.getCalculationByUuid(a0)
+  })
+  single("getCalculationForPointByName", classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation], args => {
+    val a0 = args.getString("pointName")
+    (c) => c.getCalculationForPointByName(a0)
+  })
+  single("getCalculationForPointByUuid", classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation], args => {
+    val a0 = args.getUuid("uuid")
+    (c) => c.getCalculationForPointByUuid(a0)
+  })
+  multi("getCalculationsSourcedByEndpointByName", classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation], args => {
+    val a0 = args.getString("endpointName")
+    (c) => c.getCalculationsSourcedByEndpointByName(a0)
+  })
+  multi("getCalculationsSourcedByEndpointByUuid", classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation], args => {
+    val a0 = args.getUuid("uuid")
+    (c) => c.getCalculationsSourcedByEndpointByUuid(a0)
+  })
+  subscription("subscribeToCalculationsSourcedByEndpointByUuid", classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation], args => {
+    val a0 = args.getUuid("uuid")
+    (c) => c.subscribeToCalculationsSourcedByEndpointByUuid(a0)
+  })
+  // Can't encode addCalculation : Can't encode type: org.totalgrid.reef.client.service.proto.Calculations.Calculation
+  single("deleteCalculation", classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation], args => {
+    val a0 = args.getUuid("uuid")
+    (c) => c.deleteCalculation(a0)
+  })
+  // Can't encode deleteCalculation : Can't encode type: org.totalgrid.reef.client.service.proto.Calculations.Calculation
   ////////////////////
   // ClientOperations
   ////////////////////

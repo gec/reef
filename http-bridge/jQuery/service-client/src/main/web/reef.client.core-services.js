@@ -256,6 +256,120 @@
 			});
 		};
 		////////////////////
+		// CalculationService
+		////////////////////
+		/**
+		 * Tag for api-enhancer, do not delete: 
+		*/
+		/**
+
+		*/
+		calls.getCalculations = function() {
+			return client.apiRequest({
+				request: "getCalculations",
+				style: "MULTI",
+				resultType: "calculation"
+			});
+		};
+		/**
+
+		*/
+		calls.getCalculationByUuid = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.apiRequest({
+				request: "getCalculationByUuid",
+				data: {
+					uuid: uuid
+				},
+				style: "SINGLE",
+				resultType: "calculation"
+			});
+		};
+		/**
+
+		*/
+		calls.getCalculationForPointByName = function(pointName) {
+			return client.apiRequest({
+				request: "getCalculationForPointByName",
+				data: {
+					pointName: pointName
+				},
+				style: "SINGLE",
+				resultType: "calculation"
+			});
+		};
+		/**
+
+		*/
+		calls.getCalculationForPointByUuid = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.apiRequest({
+				request: "getCalculationForPointByUuid",
+				data: {
+					uuid: uuid
+				},
+				style: "SINGLE",
+				resultType: "calculation"
+			});
+		};
+		/**
+
+		*/
+		calls.getCalculationsSourcedByEndpointByName = function(endpointName) {
+			return client.apiRequest({
+				request: "getCalculationsSourcedByEndpointByName",
+				data: {
+					endpointName: endpointName
+				},
+				style: "MULTI",
+				resultType: "calculation"
+			});
+		};
+		/**
+
+		*/
+		calls.getCalculationsSourcedByEndpointByUuid = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.apiRequest({
+				request: "getCalculationsSourcedByEndpointByUuid",
+				data: {
+					uuid: uuid
+				},
+				style: "MULTI",
+				resultType: "calculation"
+			});
+		};
+		/**
+
+		*/
+		calls.subscribeToCalculationsSourcedByEndpointByUuid = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.subscribeApiRequest({
+				request: "subscribeToCalculationsSourcedByEndpointByUuid",
+				data: {
+					uuid: uuid
+				},
+				style: "MULTI",
+				resultType: "calculation"
+			});
+		};
+		// Can't encode addCalculation : Can't encode type: org.totalgrid.reef.client.service.proto.Calculations.Calculation
+		/**
+
+		*/
+		calls.deleteCalculation = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.apiRequest({
+				request: "deleteCalculation",
+				data: {
+					uuid: uuid
+				},
+				style: "SINGLE",
+				resultType: "calculation"
+			});
+		};
+		// Can't encode deleteCalculation : Can't encode type: org.totalgrid.reef.client.service.proto.Calculations.Calculation
+		////////////////////
 		// ClientOperations
 		////////////////////
 		/**

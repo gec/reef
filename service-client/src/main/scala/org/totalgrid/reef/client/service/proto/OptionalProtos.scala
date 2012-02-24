@@ -155,6 +155,7 @@ object OptionalProtos {
   }
   implicit def proto2OptCalculationsCalculation(a: org.totalgrid.reef.client.service.proto.Calculations.Calculation): OptCalculationsCalculation = new OptCalculationsCalculation(Some(a))
   class OptCalculationsCalculation(real: Option[org.totalgrid.reef.client.service.proto.Calculations.Calculation]) extends OptionalStruct(real) {
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
     val outputPoint = new OptModelPoint(optionally(_.hasOutputPoint, _.getOutputPoint))
     val accumulate = optionally(_.hasAccumulate, _.getAccumulate)
     val triggering = new OptCalculationsTriggerStrategy(optionally(_.hasTriggering, _.getTriggering))
