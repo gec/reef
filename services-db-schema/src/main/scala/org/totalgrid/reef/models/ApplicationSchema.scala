@@ -86,6 +86,8 @@ object ApplicationSchema extends Schema {
   val tokenSetJoins = table[AuthTokenPermissionSetJoin]
   val agentSetJoins = table[AgentPermissionSetJoin]
 
+  val calculations = table[CalculationConfig]
+
   def reset() = {
     drop // its protected for some reason
     create

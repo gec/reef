@@ -99,7 +99,7 @@ class ServiceProviders(
     new TriggerSetService(modelFac.triggerSets),
 
     new EventConfigService(modelFac.eventConfig),
-
+    new CalculationConfigService(modelFac.calculations),
     new EventService(modelFac.events),
     new AlarmService(modelFac.alarms))
 

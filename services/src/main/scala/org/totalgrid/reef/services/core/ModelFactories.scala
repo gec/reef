@@ -76,4 +76,5 @@ class ModelFactories(measurementStore: MeasurementStore, contextSource: RequestC
 
   val attributes = new EntityAttributeServiceModel
 
+  val calculations = new CalculationConfigServiceModel
 }
