@@ -78,7 +78,7 @@ object EventView {
         ("Device Time" :: timeString(e.deviceTime) :: Nil) ::
         argumentLines
 
-    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+    Table.renderRows(lines, " | ")
   }
 
   def printConfigTable(configs: List[EventConfig]) = {

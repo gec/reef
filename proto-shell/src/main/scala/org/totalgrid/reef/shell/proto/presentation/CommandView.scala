@@ -50,7 +50,7 @@ object CommandView {
       ("Status:" :: resp.getStatus.toString :: Nil) ::
       ("Message:" :: resp.getErrorMessage :: Nil) :: Nil
 
-    Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
+    Table.renderRows(rows, " ")
   }
   def commandResponse(resp: CommandResult) = {
 
@@ -58,7 +58,7 @@ object CommandView {
 
     val rows = ("Status:" :: resp.getStatus.toString :: msgEntries) :: Nil
 
-    Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
+    Table.renderRows(rows, " ")
   }
 
   def removeBlockResponse(removed: List[CommandLock]) = {

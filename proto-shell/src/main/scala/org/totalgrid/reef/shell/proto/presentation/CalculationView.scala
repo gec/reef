@@ -51,14 +51,53 @@ object CalculationView {
     }
   }
 
-  def printInspect(a: Calculation) = {
-    val lines =
-      ("OutputPoint" :: a.outputPoint.name.getOrElse("unknown") :: Nil) ::
-        ("Endpoint" :: a.outputPoint.endpoint.name.getOrElse("unknown") :: Nil) ::
-        ("Formula" :: a.getFormula :: Nil) ::
-        ("Triggering" :: a.triggering.map { triggeringString(_) }.getOrElse("unknown") :: Nil) ::
-        Nil
+  def timeString(time: Long) = {
+    new java.util.Date(time).toString
+  }
 
-    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+  def rangeString(calcInput: CalculationInput): String = {
+    calcInput match {
+      case i if (i.hasSingle) => "SINGLE(%s)".format(i.getSingle.getStrategy)
+      case i if (i.hasRange) =>
+        i.getRange match {
+          case r if (r.hasLimit && !r.hasFromMs && !r.hasToMs) => "RECENT_SAMPLES(%d)".format(r.getLimit)
+          case r if (r.hasFromMs && !r.hasToMs) => "RECENT_HISTORY(%d)".format(r.getFromMs)
+          case r if (r.hasFromMs && r.hasToMs) => "FIXED_TIME(%s,%s)".format(timeString(r.getFromMs), timeString(r.getToMs))
+          case _ => "UNKNOWN(%s)".format(i.getRange)
+        }
+      case _ => "UNKNOWN(%s)".format(calcInput)
+    }
+  }
+
+  def printInspect(a: Calculation) = {
+
+    val inputLines: List[List[String]] = a.calcInputs.map { jargs =>
+      val args = jargs.toList
+      ("Var" :: "Point" :: "Type" :: Nil) :: args.map { optInput =>
+        val input = optInput.get
+        input.getVariableName :: input.getPoint.getName :: rangeString(input) :: Nil
+      }
+    }.getOrElse(Nil)
+
+    val lines: List[List[String]] =
+      (("OutputPoint" :: a.outputPoint.name.getOrElse("unknown") :: Nil) ::
+        ("Endpoint" :: a.outputPoint.endpoint.name.getOrElse("unknown") :: Nil) ::
+        ("Triggering" :: a.triggering.map { triggeringString(_) }.getOrElse("unknown") :: Nil) :: Nil) :::
+        inputLines :::
+        (("Formula" :: a.getFormula :: Nil) :: Nil)
+
+    Table.renderRows(lines, " | ")
+  }
+
+  def printMeasTable(meases: List[(String, Measurement)]) = {
+    Table.printTable(List("Dist") ::: MeasView.header, meases.map { case (d, m) => getMeasRow(d, m) })
+  }
+
+  def getMeasRow(distance: String, m: Measurement) = {
+    List(distance) ::: MeasView.row(m)
+  }
+
+  def printMeasRow(distance: String, meas: Measurement, widths: List[Int]) {
+    Table.renderTableRow(CalculationView.getMeasRow(distance, meas), widths)
   }
 }

@@ -110,7 +110,10 @@ object MeasView {
   }
 
   def printTable(list: List[Measurement]) = {
-    Table.printTable(header, list.sortBy(_.getName).map(row(_)))
+    Table.printTable(header, list.map(row(_)))
+  }
+  def printMeasRow(meas: Measurement, widths: List[Int]) {
+    Table.renderTableRow(row(meas), widths)
   }
 
   /**
@@ -145,8 +148,7 @@ object MeasView {
         ("Quality" :: longQuality(m) :: Nil) ::
         ("Time" :: timeString(m) :: Nil) :: Nil
 
-    val justLines = Table.justifyColumns(lines)
-    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+    Table.renderRows(lines, " | ")
   }
 
   def printStats(s: MeasurementStatistics) = {
@@ -156,7 +158,6 @@ object MeasView {
         ("Count" :: s.count.getOrElse("[disabled]").toString :: Nil) ::
         ("Oldest Time" :: s.oldestTime.map(new java.util.Date(_).toString).getOrElse("[disabled]") :: Nil) :: Nil
 
-    val justLines = Table.justifyColumns(lines)
-    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+    Table.renderRows(lines, " | ")
   }
 }
