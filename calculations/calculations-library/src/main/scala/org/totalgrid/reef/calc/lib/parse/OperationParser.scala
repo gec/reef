@@ -21,7 +21,6 @@ package org.totalgrid.reef.calc.lib.parse
 import util.parsing.combinator.syntactical.StandardTokenParsers
 import util.parsing.combinator.JavaTokenParsers
 
-
 /**
  * expr :: = mult { "+" mult | "-" mult }
  * mult :: = exp { "*" fac | "/" fac | "%" fac }
