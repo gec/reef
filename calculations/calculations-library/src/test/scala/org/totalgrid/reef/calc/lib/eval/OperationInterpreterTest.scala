@@ -27,9 +27,6 @@ import org.scalatest.matchers.ShouldMatchers
 class OperationInterpreterTest extends FunSuite with ShouldMatchers {
   import OperationInterpreter._
 
-  class ValueMap(map: Map[String, OperationValue]) extends VariableSource {
-    def forName(name: String): OperationValue = map(name)
-  }
   class OpMap(map: Map[String, Operation]) extends OperationSource {
     def forName(name: String): Option[Operation] = map.get(name)
   }

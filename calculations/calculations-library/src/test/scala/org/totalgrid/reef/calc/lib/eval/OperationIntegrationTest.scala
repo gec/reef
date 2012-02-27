@@ -1,4 +1,3 @@
-package org.totalgrid.reef.calc.lib.eval
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,27 +16,30 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.calc.lib.eval
 
-sealed trait OperationValue {
-  def toList: List[OperationValue] = List(this)
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.FunSuite
+import org.scalatest.matchers.ShouldMatchers
+
+@RunWith(classOf[JUnitRunner])
+class OperationIntegrationTest extends FunSuite with ShouldMatchers {
+
+  test("Simple math") {
+    val f = "5 * 2"
+    val expr = OperationParser.parseFormula(f)
+    val result = NumericConst(10.0)
+
+    expr.evaluate(new ValueMap(Map()), BasicOperations.getSource) should equal(result)
+  }
+
+  test("Average") {
+    val f = "B + AVG(A)"
+    val values = Map("B" -> 1.5, "A" -> ValueRange(List(NumericConst(5.0), NumericConst(10.0), NumericConst(15.0))))
+    val expr = OperationParser.parseFormula(f)
+    val result = NumericConst(11.5)
+
+    expr.evaluate(new ValueMap(values), BasicOperations.getSource) should equal(result)
+  }
 }
-
-case class ValueRange(list: List[OperationValue]) extends OperationValue {
-  override def toList: List[OperationValue] = list
-}
-
-trait NumericValue extends OperationValue {
-  val value: Double
-}
-object NumericValue {
-  def unapply(v: NumericValue): Option[Double] = Some(v.value)
-}
-
-case class NumericConst(value: Double) extends NumericValue
-
-case class BooleanConst(value: Boolean) extends OperationValue
-
-case class NumericMeas(value: Double, time: Option[Long]) extends NumericValue
-
-case class BooleanMeas(value: Boolean, time: Option[Long]) extends OperationValue
-

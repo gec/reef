@@ -18,7 +18,13 @@
  */
 package org.totalgrid.reef.calc.lib.eval
 
+import org.totalgrid.reef.calc.lib.eval.BasicOperations.{ SquareRoot, Average, Divide, Subtract }
+
 object BasicOperations {
+
+  def getSource = {
+    new BasicOperationSource(List(new Sum, new Subtract, new Product, new Divide, new Power, new Average, new SquareRoot))
+  }
 
   trait AbstractOperation extends Operation {
     protected val name = names.headOption.getOrElse(this.getClass.getSimpleName)
@@ -105,7 +111,7 @@ object BasicOperations {
   }
 
   class SquareRoot extends SingleNumericOperation {
-    def names: List[String] = List("SQRT")
+    def names = List("SQRT")
 
     def eval(v: Double): Double = {
       math.sqrt(v)
