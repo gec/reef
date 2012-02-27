@@ -20,21 +20,25 @@ package org.totalgrid.reef.calc.lib.eval
 
 object OperationInterpreter {
 
+  private def getOrElse(ops: OperationSource, name: String): Operation = {
+    ops.forName(name).getOrElse { throw new EvalException("Operation not found: " + name) }
+  }
+
   case class Fun(fun: String, args: List[Expression]) extends Expression {
     def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
-      ops.forName(fun).apply(args.map(_.evaluate(inputs, ops)).flatMap(_.toList))
+      getOrElse(ops, fun).apply(args.map(_.evaluate(inputs, ops)).flatMap(_.toList))
     }
   }
 
   case class Infix(op: String, left: Expression, right: Expression) extends Expression {
     def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
-      ops.forName(op).apply(List(left.evaluate(inputs, ops), right.evaluate(inputs, ops)).flatMap(_.toList))
+      getOrElse(ops, op).apply(List(left.evaluate(inputs, ops), right.evaluate(inputs, ops)).flatMap(_.toList))
     }
   }
 
   case class Const(v: Double) extends Expression {
     def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
-      NumericValue(v)
+      NumericConst(v)
     }
   }
 

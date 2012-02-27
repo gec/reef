@@ -31,7 +31,7 @@ class OperationInterpreterTest extends FunSuite with ShouldMatchers {
     def forName(name: String): OperationValue = map(name)
   }
   class OpMap(map: Map[String, Operation]) extends OperationSource {
-    def forName(name: String): Operation = map(name)
+    def forName(name: String): Option[Operation] = map.get(name)
   }
 
   class Op(n: String, f: List[OperationValue] => OperationValue) extends Operation {
@@ -43,16 +43,16 @@ class OperationInterpreterTest extends FunSuite with ShouldMatchers {
 
     val exp = Fun("SUM", List(Var("A"), Var("B"), Const(5.0)))
 
-    val ins = Map("A" -> NumericValue(2.0), "B" -> NumericValue(3.0))
+    val ins = Map("A" -> NumericConst(2.0), "B" -> NumericConst(3.0))
 
     def check(inputs: List[OperationValue]): OperationValue = inputs match {
-      case List(NumericValue(2.0), NumericValue(3.0), NumericValue(5.0)) => NumericValue(10.0)
+      case List(NumericConst(2.0), NumericConst(3.0), NumericConst(5.0)) => NumericConst(10.0)
       case _ => throw new Exception("not matching")
     }
 
     val ops = new OpMap(Map("SUM" -> new Op("SUM", check)))
 
-    exp.evaluate(new ValueMap(ins), ops) should equal(NumericValue(10.0))
+    exp.evaluate(new ValueMap(ins), ops) should equal(NumericConst(10.0))
   }
 
   test("Nesting") {
@@ -60,22 +60,22 @@ class OperationInterpreterTest extends FunSuite with ShouldMatchers {
     val exp = Fun("SUM", List(Var("A"), Var("B"), Infix("*", Var("C"), Var("D"))))
 
     val ins = Map(
-      "A" -> NumericValue(2.0),
-      "B" -> NumericValue(3.0),
-      "C" -> NumericValue(5.0),
-      "D" -> NumericValue(7.0))
+      "A" -> NumericConst(2.0),
+      "B" -> NumericConst(3.0),
+      "C" -> NumericConst(5.0),
+      "D" -> NumericConst(7.0))
 
     def sum(inputs: List[OperationValue]): OperationValue = inputs match {
-      case List(NumericValue(2.0), NumericValue(3.0), NumericValue(35.0)) => NumericValue(40.0)
+      case List(NumericConst(2.0), NumericConst(3.0), NumericConst(35.0)) => NumericConst(40.0)
       case _ => throw new Exception("wrong")
     }
     def mult: List[OperationValue] => OperationValue = {
-      case List(NumericValue(5.0), NumericValue(7.0)) => NumericValue(35.0)
+      case List(NumericConst(5.0), NumericConst(7.0)) => NumericConst(35.0)
       case _ => throw new Exception("wrong")
     }
 
     val ops = new OpMap(Map("SUM" -> new Op("SUM", sum), "*" -> new Op("*", mult)))
 
-    exp.evaluate(new ValueMap(ins), ops) should equal(NumericValue(40.0))
+    exp.evaluate(new ValueMap(ins), ops) should equal(NumericConst(40.0))
   }
 }

@@ -19,5 +19,5 @@ package org.totalgrid.reef.calc.lib.eval
  */
 
 trait OperationSource {
-  def forName(name: String): Operation
+  def forName(name: String): Option[Operation]
 }
