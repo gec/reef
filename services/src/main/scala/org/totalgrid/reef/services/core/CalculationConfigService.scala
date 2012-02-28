@@ -23,6 +23,7 @@ import org.totalgrid.reef.services.framework.SquerylModel._
 
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.proto.Calculations.Calculation
+import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, Point => PointProto }
 import org.totalgrid.reef.models._
 import java.util.UUID
 
@@ -53,6 +54,16 @@ class CalculationConfigServiceModel
     val outputPoint = getOutputPoint(context, calculation)
 
     val uuid: Option[UUID] = calculation.uuid
+    if (!uuid.isEmpty) {
+      // TODO: allow changing calc output point when we have better uniqueQueries
+      // currently we can't 'find' entry with uuid and not current output point
+      val existing = entityModel.findRecord(context, EntityProto.newBuilder.setUuid(uuid.get).build)
+      if (!existing.isEmpty) {
+        val existingCalc = existing.get.asType(ApplicationSchema.calculations, "Calculation")
+        throw new BadRequestException("Can't change OutputPoint from: " + existingCalc.outputPoint.value.entityName)
+      }
+    }
+
     val entity = entityModel.findOrCreate(context, outputPoint.entityName + "Calc", List("Calculation"), uuid)
 
     prepareCalculationConfig(context, calculation, entity, outputPoint)
@@ -68,6 +79,10 @@ class CalculationConfigServiceModel
       .getOrElse(throw new BadRequestException("Unknown OutputPoint: " + calculation.getOutputPoint))
   }
 
+  private def pointProto(point: Point) = {
+    PointProto.newBuilder.setName(point.entityName).setUuid(makeUuid(point)).setUnit(point.unit)
+  }
+
   private def prepareCalculationConfig(context: RequestContext, calculation: Calculation, entity: Entity, outputPoint: Point): CalculationConfig = {
 
     val inputPoints = calculation.getCalcInputsList.toList.map { i => PointServiceConversion.findRecord(context, i.getPoint) }
@@ -76,14 +91,15 @@ class CalculationConfigServiceModel
       val missingPoints = inputPoints.zip(calculation.getCalcInputsList.toList.map { _.getPoint.getName }).filter(_._1 == None)
       throw new BadRequestException("Calculation includes unknown InputPoints: " + missingPoints.map { _._2 }.mkString(","))
     }
+
     val rebuilder = calculation.toBuilder
-    rebuilder.setOutputPoint(PointTiedModel.populatedPointProto(outputPoint))
+    rebuilder.setOutputPoint(pointProto(outputPoint))
     rebuilder.setUuid(entity.id)
 
     rebuilder.clearCalcInputs()
     calculation.getCalcInputsList.toList.zip(inputPoints.flatten).foreach {
       case (input, point) =>
-        rebuilder.addCalcInputs(input.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)))
+        rebuilder.addCalcInputs(input.toBuilder.setPoint(pointProto(point)))
     }
 
     val proto = rebuilder.build
@@ -121,6 +137,7 @@ class CalculationConfigServiceModel
   override protected def preUpdate(context: RequestContext, entry: CalculationConfig, previous: CalculationConfig) = {
     val calcEntity = entry.entity.value
     if (entry.outputPointId != previous.outputPointId) {
+      // this should be unreachable until we fix searching
       val previousOutputPoint = previous.outputPoint.value.entity.value
       edgeModel.deleteEdges(context, calcEntity, List(previousOutputPoint), "calcs")
       edgeModel.deleteEdges(context, previousOutputPoint, List(calcEntity), "source")
@@ -152,12 +169,12 @@ trait CalculationConfigConversion
     req.outputPoint.endpoint.uuid.value :: req.outputPoint.name :: Nil)
 
   def uniqueQuery(proto: Calculation, sql: CalculationConfig) = {
-    List(proto.uuid.value.asParam(sql.entityId === UUID.fromString(_)))
+    List(proto.uuid.value.asParam(sql.entityId === UUID.fromString(_)),
+      proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
   }
 
   def searchQuery(proto: Calculation, sql: CalculationConfig) =
-    List(proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })),
-      proto.outputPoint.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Calculation")))
+    List(proto.outputPoint.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Calculation")))
 
   def isModified(entry: CalculationConfig, existing: CalculationConfig): Boolean = {
     !entry.protoData.sameElements(existing.protoData)

@@ -75,6 +75,7 @@ class CaclulationServiceTest extends PointServiceTestBase {
     f.addPoint("calcPoint", "w")
 
     val calc = f.addCalc("calcPoint", List("input1", "input2"))
+    f.addCalc("calcPoint", List("input1", "input2"))
 
     calc.getOutputPoint.getName should equal("calcPoint")
     calc.getOutputPoint.getUnit should equal("w")
@@ -115,7 +116,7 @@ class CaclulationServiceTest extends PointServiceTestBase {
     f.events.map(s => (s.typ, s.value.getClass)) should equal(eventList)
   }
 
-  test("Calculations can be updated to different output point") {
+  test("Calculations cannot be updated to different output point") {
     val f = new CalcFixture
 
     f.addPoint("input1", "v")
@@ -127,10 +128,16 @@ class CaclulationServiceTest extends PointServiceTestBase {
     f.pointIsCalculated("calcPoint1", true)
     f.pointIsCalculated("calcPoint2", false)
 
-    f.addCalc("calcPoint2", List("input1"), Some(calc.getUuid))
+    val msg = intercept[BadRequestException] {
+      f.addCalc("calcPoint2", List("input1"), Some(calc.getUuid))
+    }.getMessage
+    msg should include("Can't change OutputPoint")
+    msg should include("calcPoint1")
 
-    f.pointIsCalculated("calcPoint1", false)
-    f.pointIsCalculated("calcPoint2", true)
+    //f.addCalc("calcPoint2", List("input1"), Some(calc.getUuid))
+    //
+    //f.pointIsCalculated("calcPoint1", false)
+    //f.pointIsCalculated("calcPoint2", true)
   }
 
   test("Calculations can be updated to different input points") {
