@@ -18,23 +18,57 @@
  */
 package org.totalgrid.reef.calc.lib
 
-import eval._
+import eval.{ OperationParser, OperationSource }
 import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
-import com.weiglewilczek.slf4s.Logging
 
-class BasicCalculationFactory(client: Client) extends CalculationFactory {
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.client.service.proto.Calculations.{ InputQuality, Calculation }
+
+/*
+
+message Calculation{
+    optional org.totalgrid.reef.client.service.proto.Model.ReefUUID          uuid               = 9;
+    optional org.totalgrid.reef.client.service.proto.Model.Point             output_point       = 1;
+    optional bool              accumulate         = 2;
+
+    optional TriggerStrategy   triggering         = 3;
+    repeated CalculationInput  calc_inputs        = 4;
+
+    optional InputQuality      triggering_quality = 5;
+    optional OutputQuality     quality_output     = 6;
+    optional OutputTime        time_output        = 7;
+
+    optional string            formula            = 8;
+}
+
+ */
+
+class BasicCalculationFactory(client: Client, operations: OperationSource) extends CalculationFactory {
 
   def build(config: Calculation): Cancelable = {
+
+    val expr = config.formula.map(OperationParser.parseFormula(_)).getOrElse {
+      throw new Exception("Need formula in calculation config")
+    }
+
+    val qualInputStrat = config.triggeringQuality.strategy.map(QualityInputStrategy.build(_)).getOrElse {
+      throw new Exception("Need quality input strategy in calculation config")
+    }
+
+    val qualOutputStrat = config.qualityOutput.strategy.map(QualityOutputStrategy.build(_)).getOrElse {
+      throw new Exception("Need quality output strategy in calculation config")
+    }
+
+    val timeOutputStrat = config.timeOutput.strategy.map(TimeStrategy.build(_)).getOrElse {
+      throw new Exception("Need time strategy in calculation config")
+    }
 
     null
   }
 }
 
 trait InputBucket {
-  def getOperationValue: OperationValue
   def hasSufficient: Boolean
 }
 

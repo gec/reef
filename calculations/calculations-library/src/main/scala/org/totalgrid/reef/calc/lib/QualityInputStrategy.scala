@@ -19,7 +19,15 @@
 package org.totalgrid.reef.calc.lib
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Calculations.InputQuality
 
 trait QualityInputStrategy {
   def checkInputs(inputs: Map[String, List[Measurement]]): Option[Map[String, List[Measurement]]]
+}
+
+object QualityInputStrategy {
+
+  def build(config: InputQuality.Strategy) = config match {
+    case _ => throw new Exception("Unknown quality input strategy")
+  }
 }

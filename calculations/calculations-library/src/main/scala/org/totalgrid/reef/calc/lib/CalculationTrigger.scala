@@ -21,8 +21,6 @@ package org.totalgrid.reef.calc.lib
 import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import net.agileautomata.executor4s.{ Executor, Cancelable }
 
-//class CalculationTrigger(handler: () => Unit)
-
 class AnyUpdateTrigger(subscriptionManager: InputSubscriptionManager, handler: () => Unit) {
 
   subscriptionManager.onAnyChange { m => handler() }

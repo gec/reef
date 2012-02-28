@@ -19,7 +19,14 @@
 package org.totalgrid.reef.calc.lib
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Calculations.OutputTime
 
 trait TimeStrategy {
   def getTime(inputs: Map[String, List[Measurement]]): Long
+}
+
+object TimeStrategy {
+  def build(config: OutputTime.Strategy) = config match {
+    case _ => throw new Exception("Unknown time strategy")
+  }
 }

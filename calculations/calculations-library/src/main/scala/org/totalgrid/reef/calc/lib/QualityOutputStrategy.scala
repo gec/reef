@@ -19,7 +19,14 @@
 package org.totalgrid.reef.calc.lib
 
 import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
+import org.totalgrid.reef.client.service.proto.Calculations.OutputQuality
 
 trait QualityOutputStrategy {
   def getQuality(inputs: Map[String, List[Measurement]]): Quality
+}
+
+object QualityOutputStrategy {
+  def build(config: OutputQuality.Strategy) = config match {
+    case _ => throw new Exception("Unknown quality output strategy")
+  }
 }
