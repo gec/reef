@@ -264,14 +264,14 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     if (!triggers.isEmpty) addTriggers(commonLoader.triggerCache, point, triggers)
 
     val calculations = getElements[Calculation](name, pointType, _.getCalculation.toList)
-    calculations.foreach { c => addCalculation(name, childPrefix, c) }
+    calculations.foreach { c => addCalculation(name, unit, childPrefix, c) }
 
     pointEntity
   }
 
-  def addCalculation(pointName: String, childPrefix: Option[String], calc: Calculation) {
+  def addCalculation(pointName: String, pointUnit: String, childPrefix: Option[String], calc: Calculation) {
     exceptionCollector.collect("Calculation for point: " + pointName) {
-      val (calcProto, sourcePoints) = CalculationsLoader.prepareCalculationProto(pointName, childPrefix.getOrElse(""), calc)
+      val (calcProto, sourcePoints) = CalculationsLoader.prepareCalculationProto(pointName, pointUnit, childPrefix.getOrElse(""), calc)
       modelLoader.putOrThrow(calcProto)
       sourcePoints.foreach { sourceName =>
         equipmentPointUnits.get(sourceName).getOrElse(throw new LoadingException("Input point unknown: " + sourceName))

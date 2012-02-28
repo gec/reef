@@ -62,8 +62,8 @@ message InputQuality{
 
 message OutputQuality{
     enum Strategy{
-        ALWAYS_OK     = 1;
-        MERGE_QUALITY = 2;
+        WORST_QUALITY = 1;
+        ALWAYS_OK     = 2;
         SET_QUALITY   = 3;
     }
     optional Strategy strategy        = 1;

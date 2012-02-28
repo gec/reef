@@ -38,6 +38,7 @@
                             </calc:multi>
                         </calc:inputs>
                         <calc:formula>INTEGRATE(A) * 0.0001</calc:formula>
+                        <calc:output accumulate="true" />
                     </calc:calculation>
                 </equip:analog>
             </equip:equipmentProfile>
@@ -55,6 +56,10 @@
 
                 <equip:analog name="ChargeLoad" unit="W">
                     <calc:calculation>
+                        <calc:triggering>
+                            <!-- only update this calculation when output changes -->
+                          <calc:variableTrigger variable="B" />
+                        </calc:triggering>
                         <calc:inputs>
                             <calc:single pointName="Input.Power" variable="A"/>
                             <calc:single pointName="Output.Power" variable="B"/>
@@ -71,6 +76,7 @@
                             </calc:multi>
                         </calc:inputs>
                         <calc:formula>INTEGRATE(A) * 0.0001</calc:formula>
+                        <calc:output accumulate="true" />
                     </calc:calculation>
                 </equip:analog>
 
@@ -113,7 +119,11 @@
                         <calc:single pointName="Microgrid1.Controllable" variable="A" addParentNames="false"/>
                         <calc:single pointName="Microgrid2.Controllable" variable="B" addParentNames="false"/>
                     </calc:inputs>
+                    <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
                     <calc:formula>COUNT(A,B,true)</calc:formula>
+                    <calc:output>
+                        <calc:outputQuality strategy="ALWAYS_OK" />
+                    </calc:output>
                 </calc:calculation>
             </equip:counter>
 
