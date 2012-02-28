@@ -29,6 +29,8 @@ case class CalculationConfig(
 
   val outputPoint = LazyVar(hasOne(ApplicationSchema.points, outputPointId))
 
+  val inputPoints = LazyVar(Entity.asType(ApplicationSchema.points, EntityQuery.getChildrenOfType(entity.value.id, "calcs", "Point").toList, Some("Point")))
+
   val proto = LazyVar(Calculation.parseFrom(protoData))
 
   val logicalNode = LazyVar(mayHaveOne(EntityQuery.getParentOfType(entityId, "source", "LogicalNode")))
