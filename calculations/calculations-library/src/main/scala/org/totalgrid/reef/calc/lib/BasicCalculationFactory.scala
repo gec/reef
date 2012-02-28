@@ -1,4 +1,3 @@
-package org.totalgrid.reef.calc.lib.eval
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,27 +16,30 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.calc.lib
 
-sealed trait OperationValue {
-  def toList: List[OperationValue] = List(this)
+import eval._
+import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.service.proto.Calculations.Calculation
+import net.agileautomata.executor4s.Cancelable
+import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
+import com.weiglewilczek.slf4s.Logging
+
+class BasicCalculationFactory(client: Client) extends CalculationFactory {
+
+  def build(config: Calculation): Cancelable = {
+
+    null
+  }
 }
 
-case class ValueRange(list: List[OperationValue]) extends OperationValue {
-  override def toList: List[OperationValue] = list
+trait InputBucket {
+  def getOperationValue: OperationValue
+  def hasSufficient: Boolean
 }
 
-trait NumericValue extends OperationValue {
-  val value: Double
+abstract class RunningCalculation extends Cancelable {
+  protected val calcTrigger: Cancelable
+  protected val inputManager: InputManager
 }
-object NumericValue {
-  def unapply(v: NumericValue): Option[Double] = Some(v.value)
-}
-
-case class NumericConst(value: Double) extends NumericValue
-
-case class BooleanConst(value: Boolean) extends OperationValue
-
-case class NumericMeas(value: Double, time: Long) extends NumericValue
-
-case class BooleanMeas(value: Boolean, time: Long) extends OperationValue
 

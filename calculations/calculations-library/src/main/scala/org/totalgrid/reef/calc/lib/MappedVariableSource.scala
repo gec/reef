@@ -1,4 +1,3 @@
-package org.totalgrid.reef.calc.lib.eval
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,27 +16,27 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.calc.lib
 
-sealed trait OperationValue {
-  def toList: List[OperationValue] = List(this)
+import eval.{ ValueRange, VariableSource, OperationValue, EvalException }
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+
+class MappedVariableSource(map: Map[String, OperationValue]) extends VariableSource {
+  def forName(name: String): OperationValue = {
+    map.get(name).getOrElse {
+      throw new EvalException("Variable does not exist: " + name)
+    }
+  }
 }
 
-case class ValueRange(list: List[OperationValue]) extends OperationValue {
-  override def toList: List[OperationValue] = list
+object MappedVariableSource {
+  import MeasurementConverter._
+
+  def apply(inputs: Map[String, List[Measurement]]): MappedVariableSource = {
+    val map = inputs.mapValues {
+      case List(single) => convertMeasurement(single)
+      case multi: List[Measurement] => ValueRange(multi.map(m => convertMeasurement(m)))
+    }
+    new MappedVariableSource(map)
+  }
 }
-
-trait NumericValue extends OperationValue {
-  val value: Double
-}
-object NumericValue {
-  def unapply(v: NumericValue): Option[Double] = Some(v.value)
-}
-
-case class NumericConst(value: Double) extends NumericValue
-
-case class BooleanConst(value: Boolean) extends OperationValue
-
-case class NumericMeas(value: Double, time: Long) extends NumericValue
-
-case class BooleanMeas(value: Boolean, time: Long) extends OperationValue
-

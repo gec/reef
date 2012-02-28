@@ -27,6 +27,7 @@ import net.agileautomata.executor4s.Executor
 
 import scala.collection.JavaConversions._
 
+/*
 trait CalculationInputProvider {
 
   def getRange(name: String): List[Measurement]
@@ -223,5 +224,5 @@ trait CalculationService {
   def getCalculationsForEndpoint(endpointName: String): List[Calculation]
 
   def subscribeToCalculationsForEndpoint(endpointName: String): SubscriptionResult[List[Calculation], Calculation]
-}
+} */
 

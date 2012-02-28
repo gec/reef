@@ -1,4 +1,3 @@
-package org.totalgrid.reef.calc.lib.eval
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,27 +16,8 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.calc.lib
 
-sealed trait OperationValue {
-  def toList: List[OperationValue] = List(this)
-}
+import net.agileautomata.executor4s.Cancelable
 
-case class ValueRange(list: List[OperationValue]) extends OperationValue {
-  override def toList: List[OperationValue] = list
-}
-
-trait NumericValue extends OperationValue {
-  val value: Double
-}
-object NumericValue {
-  def unapply(v: NumericValue): Option[Double] = Some(v.value)
-}
-
-case class NumericConst(value: Double) extends NumericValue
-
-case class BooleanConst(value: Boolean) extends OperationValue
-
-case class NumericMeas(value: Double, time: Long) extends NumericValue
-
-case class BooleanMeas(value: Boolean, time: Long) extends OperationValue
-
+trait InputManager extends InputDataManager with InputSubscriptionManager with Cancelable
