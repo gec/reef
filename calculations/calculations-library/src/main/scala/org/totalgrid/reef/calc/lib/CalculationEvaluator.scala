@@ -21,9 +21,9 @@ package org.totalgrid.reef.calc.lib
 import com.weiglewilczek.slf4s.Logging
 import eval.{ EvalException, OperationSource, Expression }
 
-class CalculationEvaluator(formula: Expression,
-  operationSource: OperationSource,
-  inputData: InputDataManager,
+class CalculationEvaluator(operationSource: OperationSource,
+  inputData: InputDataSource,
+  formula: Expression,
   qualInputStrategy: QualityInputStrategy,
   qualOutputStrategy: QualityOutputStrategy,
   timeStrategy: TimeStrategy,

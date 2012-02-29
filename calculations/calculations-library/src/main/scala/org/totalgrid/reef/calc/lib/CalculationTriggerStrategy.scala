@@ -18,11 +18,33 @@
  */
 package org.totalgrid.reef.calc.lib
 
+import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import net.agileautomata.executor4s._
 
-trait InputSubscriptionManager {
 
-  def onAnyChange(fun: Measurement => Unit)
+sealed trait CalculationTriggerStrategy
 
-  def onPointChanges(points: List[String])(fun: Measurement => Unit)
+trait InitiatingTriggerStrategy extends Cancelable {
+  def start(): Unit
+}
+
+trait EventedTriggerStrategy {
+  def handle(m: Measurement)
+}
+
+class IntervalTrigger(exe: Executor, interval: Long, handler: () => Unit) extends InitiatingTriggerStrategy {
+  var timer: Option[Timer] = None
+  def start() {
+    timer = Some(exe.scheduleWithFixedOffset(interval.milliseconds)(handler()))
+  }
+  def cancel() {
+    timer.foreach(_.cancel())
+  }
+}
+
+class AnyUpdateTrigger(handler: () => Unit) extends EventedTriggerStrategy {
+  def handle(m: Measurement) {
+    handler()
+  }
 }

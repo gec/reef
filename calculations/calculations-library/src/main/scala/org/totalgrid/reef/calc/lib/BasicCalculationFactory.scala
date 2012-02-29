@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.client.rest.Client
 import net.agileautomata.executor4s.Cancelable
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.client.service.proto.Calculations.{ InputQuality, Calculation }
+import org.totalgrid.reef.client.service.proto.Calculations.{CalculationInput, InputQuality, Calculation}
 
 /*
 
@@ -42,6 +42,16 @@ message Calculation{
     optional string            formula            = 8;
 }
 
+ */
+
+/*
+class CalculationEvaluator(formula: Expression,
+  operationSource: OperationSource,
+  inputData: InputDataSource,
+  qualInputStrategy: QualityInputStrategy,
+  qualOutputStrategy: QualityOutputStrategy,
+  timeStrategy: TimeStrategy,
+  publisher: OutputPublisher)
  */
 
 class BasicCalculationFactory(client: Client, operations: OperationSource) extends CalculationFactory {
@@ -63,14 +73,17 @@ class BasicCalculationFactory(client: Client, operations: OperationSource) exten
     val timeOutputStrat = config.timeOutput.strategy.map(TimeStrategy.build(_)).getOrElse {
       throw new Exception("Need time strategy in calculation config")
     }
+    
+    val output = config.outputPoint.name.map(new MeasurementOutputPublisher(client, _)).getOrElse {
+      throw new Exception("Must have output point name")
+    }
 
     null
   }
 }
 
-trait InputBucket {
-  def hasSufficient: Boolean
-}
+
+
 
 abstract class RunningCalculation extends Cancelable {
   protected val calcTrigger: Cancelable

@@ -20,4 +20,4 @@ package org.totalgrid.reef.calc.lib
 
 import net.agileautomata.executor4s.Cancelable
 
-trait InputManager extends InputDataManager with InputSubscriptionManager with Cancelable
+trait InputManager extends InputDataSource with Cancelable

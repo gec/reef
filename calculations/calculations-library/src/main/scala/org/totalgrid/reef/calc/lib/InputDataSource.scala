@@ -20,7 +20,7 @@ package org.totalgrid.reef.calc.lib
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
-trait InputDataManager {
+trait InputDataSource {
   def getSnapshot: Map[String, List[Measurement]]
 
   def hasSufficient: Boolean
