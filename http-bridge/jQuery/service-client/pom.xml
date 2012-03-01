@@ -5,7 +5,7 @@
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
         <version>0.4.6-SNAPSHOT</version>
-        <relativePath>../../../</relativePath>
+        <relativePath>../../../scala-base</relativePath>
     </parent>
     <artifactId>reef-jquery-service-client</artifactId>
     <packaging>bundle</packaging>
