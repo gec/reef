@@ -61,9 +61,18 @@ message Measurement {
 
 	required Quality quality = 7; 	// use 61850 quality type definitions
 	optional string unit = 8 [default = "raw"];
-	
-	optional uint64 time = 9 [default = 0]; // Unix time, but with milliseconds
+
+	// measurement time of occurrence information, both times are unix style time stamps
+	// "best known time" of occurrence, this should be measured as close to the field as possible. If the protocol
+	// is able to collect or assign a "good field time" to the measurement then is_device_time should be set, this
+	// indicates that the time should be considered to be accurate (but possibly in a slightly different stream from
+	// measurements that are not device_time)
+	optional uint64 time = 9 [default = 0];
 	optional bool is_device_time = 10 [default = false]; // true if time field is a device timestamp, false or unset if wall time
+	// the system time is the time when we processed the measurement into the system. The difference between the two
+	// times may be an approximate measurement of delay in the measurement stream or a measure of clock differences between
+	// the field devices and the system
+	optional uint64 system_time = 11 [default = 0];
 }
 
 // measurements are sent from the FEP in batches determined by protocol structure

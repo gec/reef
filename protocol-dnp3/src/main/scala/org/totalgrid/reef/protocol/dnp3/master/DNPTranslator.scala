@@ -130,7 +130,10 @@ object DNPTranslator {
       .setUnit(unit)
     // we only set the time on the proto if the protocol gave us a valid time
     val t = v.GetTime
-    if (t != 0) m.setTime(t)
+    if (t != 0) {
+      m.setTime(t)
+      m.setIsDeviceTime(true)
+    }
     f(m) // apply the specified measurement building function
     m.build
   }

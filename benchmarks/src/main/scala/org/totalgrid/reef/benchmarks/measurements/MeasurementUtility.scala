@@ -73,6 +73,7 @@ object MeasurementUtility {
       meas.setName(name).setType(Measurements.Measurement.Type.INT).setIntVal(value)
       meas.setQuality(Measurements.Quality.newBuilder.build)
       meas.setTime(time)
+      meas.setSystemTime(time)
       meas.build
     }
 

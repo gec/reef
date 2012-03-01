@@ -99,6 +99,7 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
     q.setDetailQual(Measurements.DetailQual.newBuilder.setOldData(true))
     b.setQuality(q)
     b.setTime(time).setIsDeviceTime(false)
+    b.setSystemTime(time)
     b.build()
   }
 }

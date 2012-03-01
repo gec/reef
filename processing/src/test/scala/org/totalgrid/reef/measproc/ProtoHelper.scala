@@ -35,6 +35,7 @@ object ProtoHelper {
   def makeAnalog(name: String, value: Double, time: Long = System.currentTimeMillis, unit: String = "raw"): Measurement = {
     val m = Measurement.newBuilder
     m.setTime(time)
+    m.setSystemTime(time)
     m.setName(name)
     m.setType(Measurement.Type.DOUBLE)
     m.setDoubleVal(value)
@@ -46,6 +47,7 @@ object ProtoHelper {
   def makeInt(name: String, value: Long, time: Long = System.currentTimeMillis): Measurement = {
     Measurement.newBuilder
       .setTime(time)
+      .setSystemTime(time)
       .setName(name)
       .setType(Measurement.Type.INT)
       .setIntVal(value)
@@ -56,6 +58,7 @@ object ProtoHelper {
   def makeBool(name: String, value: Boolean, time: Long = System.currentTimeMillis): Measurement = {
     Measurement.newBuilder
       .setTime(time)
+      .setSystemTime(time)
       .setName(name)
       .setType(Measurement.Type.BOOL)
       .setBoolVal(value)
@@ -67,6 +70,7 @@ object ProtoHelper {
   def makeString(name: String, value: String, time: Long = System.currentTimeMillis): Measurement = {
     Measurement.newBuilder
       .setTime(time)
+      .setSystemTime(time)
       .setName(name)
       .setType(Measurement.Type.STRING)
       .setStringVal(value)
@@ -121,6 +125,7 @@ object ProtoHelper {
       .setPoint(Point.newBuilder.setName(name))
       .setMeas(Measurement.newBuilder
         .setTime(85)
+        .setSystemTime(85)
         .setName(name)
         .setType(Measurement.Type.DOUBLE)
         .setDoubleVal(value)
