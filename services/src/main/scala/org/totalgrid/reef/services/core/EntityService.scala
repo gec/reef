@@ -87,6 +87,31 @@ class EntityServiceModel
     }
   }
 
+  def removeTypes(context: RequestContext, entity: Entity, entityTypes: List[String]): Entity = {
+
+    val removeTypes = entity.types.value.intersect(entityTypes)
+
+    if (!removeTypes.isEmpty) {
+      val ent = removeTypesFromEntity(entity, removeTypes)
+      onUpdated(context, ent)
+      ent
+    } else {
+      entity
+    }
+  }
+
+  def addTypes(context: RequestContext, entity: Entity, entityTypes: List[String]): Entity = {
+    val additionalTypes = entityTypes.diff(entity.types.value)
+
+    if (!additionalTypes.isEmpty) {
+      val ent = addTypesToEntity(entity, additionalTypes)
+      onUpdated(context, ent)
+      ent
+    } else {
+      entity
+    }
+  }
+
   def findRecord(context: RequestContext, req: EntityProto): Option[Entity] = {
     EntityQuery.findEntity(req)
   }
@@ -166,6 +191,15 @@ class EntityServiceModel
       val distinctTypes = types.distinct.reverse
       addEntityTypes(distinctTypes)
       ApplicationSchema.entityTypes.insert(distinctTypes.map { new EntityToTypeJoins(ent.id, _) })
+      table.lookup(ent.id).get
+    }
+  }
+
+  private def removeTypesFromEntity(ent: Entity, types: List[String]) = {
+    if (types.isEmpty) {
+      ent
+    } else {
+      ApplicationSchema.entityTypes.deleteWhere(sql => (sql.entityId === ent.id) and (sql.entType in types))
       table.lookup(ent.id).get
     }
   }

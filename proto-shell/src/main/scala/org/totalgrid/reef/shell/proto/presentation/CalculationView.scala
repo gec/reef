@@ -22,6 +22,7 @@ package org.totalgrid.reef.shell.proto.presentation
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import org.totalgrid.reef.util.Table
+import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Calculations._
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
@@ -31,14 +32,13 @@ object CalculationView {
   }
 
   def header = {
-    "OutputPoint" :: "Endpoint" :: "Formula" :: "Inputs" :: Nil
+    "OutputPoint" :: "Formula" :: "Unit" :: Nil
   }
 
   def row(a: Calculation) = {
     a.outputPoint.name.getOrElse("unknown") ::
-      a.outputPoint.endpoint.name.getOrElse("unknown") ::
       a.getFormula.toString ::
-      a.calcInputs.map { _.map { i => i.point.name.getOrElse("-") + "(" + i.variableName.getOrElse("-") + ")" }.mkString(",") }.getOrElse("-") ::
+      a.outputPoint.unit.getOrElse("unknown") ::
       Nil
   }
 
@@ -47,7 +47,8 @@ object CalculationView {
       case t if (t.hasPeriodMs) => "Periodic(%d)".format(t.getPeriodMs)
       case t if (t.hasSchedule) => "Scheduled(%s)".format(t.getSchedule)
       case t if (t.hasUpdateAny) => "AnyUpdate"
-      case t if (t.getVariablesCount > 0) => "TODO"
+      case t if (t.getVariablesCount > 0) =>
+        t.getVariablesList.toList.map { _.getVariableName }.mkString("Update(", ",", ")")
     }
   }
 
@@ -80,7 +81,7 @@ object CalculationView {
     }.getOrElse(Nil)
 
     val lines: List[List[String]] =
-      (("OutputPoint" :: a.outputPoint.name.getOrElse("unknown") :: Nil) ::
+      (("OutputPoint" :: a.outputPoint.name.getOrElse("unknown") :: a.outputPoint.unit.getOrElse("unknown") :: Nil) ::
         ("Endpoint" :: a.outputPoint.endpoint.name.getOrElse("unknown") :: Nil) ::
         ("Triggering" :: a.triggering.map { triggeringString(_) }.getOrElse("unknown") :: Nil) :: Nil) :::
         inputLines :::
