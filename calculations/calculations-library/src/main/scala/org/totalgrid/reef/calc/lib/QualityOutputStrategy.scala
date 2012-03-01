@@ -27,6 +27,13 @@ trait QualityOutputStrategy {
 
 object QualityOutputStrategy {
   def build(config: OutputQuality.Strategy) = config match {
+    case OutputQuality.Strategy.ALWAYS_OK => new AlwaysOk
     case _ => throw new Exception("Unknown quality output strategy")
+  }
+
+  class AlwaysOk extends QualityOutputStrategy {
+    def getQuality(inputs: Map[String, List[Measurement]]): Quality = {
+      Quality.newBuilder().setValidity(Quality.Validity.GOOD).setSource(Quality.Source.PROCESS).build()
+    }
   }
 }

@@ -25,8 +25,31 @@ trait TimeStrategy {
   def getTime(inputs: Map[String, List[Measurement]]): Long
 }
 
+/*
+message OutputTime{
+    enum Strategy{
+        MOST_RECENT     = 1;
+        AVERAGE_TIME    = 2;
+    }
+    optional Strategy strategy        = 1;
+}
+ */
+
 object TimeStrategy {
   def build(config: OutputTime.Strategy) = config match {
     case _ => throw new Exception("Unknown time strategy")
+  }
+
+  class MostRecent extends TimeStrategy {
+    def getTime(inputs: Map[String, List[Measurement]]): Long = {
+      val time = inputs.values.flatten.map(_.getTime).foldLeft(0L) {
+        case (l, r) => if (l >= r) l else r
+      }
+      if (time != 0) {
+        time
+      } else {
+        System.currentTimeMillis()
+      }
+    }
   }
 }
