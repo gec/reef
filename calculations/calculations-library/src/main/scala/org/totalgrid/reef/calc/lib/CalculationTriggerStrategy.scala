@@ -18,18 +18,17 @@
  */
 package org.totalgrid.reef.calc.lib
 
-import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import net.agileautomata.executor4s._
-
+import org.totalgrid.reef.client.service.proto.Calculations.{ TriggerStrategy, Calculation }
 
 sealed trait CalculationTriggerStrategy
 
-trait InitiatingTriggerStrategy extends Cancelable {
+trait InitiatingTriggerStrategy extends CalculationTriggerStrategy with Cancelable {
   def start(): Unit
 }
 
-trait EventedTriggerStrategy {
+trait EventedTriggerStrategy extends CalculationTriggerStrategy {
   def handle(m: Measurement)
 }
 
@@ -46,5 +45,18 @@ class IntervalTrigger(exe: Executor, interval: Long, handler: () => Unit) extend
 class AnyUpdateTrigger(handler: () => Unit) extends EventedTriggerStrategy {
   def handle(m: Measurement) {
     handler()
+  }
+}
+
+object CalculationTriggerStrategy {
+
+  def build(config: TriggerStrategy, exe: Executor, handler: () => Unit): CalculationTriggerStrategy = {
+    if (config.hasPeriodMs) {
+      new IntervalTrigger(exe, config.getPeriodMs, handler)
+    } else if (config.hasUpdateAny && config.getUpdateAny) {
+      new AnyUpdateTrigger(handler)
+    } else {
+      throw new Exception("Can't use trigger configuration: " + config)
+    }
   }
 }

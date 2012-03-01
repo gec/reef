@@ -20,41 +20,13 @@ package org.totalgrid.reef.calc.lib
 
 import eval.{ OperationParser, OperationSource }
 import org.totalgrid.reef.client.sapi.client.rest.Client
-import net.agileautomata.executor4s.Cancelable
-
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.client.service.proto.Calculations.{CalculationInput, InputQuality, Calculation}
+import org.totalgrid.reef.client.service.proto.Calculations.{ CalculationInput, InputQuality, Calculation }
+import net.agileautomata.executor4s.{ Executor, Cancelable }
+import scala.collection.JavaConversions._
+import org.totalgrid.reef.calc.lib.BasicCalculationFactory.MultiCancelable
 
-/*
-
-message Calculation{
-    optional org.totalgrid.reef.client.service.proto.Model.ReefUUID          uuid               = 9;
-    optional org.totalgrid.reef.client.service.proto.Model.Point             output_point       = 1;
-    optional bool              accumulate         = 2;
-
-    optional TriggerStrategy   triggering         = 3;
-    repeated CalculationInput  calc_inputs        = 4;
-
-    optional InputQuality      triggering_quality = 5;
-    optional OutputQuality     quality_output     = 6;
-    optional OutputTime        time_output        = 7;
-
-    optional string            formula            = 8;
-}
-
- */
-
-/*
-class CalculationEvaluator(formula: Expression,
-  operationSource: OperationSource,
-  inputData: InputDataSource,
-  qualInputStrategy: QualityInputStrategy,
-  qualOutputStrategy: QualityOutputStrategy,
-  timeStrategy: TimeStrategy,
-  publisher: OutputPublisher)
- */
-
-class BasicCalculationFactory(client: Client, operations: OperationSource) extends CalculationFactory {
+class BasicCalculationFactory(client: Client, exe: Executor, operations: OperationSource) extends CalculationFactory {
 
   def build(config: Calculation): Cancelable = {
 
@@ -73,20 +45,35 @@ class BasicCalculationFactory(client: Client, operations: OperationSource) exten
     val timeOutputStrat = config.timeOutput.strategy.map(TimeStrategy.build(_)).getOrElse {
       throw new Exception("Need time strategy in calculation config")
     }
-    
+
     val output = config.outputPoint.name.map(new MeasurementOutputPublisher(client, _)).getOrElse {
       throw new Exception("Must have output point name")
     }
 
-    null
+    val manager = new MeasInputManager
+
+    val evaluator = new CalculationEvaluator(operations, manager, expr, qualInputStrat, qualOutputStrat, timeOutputStrat, output)
+
+    val triggerStrat = config.triggering.map(CalculationTriggerStrategy.build(_, exe, evaluator.attempt)).getOrElse {
+      throw new Exception("Must have triggering config")
+    }
+
+    val (evented, initiating) = triggerStrat match {
+      case ev: EventedTriggerStrategy => (Some(ev), None)
+      case in: InitiatingTriggerStrategy => (None, Some(in))
+    }
+
+    manager.init(client, config.getCalcInputsList.toList, evented)
+
+    initiating.foreach(_.start())
+
+    new MultiCancelable(List(Some(manager), initiating).flatten)
   }
 }
 
-
-
-
-abstract class RunningCalculation extends Cancelable {
-  protected val calcTrigger: Cancelable
-  protected val inputManager: InputManager
+object BasicCalculationFactory {
+  class MultiCancelable(list: List[Cancelable]) extends Cancelable {
+    def cancel() { list.foreach(_.cancel()) }
+  }
 }
 
