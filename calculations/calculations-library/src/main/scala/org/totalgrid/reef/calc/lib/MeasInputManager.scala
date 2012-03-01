@@ -54,6 +54,8 @@ class MeasInputManager extends InputManager {
 
     val buckets = cfgs.map(_.bucket)
 
+    this.buckets = buckets
+
     val subscriptions = cfgs.map {
       case InputConfig(point, variable, req, buck) =>
         req match {
@@ -72,7 +74,12 @@ class MeasInputManager extends InputManager {
 
     }
 
-    this.buckets = buckets
+    /*
+    println("--------------")
+    println("Config: " + config)
+    println("Buckets " + buckets)
+    println("--------------") */
+
     this.subscriptions = subscriptions
     this.trigger = trigger
   }

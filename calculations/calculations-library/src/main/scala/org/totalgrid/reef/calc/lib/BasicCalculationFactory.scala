@@ -50,6 +50,7 @@ class BasicCalculationFactory(client: Client, operations: OperationSource) exten
       throw new Exception("Must have output point name")
     }
 
+    //println("=== Building " + name + " ===")
     val output = new MeasurementOutputPublisher(client, name)
 
     val manager = new MeasInputManager
