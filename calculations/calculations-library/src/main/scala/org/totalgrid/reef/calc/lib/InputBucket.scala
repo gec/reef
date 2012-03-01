@@ -69,10 +69,10 @@ object InputBucket {
     private val queue = new mutable.Queue[Measurement]()
 
     protected def prune() {
-      val horizon = System.currentTimeMillis() + from
+      /*val horizon = System.currentTimeMillis() + from
       while (queue.head.getTime < horizon) {
         queue.dequeue()
-      }
+      }*/
     }
     def onReceived(m: Measurement) = {
       queue.enqueue(m)
@@ -100,7 +100,7 @@ object InputBucket {
 
     def getSnapshot: List[Measurement] = queue.toList
 
-    def hasSufficient: Boolean = { queue.size == limit }
+    def hasSufficient: Boolean = { queue.size > 0 }
   }
 
   class SingleLatestBucket(val variable: String) extends InputBucket {

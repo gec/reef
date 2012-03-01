@@ -56,7 +56,8 @@ object CalculationTriggerStrategy {
     } else if (config.hasUpdateAny && config.getUpdateAny) {
       new AnyUpdateTrigger(handler)
     } else {
-      throw new Exception("Can't use trigger configuration: " + config)
+      new AnyUpdateTrigger(handler)
+      //throw new Exception("Can't use trigger configuration: " + config)
     }
   }
 }

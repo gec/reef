@@ -37,7 +37,8 @@ message OutputTime{
 
 object TimeStrategy {
   def build(config: OutputTime.Strategy) = config match {
-    case _ => throw new Exception("Unknown time strategy")
+    case _ => new MostRecent
+    //case _ => throw new Exception("Unknown time strategy")
   }
 
   class MostRecent extends TimeStrategy {

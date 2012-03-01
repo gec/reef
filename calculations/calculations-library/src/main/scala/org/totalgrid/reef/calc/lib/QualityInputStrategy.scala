@@ -29,8 +29,9 @@ trait QualityInputStrategy {
 object QualityInputStrategy {
 
   def build(config: InputQuality.Strategy): QualityInputStrategy = config match {
-    case InputQuality.Strategy.ONLY_WHEN_ALL_OK => new WhenAllOk
-    case _ => throw new Exception("Unknown quality input strategy")
+    case _ => new WhenAllOk
+    //case InputQuality.Strategy.ONLY_WHEN_ALL_OK => new WhenAllOk
+    //case _ => throw new Exception("Unknown quality input strategy")
   }
 
   class WhenAllOk extends QualityInputStrategy {

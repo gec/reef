@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 class MappedVariableSource(map: Map[String, OperationValue]) extends VariableSource {
   def forName(name: String): OperationValue = {
     map.get(name).getOrElse {
-      throw new EvalException("Variable does not exist: " + name)
+      throw new EvalException("Variable does not exist: " + name + " " + map)
     }
   }
 }

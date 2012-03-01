@@ -21,7 +21,8 @@ package org.totalgrid.reef.calc.lib
 import com.weiglewilczek.slf4s.Logging
 import eval.{ EvalException, OperationSource, Expression }
 
-class CalculationEvaluator(operationSource: OperationSource,
+class CalculationEvaluator(name: String,
+  operationSource: OperationSource,
   inputData: InputDataSource,
   formula: Expression,
   qualInputStrategy: QualityInputStrategy,
@@ -33,6 +34,7 @@ class CalculationEvaluator(operationSource: OperationSource,
   def attempt() {
 
     if (inputData.hasSufficient) {
+
       qualInputStrategy.checkInputs(inputData.getSnapshot).foreach { inputs =>
 
         try {
@@ -50,7 +52,7 @@ class CalculationEvaluator(operationSource: OperationSource,
           publisher.publishMeasurement(outMeas)
 
         } catch {
-          case ev: EvalException => logger.error("Evaluation error: " + ev.getMessage)
+          case ev: EvalException => logger.error("Calc: " + name + " evaluation error: " + ev.getMessage + " " + inputs + " " + inputData.getSnapshot)
         }
       }
     }

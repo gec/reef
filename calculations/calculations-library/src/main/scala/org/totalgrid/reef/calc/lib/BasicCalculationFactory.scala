@@ -46,13 +46,15 @@ class BasicCalculationFactory(client: Client, operations: OperationSource) exten
       throw new Exception("Need time strategy in calculation config")
     }
 
-    val output = config.outputPoint.name.map(new MeasurementOutputPublisher(client, _)).getOrElse {
+    val name = config.outputPoint.name.getOrElse {
       throw new Exception("Must have output point name")
     }
 
+    val output = new MeasurementOutputPublisher(client, name)
+
     val manager = new MeasInputManager
 
-    val evaluator = new CalculationEvaluator(operations, manager, expr, qualInputStrat, qualOutputStrat, timeOutputStrat, output)
+    val evaluator = new CalculationEvaluator(name, operations, manager, expr, qualInputStrat, qualOutputStrat, timeOutputStrat, output)
 
     val triggerStrat = config.triggering.map(CalculationTriggerStrategy.build(_, client, evaluator.attempt)).getOrElse {
       throw new Exception("Must have triggering config")
