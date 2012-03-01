@@ -162,8 +162,6 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									<features>
 										<feature>reef-system-preload</feature>
 									</features>
-                                    <!-- intentionally wrong to stop including enterprise descriptors -->
-                                    <karafVersion>9.9.9</karafVersion>
 									<includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
 									<repository>target/system-repo</repository>
 								</configuration>
@@ -184,9 +182,8 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									<features>
 										<feature>reef</feature>
 										<feature>reef-dnp3</feature>
+                                        <feature>reef-http-bridge</feature>
 									</features>
-                                    <!-- intentionally wrong to stop including enterprise descriptors -->
-                                    <karafVersion>9.9.9</karafVersion>
 									<includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
 									<repository>target/reef-repo</repository>
 								</configuration>
@@ -340,8 +337,6 @@ jars embedded and the "lean" developer build that goes to maven for those files 
 									<features>
 										<feature>reef-system-preload</feature>
 									</features>
-                                    <!-- intentionally wrong to stop including enterprise descriptors -->
-                                    <karafVersion>9.9.9</karafVersion>
 									<includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
 									<repository>target/system-repo</repository>
 								</configuration>

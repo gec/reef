@@ -47,13 +47,15 @@
             <directory>target/reef-repo</directory>
             <outputDirectory>system</outputDirectory>
             <excludes>
-                <exclude>org/apache/karaf/assemblies/features/enterprise/${karaf.version}/enterprise-${karaf.version}-features.xml</exclude>
-                <exclude>org/apache/karaf/assemblies/features/standard/${karaf.version}/standard-${karaf.version}-features.xml</exclude>
+                <exclude>org/apache/karaf/**/*</exclude>
             </excludes>
         </fileSet>
         <fileSet>
             <directory>target/system-repo</directory>
             <outputDirectory>system</outputDirectory>
+            <excludes>
+                <exclude>org/apache/karaf/**/*</exclude>
+            </excludes>
         </fileSet>
 
         <fileSet>

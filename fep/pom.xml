@@ -85,7 +85,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-            <version>1.4.0</version>
+            <version>${felix-core.version}</version>
         </dependency>
     </dependencies>
 </project>

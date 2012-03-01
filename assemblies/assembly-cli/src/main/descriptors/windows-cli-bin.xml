@@ -45,10 +45,16 @@
         <fileSet>
             <directory>target/reef-cli-repo</directory>
             <outputDirectory>system</outputDirectory>
+            <excludes>
+                <exclude>org/apache/karaf/**/*</exclude>
+            </excludes>
         </fileSet>
         <fileSet>
             <directory>target/system-repo</directory>
             <outputDirectory>system</outputDirectory>
+            <excludes>
+                <exclude>org/apache/karaf/**/*</exclude>
+            </excludes>
         </fileSet>
 
         <fileSet>
