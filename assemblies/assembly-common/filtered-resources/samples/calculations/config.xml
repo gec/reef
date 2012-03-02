@@ -37,7 +37,8 @@
                                 <calc:timeRange from="-300000"/>
                             </calc:multi>
                         </calc:inputs>
-                        <calc:formula>INTEGRATE(A) * 0.0001</calc:formula>
+                        <!--<calc:formula>INTEGRATE(A) * 0.0001</calc:formula>-->
+                        <calc:formula>SUM(A)</calc:formula>
                         <calc:output accumulate="true" />
                     </calc:calculation>
                 </equip:analog>
@@ -75,7 +76,8 @@
                                 <calc:timeRange from="-300000"/>
                             </calc:multi>
                         </calc:inputs>
-                        <calc:formula>INTEGRATE(A) * 0.0001</calc:formula>
+                        <!--<calc:formula>INTEGRATE(A) * 0.0001</calc:formula>-->
+                        <calc:formula>SUM(A)</calc:formula>
                         <calc:output accumulate="true" />
                     </calc:calculation>
                 </equip:analog>
@@ -109,7 +111,7 @@
                         <calc:single pointName="Microgrid1.StoredEnergy" variable="A" addParentNames="false"/>
                         <calc:single pointName="Microgrid2.StoredEnergy" variable="B" addParentNames="false"/>
                     </calc:inputs>
-                    <calc:formula>AVERAGE(A,B)</calc:formula>
+                    <calc:formula>AVG(A,B)</calc:formula>
                 </calc:calculation>
             </equip:analog>
 
@@ -120,7 +122,8 @@
                         <calc:single pointName="Microgrid2.Controllable" variable="B" addParentNames="false"/>
                     </calc:inputs>
                     <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
-                    <calc:formula>COUNT(A,B,true)</calc:formula>
+                    <!--<calc:formula>COUNT(A,B,true)</calc:formula>-->
+                    <calc:formula>A+B</calc:formula>
                     <calc:output>
                         <calc:outputQuality strategy="ALWAYS_OK" />
                     </calc:output>
@@ -133,7 +136,8 @@
                         <calc:single pointName="Microgrid1.Controllable" variable="A" addParentNames="false"/>
                         <calc:single pointName="Microgrid2.Controllable" variable="B" addParentNames="false"/>
                     </calc:inputs>
-                    <calc:formula>AND(A,B)</calc:formula>
+                    <!--<calc:formula>AND(A,B)</calc:formula>-->
+                    <calc:formula>A+B</calc:formula>
                 </calc:calculation>
             </equip:status>
         </equip:equipment>
@@ -146,7 +150,7 @@
              and verify that the bad qualities are correctly propagated through the calculations -->
         <comm:endpoint name="CurrentInputSimulator">
             <comm:protocol name="benchmark">
-                <comm:simOptions delay="100"/>
+                <comm:simOptions delay="1000"/>
             </comm:protocol>
 
             <comm:equipment name="" addParentNames="false">
@@ -157,7 +161,7 @@
 
         <comm:endpoint name="VoltageInputSimulator">
             <comm:protocol name="benchmark">
-                <comm:simOptions delay="200"/>
+                <comm:simOptions delay="2000"/>
             </comm:protocol>
 
             <comm:equipment name="" addParentNames="false">
@@ -168,7 +172,7 @@
 
         <comm:endpoint name="CurrentOutputSimulator">
             <comm:protocol name="benchmark">
-                <comm:simOptions delay="300"/>
+                <comm:simOptions delay="3000"/>
             </comm:protocol>
 
             <comm:equipment name="" addParentNames="false">
@@ -179,7 +183,7 @@
 
         <comm:endpoint name="VoltageOutputSimulator">
             <comm:protocol name="benchmark">
-                <comm:simOptions delay="400"/>
+                <comm:simOptions delay="4000"/>
             </comm:protocol>
 
             <comm:equipment name="" addParentNames="false">
@@ -190,7 +194,7 @@
 
         <comm:endpoint name="ControllableSimulator">
             <comm:protocol name="benchmark">
-                <comm:simOptions delay="500"/>
+                <comm:simOptions delay="5000"/>
             </comm:protocol>
 
             <comm:equipment name="" addParentNames="false">
