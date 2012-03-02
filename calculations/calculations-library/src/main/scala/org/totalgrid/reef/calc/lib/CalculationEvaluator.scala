@@ -34,7 +34,6 @@ class CalculationEvaluator(name: String,
   def attempt() {
 
     if (inputData.hasSufficient) {
-
       qualInputStrategy.checkInputs(inputData.getSnapshot).foreach { inputs =>
 
         try {

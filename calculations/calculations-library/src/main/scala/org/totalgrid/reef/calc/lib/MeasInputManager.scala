@@ -71,14 +71,7 @@ class MeasInputManager extends InputManager {
             handleSubResult(srv.subscribeToMeasurementHistoryByName(point, count).await, buck)
           }
         }
-
     }
-
-    /*
-    println("--------------")
-    println("Config: " + config)
-    println("Buckets " + buckets)
-    println("--------------") */
 
     this.subscriptions = subscriptions
     this.trigger = trigger
