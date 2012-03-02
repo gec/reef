@@ -18,21 +18,18 @@
  */
 package org.totalgrid.reef.calc.protocol
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext }
 import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.calc.lib.BasicCalculationFactory
-import org.totalgrid.reef.calc.lib.eval.BasicOperations
+import org.totalgrid.reef.calc.lib.CalculationFactory
 
 // implicitly synchronized since the subscription events come in on only a single strand
-class CalculationManager(rootClient: Client)
+class CalculationManager(factory: CalculationFactory)
     extends SubscriptionHandlerBase[Calculation] with ServiceContext[Calculation] with Logging {
 
-  var calcs = Map.empty[ReefUUID, Cancelable]
-  val factory = new BasicCalculationFactory(rootClient, BasicOperations.getSource)
+  private var calcs = Map.empty[ReefUUID, Cancelable]
 
   def add(obj: Calculation) = {
     logger.info("Adding calculation for point: " + obj.getOutputPoint.getName)

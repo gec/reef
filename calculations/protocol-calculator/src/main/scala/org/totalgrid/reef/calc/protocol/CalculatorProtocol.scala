@@ -25,9 +25,14 @@ import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection }
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.protocol.api.{ NullCommandHandler, ChannelIgnoringProtocol, Publisher }
+import org.totalgrid.reef.metrics.MetricsSink
+import org.totalgrid.reef.calc.lib.{ BasicCalculationFactory, CalculationMetricsSource }
+import org.totalgrid.reef.calc.lib.eval.BasicOperations
 
 class CalculatorProtocol extends ChannelIgnoringProtocol {
   def name = "calculator"
+
+  val metrics = MetricsSink.getInstance("calculator")
 
   var managers = Map.empty[String, (Cancelable, Publisher[EndpointConnection.State])]
 
@@ -39,7 +44,11 @@ class CalculatorProtocol extends ChannelIgnoringProtocol {
 
     val service = client.getRpcInterface(classOf[AllScadaService])
 
-    val manager = new CalculationManager(client)
+    val metricsPublisher = new CalculationMetricsSource(metrics.getStore(endpointName), true)
+
+    val factory = new BasicCalculationFactory(client, BasicOperations.getSource, metricsPublisher)
+
+    val manager = new CalculationManager(factory)
 
     managers += endpointName -> (manager, endpointPublisher)
 

@@ -26,7 +26,7 @@ import net.agileautomata.executor4s.{ Cancelable }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.calc.lib.BasicCalculationFactory.MultiCancelable
 
-class BasicCalculationFactory(client: Client, operations: OperationSource) extends CalculationFactory {
+class BasicCalculationFactory(client: Client, operations: OperationSource, metricsSource: CalculationMetricsSource) extends CalculationFactory {
 
   def build(config: Calculation): Cancelable = {
 
@@ -56,11 +56,13 @@ class BasicCalculationFactory(client: Client, operations: OperationSource) exten
 
     val manager = new MeasInputManager
 
+    val metrics = metricsSource.getCalcMetrics(name)
+
     val formula = Formula(expr, operations)
 
     val components = CalculationComponents(formula, qualInputStrat, qualOutputStrat, timeOutputStrat, measSettings)
 
-    val evaluator = new CalculationEvaluator(name, manager, output, components)
+    val evaluator = new CalculationEvaluator(name, manager, output, components, metrics)
 
     val triggerStrat = config.triggering.map(CalculationTriggerStrategy.build(_, client, evaluator.attempt)).getOrElse {
       throw new Exception("Must have triggering config")

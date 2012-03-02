@@ -19,7 +19,8 @@
 package org.totalgrid.reef.calc.lib
 
 import com.weiglewilczek.slf4s.Logging
-import eval.{ EvalException }
+import org.totalgrid.reef.calc.lib.eval.{ EvalException }
+import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 case class CalculationComponents(formula: Formula,
   qualInputStrategy: QualityInputStrategy,
@@ -30,33 +31,47 @@ case class CalculationComponents(formula: Formula,
 class CalculationEvaluator(name: String,
   inputData: InputDataSource,
   publisher: OutputPublisher,
-  components: CalculationComponents)
+  components: CalculationComponents,
+  metrics: CalculationMetrics)
     extends Logging {
 
   def attempt() {
     import components._
 
+    metrics.attempts(1)
+
     inputData.getSnapshot.flatMap(qualInputStrategy.checkInputs(_)).foreach { inputs =>
+      metrics.evals(1)
+      metrics.evalTime {
+        try {
+          val m = attemptCalculation(inputs)
 
-      try {
-        val source = MappedVariableSource(inputs)
+          publisher.publish(m)
 
-        val result = formula.evaluate(source)
+        } catch {
 
-        val qual = qualOutputStrategy.getQuality(inputs)
-        val time = timeStrategy.getTime(inputs)
-
-        val outMeas = MeasurementConverter.convertOperationValue(result)
-          .setQuality(qual)
-          .setTime(time)
-
-        val m = measSettings.set(outMeas).build
-
-        publisher.publish(m)
-
-      } catch {
-        case ev: EvalException => logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)
+          case ev: EvalException =>
+            metrics.errors(1)
+            logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)
+        }
       }
     }
+
+  }
+
+  def attemptCalculation(inputs: Map[String, List[Measurement]]): Measurement = {
+    import components._
+    val source = MappedVariableSource(inputs)
+
+    val result = formula.evaluate(source)
+
+    val qual = qualOutputStrategy.getQuality(inputs)
+    val time = timeStrategy.getTime(inputs)
+
+    val outMeas = MeasurementConverter.convertOperationValue(result)
+      .setQuality(qual)
+      .setTime(time)
+
+    measSettings.set(outMeas).build
   }
 }
