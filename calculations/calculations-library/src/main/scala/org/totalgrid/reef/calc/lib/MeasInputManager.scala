@@ -77,11 +77,15 @@ class MeasInputManager extends InputManager {
     this.trigger = trigger
   }
 
-  def getSnapshot: Map[String, List[Measurement]] = {
-    buckets.map(b => (b.variable, b.getSnapshot)).toMap
+  def getSnapshot: Option[Map[String, List[Measurement]]] = {
+    if (hasSufficient) {
+      Some(buckets.map(b => (b.variable, b.getSnapshot)).toMap)
+    } else {
+      None
+    }
   }
 
-  def hasSufficient: Boolean = {
+  protected def hasSufficient: Boolean = {
     buckets.forall(_.hasSufficient)
   }
 

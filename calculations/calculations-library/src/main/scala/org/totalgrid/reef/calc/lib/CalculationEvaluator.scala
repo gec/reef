@@ -36,28 +36,26 @@ class CalculationEvaluator(name: String,
   def attempt() {
     import components._
 
-    if (inputData.hasSufficient) {
-      qualInputStrategy.checkInputs(inputData.getSnapshot).foreach { inputs =>
+    inputData.getSnapshot.flatMap(qualInputStrategy.checkInputs(_)).foreach { inputs =>
 
-        try {
-          val source = MappedVariableSource(inputs)
+      try {
+        val source = MappedVariableSource(inputs)
 
-          val result = formula.evaluate(source)
+        val result = formula.evaluate(source)
 
-          val qual = qualOutputStrategy.getQuality(inputs)
-          val time = timeStrategy.getTime(inputs)
+        val qual = qualOutputStrategy.getQuality(inputs)
+        val time = timeStrategy.getTime(inputs)
 
-          val outMeas = MeasurementConverter.convertOperationValue(result)
-            .setQuality(qual)
-            .setTime(time)
+        val outMeas = MeasurementConverter.convertOperationValue(result)
+          .setQuality(qual)
+          .setTime(time)
 
-          val m = measSettings.set(outMeas).build
+        val m = measSettings.set(outMeas).build
 
-          publisher.publish(m)
+        publisher.publish(m)
 
-        } catch {
-          case ev: EvalException => logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)
-        }
+      } catch {
+        case ev: EvalException => logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)
       }
     }
   }

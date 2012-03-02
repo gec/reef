@@ -21,7 +21,5 @@ package org.totalgrid.reef.calc.lib
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 trait InputDataSource {
-  def getSnapshot: Map[String, List[Measurement]]
-
-  def hasSufficient: Boolean
+  def getSnapshot: Option[Map[String, List[Measurement]]]
 }
