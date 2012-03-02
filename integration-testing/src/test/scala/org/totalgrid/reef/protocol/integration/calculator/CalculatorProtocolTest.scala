@@ -71,7 +71,7 @@ class CalculatorProtocolTest extends ServiceClientSuite {
     meas.build
   }
 
-  ignore("Test A * B") {
+  test("Test A * B") {
 
     val current = services.getPointByName("Microgrid1.Output.Current").await
     val voltage = services.getPointByName("Microgrid1.Output.Voltage").await
@@ -86,16 +86,16 @@ class CalculatorProtocolTest extends ServiceClientSuite {
 
     val outTime = System.currentTimeMillis()
 
-    case class TestParams(current: Int, voltage: Int, output: Int, time: Long)
+    case class TestParams(current: Int, voltage: Int, output: Double, time: Long)
     val parameters = List(
-      TestParams(10, 5, 8 * 10, outTime), TestParams(9, -6, -6 * 9, outTime + 5))
+      TestParams(10, 5, 5 * 10.0, outTime), TestParams(9, -6, -6 * 9.0, outTime + 5))
 
     parameters.foreach { p =>
 
       services.setPointOverride(current, makeMeas("Microgrid1.Output.Current", p.time - 10, p.current)).await
       services.setPointOverride(voltage, makeMeas("Microgrid1.Output.Voltage", p.time, p.voltage)).await
 
-      meas.shouldHaveValueAndTime(p.output, p.time) within 500
+      meas.shouldHaveValue(p.output) within 500
     }
   }
 
@@ -125,6 +125,16 @@ class CalculatorProtocolTest extends ServiceClientSuite {
         def evaluate(success: Boolean, last: Measurement, timeout: Long) =
           if (!success) throw new Exception("Expected time: " + time + " value: " + value + " within " + timeout + " ms but final value was " + last)
         new Become(m => m.getIntVal == value && m.getTime == time)(evaluate)
+      }
+      def shouldHaveValue(value: Int) = {
+        def evaluate(success: Boolean, last: Measurement, timeout: Long) =
+          if (!success) throw new Exception("Expected value: " + value + " within " + timeout + " ms but final value was " + last)
+        new Become(m => m.getIntVal == value)(evaluate)
+      }
+      def shouldHaveValue(value: Double) = {
+        def evaluate(success: Boolean, last: Measurement, timeout: Long) =
+          if (!success) throw new Exception("Expected value: " + value + " within " + timeout + " ms but final value was " + last)
+        new Become(m => m.getDoubleVal == value)(evaluate)
       }
     }
     subResult.getSubscription.start(new SubscriptionEventAcceptor[Measurement] {
