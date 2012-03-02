@@ -20,14 +20,14 @@ package org.totalgrid.reef.calc.protocol
 
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.service.proto.Model.ConfigFile
-import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement, MeasurementBatch }
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection }
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.protocol.api.{ NullCommandHandler, ChannelIgnoringProtocol, Publisher }
 import org.totalgrid.reef.metrics.MetricsSink
-import org.totalgrid.reef.calc.lib.{ BasicCalculationFactory, CalculationMetricsSource }
 import org.totalgrid.reef.calc.lib.eval.BasicOperations
+import org.totalgrid.reef.calc.lib._
 
 class CalculatorProtocol extends ChannelIgnoringProtocol {
   def name = "calculator"
@@ -46,7 +46,14 @@ class CalculatorProtocol extends ChannelIgnoringProtocol {
 
     val metricsPublisher = new CalculationMetricsSource(metrics.getStore(endpointName), true)
 
-    val factory = new BasicCalculationFactory(client, BasicOperations.getSource, metricsPublisher)
+    val measPublisher = new OutputPublisher {
+      def publish(m: Measurement) = {
+        val batch = MeasurementBatch.newBuilder.setWallTime(System.currentTimeMillis).addMeas(m).build
+        batchPublisher.publish(batch)
+      }
+    }
+
+    val factory = new BasicCalculationFactory(client, BasicOperations.getSource, metricsPublisher, measPublisher)
 
     val manager = new CalculationManager(factory)
 

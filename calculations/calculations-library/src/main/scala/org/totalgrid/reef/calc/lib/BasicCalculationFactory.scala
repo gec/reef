@@ -26,9 +26,11 @@ import net.agileautomata.executor4s.{ Cancelable }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.calc.lib.BasicCalculationFactory.MultiCancelable
 
-class BasicCalculationFactory(client: Client, operations: OperationSource, metricsSource: CalculationMetricsSource) extends CalculationFactory {
+class BasicCalculationFactory(rootClient: Client, operations: OperationSource, metricsSource: CalculationMetricsSource, output: OutputPublisher) extends CalculationFactory {
 
   def build(config: Calculation): Cancelable = {
+
+    val client = rootClient.spawn()
 
     val expr = config.formula.map(OperationParser.parseFormula(_)).getOrElse {
       throw new Exception("Need formula in calculation config")
@@ -51,8 +53,6 @@ class BasicCalculationFactory(client: Client, operations: OperationSource, metri
     }
 
     val measSettings = MeasurementSettings(name, config.outputPoint.unit)
-
-    val output = new MeasurementOutputPublisher(client)
 
     val manager = new MeasInputManager
 
