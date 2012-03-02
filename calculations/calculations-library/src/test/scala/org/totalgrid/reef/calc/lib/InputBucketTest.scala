@@ -28,28 +28,96 @@ import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measureme
 class InputBucketTest extends FunSuite with ShouldMatchers {
   import InputBucket._
 
-  def makeTraceMeas(v: Int) = {
-    Measurement.newBuilder()
-      .setName("test01")
-      .setType(Measurement.Type.INT)
-      .setIntVal(v)
-      .setQuality(Quality.newBuilder)
-      .setUnit("u")
-      .build
-  }
+  import CalcLibTestHelpers._
 
   test("SinceLastBucket") {
     val buck = new SingleLatestBucket("test01")
-    buck.hasSufficient should equal(false)
+    buck.getSnapshot should equal(None)
 
     val first = makeTraceMeas(1)
     buck.onReceived(first)
-    buck.getSnapshot should equal(List(first))
-    buck.hasSufficient should equal(true)
+    buck.getSnapshot should equal(Some(List(first)))
 
     val second = makeTraceMeas(2)
     buck.onReceived(second)
-    buck.getSnapshot should equal(List(second))
-    buck.hasSufficient should equal(true)
+    buck.getSnapshot should equal(Some(List(second)))
+  }
+
+  test("Limit Bucket for last two values") {
+    val buck = new LimitRangeBucket("test01", 2, 2)
+    buck.getSnapshot should equal(None)
+
+    val first = makeTraceMeas(1)
+    buck.onReceived(first)
+    buck.getSnapshot should equal(None)
+
+    val second = makeTraceMeas(2)
+    buck.onReceived(second)
+    buck.getSnapshot should equal(Some(List(first, second)))
+
+    val third = makeTraceMeas(3)
+    buck.onReceived(third)
+    buck.getSnapshot should equal(Some(List(second, third)))
+  }
+
+  test("Limit Bucket with upto 100 values") {
+    val buck = new LimitRangeBucket("test01", 100)
+    buck.getSnapshot should equal(None)
+
+    val values = (0 to 199).map { i => makeTraceMeas(i) }
+
+    (0 to 99).foreach { i =>
+      buck.onReceived(values(i))
+      buck.getSnapshot should equal(Some(values.slice(0, i + 1)))
+    }
+    (100 to 199).foreach { i =>
+      buck.onReceived(values(i))
+      buck.getSnapshot should equal(Some(values.slice(i - 99, i + 1)))
+    }
+  }
+
+  test("Time Bucket with upto 100 values") {
+    val timeSource = new MockTimeSource(0)
+    val buck = new FromRangeBucket(timeSource, "test01", -1000, 100)
+    buck.getSnapshot should equal(None)
+
+    val values = (0 to 199).map { i => makeTraceMeas(i, 0) }
+
+    (0 to 99).foreach { i =>
+      buck.onReceived(values(i))
+      buck.getSnapshot should equal(Some(values.slice(0, i + 1)))
+    }
+    (100 to 199).foreach { i =>
+      buck.onReceived(values(i))
+      buck.getSnapshot should equal(Some(values.slice(i - 99, i + 1)))
+    }
+  }
+
+  test("Time Bucket with expiring measurements") {
+    val timeSource = new MockTimeSource(0)
+    val buck = new FromRangeBucket(timeSource, "test01", -100, 10000)
+    buck.getSnapshot should equal(None)
+
+    val values = (0 to 199).map { i => makeTraceMeas(i, i) }
+
+    (0 to 99).foreach { i =>
+      timeSource.time = i
+      buck.onReceived(values(i))
+      buck.getSnapshot should equal(Some(values.slice(0, i + 1)))
+    }
+    (100 to 199).foreach { i =>
+      timeSource.time = i
+      buck.onReceived(values(i))
+      buck.getSnapshot should equal(Some(values.slice(i - 99, i + 1)))
+    }
+
+    timeSource.time = 250
+    buck.getSnapshot should equal(Some(values.slice(151, 200)))
+
+    timeSource.time = 298
+    buck.getSnapshot should equal(Some(values.slice(199, 200)))
+
+    timeSource.time = 299
+    buck.getSnapshot should equal(None)
   }
 }

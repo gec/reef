@@ -31,9 +31,7 @@ trait MeasBucket {
 trait InputBucket extends MeasBucket {
   def variable: String
 
-  def getSnapshot: List[Measurement]
-
-  def hasSufficient: Boolean
+  def getSnapshot: Option[List[Measurement]]
 }
 
 object InputBucket {
@@ -42,7 +40,7 @@ object InputBucket {
 
   sealed trait MeasRequest
   case object SingleLatest extends MeasRequest
-  case class MultiSince(from: Long) extends MeasRequest
+  case class MultiSince(from: Long, limit: Int) extends MeasRequest
   case class MultiLimit(count: Int) extends MeasRequest
 
   def build(calc: CalculationInput): InputConfig = {
@@ -51,44 +49,53 @@ object InputBucket {
 
     val variable = calc.variableName.getOrElse { throw new Exception("Must have input variable name") }
 
+    // hold the last 100 measurements unless configured otherwise
+    val limit = calc.range.limit.getOrElse(100)
+
+    if (limit > 10000) throw new Exception("Limit is larger than 10000 max: " + limit)
+
     val (request: MeasRequest, bucket: InputBucket) = calc.single.strategy.map {
       case MeasurementStrategy.MOST_RECENT => (SingleLatest, new SingleLatestBucket(variable))
       case x => throw new Exception("Uknown single measurement strategy: " + x)
     } orElse {
-      calc.range.limit.map(lim => (MultiLimit(lim), new LimitRangeBucket(variable, lim)))
+      calc.range.fromMs.map(from => (MultiSince(from, limit), new FromRangeBucket(SystemTimeSource, variable, from, limit)))
     } orElse {
-      calc.range.fromMs.map(from => (MultiSince(from), new FromRangeBucket(variable, from)))
+      calc.range.limit.map(lim => (MultiLimit(limit), new LimitRangeBucket(variable, limit)))
     } getOrElse {
-      throw new Exception("Cannot build input from configuration: " + pointName + " " + variable)
+      throw new Exception("Cannot build input from configuration: " + pointName + " " + variable + " config: " + calc)
     }
 
     InputConfig(pointName, variable, request, bucket)
   }
 
-  class FromRangeBucket(val variable: String, from: Long) extends InputBucket {
+  class FromRangeBucket(timeSource: TimeSource, val variable: String, from: Long, limit: Int, minimum: Int = 1) extends InputBucket {
     private val queue = new mutable.Queue[Measurement]()
 
     protected def prune() {
-      /*val horizon = System.currentTimeMillis() + from
-      while (queue.head.getTime < horizon) {
+      val horizon = timeSource.now + from
+      while (queue.headOption.map { _.getTime <= horizon }.getOrElse(false)) {
+        val m = queue.dequeue()
+      }
+
+      while (queue.size > limit) {
         queue.dequeue()
-      }*/
+      }
     }
+
     def onReceived(m: Measurement) = {
       queue.enqueue(m)
       prune()
     }
-    def getSnapshot: List[Measurement] = {
+
+    def getSnapshot = {
+      // we may need to throw out old measurements before returning snapshot
       prune()
-      queue.toList
-    }
-    def hasSufficient: Boolean = {
-      prune()
-      queue.size > 0
+      if (queue.size >= minimum) Some(queue.toList)
+      else None
     }
   }
 
-  class LimitRangeBucket(val variable: String, limit: Int) extends InputBucket {
+  class LimitRangeBucket(val variable: String, limit: Int, minimum: Int = 1) extends InputBucket {
     private val queue = new mutable.Queue[Measurement]()
 
     def onReceived(m: Measurement) {
@@ -98,9 +105,7 @@ object InputBucket {
       }
     }
 
-    def getSnapshot: List[Measurement] = queue.toList
-
-    def hasSufficient: Boolean = { queue.size > 0 }
+    def getSnapshot = if (queue.size >= minimum) Some(queue.toList) else None
   }
 
   class SingleLatestBucket(val variable: String) extends InputBucket {
@@ -111,9 +116,7 @@ object InputBucket {
       meas = Some(m)
     }
 
-    def getSnapshot: List[Measurement] = meas.toList
-
-    def hasSufficient: Boolean = meas.isDefined
+    def getSnapshot = if (meas.isDefined) Some(meas.toList) else None
   }
 }
 

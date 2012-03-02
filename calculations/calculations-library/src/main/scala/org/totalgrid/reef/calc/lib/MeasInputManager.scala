@@ -24,6 +24,25 @@ import org.totalgrid.reef.client.{ Subscription, SubscriptionResult, Subscriptio
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.Calculations.CalculationInput
 
+object MeasInputManager {
+  /**
+   * go through the list of buckets and return a map of tall the snapshot values iff they are all valid
+   */
+  def getSnapshot(buckets: List[InputBucket]): Option[Map[String, List[Measurement]]] = {
+    // we use foldLeft instead of map for efficiency so we can short circuit eval after first None
+    buckets.foldLeft[Option[Map[String, List[Measurement]]]](Some(Map.empty[String, List[Measurement]])) { (m, b) =>
+      m match {
+        case Some(map) =>
+          b.getSnapshot match {
+            case Some(data) => Some(map + (b.variable -> data))
+            case None => None
+          }
+        case None => None
+      }
+    }
+  }
+}
+
 class MeasInputManager extends InputManager {
 
   private var buckets: List[InputBucket] = Nil
@@ -62,10 +81,10 @@ class MeasInputManager extends InputManager {
           case SingleLatest => {
             handleSubResult(srv.subscribeToMeasurementsByNames(List(point)).await, buck)
           }
-          case MultiSince(from) => {
+          case MultiSince(from, limit) => {
             // TODO: meaningful limit, standardize calculating relative time => absolute
             val time = System.currentTimeMillis() + from
-            handleSubResult(srv.subscribeToMeasurementHistoryByName(point, time, 100).await, buck)
+            handleSubResult(srv.subscribeToMeasurementHistoryByName(point, time, limit).await, buck)
           }
           case MultiLimit(count) => {
             handleSubResult(srv.subscribeToMeasurementHistoryByName(point, count).await, buck)
@@ -78,15 +97,7 @@ class MeasInputManager extends InputManager {
   }
 
   def getSnapshot: Option[Map[String, List[Measurement]]] = {
-    if (hasSufficient) {
-      Some(buckets.map(b => (b.variable, b.getSnapshot)).toMap)
-    } else {
-      None
-    }
-  }
-
-  protected def hasSufficient: Boolean = {
-    buckets.forall(_.hasSufficient)
+    MeasInputManager.getSnapshot(buckets)
   }
 
   def cancel() {
