@@ -52,7 +52,7 @@ class CalculationEvaluator(name: String,
           publisher.publishMeasurement(outMeas)
 
         } catch {
-          case ev: EvalException => logger.error("Calc: " + name + " evaluation error: " + ev.getMessage + " " + inputs + " " + inputData.getSnapshot)
+          case ev: EvalException => logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)
         }
       }
     }

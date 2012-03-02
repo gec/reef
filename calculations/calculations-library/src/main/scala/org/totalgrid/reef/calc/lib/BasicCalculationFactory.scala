@@ -51,7 +51,7 @@ class BasicCalculationFactory(client: Client, operations: OperationSource) exten
     }
 
     //println("=== Building " + name + " ===")
-    val output = new MeasurementOutputPublisher(client, name)
+    val output = new MeasurementOutputPublisher(client, name, config.outputPoint.unit)
 
     val manager = new MeasInputManager
 
