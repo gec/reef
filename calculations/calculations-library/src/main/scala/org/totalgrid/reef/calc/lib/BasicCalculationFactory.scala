@@ -21,7 +21,7 @@ package org.totalgrid.reef.calc.lib
 import eval.{ OperationParser, OperationSource }
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.client.service.proto.Calculations.{ CalculationInput, InputQuality, Calculation }
+import org.totalgrid.reef.client.service.proto.Calculations.{ Calculation }
 import net.agileautomata.executor4s.{ Cancelable }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.calc.lib.BasicCalculationFactory.MultiCancelable
@@ -58,7 +58,9 @@ class BasicCalculationFactory(client: Client, operations: OperationSource) exten
 
     val formula = Formula(expr, operations)
 
-    val evaluator = new CalculationEvaluator(name, manager, formula, qualInputStrat, qualOutputStrat, timeOutputStrat, measSettings, output)
+    val components = CalculationComponents(formula, qualInputStrat, qualOutputStrat, timeOutputStrat, measSettings)
+
+    val evaluator = new CalculationEvaluator(name, manager, output, components)
 
     val triggerStrat = config.triggering.map(CalculationTriggerStrategy.build(_, client, evaluator.attempt)).getOrElse {
       throw new Exception("Must have triggering config")

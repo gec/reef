@@ -19,19 +19,22 @@
 package org.totalgrid.reef.calc.lib
 
 import com.weiglewilczek.slf4s.Logging
-import eval.{ EvalException, OperationSource, Expression }
+import eval.{ EvalException }
 
-class CalculationEvaluator(name: String,
-  inputData: InputDataSource,
-  formula: Formula,
+case class CalculationComponents(formula: Formula,
   qualInputStrategy: QualityInputStrategy,
   qualOutputStrategy: QualityOutputStrategy,
   timeStrategy: TimeStrategy,
-  measSettings: MeasurementSettings,
-  publisher: OutputPublisher)
+  measSettings: MeasurementSettings)
+
+class CalculationEvaluator(name: String,
+  inputData: InputDataSource,
+  publisher: OutputPublisher,
+  components: CalculationComponents)
     extends Logging {
 
   def attempt() {
+    import components._
 
     if (inputData.hasSufficient) {
       qualInputStrategy.checkInputs(inputData.getSnapshot).foreach { inputs =>
