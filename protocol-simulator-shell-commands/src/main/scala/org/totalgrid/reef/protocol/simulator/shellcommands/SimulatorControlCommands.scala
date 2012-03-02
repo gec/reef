@@ -25,6 +25,8 @@ import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.util.Table
 import org.totalgrid.reef.protocol.simulator.ControllableSimulator
 
+import scala.collection.JavaConversions._
+
 trait SimulatorControlCommands { self: OsgiCommandSupport =>
 
   def getSimulators(): Seq[ControllableSimulator] = {
@@ -79,7 +81,11 @@ class SimulatorConfig extends OsgiCommandSupport with SimulatorControlCommands {
       }
     }
 
-    val sims = getSimulators()
+    var sims = getSimulators()
+
+    val names = Option(javaEndpoints).map { _.toList }.getOrElse(Nil)
+
+    if (!names.isEmpty) sims = sims.filterNot(s => names.find(_ == s.name).isEmpty)
 
     sims.foreach(adjust)
 
