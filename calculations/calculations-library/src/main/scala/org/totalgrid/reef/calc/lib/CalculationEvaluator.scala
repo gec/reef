@@ -55,8 +55,15 @@ class CalculationEvaluator(name: String,
         publisher.publish(m)
 
       } catch {
-        case ev: EvalException => logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)
+        case ev: EvalException =>
+          logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)
+          try {
+            publisher.publish(ErrorMeasurement.build(name))
+          } catch {
+            case ex: Exception => logger.error("Error on publishing error meas: " + ex.toString)
+          }
       }
     }
   }
 }
+
