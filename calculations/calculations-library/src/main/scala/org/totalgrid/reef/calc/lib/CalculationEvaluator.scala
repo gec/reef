@@ -28,6 +28,7 @@ class CalculationEvaluator(name: String,
   qualInputStrategy: QualityInputStrategy,
   qualOutputStrategy: QualityOutputStrategy,
   timeStrategy: TimeStrategy,
+  measSettings: MeasurementSettings,
   publisher: OutputPublisher)
     extends Logging {
 
@@ -48,7 +49,9 @@ class CalculationEvaluator(name: String,
             .setQuality(qual)
             .setTime(time)
 
-          publisher.publishMeasurement(outMeas)
+          val m = measSettings.set(outMeas).build
+
+          publisher.publish(m)
 
         } catch {
           case ev: EvalException => logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)

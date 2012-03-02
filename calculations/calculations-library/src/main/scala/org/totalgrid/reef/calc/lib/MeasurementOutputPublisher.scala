@@ -22,11 +22,10 @@ import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 
-class MeasurementOutputPublisher(client: Client, pointName: String, unit: Option[String]) extends OutputPublisher {
+class MeasurementOutputPublisher(client: Client) extends OutputPublisher {
 
-  def publishMeasurement(m: Measurement.Builder) = {
+  def publish(m: Measurement) = {
     val srv = client.getRpcInterface(classOf[MeasurementService])
-    unit.foreach(m.setUnit(_))
-    srv.publishMeasurements(List(m.setName(pointName).build()))
+    srv.publishMeasurements(List(m))
   }
 }
