@@ -29,6 +29,8 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
   private val serverBindingSections = mutable.Queue.empty[(String, Seq[String])]
   private val clientBindingSections = mutable.Queue.empty[(String, Seq[String])]
 
+  private val clientFunctionNameCounts = mutable.Map.empty[String, Int]
+
   private var newestSourceFile: Long = 0
 
   private var totalApiCalls = 0
@@ -124,6 +126,14 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
   }
 
   def buildClientApiBinding(m: MethodDoc): String = {
+    val jQueryMethodName = clientFunctionNameCounts.get(m.name) match {
+      case Some(count) =>
+        clientFunctionNameCounts.put(m.name, count + 1)
+        m.name + count
+      case None =>
+        clientFunctionNameCounts.put(m.name, 1)
+        m.name
+    }
     val methodName = m.name
 
     val (style, resultType) = m match {
@@ -146,7 +156,7 @@ class HttpServiceCallBindings extends ApiTransformer with GeneratorFunctions {
     val apiCall = if (isReturnSubscription(m)) "subscribeApiRequest" else "apiRequest"
 
     "%s\n\t\tcalls.%s = function(%s) {\n%s\t\t\treturn client.%s({\n\t\t\t\trequest: \"%s\",\n%s\t\t\t\tstyle: \"%s\",\n\t\t\t\tresultType: \"%s\""
-      .format(commentString(m.getRawCommentText(), 2), methodName, args, valueExtractors, apiCall, methodName, data, style, typeDescriptorId(resultType)) + "\n\t\t\t});\n\t\t};"
+      .format(commentString(m.getRawCommentText(), 2), jQueryMethodName, args, valueExtractors, apiCall, methodName, data, style, typeDescriptorId(resultType)) + "\n\t\t\t});\n\t\t};"
   }
 
   def typeDescriptorId(typ: Type) = {

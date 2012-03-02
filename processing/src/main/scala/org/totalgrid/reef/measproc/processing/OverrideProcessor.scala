@@ -30,14 +30,14 @@ object OverrideProcessor {
   def transformSubstituted(meas: Measurement): Measurement = {
     val q = Quality.newBuilder(meas.getQuality).setSource(Quality.Source.SUBSTITUTED).setOperatorBlocked(true)
     val now = System.currentTimeMillis
-    Measurement.newBuilder(meas).setQuality(q).setTime(now).build
+    Measurement.newBuilder(meas).setQuality(q).setTime(now).setSystemTime(now).build
   }
 
   def transformNIS(meas: Measurement): Measurement = {
     val dq = DetailQual.newBuilder(meas.getQuality.getDetailQual).setOldData(true)
     val q = Quality.newBuilder(meas.getQuality).setDetailQual(dq).setOperatorBlocked(true)
     val now = System.currentTimeMillis
-    Measurement.newBuilder(meas).setQuality(q).setTime(now).build
+    Measurement.newBuilder(meas).setQuality(q).setTime(now).setSystemTime(now).build
   }
 }
 
@@ -108,7 +108,7 @@ class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCa
       case None => overridenCacheMiss(1)
       case Some(cached) => {
         val now = System.currentTimeMillis
-        val updatedMeasurement = Measurement.newBuilder(cached).setTime(now).build()
+        val updatedMeasurement = Measurement.newBuilder(cached).setTime(now).setSystemTime(now).build()
         publish(updatedMeasurement, true)
         cache.delete(name)
       }

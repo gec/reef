@@ -43,7 +43,7 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
 {
     private Measurement clearTime( Measurement m )
     {
-        return m.toBuilder().clearTime().build();
+        return m.toBuilder().clearTime().clearSystemTime().build();
     }
 
     /** Test that the measurement overrides work correctly */

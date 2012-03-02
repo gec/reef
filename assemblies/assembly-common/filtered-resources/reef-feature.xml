@@ -73,6 +73,7 @@
         <feature>war</feature>
         <bundle start-level='60'>mvn:org.totalgrid.reef/protobuf-java-format-dependencies/1.3-SNAPSHOT</bundle>
         <bundle start-level='100'>mvn:org.totalgrid.reef/reef-http-bridge/${reef.version}</bundle>
+        <bundle start-level='100'>mvn:org.totalgrid.reef/reef-jquery-service-client/${reef.version}</bundle>
     </feature>
 	
 </features>

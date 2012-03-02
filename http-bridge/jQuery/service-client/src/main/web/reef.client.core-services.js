@@ -172,7 +172,7 @@
 		 * @param types event type names
 		 * @param recentAlarmLimit the number of recent alarms
 		*/
-		calls.getActiveAlarms = function(types, recentAlarmLimit) {
+		calls.getActiveAlarms1 = function(types, recentAlarmLimit) {
 			return client.apiRequest({
 				request: "getActiveAlarms",
 				data: {
@@ -833,7 +833,7 @@
 		/**
 		 * search for all config files "used" by an entity, only returns files with matching mimeType
 		*/
-		calls.getConfigFilesUsedByEntity = function(entityUuid, mimeType) {
+		calls.getConfigFilesUsedByEntity1 = function(entityUuid, mimeType) {
 			if(entityUuid.value != undefined) entityUuid = entityUuid.value;
 			return client.apiRequest({
 				request: "getConfigFilesUsedByEntity",
@@ -1266,7 +1266,7 @@
 		 * @return  list of all children in arbitrary order
 		 * @throws ReefServiceException
 		*/
-		calls.getEntityImmediateChildren = function(parent, relationship, constrainingTypes) {
+		calls.getEntityImmediateChildren1 = function(parent, relationship, constrainingTypes) {
 			if(parent.value != undefined) parent = parent.value;
 			return client.apiRequest({
 				request: "getEntityImmediateChildren",
@@ -1310,7 +1310,7 @@
 		 * @return  the root entity filled out with children
 		 * @throws ReefServiceException
 		*/
-		calls.getEntityChildren = function(parent, relationship, depth, constrainingTypes) {
+		calls.getEntityChildren1 = function(parent, relationship, depth, constrainingTypes) {
 			if(parent.value != undefined) parent = parent.value;
 			return client.apiRequest({
 				request: "getEntityChildren",
@@ -1509,7 +1509,7 @@
 		 * @return The entity and its associated attributes.
 		 * @throws org.totalgrid.reef.client.exception.ReefServiceException
 		*/
-		calls.setEntityAttribute = function(uuid, name, value) {
+		calls.setEntityAttribute1 = function(uuid, name, value) {
 			if(uuid.value != undefined) uuid = uuid.value;
 			return client.apiRequest({
 				request: "setEntityAttribute",
@@ -1531,7 +1531,7 @@
 		 * @return The entity and its associated attributes.
 		 * @throws org.totalgrid.reef.client.exception.ReefServiceException
 		*/
-		calls.setEntityAttribute = function(uuid, name, value) {
+		calls.setEntityAttribute2 = function(uuid, name, value) {
 			if(uuid.value != undefined) uuid = uuid.value;
 			return client.apiRequest({
 				request: "setEntityAttribute",
@@ -1553,7 +1553,7 @@
 		 * @return The entity and its associated attributes.
 		 * @throws org.totalgrid.reef.client.exception.ReefServiceException
 		*/
-		calls.setEntityAttribute = function(uuid, name, value) {
+		calls.setEntityAttribute3 = function(uuid, name, value) {
 			if(uuid.value != undefined) uuid = uuid.value;
 			return client.apiRequest({
 				request: "setEntityAttribute",
@@ -1610,7 +1610,7 @@
 		 *                users can only delete custom configurations
 		 * @return get a subset of the event configurations
 		*/
-		calls.getEventConfigurations = function(builtIn) {
+		calls.getEventConfigurations1 = function(builtIn) {
 			return client.apiRequest({
 				request: "getEventConfigurations",
 				data: {
@@ -1737,7 +1737,7 @@
 		 * @param entityUuid uuid of the entity most closely related to this event
 		 * @return created Event
 		*/
-		calls.publishEvent = function(eventType, subsystem, entityUuid) {
+		calls.publishEvent1 = function(eventType, subsystem, entityUuid) {
 			if(entityUuid.value != undefined) entityUuid = entityUuid.value;
 			return client.apiRequest({
 				request: "publishEvent",
@@ -1758,7 +1758,7 @@
 		 * @param entityUuid uuid of the entity most closely related to this event
 		 * @return created Event
 		*/
-		calls.publishEvent = function(eventType, subsystem, deviceTime, entityUuid) {
+		calls.publishEvent2 = function(eventType, subsystem, deviceTime, entityUuid) {
 			if(entityUuid.value != undefined) entityUuid = entityUuid.value;
 			return client.apiRequest({
 				request: "publishEvent",
@@ -1836,7 +1836,7 @@
 		 * @param types event type names
 		 * @param limit the number of incoming events
 		*/
-		calls.subscribeToRecentEvents = function(types, limit) {
+		calls.subscribeToRecentEvents1 = function(types, limit) {
 			return client.subscribeApiRequest({
 				request: "subscribeToRecentEvents",
 				data: {
@@ -1853,7 +1853,7 @@
 		 * @param types event type names
 		 * @param limit the number of incoming events
 		*/
-		calls.getRecentEvents = function(types, limit) {
+		calls.getRecentEvents1 = function(types, limit) {
 			return client.apiRequest({
 				request: "getRecentEvents",
 				data: {
@@ -1983,7 +1983,7 @@
 		 * @param since  Return measurements on or after this date/time (in milliseconds).
 		 * @param limit  max number of measurements returned
 		*/
-		calls.getMeasurementHistoryByName = function(pointName, since, limit) {
+		calls.getMeasurementHistoryByName1 = function(pointName, since, limit) {
 			return client.apiRequest({
 				request: "getMeasurementHistoryByName",
 				data: {
@@ -2003,7 +2003,7 @@
 		 * @param returnNewest If there are more measurements than the specified limit, return the newest (true) or oldest (false).
 		 * @param limit        Max number of measurements returned
 		*/
-		calls.getMeasurementHistoryByName = function(pointName, from, to, returnNewest, limit) {
+		calls.getMeasurementHistoryByName2 = function(pointName, from, to, returnNewest, limit) {
 			return client.apiRequest({
 				request: "getMeasurementHistoryByName",
 				data: {
@@ -2043,7 +2043,7 @@
 		 * @param since  Return measurements on or after this time (milliseconds)
 		 * @param limit  Max number of measurements returned
 		*/
-		calls.subscribeToMeasurementHistoryByName = function(pointName, since, limit) {
+		calls.subscribeToMeasurementHistoryByName1 = function(pointName, since, limit) {
 			return client.subscribeApiRequest({
 				request: "subscribeToMeasurementHistoryByName",
 				data: {
