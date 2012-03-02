@@ -56,7 +56,9 @@ class BasicCalculationFactory(client: Client, operations: OperationSource) exten
 
     val manager = new MeasInputManager
 
-    val evaluator = new CalculationEvaluator(name, operations, manager, expr, qualInputStrat, qualOutputStrat, timeOutputStrat, measSettings, output)
+    val formula = Formula(expr, operations)
+
+    val evaluator = new CalculationEvaluator(name, manager, formula, qualInputStrat, qualOutputStrat, timeOutputStrat, measSettings, output)
 
     val triggerStrat = config.triggering.map(CalculationTriggerStrategy.build(_, client, evaluator.attempt)).getOrElse {
       throw new Exception("Must have triggering config")

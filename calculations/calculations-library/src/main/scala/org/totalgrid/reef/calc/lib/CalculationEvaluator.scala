@@ -22,9 +22,8 @@ import com.weiglewilczek.slf4s.Logging
 import eval.{ EvalException, OperationSource, Expression }
 
 class CalculationEvaluator(name: String,
-  operationSource: OperationSource,
   inputData: InputDataSource,
-  formula: Expression,
+  formula: Formula,
   qualInputStrategy: QualityInputStrategy,
   qualOutputStrategy: QualityOutputStrategy,
   timeStrategy: TimeStrategy,
@@ -40,7 +39,7 @@ class CalculationEvaluator(name: String,
         try {
           val source = MappedVariableSource(inputs)
 
-          val result = formula.evaluate(source, operationSource)
+          val result = formula.evaluate(source)
 
           val qual = qualOutputStrategy.getQuality(inputs)
           val time = timeStrategy.getTime(inputs)
