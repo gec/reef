@@ -87,5 +87,12 @@
             <artifactId>org.osgi.compendium</artifactId>
             <version>${felix-core.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-client</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
     </dependencies>
 </project>
