@@ -24,8 +24,11 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Calculations.{ Calculation }
 import net.agileautomata.executor4s.{ Cancelable }
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.calc.lib.BasicCalculationFactory.MultiCancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+
+case class CalculationSettings(components: CalculationComponents,
+  triggerStrategy: CalculationTriggerStrategy,
+  inputs: List[InputConfig])
 
 class BasicCalculationFactory(
     rootClient: Client,
@@ -34,11 +37,46 @@ class BasicCalculationFactory(
     output: OutputPublisher,
     timeSource: TimeSource) extends CalculationFactory {
 
+  import BasicCalculationFactory._
+
   def build(config: Calculation): Cancelable = {
 
+    val settings = parseConfig(config, operations)
+
+    val metrics = metricsSource.getCalcMetrics(settings.components.measSettings.name)
+
+    // get a new client (strand) for each calculation
     val client = rootClient.spawn()
     val services = client.getRpcInterface(classOf[AllScadaService])
 
+    val inputDataManager = new MeasInputManager(services, timeSource)
+
+    val evaluator = new CalculationEvaluator(inputDataManager, output, settings.components, metrics)
+
+    val (eventedTrigger, initiatingTrigger) = settings.triggerStrategy match {
+      case ev: EventedTriggerStrategy => (Some(ev), None)
+      case in: InitiatingTriggerStrategy => (None, Some(in))
+    }
+
+    settings.triggerStrategy.setEvaluationFunction(evaluator.attempt)
+
+    inputDataManager.initialize(settings.inputs, eventedTrigger)
+
+    initiatingTrigger.foreach(_.start(client))
+
+    new MultiCancelable(List(Some(inputDataManager), initiatingTrigger).flatten)
+  }
+}
+
+object BasicCalculationFactory {
+  class MultiCancelable(list: List[Cancelable]) extends Cancelable {
+    def cancel() { list.foreach(_.cancel()) }
+  }
+
+  /**
+   * takes a calculation config and parses it into a valid
+   */
+  def parseConfig(config: Calculation, operations: OperationSource): CalculationSettings = {
     val expr = config.formula.map(OperationParser.parseFormula(_)).getOrElse {
       throw new Exception("Need formula in calculation config")
     }
@@ -59,40 +97,19 @@ class BasicCalculationFactory(
       throw new Exception("Must have output point name")
     }
 
-    val inputConfigs = config.getCalcInputsList.toList.map(InputBucket.build(_))
-
     val measSettings = MeasurementSettings(name, config.outputPoint.unit)
-
-    val inputDataManager = new MeasInputManager(services, timeSource)
-
-    val metrics = metricsSource.getCalcMetrics(name)
 
     val formula = Formula(expr, operations)
 
     val components = CalculationComponents(formula, qualInputStrat, qualOutputStrat, timeOutputStrat, measSettings)
 
-    val evaluator = new CalculationEvaluator(name, inputDataManager, output, components, metrics)
+    val inputs = config.getCalcInputsList.toList.map(InputBucket.build(_))
 
-    val triggerStrat = config.triggering.map(CalculationTriggerStrategy.build(_, client, evaluator.attempt)).getOrElse {
+    val triggerStrategy = config.triggering.map(CalculationTriggerStrategy.build(_)).getOrElse {
       throw new Exception("Must have triggering config")
     }
 
-    val (eventedTrigger, initiatingTrigger) = triggerStrat match {
-      case ev: EventedTriggerStrategy => (Some(ev), None)
-      case in: InitiatingTriggerStrategy => (None, Some(in))
-    }
-
-    inputDataManager.initialize(inputConfigs, eventedTrigger)
-
-    initiatingTrigger.foreach(_.start())
-
-    new MultiCancelable(List(Some(inputDataManager), initiatingTrigger).flatten)
-  }
-}
-
-object BasicCalculationFactory {
-  class MultiCancelable(list: List[Cancelable]) extends Cancelable {
-    def cancel() { list.foreach(_.cancel()) }
+    CalculationSettings(components, triggerStrategy, inputs)
   }
 }
 

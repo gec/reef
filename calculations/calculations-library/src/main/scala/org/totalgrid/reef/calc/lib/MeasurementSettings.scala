@@ -21,6 +21,9 @@ package org.totalgrid.reef.calc.lib
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 trait MeasurementSettings {
+
+  def name: String
+
   def set(m: Measurement.Builder): Measurement.Builder
 }
 
@@ -28,7 +31,7 @@ object MeasurementSettings {
 
   def apply(name: String, unit: Option[String]) = new NameUnitSettings(name, unit)
 
-  class NameUnitSettings(name: String, unit: Option[String]) extends MeasurementSettings {
+  class NameUnitSettings(val name: String, unit: Option[String]) extends MeasurementSettings {
     def set(m: Measurement.Builder): Measurement.Builder = {
       unit.foreach(m.setUnit(_))
       m.setName(name)

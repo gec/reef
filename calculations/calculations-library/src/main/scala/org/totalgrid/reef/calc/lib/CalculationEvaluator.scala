@@ -28,7 +28,7 @@ case class CalculationComponents(formula: Formula,
   timeStrategy: TimeStrategy,
   measSettings: MeasurementSettings)
 
-class CalculationEvaluator(name: String,
+class CalculationEvaluator(
   inputData: InputDataSource,
   publisher: OutputPublisher,
   components: CalculationComponents,
@@ -52,6 +52,7 @@ class CalculationEvaluator(name: String,
 
           case ev: EvalException =>
             metrics.errors(1)
+            val name = components.measSettings.name
             logger.error("Calc: " + name + " evaluation error: " + ev.getMessage)
             try {
               publisher.publish(ErrorMeasurement.build(name))

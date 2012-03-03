@@ -22,41 +22,45 @@ import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.service.proto.Calculations.{ TriggerStrategy, Calculation }
 
-sealed trait CalculationTriggerStrategy
+sealed trait CalculationTriggerStrategy {
+  private var handler = Option.empty[() => Unit]
+  protected def attemptCalculation = (handler.get)()
+  def setEvaluationFunction(func: () => Unit) = handler = Some(func)
+}
 
 trait InitiatingTriggerStrategy extends CalculationTriggerStrategy with Cancelable {
-  def start(): Unit
+  def start(exe: Executor): Unit
 }
 
 trait EventedTriggerStrategy extends CalculationTriggerStrategy {
   def handle(m: Measurement)
 }
 
-class IntervalTrigger(exe: Executor, interval: Long, handler: () => Unit) extends InitiatingTriggerStrategy {
+class IntervalTrigger(interval: Long) extends InitiatingTriggerStrategy {
   var timer: Option[Timer] = None
-  def start() {
-    timer = Some(exe.scheduleWithFixedOffset(interval.milliseconds)(handler()))
+  def start(exe: Executor) {
+    timer = Some(exe.scheduleWithFixedOffset(interval.milliseconds)(attemptCalculation))
   }
   def cancel() {
     timer.foreach(_.cancel())
   }
 }
 
-class AnyUpdateTrigger(handler: () => Unit) extends EventedTriggerStrategy {
+class AnyUpdateTrigger extends EventedTriggerStrategy {
   def handle(m: Measurement) {
-    handler()
+    attemptCalculation
   }
 }
 
 object CalculationTriggerStrategy {
 
-  def build(config: TriggerStrategy, exe: Executor, handler: () => Unit): CalculationTriggerStrategy = {
+  def build(config: TriggerStrategy): CalculationTriggerStrategy = {
     if (config.hasPeriodMs) {
-      new IntervalTrigger(exe, config.getPeriodMs, handler)
+      new IntervalTrigger(config.getPeriodMs)
     } else if (config.hasUpdateAny && config.getUpdateAny) {
-      new AnyUpdateTrigger(handler)
+      new AnyUpdateTrigger
     } else {
-      new AnyUpdateTrigger(handler)
+      new AnyUpdateTrigger
       //throw new Exception("Can't use trigger configuration: " + config)
     }
   }
