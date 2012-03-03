@@ -1,4 +1,3 @@
-package org.totalgrid.reef.calc.lib.eval
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,6 +16,7 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.calc.lib.eval
 
 import util.parsing.combinator.JavaTokenParsers
 
@@ -39,7 +39,7 @@ object OperationParser extends JavaTokenParsers {
 
   def exp: Parser[Expression] = leaf ~ rep("^" ~ leaf ^^ part) ^^ multiInfix
 
-  def leaf: Parser[Expression] = constant | fun | variable | "(" ~> expr <~ ")"
+  def leaf: Parser[Expression] = constant | boolConst | fun | variable | "(" ~> expr <~ ")"
 
   def fun: Parser[Expression] = ident ~ ("(" ~> csv <~ ")") ^^ {
     case f ~ args => Fun(f, args)
@@ -55,6 +55,10 @@ object OperationParser extends JavaTokenParsers {
 
   def constant: Parser[Expression] = floatingPointNumber ^^ { x =>
     Const(x.toDouble)
+  }
+
+  def boolConst: Parser[Expression] = """true|false""".r ^^ { x =>
+    ConstBoolean(x.toBoolean)
   }
 
   case class Part(op: String, right: Expression)

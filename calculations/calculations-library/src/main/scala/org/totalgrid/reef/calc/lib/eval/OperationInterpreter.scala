@@ -42,6 +42,12 @@ object OperationInterpreter {
     }
   }
 
+  case class ConstBoolean(v: Boolean) extends Expression {
+    def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
+      BooleanConst(v)
+    }
+  }
+
   case class Var(name: String) extends Expression {
     def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
       inputs.forName(name)

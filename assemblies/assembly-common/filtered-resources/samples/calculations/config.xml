@@ -124,8 +124,7 @@
                         <calc:single pointName="Microgrid2.Controllable" variable="B" addParentNames="false"/>
                     </calc:inputs>
                     <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
-                    <!--<calc:formula>COUNT(A,B,true)</calc:formula>-->
-                    <calc:formula>A+B</calc:formula>
+                    <calc:formula>COUNT(A,B)</calc:formula>
                     <calc:output>
                         <calc:outputQuality strategy="ALWAYS_OK" />
                     </calc:output>
@@ -139,8 +138,7 @@
                         <calc:single pointName="Microgrid2.Controllable" variable="B" addParentNames="false"/>
                     </calc:inputs>
                     <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
-                    <!--<calc:formula>AND(A,B)</calc:formula>-->
-                    <calc:formula>A+B</calc:formula>
+                    <calc:formula>AND(A,B)</calc:formula>
                 </calc:calculation>
             </equip:status>
         </equip:equipment>

@@ -18,54 +18,21 @@
  */
 package org.totalgrid.reef.calc.lib.eval
 
-import org.totalgrid.reef.calc.lib.eval.BasicOperations.{ SquareRoot, Average, Divide, Subtract }
+import org.totalgrid.reef.calc.lib.eval.OperationPatterns._
 
 object BasicOperations {
 
   def getSource = {
-    new BasicOperationSource(List(new Sum, new Subtract, new Product, new Divide, new Power, new Average, new SquareRoot))
-  }
-
-  trait AbstractOperation extends Operation {
-    protected val name = names.headOption.getOrElse(this.getClass.getSimpleName)
-  }
-
-  trait MultiNumericOperation extends AbstractOperation {
-    def apply(args: List[OperationValue]): OperationValue = {
-      if (args.size > 0) {
-        val nums = args.map {
-          case NumericValue(v) => v
-          case _ => throw new EvalException("Operation " + name + " only takes numeric values")
-        }
-        NumericConst(eval(nums))
-      } else {
-        throw new EvalException("Operation " + name + " requires one or more value")
-      }
-    }
-
-    def eval(args: List[Double]): Double
-  }
-
-  trait PairNumericOperation extends AbstractOperation {
-    def apply(args: List[OperationValue]): OperationValue = {
-      args match {
-        case List(NumericValue(l), NumericValue(r)) => NumericConst(eval(l, r))
-        case _ => throw new EvalException("Operation " + name + " requires exactly two numeric values")
-      }
-    }
-
-    def eval(l: Double, r: Double): Double
-  }
-
-  trait SingleNumericOperation extends AbstractOperation {
-    def apply(args: List[OperationValue]): OperationValue = {
-      args match {
-        case List(NumericValue(v)) => NumericConst(eval(v))
-        case _ => throw new EvalException("Operation " + name + " requires one numeric value")
-      }
-    }
-
-    def eval(v: Double): Double
+    new BasicOperationSource(List(
+      new Sum,
+      new Subtract,
+      new Product,
+      new Divide,
+      new Power,
+      new Average,
+      new SquareRoot,
+      new Count,
+      new And))
   }
 
   class Sum extends MultiNumericOperation {
@@ -115,6 +82,22 @@ object BasicOperations {
 
     def eval(v: Double): Double = {
       math.sqrt(v)
+    }
+  }
+
+  class And extends BooleanReduceOperation {
+    def names = List("AND")
+
+    def eval(args: List[Boolean]) = {
+      args.foldLeft(true) { case (out, v) => if (out && v) true else false }
+    }
+  }
+
+  class Count extends BooleanFoldOperation {
+    def names = List("COUNT")
+
+    def eval(args: List[Boolean]) = {
+      args.foldLeft(0) { case (sum, v) => sum + (if (v) 1 else 0) }
     }
   }
 

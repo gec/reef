@@ -42,4 +42,37 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
 
     expr.evaluate(new ValueMap(values), BasicOperations.getSource) should equal(result)
   }
+
+  test("Boolean AND") {
+
+    val tests = List(
+      ("AND(true)", BooleanConst(true)),
+      ("AND(false)", BooleanConst(false)),
+      ("AND(true,true)", BooleanConst(true)),
+      ("AND(true,false)", BooleanConst(false)),
+      ("AND(false,false)", BooleanConst(false)))
+
+    tests.foreach {
+      case (f, result) =>
+        val expr = OperationParser.parseFormula(f)
+        expr.evaluate(new ValueMap(Map()), BasicOperations.getSource) should equal(result)
+    }
+  }
+
+  test("Boolean COUNT") {
+
+    val tests = List(
+      ("COUNT(true)", NumericConst(1)),
+      ("COUNT(false)", NumericConst(0)),
+      ("COUNT(true,true)", NumericConst(2)),
+      ("COUNT(true,false)", NumericConst(1)),
+      ("COUNT(false,false)", NumericConst(0)))
+
+    tests.foreach {
+      case (f, result) =>
+        val expr = OperationParser.parseFormula(f)
+        expr.evaluate(new ValueMap(Map()), BasicOperations.getSource) should equal(result)
+    }
+  }
+
 }

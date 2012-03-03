@@ -27,17 +27,22 @@ case class ValueRange(list: List[OperationValue]) extends OperationValue {
 }
 
 trait NumericValue extends OperationValue {
-  val value: Double
+  def value: Double
 }
 object NumericValue {
   def unapply(v: NumericValue): Option[Double] = Some(v.value)
 }
 
 case class NumericConst(value: Double) extends NumericValue
-
-case class BooleanConst(value: Boolean) extends OperationValue
-
 case class NumericMeas(value: Double, time: Long) extends NumericValue
 
-case class BooleanMeas(value: Boolean, time: Long) extends OperationValue
+trait BooleanValue extends OperationValue {
+  def value: Boolean
+}
+object BooleanValue {
+  def unapply(v: BooleanValue): Option[Boolean] = Some(v.value)
+}
+
+case class BooleanConst(value: Boolean) extends BooleanValue
+case class BooleanMeas(value: Boolean, time: Long) extends BooleanValue
 
