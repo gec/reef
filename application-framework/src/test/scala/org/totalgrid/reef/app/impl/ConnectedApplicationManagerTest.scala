@@ -25,12 +25,14 @@ import org.scalatest.matchers.ShouldMatchers
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing._
 import net.agileautomata.commons.testing._
+
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
+
 import org.mockito.Mockito
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.settings._
 import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 import org.totalgrid.reef.client.service.proto.Application.{ HeartbeatConfig, ApplicationConfig }
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.app.{ ConnectionProvider, ApplicationSettings, ConnectedApplication }
@@ -82,11 +84,11 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
     val services = Mockito.mock(classOf[AllScadaService], new MockitoStubbedOnly)
     val connection = Mockito.mock(classOf[Connection], new MockitoStubbedOnly)
 
-    Mockito.doReturn(new FixedPromise(Success(true))).when(client).logout()
+    Mockito.doReturn(success(true)).when(client).logout()
 
     Mockito.doReturn(client).when(client).spawn()
     Mockito.doReturn(services).when(client).getRpcInterface(classOf[AllScadaService])
-    Mockito.doReturn(new FixedPromise(Success(client))).when(connection).login(userSettings)
+    Mockito.doReturn(success(client)).when(connection).login(userSettings)
     (connection, services)
   }
 
@@ -100,7 +102,7 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
     manager.addConnectedApplication(listener)
 
     val (connection, services) = makeServices()
-    Mockito.doReturn(new FixedPromise(Failure("Unknown user"))).when(connection).login(userSettings)
+    Mockito.doReturn(failure("Unknown user")).when(connection).login(userSettings)
 
     manager.start()
 
@@ -129,7 +131,7 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
 
     val (connection, services) = makeServices()
 
-    Mockito.doReturn(new FixedPromise(Failure("Can't register app"))).when(services).registerApplication(nodeSettings, instanceName, capabilites)
+    Mockito.doReturn(failure("Can't register app")).when(services).registerApplication(nodeSettings, instanceName, capabilites)
 
     manager.handleConnection(connection)
 
@@ -138,7 +140,7 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
     listener errorsShouldInclude ("Can't register app")
     listener.clearErrors()
 
-    Mockito.doReturn(new FixedPromise(Failure("Unknown user"))).when(connection).login(userSettings)
+    Mockito.doReturn(failure("Unknown user")).when(connection).login(userSettings)
 
     executor.tick(10000.milliseconds)
     executor.runUntilIdle()
@@ -157,14 +159,14 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
 
     val (connection, services) = makeServices()
 
-    Mockito.doReturn(new FixedPromise(Failure("Can't register app"))).when(services).registerApplication(nodeSettings, instanceName, capabilites)
+    Mockito.doReturn(failure("Can't register app")).when(services).registerApplication(nodeSettings, instanceName, capabilites)
 
     val appConfig = ApplicationConfig.newBuilder.setInstanceName("name").setHeartbeatCfg(HeartbeatConfig.newBuilder).build
-    Mockito.doReturn(new FixedPromise(Success(appConfig))).when(services).registerApplication(nodeSettings, instanceName, capabilites)
+    Mockito.doReturn(success(appConfig)).when(services).registerApplication(nodeSettings, instanceName, capabilites)
     val status = StatusSnapshot.newBuilder.build
-    Mockito.doReturn(new FixedPromise(Success(status))).when(services).sendHeartbeat(appConfig)
+    Mockito.doReturn(success(status)).when(services).sendHeartbeat(appConfig)
 
-    Mockito.doReturn(new FixedPromise(Success(status))).when(services).sendApplicationOffline(appConfig)
+    Mockito.doReturn(success(status)).when(services).sendApplicationOffline(appConfig)
 
     manager.start()
 
@@ -192,14 +194,14 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
 
     val (connection, services) = makeServices()
 
-    Mockito.doReturn(new FixedPromise(Failure("Can't register app"))).when(services).registerApplication(nodeSettings, instanceName, capabilites)
+    Mockito.doReturn(failure("Can't register app")).when(services).registerApplication(nodeSettings, instanceName, capabilites)
 
     val appConfig = ApplicationConfig.newBuilder.setInstanceName("name").setHeartbeatCfg(HeartbeatConfig.newBuilder.setPeriodMs(100)).build
-    Mockito.doReturn(new FixedPromise(Success(appConfig))).when(services).registerApplication(nodeSettings, instanceName, capabilites)
+    Mockito.doReturn(success(appConfig)).when(services).registerApplication(nodeSettings, instanceName, capabilites)
     val status = StatusSnapshot.newBuilder.build
-    Mockito.doReturn(new FixedPromise(Success(status))).when(services).sendHeartbeat(appConfig)
+    Mockito.doReturn(success(status)).when(services).sendHeartbeat(appConfig)
 
-    Mockito.doReturn(new FixedPromise(Success(status))).when(services).sendApplicationOffline(appConfig)
+    Mockito.doReturn(success(status)).when(services).sendApplicationOffline(appConfig)
 
     manager.start()
 
@@ -211,14 +213,14 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
 
     executor.tick(10000.milliseconds)
 
-    Mockito.doReturn(new FixedPromise(Failure("Unexpected heartbeat failure"))).when(services).sendHeartbeat(appConfig)
+    Mockito.doReturn(failure("Unexpected heartbeat failure")).when(services).sendHeartbeat(appConfig)
 
     executor.tick(10000.milliseconds)
 
     listener errorsShouldInclude ("Unexpected heartbeat failure")
     listener connectedShouldBecome (false) within 500
 
-    Mockito.doReturn(new FixedPromise(Success(status))).when(services).sendHeartbeat(appConfig)
+    Mockito.doReturn(success(status)).when(services).sendHeartbeat(appConfig)
 
     executor.tick(10000.milliseconds)
     listener connectedShouldBecome (true) within 500

@@ -23,8 +23,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterEach, FunSuite }
 import org.totalgrid.reef.client.proto.Envelope.RequestHeader
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
-import net.agileautomata.executor4s.Success
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import org.springframework.mock.web.MockHttpServletRequest
 import org.totalgrid.reef.httpbridge.servlets.helpers.argumentsources.ParameterArgumentSource
 import org.totalgrid.reef.client.sapi.client.rest.Client
@@ -35,7 +34,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 class MockService {
 
-  private def promise[A](a: A) = new FixedPromise[A](Success(a))
+  private def promise[A](a: A) = success(a)
 
   private def kv(key: String, value: String) = RequestHeader.newBuilder.setKey(key).setValue(value).build
 
