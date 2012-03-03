@@ -20,7 +20,6 @@ package org.totalgrid.reef.calc.lib
 
 import org.totalgrid.reef.client.service.proto.Calculations.InputQuality
 import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, Measurement }
-import org.totalgrid.reef.calc.lib.QualityInputStrategy.WhenAllOk
 
 trait QualityInputStrategy {
   def checkInputs(inputs: Map[String, List[Measurement]]): Option[Map[String, List[Measurement]]]
@@ -29,9 +28,9 @@ trait QualityInputStrategy {
 object QualityInputStrategy {
 
   def build(config: InputQuality.Strategy): QualityInputStrategy = config match {
-    case _ => new WhenAllOk
-    //case InputQuality.Strategy.ONLY_WHEN_ALL_OK => new WhenAllOk
-    //case _ => throw new Exception("Unknown quality input strategy")
+    case InputQuality.Strategy.ONLY_WHEN_ALL_OK => new WhenAllOk
+    case InputQuality.Strategy.REMOVE_BAD_AND_CALC => new FilterOutBad
+    case _ => throw new Exception("Unknown quality input strategy")
   }
 
   class WhenAllOk extends QualityInputStrategy {
@@ -41,6 +40,12 @@ object QualityInputStrategy {
       } else {
         None
       }
+    }
+  }
+
+  class FilterOutBad extends QualityInputStrategy {
+    def checkInputs(inputs: Map[String, List[Measurement]]): Option[Map[String, List[Measurement]]] = {
+      Some(inputs.mapValues { _.filter(_.getQuality.getValidity == Quality.Validity.GOOD) })
     }
   }
 }

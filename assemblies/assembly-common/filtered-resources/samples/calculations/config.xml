@@ -32,6 +32,7 @@
 
                 <equip:analog name="Energy" unit="kWH">
                     <calc:calculation>
+                        <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
                         <calc:inputs>
                             <calc:multi pointName="Power" variable="A">
                                 <calc:timeRange from="-300000"/>
@@ -71,6 +72,7 @@
 
                 <equip:analog name="StoredEnergy" unit="kWH">
                     <calc:calculation>
+                        <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
                         <calc:inputs>
                             <calc:multi pointName="ChargeLoad" variable="A">
                                 <calc:timeRange from="-300000"/>
@@ -136,6 +138,7 @@
                         <calc:single pointName="Microgrid1.Controllable" variable="A" addParentNames="false"/>
                         <calc:single pointName="Microgrid2.Controllable" variable="B" addParentNames="false"/>
                     </calc:inputs>
+                    <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
                     <!--<calc:formula>AND(A,B)</calc:formula>-->
                     <calc:formula>A+B</calc:formula>
                 </calc:calculation>
