@@ -59,5 +59,18 @@
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-test-util</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-client</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
     </dependencies>
 </project>

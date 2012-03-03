@@ -53,7 +53,11 @@ class CalculatorProtocol extends ChannelIgnoringProtocol {
       }
     }
 
-    val factory = new BasicCalculationFactory(client, BasicOperations.getSource, metricsPublisher, measPublisher)
+    val factory = new BasicCalculationFactory(client,
+      BasicOperations.getSource,
+      metricsPublisher,
+      measPublisher,
+      SystemTimeSource)
 
     val manager = new CalculationManager(factory)
 

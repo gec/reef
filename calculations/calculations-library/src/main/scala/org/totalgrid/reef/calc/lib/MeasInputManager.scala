@@ -18,11 +18,9 @@
  */
 package org.totalgrid.reef.calc.lib
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.client.{ Subscription, SubscriptionResult, SubscriptionEvent, SubscriptionEventAcceptor }
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
-import org.totalgrid.reef.client.service.proto.Calculations.CalculationInput
 
 object MeasInputManager {
   /**
@@ -43,16 +41,12 @@ object MeasInputManager {
   }
 }
 
-class MeasInputManager extends InputManager {
+class MeasInputManager(service: MeasurementService, timeSource: TimeSource) extends InputManager {
 
   private var buckets: List[InputBucket] = Nil
   private var subscriptions: List[Subscription[Measurement]] = Nil
-  private var trigger: Option[EventedTriggerStrategy] = None
 
-  def init(client: Client, config: List[CalculationInput], trigger: Option[EventedTriggerStrategy]) {
-    import InputBucket._
-
-    val srv = client.getRpcInterface(classOf[MeasurementService])
+  def initialize(inputConfigs: List[InputConfig], trigger: Option[EventedTriggerStrategy]) {
 
     def handleSubResult(subResult: SubscriptionResult[List[Measurement], Measurement], buck: InputBucket): Subscription[Measurement] = {
       subResult.getResult.foreach { m =>
@@ -69,31 +63,20 @@ class MeasInputManager extends InputManager {
       sub
     }
 
-    val cfgs = config.map(InputBucket.build(_))
+    this.buckets = inputConfigs.map(_.bucket)
 
-    val buckets = cfgs.map(_.bucket)
-
-    this.buckets = buckets
-
-    val subscriptions = cfgs.map {
-      case InputConfig(point, variable, req, buck) =>
-        req match {
-          case SingleLatest => {
-            handleSubResult(srv.subscribeToMeasurementsByNames(List(point)).await, buck)
-          }
-          case MultiSince(from, limit) => {
-            // TODO: meaningful limit, standardize calculating relative time => absolute
-            val time = System.currentTimeMillis() + from
-            handleSubResult(srv.subscribeToMeasurementHistoryByName(point, time, limit).await, buck)
-          }
-          case MultiLimit(count) => {
-            handleSubResult(srv.subscribeToMeasurementHistoryByName(point, count).await, buck)
-          }
+    this.subscriptions = inputConfigs.map {
+      case InputConfig(point, bucket) =>
+        val subResult = bucket.getMeasRequest match {
+          case SingleLatest =>
+            service.subscribeToMeasurementsByNames(List(point))
+          case MultiSince(from, limit) =>
+            service.subscribeToMeasurementHistoryByName(point, timeSource.now + from, limit)
+          case MultiLimit(count) =>
+            service.subscribeToMeasurementHistoryByName(point, count)
         }
+        handleSubResult(subResult.await, bucket)
     }
-
-    this.subscriptions = subscriptions
-    this.trigger = trigger
   }
 
   def getSnapshot: Option[Map[String, List[Measurement]]] = {

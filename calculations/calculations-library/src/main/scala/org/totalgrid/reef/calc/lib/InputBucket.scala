@@ -24,6 +24,11 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import scala.collection.mutable
 import org.totalgrid.reef.client.service.proto.Calculations.SingleMeasurement.MeasurementStrategy
 
+sealed trait MeasRequest
+case object SingleLatest extends MeasRequest
+case class MultiSince(from: Long, limit: Int) extends MeasRequest
+case class MultiLimit(count: Int) extends MeasRequest
+
 trait MeasBucket {
   def onReceived(m: Measurement)
 }
@@ -32,16 +37,13 @@ trait InputBucket extends MeasBucket {
   def variable: String
 
   def getSnapshot: Option[List[Measurement]]
+
+  def getMeasRequest: MeasRequest
 }
 
+case class InputConfig(point: String, bucket: InputBucket)
+
 object InputBucket {
-
-  case class InputConfig(point: String, variable: String, request: MeasRequest, bucket: InputBucket)
-
-  sealed trait MeasRequest
-  case object SingleLatest extends MeasRequest
-  case class MultiSince(from: Long, limit: Int) extends MeasRequest
-  case class MultiLimit(count: Int) extends MeasRequest
 
   def build(calc: CalculationInput): InputConfig = {
 
@@ -54,27 +56,30 @@ object InputBucket {
 
     if (limit > 10000) throw new Exception("Limit is larger than 10000 max: " + limit)
 
-    val (request: MeasRequest, bucket: InputBucket) = calc.single.strategy.map {
-      case MeasurementStrategy.MOST_RECENT => (SingleLatest, new SingleLatestBucket(variable))
+    val bucket = calc.single.strategy.map {
+      case MeasurementStrategy.MOST_RECENT => new SingleLatestBucket(variable)
       case x => throw new Exception("Uknown single measurement strategy: " + x)
     } orElse {
-      calc.range.fromMs.map(from => (MultiSince(from, limit), new FromRangeBucket(SystemTimeSource, variable, from, limit)))
+      calc.range.fromMs.map(from => new FromRangeBucket(SystemTimeSource, variable, from, limit))
     } orElse {
-      calc.range.limit.map(lim => (MultiLimit(limit), new LimitRangeBucket(variable, limit)))
+      calc.range.limit.map(lim => new LimitRangeBucket(variable, limit))
     } getOrElse {
       throw new Exception("Cannot build input from configuration: " + pointName + " " + variable + " config: " + calc)
     }
 
-    InputConfig(pointName, variable, request, bucket)
+    InputConfig(pointName, bucket)
   }
 
   class FromRangeBucket(timeSource: TimeSource, val variable: String, from: Long, limit: Int, minimum: Int = 1) extends InputBucket {
+
+    def getMeasRequest = MultiSince(from, limit)
+
     private val queue = new mutable.Queue[Measurement]()
 
     protected def prune() {
       val horizon = timeSource.now + from
       while (queue.headOption.map { _.getTime <= horizon }.getOrElse(false)) {
-        val m = queue.dequeue()
+        queue.dequeue()
       }
 
       while (queue.size > limit) {
@@ -96,6 +101,9 @@ object InputBucket {
   }
 
   class LimitRangeBucket(val variable: String, limit: Int, minimum: Int = 1) extends InputBucket {
+
+    def getMeasRequest = MultiLimit(limit)
+
     private val queue = new mutable.Queue[Measurement]()
 
     def onReceived(m: Measurement) {
@@ -109,6 +117,8 @@ object InputBucket {
   }
 
   class SingleLatestBucket(val variable: String) extends InputBucket {
+
+    def getMeasRequest = SingleLatest
 
     protected var meas: Option[Measurement] = None
 

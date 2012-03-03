@@ -25,12 +25,19 @@ import org.totalgrid.reef.client.service.proto.Calculations.{ Calculation }
 import net.agileautomata.executor4s.{ Cancelable }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.calc.lib.BasicCalculationFactory.MultiCancelable
+import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
-class BasicCalculationFactory(rootClient: Client, operations: OperationSource, metricsSource: CalculationMetricsSource, output: OutputPublisher) extends CalculationFactory {
+class BasicCalculationFactory(
+    rootClient: Client,
+    operations: OperationSource,
+    metricsSource: CalculationMetricsSource,
+    output: OutputPublisher,
+    timeSource: TimeSource) extends CalculationFactory {
 
   def build(config: Calculation): Cancelable = {
 
     val client = rootClient.spawn()
+    val services = client.getRpcInterface(classOf[AllScadaService])
 
     val expr = config.formula.map(OperationParser.parseFormula(_)).getOrElse {
       throw new Exception("Need formula in calculation config")
@@ -52,9 +59,11 @@ class BasicCalculationFactory(rootClient: Client, operations: OperationSource, m
       throw new Exception("Must have output point name")
     }
 
+    val inputConfigs = config.getCalcInputsList.toList.map(InputBucket.build(_))
+
     val measSettings = MeasurementSettings(name, config.outputPoint.unit)
 
-    val manager = new MeasInputManager
+    val inputDataManager = new MeasInputManager(services, timeSource)
 
     val metrics = metricsSource.getCalcMetrics(name)
 
@@ -62,22 +71,22 @@ class BasicCalculationFactory(rootClient: Client, operations: OperationSource, m
 
     val components = CalculationComponents(formula, qualInputStrat, qualOutputStrat, timeOutputStrat, measSettings)
 
-    val evaluator = new CalculationEvaluator(name, manager, output, components, metrics)
+    val evaluator = new CalculationEvaluator(name, inputDataManager, output, components, metrics)
 
     val triggerStrat = config.triggering.map(CalculationTriggerStrategy.build(_, client, evaluator.attempt)).getOrElse {
       throw new Exception("Must have triggering config")
     }
 
-    val (evented, initiating) = triggerStrat match {
+    val (eventedTrigger, initiatingTrigger) = triggerStrat match {
       case ev: EventedTriggerStrategy => (Some(ev), None)
       case in: InitiatingTriggerStrategy => (None, Some(in))
     }
 
-    manager.init(client, config.getCalcInputsList.toList, evented)
+    inputDataManager.initialize(inputConfigs, eventedTrigger)
 
-    initiating.foreach(_.start())
+    initiatingTrigger.foreach(_.start())
 
-    new MultiCancelable(List(Some(manager), initiating).flatten)
+    new MultiCancelable(List(Some(inputDataManager), initiatingTrigger).flatten)
   }
 }
 
