@@ -27,14 +27,28 @@ case class ValueRange(list: List[OperationValue]) extends OperationValue {
 }
 
 trait NumericValue extends OperationValue {
-  def value: Double
+  def doubleValue: Double
 }
 object NumericValue {
-  def unapply(v: NumericValue): Option[Double] = Some(v.value)
+  def unapply(v: NumericValue): Option[Double] = Some(v.doubleValue)
+}
+case class NumericConst(doubleValue: Double) extends NumericValue
+case class NumericMeas(doubleValue: Double, time: Long) extends NumericValue
+
+// we can have both classes defined but can only match on one at a time.
+// weird bug where you can't match on both types in same match block
+// https://issues.scala-lang.org/browse/SI-5081
+// https://issues.scala-lang.org/browse/SI-4832
+trait LongValue extends NumericValue {
+  def longValue: Long
+  def doubleValue = longValue.toDouble
+}
+object LongValue {
+  def unapply(v: LongValue): Option[Long] = Some(v.longValue)
 }
 
-case class NumericConst(value: Double) extends NumericValue
-case class NumericMeas(value: Double, time: Long) extends NumericValue
+case class LongConst(longValue: Long) extends LongValue
+case class LongMeas(longValue: Long, time: Long) extends LongValue
 
 trait BooleanValue extends OperationValue {
   def value: Boolean

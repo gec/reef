@@ -36,9 +36,15 @@ object OperationInterpreter {
     }
   }
 
-  case class Const(v: Double) extends Expression {
+  case class ConstDouble(v: Double) extends Expression {
     def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
       NumericConst(v)
+    }
+  }
+
+  case class ConstLong(v: Long) extends Expression {
+    def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
+      LongConst(v)
     }
   }
 

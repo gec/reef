@@ -54,6 +54,8 @@
                     <equip:equipmentProfile name="Line"/>
                 </equip:equipment>
 
+                <equip:counter name="GroundFaults" unit="count"/>
+
                 <equip:status name="Controllable" unit="status"/>
 
                 <equip:analog name="ChargeLoad" unit="W">
@@ -141,6 +143,17 @@
                     <calc:formula>AND(A,B)</calc:formula>
                 </calc:calculation>
             </equip:status>
+
+            <equip:counter name="TotalGroundFaults" unit="count">
+                <calc:calculation>
+                    <calc:inputs>
+                        <calc:single pointName="Microgrid1.GroundFaults" variable="A" addParentNames="false"/>
+                        <calc:single pointName="Microgrid2.GroundFaults" variable="B" addParentNames="false"/>
+                    </calc:inputs>
+                    <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
+                    <calc:formula>A+B</calc:formula>
+                </calc:calculation>
+            </equip:counter>
         </equip:equipment>
 
     </equip:equipmentModel>
@@ -201,6 +214,8 @@
             <comm:equipment name="" addParentNames="false">
                 <comm:status name="Microgrid1.Controllable" unit="status"/>
                 <comm:status name="Microgrid2.Controllable" unit="status"/>
+                <comm:counter name="Microgrid1.GroundFaults" unit="count"/>
+                <comm:counter name="Microgrid2.GroundFaults" unit="count"/>
             </comm:equipment>
         </comm:endpoint>
 
@@ -250,6 +265,7 @@
                 <comm:analog name="AverageStoredEnergy" unit="kWH"/>
                 <comm:counter name="ControllableMicrogrids" unit="count"/>
                 <comm:status name="AllControllable" unit="status"/>
+                <comm:counter name="TotalGroundFaults" unit="count"/>
             </comm:equipment>
         </comm:endpoint>
 

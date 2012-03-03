@@ -38,7 +38,7 @@ class OperationInterpreterTest extends FunSuite with ShouldMatchers {
 
   test("FunTest") {
 
-    val exp = Fun("SUM", List(Var("A"), Var("B"), Const(5.0)))
+    val exp = Fun("SUM", List(Var("A"), Var("B"), ConstDouble(5.0)))
 
     val ins = Map("A" -> NumericConst(2.0), "B" -> NumericConst(3.0))
 

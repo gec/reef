@@ -29,18 +29,27 @@ class OperationParserTest extends FunSuite with ShouldMatchers {
 
   test("Recursive Nesting") {
 
-    val f = "5 + A * AVG(B, 5.3 + C, SUM(D, 2, 3))"
+    val f = "5.5 + A * AVG(B, 5 + C, SUM(D, 2.2, 3))"
 
-    val tree = Infix("+", Const(5.0), Infix("*", Var("A"), Fun("AVG", List(Var("B"), Infix("+", Const(5.3), Var("C")), Fun("SUM", List(Var("D"), Const(2.0), Const(3.0)))))))
+    val tree = Infix("+", ConstDouble(5.5), Infix("*", Var("A"), Fun("AVG", List(Var("B"), Infix("+", ConstLong(5), Var("C")), Fun("SUM", List(Var("D"), ConstDouble(2.2), ConstLong(3)))))))
 
     OperationParser.parseFormula(f) should equal(tree)
   }
 
   test("Precedence") {
 
-    val f = "5 + 3 / 4 + 7"
+    val f = "5 + 3 / 4 + 7.7"
 
-    val tree = Infix("+", Infix("+", Const(5.0), Infix("/", Const(3.0), Const(4.0))), Const(7.0))
+    val tree = Infix("+", Infix("+", ConstLong(5), Infix("/", ConstLong(3), ConstLong(4))), ConstDouble(7.7))
+
+    OperationParser.parseFormula(f) should equal(tree)
+  }
+
+  test("Literal Handling") {
+
+    val f = "(5 + 5.5) + (true + false)"
+
+    val tree = Infix("+", Infix("+", ConstLong(5), ConstDouble(5.5)), Infix("+", ConstBoolean(true), ConstBoolean(false)))
 
     OperationParser.parseFormula(f) should equal(tree)
   }

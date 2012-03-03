@@ -27,7 +27,7 @@ object MeasurementConverter {
     if (m.getType == Measurement.Type.DOUBLE) {
       NumericMeas(m.getDoubleVal, m.getTime)
     } else if (m.getType == Measurement.Type.INT) {
-      NumericMeas(m.getIntVal.toDouble, m.getTime)
+      LongMeas(m.getIntVal, m.getTime)
     } else if (m.getType == Measurement.Type.BOOL) {
       BooleanMeas(m.getBoolVal, m.getTime)
     } else {
@@ -38,15 +38,22 @@ object MeasurementConverter {
   def convertOperationValue(v: OperationValue): Measurement.Builder = {
     val b = Measurement.newBuilder
 
+    // weird bug in case matching, see LongValue.unapply
     v match {
-      case NumericValue(d) =>
-        b.setType(Measurement.Type.DOUBLE)
-        b.setDoubleVal(d)
-      case BooleanConst(bv) =>
-        b.setType(Measurement.Type.BOOL)
-        b.setBoolVal(bv)
+      case LongValue(d) =>
+        b.setType(Measurement.Type.INT)
+        b.setIntVal(d)
       case _ =>
-        throw new EvalException("Cannot use value as output: " + v)
+        v match {
+          case NumericValue(d) =>
+            b.setType(Measurement.Type.DOUBLE)
+            b.setDoubleVal(d)
+          case BooleanConst(bv) =>
+            b.setType(Measurement.Type.BOOL)
+            b.setBoolVal(bv)
+          case _ =>
+            throw new EvalException("Cannot use value as output: " + v)
+        }
     }
 
     b

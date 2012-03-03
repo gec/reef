@@ -68,7 +68,7 @@ object OperationPatterns {
           case BooleanValue(v) => v
           case _ => throw new EvalException("Operation " + name + " only takes boolean values")
         }
-        NumericConst(eval(vals))
+        LongConst(eval(vals))
       } else {
         throw new EvalException("Operation " + name + " requires one or more value")
       }

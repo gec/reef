@@ -36,11 +36,15 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
 
   test("Average") {
     val f = "B + AVG(A)"
-    val values = Map("B" -> 1.5, "A" -> ValueRange(List(NumericConst(5.0), NumericConst(10.0), NumericConst(15.0))))
     val expr = OperationParser.parseFormula(f)
     val result = NumericConst(11.5)
 
-    expr.evaluate(new ValueMap(values), BasicOperations.getSource) should equal(result)
+    val doubleValues = Map("B" -> 1.5, "A" -> ValueRange(List(NumericConst(5.0), NumericConst(10.0), NumericConst(15.0))))
+    expr.evaluate(new ValueMap(doubleValues), BasicOperations.getSource) should equal(result)
+
+    // show that math works when we pass in Longs and cast them up to doubles
+    val longValues = Map("B" -> 1.5, "A" -> ValueRange(List(LongConst(5), LongConst(10), LongConst(15))))
+    expr.evaluate(new ValueMap(longValues), BasicOperations.getSource) should equal(result)
   }
 
   test("Boolean AND") {
@@ -62,11 +66,11 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
   test("Boolean COUNT") {
 
     val tests = List(
-      ("COUNT(true)", NumericConst(1)),
-      ("COUNT(false)", NumericConst(0)),
-      ("COUNT(true,true)", NumericConst(2)),
-      ("COUNT(true,false)", NumericConst(1)),
-      ("COUNT(false,false)", NumericConst(0)))
+      ("COUNT(true)", LongConst(1)),
+      ("COUNT(false)", LongConst(0)),
+      ("COUNT(true,true)", LongConst(2)),
+      ("COUNT(true,false)", LongConst(1)),
+      ("COUNT(false,false)", LongConst(0)))
 
     tests.foreach {
       case (f, result) =>

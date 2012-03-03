@@ -39,7 +39,7 @@ object OperationParser extends JavaTokenParsers {
 
   def exp: Parser[Expression] = leaf ~ rep("^" ~ leaf ^^ part) ^^ multiInfix
 
-  def leaf: Parser[Expression] = constant | boolConst | fun | variable | "(" ~> expr <~ ")"
+  def leaf: Parser[Expression] = constants | fun | variable | "(" ~> expr <~ ")"
 
   def fun: Parser[Expression] = ident ~ ("(" ~> csv <~ ")") ^^ {
     case f ~ args => Fun(f, args)
@@ -53,10 +53,14 @@ object OperationParser extends JavaTokenParsers {
     Var(_)
   }
 
-  def constant: Parser[Expression] = floatingPointNumber ^^ { x =>
-    Const(x.toDouble)
-  }
+  def constants: Parser[Expression] = doubleConst ||| longConst ||| boolConst
 
+  def longConst: Parser[Expression] = wholeNumber ^^ { x =>
+    ConstLong(x.toLong)
+  }
+  def doubleConst: Parser[Expression] = (decimalNumber | floatingPointNumber) ^^ { x =>
+    ConstDouble(x.toDouble)
+  }
   def boolConst: Parser[Expression] = """true|false""".r ^^ { x =>
     ConstBoolean(x.toBoolean)
   }
