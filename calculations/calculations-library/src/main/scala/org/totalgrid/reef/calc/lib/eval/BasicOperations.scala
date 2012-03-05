@@ -32,7 +32,8 @@ object BasicOperations {
       new Average,
       new SquareRoot,
       new Count,
-      new And))
+      new And,
+      new Integrate))
   }
 
   class Sum extends MultiNumericOperation {
@@ -101,4 +102,27 @@ object BasicOperations {
     }
   }
 
+  class Integrate extends TimeBasedNumericOperation {
+    def names = List("INTEGRATE")
+
+    case class State(sum: Double, lastMeas: Option[NumericMeas])
+
+    def eval(args: List[NumericMeas]) = {
+      val state = args.foldLeft(State(0, None)) {
+        case (state, meas) =>
+          state.lastMeas match {
+            case Some(NumericMeas(v, t)) =>
+
+              val time = (meas.time - t)
+              if (time < 0) throw new EvalException("Measurements out of order.")
+              val area = if (time > 0) ((meas.doubleValue + v) / 2) * (meas.time - t)
+              else 0
+              state.copy(lastMeas = Some(meas), sum = state.sum + area)
+            case None =>
+              state.copy(lastMeas = Some(meas))
+          }
+      }
+      state.sum
+    }
+  }
 }

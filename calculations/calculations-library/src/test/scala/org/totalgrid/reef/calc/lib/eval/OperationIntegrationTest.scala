@@ -79,4 +79,42 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
     }
   }
 
+  test("Numeric INTEGRATE") {
+
+    val f = "INTEGRATE(A)"
+    val expr = OperationParser.parseFormula(f)
+
+    val tests = List(
+      (20 * 5.0, List((5.0, 0), (5.0, 10), (5.0, 20))),
+      (0.0, List((0.0, 0), (0.0, 10), (0.0, 20))),
+      (100.0, List((0.0, 0), (5.0, 10), (10.0, 20))),
+      (100.0, List((10.0, 0), (5.0, 10), (0.0, 20))),
+      (300.0, List((10.0, 0), (10.0, 10), (20.0, 10), (20.0, 20))))
+
+    tests.foreach {
+      case (output, inputs) =>
+        val values = Map("A" -> ValueRange(inputs.map { v => NumericMeas(v._1, v._2) }))
+        val result = NumericConst(output)
+        expr.evaluate(new ValueMap(values), BasicOperations.getSource) should equal(result)
+    }
+  }
+
+  test("Numeric INTEGRATE errors") {
+
+    val f = "INTEGRATE(A)"
+    val expr = OperationParser.parseFormula(f)
+
+    val tests = List(
+      ("one or more", List()),
+      ("out of order", List((0.0, 10), (0.0, 0))))
+
+    tests.foreach {
+      case (errString, inputs) =>
+        val values = Map("A" -> ValueRange(inputs.map { v => NumericMeas(v._1, v._2) }))
+        intercept[EvalException] {
+          expr.evaluate(new ValueMap(values), BasicOperations.getSource)
+        }.getMessage should include(errString)
+    }
+  }
+
 }

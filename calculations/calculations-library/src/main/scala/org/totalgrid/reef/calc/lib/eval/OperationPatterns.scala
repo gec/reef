@@ -92,4 +92,20 @@ object OperationPatterns {
 
     def eval(args: List[Boolean]): Boolean
   }
+
+  trait TimeBasedNumericOperation extends AbstractOperation {
+    def apply(args: List[OperationValue]): OperationValue = {
+      if (args.size > 0) {
+        val nums = args.map {
+          case NumericMeas(v, t) => NumericMeas(v, t)
+          case _ => throw new EvalException("Operation " + name + " only takes numeric values")
+        }
+        NumericConst(eval(nums))
+      } else {
+        throw new EvalException("Operation " + name + " requires one or more value")
+      }
+    }
+
+    def eval(args: List[NumericMeas]): Double
+  }
 }
