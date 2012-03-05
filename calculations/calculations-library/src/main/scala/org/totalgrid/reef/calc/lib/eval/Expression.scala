@@ -1,4 +1,3 @@
-package org.totalgrid.reef.calc.lib.eval
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,7 +16,12 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.calc.lib.eval
 
 trait Expression {
-  def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue
+  def prepare(ops: OperationSource): PreparedExpression
+}
+
+trait PreparedExpression {
+  def evaluate(inputs: VariableSource): OperationValue
 }

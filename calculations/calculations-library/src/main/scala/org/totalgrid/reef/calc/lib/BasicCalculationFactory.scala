@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.calc.lib
 
-import eval.{ OperationParser, OperationSource }
+import org.totalgrid.reef.calc.lib.eval._
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Calculations.{ Calculation }

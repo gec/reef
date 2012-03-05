@@ -49,7 +49,7 @@ class OperationInterpreterTest extends FunSuite with ShouldMatchers {
 
     val ops = new OpMap(Map("SUM" -> new Op("SUM", check)))
 
-    exp.evaluate(new ValueMap(ins), ops) should equal(NumericConst(10.0))
+    exp.prepare(ops).evaluate(new ValueMap(ins)) should equal(NumericConst(10.0))
   }
 
   test("Nesting") {
@@ -73,6 +73,6 @@ class OperationInterpreterTest extends FunSuite with ShouldMatchers {
 
     val ops = new OpMap(Map("SUM" -> new Op("SUM", sum), "*" -> new Op("*", mult)))
 
-    exp.evaluate(new ValueMap(ins), ops) should equal(NumericConst(40.0))
+    exp.prepare(ops).evaluate(new ValueMap(ins)) should equal(NumericConst(40.0))
   }
 }

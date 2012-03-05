@@ -26,25 +26,29 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class OperationIntegrationTest extends FunSuite with ShouldMatchers {
 
+  def parseFormula(f: String): Formula = {
+    Formula(OperationParser.parseFormula(f), BasicOperations.getSource)
+  }
+
   test("Simple math") {
     val f = "5 * 2"
-    val expr = OperationParser.parseFormula(f)
+    val expr = parseFormula(f)
     val result = NumericConst(10.0)
 
-    expr.evaluate(new ValueMap(Map()), BasicOperations.getSource) should equal(result)
+    expr.evaluate(new ValueMap(Map())) should equal(result)
   }
 
   test("Average") {
     val f = "B + AVG(A)"
-    val expr = OperationParser.parseFormula(f)
+    val expr = parseFormula(f)
     val result = NumericConst(11.5)
 
     val doubleValues = Map("B" -> 1.5, "A" -> ValueRange(List(NumericConst(5.0), NumericConst(10.0), NumericConst(15.0))))
-    expr.evaluate(new ValueMap(doubleValues), BasicOperations.getSource) should equal(result)
+    expr.evaluate(new ValueMap(doubleValues)) should equal(result)
 
     // show that math works when we pass in Longs and cast them up to doubles
     val longValues = Map("B" -> 1.5, "A" -> ValueRange(List(LongConst(5), LongConst(10), LongConst(15))))
-    expr.evaluate(new ValueMap(longValues), BasicOperations.getSource) should equal(result)
+    expr.evaluate(new ValueMap(longValues)) should equal(result)
   }
 
   test("Boolean AND") {
@@ -58,8 +62,8 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
 
     tests.foreach {
       case (f, result) =>
-        val expr = OperationParser.parseFormula(f)
-        expr.evaluate(new ValueMap(Map()), BasicOperations.getSource) should equal(result)
+        val expr = parseFormula(f)
+        expr.evaluate(new ValueMap(Map())) should equal(result)
     }
   }
 
@@ -74,15 +78,14 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
 
     tests.foreach {
       case (f, result) =>
-        val expr = OperationParser.parseFormula(f)
-        expr.evaluate(new ValueMap(Map()), BasicOperations.getSource) should equal(result)
+        val expr = parseFormula(f)
+        expr.evaluate(new ValueMap(Map())) should equal(result)
     }
   }
 
   test("Numeric INTEGRATE") {
 
     val f = "INTEGRATE(A)"
-    val expr = OperationParser.parseFormula(f)
 
     val tests = List(
       (20 * 5.0, List((5.0, 0), (5.0, 10), (5.0, 20))),
@@ -95,14 +98,14 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
       case (output, inputs) =>
         val values = Map("A" -> ValueRange(inputs.map { v => NumericMeas(v._1, v._2) }))
         val result = NumericConst(output)
-        expr.evaluate(new ValueMap(values), BasicOperations.getSource) should equal(result)
+        val expr = parseFormula(f)
+        expr.evaluate(new ValueMap(values)) should equal(result)
     }
   }
 
   test("Numeric INTEGRATE errors") {
 
     val f = "INTEGRATE(A)"
-    val expr = OperationParser.parseFormula(f)
 
     val tests = List(
       ("one or more", List()),
@@ -111,8 +114,9 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
     tests.foreach {
       case (errString, inputs) =>
         val values = Map("A" -> ValueRange(inputs.map { v => NumericMeas(v._1, v._2) }))
+        val expr = parseFormula(f)
         intercept[EvalException] {
-          expr.evaluate(new ValueMap(values), BasicOperations.getSource)
+          expr.evaluate(new ValueMap(values))
         }.getMessage should include(errString)
     }
   }

@@ -1,4 +1,3 @@
-package org.totalgrid.reef.calc.lib.eval
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -17,6 +16,7 @@ package org.totalgrid.reef.calc.lib.eval
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.calc.lib.eval
 
 object OperationInterpreter {
 
@@ -25,37 +25,53 @@ object OperationInterpreter {
   }
 
   case class Fun(fun: String, args: List[Expression]) extends Expression {
-    def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
-      getOrElse(ops, fun).apply(args.map(_.evaluate(inputs, ops)).flatMap(_.toList))
+    def prepare(ops: OperationSource): PreparedExpression = {
+      PreparedFun(getOrElse(ops, fun), args.map { _.prepare(ops) })
+    }
+  }
+
+  case class PreparedFun(operation: Operation, args: List[PreparedExpression]) extends PreparedExpression {
+    def evaluate(inputs: VariableSource) = {
+      operation.apply(args.map(_.evaluate(inputs)).flatMap(_.toList))
     }
   }
 
   case class Infix(op: String, left: Expression, right: Expression) extends Expression {
-    def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
-      getOrElse(ops, op).apply(List(left.evaluate(inputs, ops), right.evaluate(inputs, ops)).flatMap(_.toList))
+    def prepare(ops: OperationSource): PreparedExpression = {
+      PreparedInfix(getOrElse(ops, op), left.prepare(ops), right.prepare(ops))
     }
   }
 
-  case class ConstDouble(v: Double) extends Expression {
-    def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
+  case class PreparedInfix(operation: Operation, left: PreparedExpression, right: PreparedExpression) extends PreparedExpression {
+    def evaluate(inputs: VariableSource) = {
+      operation.apply(List(left.evaluate(inputs), right.evaluate(inputs)).flatMap(_.toList))
+    }
+  }
+
+  trait SimpleExpr extends Expression with PreparedExpression {
+    def prepare(ops: OperationSource) = this
+  }
+
+  case class ConstDouble(v: Double) extends SimpleExpr {
+    def evaluate(inputs: VariableSource): OperationValue = {
       NumericConst(v)
     }
   }
 
-  case class ConstLong(v: Long) extends Expression {
-    def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
+  case class ConstLong(v: Long) extends SimpleExpr {
+    def evaluate(inputs: VariableSource): OperationValue = {
       LongConst(v)
     }
   }
 
-  case class ConstBoolean(v: Boolean) extends Expression {
-    def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
+  case class ConstBoolean(v: Boolean) extends SimpleExpr {
+    def evaluate(inputs: VariableSource): OperationValue = {
       BooleanConst(v)
     }
   }
 
-  case class Var(name: String) extends Expression {
-    def evaluate(inputs: VariableSource, ops: OperationSource): OperationValue = {
+  case class Var(name: String) extends SimpleExpr {
+    def evaluate(inputs: VariableSource): OperationValue = {
       inputs.forName(name)
     }
   }
