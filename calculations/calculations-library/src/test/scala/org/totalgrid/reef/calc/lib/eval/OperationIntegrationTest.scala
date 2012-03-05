@@ -121,4 +121,22 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
     }
   }
 
+  test("Numeric INTEGRATE (Accumulated)") {
+
+    val f = "INTEGRATE(A)"
+    val expr = parseFormula(f)
+
+    val tests = List(
+      (10.0, List((5.0, 0), (5.0, 1), (5.0, 2))),
+      (30.0, List((10.0, 2), (10.0, 3), (10.0, 4))),
+      (30.0, List((20.0, 4))),
+      (50.0, List((20.0, 5))))
+
+    tests.foreach {
+      case (output, inputs) =>
+        val values = Map("A" -> ValueRange(inputs.map { v => NumericMeas(v._1, v._2) }))
+        val result = NumericConst(output)
+        expr.evaluate(new ValueMap(values)) should equal(result)
+    }
+  }
 }

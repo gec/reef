@@ -93,19 +93,25 @@ object OperationPatterns {
     def eval(args: List[Boolean]): Boolean
   }
 
-  trait TimeBasedNumericOperation extends AbstractOperation {
+  trait AccumulatedNumericOperation extends AbstractOperation {
+
+    case class AccumulatedValue(value: Double, lastMeas: Option[NumericMeas])
+
+    var accumulatedValue = AccumulatedValue(0, None)
+
     def apply(args: List[OperationValue]): OperationValue = {
       if (args.size > 0) {
         val nums = args.map {
           case NumericMeas(v, t) => NumericMeas(v, t)
           case _ => throw new EvalException("Operation " + name + " only takes numeric values")
         }
-        NumericConst(eval(nums))
+        accumulatedValue = eval(accumulatedValue, nums)
+        NumericConst(accumulatedValue.value)
       } else {
         throw new EvalException("Operation " + name + " requires one or more value")
       }
     }
 
-    def eval(args: List[NumericMeas]): Double
+    def eval(initialValue: AccumulatedValue, args: List[NumericMeas]): AccumulatedValue
   }
 }

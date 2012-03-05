@@ -102,13 +102,11 @@ object BasicOperations {
     }
   }
 
-  class Integrate extends TimeBasedNumericOperation {
+  class Integrate extends AccumulatedNumericOperation {
     def names = List("INTEGRATE")
 
-    case class State(sum: Double, lastMeas: Option[NumericMeas])
-
-    def eval(args: List[NumericMeas]) = {
-      val state = args.foldLeft(State(0, None)) {
+    def eval(initialValue: AccumulatedValue, args: List[NumericMeas]) = {
+      args.foldLeft(initialValue) {
         case (state, meas) =>
           state.lastMeas match {
             case Some(NumericMeas(v, t)) =>
@@ -117,12 +115,11 @@ object BasicOperations {
               if (time < 0) throw new EvalException("Measurements out of order.")
               val area = if (time > 0) ((meas.doubleValue + v) / 2) * (meas.time - t)
               else 0
-              state.copy(lastMeas = Some(meas), sum = state.sum + area)
+              state.copy(lastMeas = Some(meas), value = state.value + area)
             case None =>
               state.copy(lastMeas = Some(meas))
           }
       }
-      state.sum
     }
   }
 }
