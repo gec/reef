@@ -82,7 +82,7 @@ class MeasInputManagerTest extends FunSuite with ShouldMatchers {
 
     Mockito.doReturn(subResultA).when(service).subscribeToMeasurementsByNames(List("PointA"))
 
-    manager.initialize(List(InputConfig("PointA", new SingleLatestBucket("A"))), Some(trigger))
+    manager.initialize(makeTraceMeas(0), List(InputConfig("PointA", new SingleLatestBucket("A"))), Some(trigger))
 
     trigger.lastMeas should equal(Some(initalMeas))
 
@@ -110,7 +110,7 @@ class MeasInputManagerTest extends FunSuite with ShouldMatchers {
 
     Mockito.doReturn(subResultA).when(service).subscribeToMeasurementHistoryByName("PointA", 10)
 
-    manager.initialize(List(InputConfig("PointA", new LimitRangeBucket("A", 10))), Some(trigger))
+    manager.initialize(makeTraceMeas(0), List(InputConfig("PointA", new LimitRangeBucket("A", 10))), Some(trigger))
 
     trigger.lastMeas should equal(Some(initialResults.last))
 

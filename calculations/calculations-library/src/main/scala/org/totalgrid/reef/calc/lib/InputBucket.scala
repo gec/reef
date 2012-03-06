@@ -28,6 +28,7 @@ sealed trait MeasRequest
 case object SingleLatest extends MeasRequest
 case class MultiSince(from: Long, limit: Int) extends MeasRequest
 case class MultiLimit(count: Int) extends MeasRequest
+case class SincePublishing(count: Int) extends MeasRequest
 
 trait MeasBucket {
   def onReceived(m: Measurement)
@@ -63,6 +64,8 @@ object InputBucket {
       calc.range.fromMs.map(from => new FromRangeBucket(SystemTimeSource, variable, from, limit))
     } orElse {
       calc.range.limit.map(lim => new LimitRangeBucket(variable, limit))
+    } orElse {
+      calc.range.sinceLast.map(last => new NoStorageBucket(variable, limit))
     } getOrElse {
       throw new Exception("Cannot build input from configuration: " + pointName + " " + variable + " config: " + calc)
     }
@@ -114,6 +117,28 @@ object InputBucket {
     }
 
     def getSnapshot = if (queue.size >= minimum) Some(queue.toList) else None
+  }
+
+  class NoStorageBucket(val variable: String, limit: Int, minimum: Int = 1) extends InputBucket {
+
+    def getMeasRequest = SincePublishing(limit)
+
+    private val queue = new mutable.Queue[Measurement]()
+
+    def onReceived(m: Measurement) = {
+      queue.enqueue(m)
+      while (queue.size > limit) {
+        queue.dequeue()
+      }
+    }
+
+    def getSnapshot = {
+      if (queue.size >= minimum) {
+        val result = queue.toList
+        queue.clear()
+        Some(result)
+      } else None
+    }
   }
 
   class SingleLatestBucket(val variable: String) extends InputBucket {

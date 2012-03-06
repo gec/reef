@@ -46,7 +46,9 @@ class MeasInputManager(service: MeasurementService, timeSource: TimeSource) exte
   private var buckets: List[InputBucket] = Nil
   private var subscriptions: List[Subscription[Measurement]] = Nil
 
-  def initialize(inputConfigs: List[InputConfig], trigger: Option[EventedTriggerStrategy]) {
+  private val mutex = this
+
+  def initialize(outputMeasurement: Measurement, inputConfigs: List[InputConfig], trigger: Option[EventedTriggerStrategy]) {
 
     def handleSubResult(subResult: SubscriptionResult[List[Measurement], Measurement], buck: InputBucket): Subscription[Measurement] = {
       subResult.getResult.foreach { m =>
@@ -55,7 +57,7 @@ class MeasInputManager(service: MeasurementService, timeSource: TimeSource) exte
       }
       val sub = subResult.getSubscription
       sub.start(new SubscriptionEventAcceptor[Measurement] {
-        def onEvent(event: SubscriptionEvent[Measurement]) {
+        def onEvent(event: SubscriptionEvent[Measurement]) = mutex.synchronized {
           buck.onReceived(event.getValue)
           trigger.foreach(_.handle(event.getValue))
         }
@@ -74,12 +76,14 @@ class MeasInputManager(service: MeasurementService, timeSource: TimeSource) exte
             service.subscribeToMeasurementHistoryByName(point, timeSource.now + from, limit)
           case MultiLimit(count) =>
             service.subscribeToMeasurementHistoryByName(point, count)
+          case SincePublishing(count) =>
+            service.subscribeToMeasurementHistoryByName(point, outputMeasurement.getTime, count)
         }
         handleSubResult(subResult.await, bucket)
     }
   }
 
-  def getSnapshot: Option[Map[String, List[Measurement]]] = {
+  def getSnapshot: Option[Map[String, List[Measurement]]] = mutex.synchronized {
     MeasInputManager.getSnapshot(buckets)
   }
 

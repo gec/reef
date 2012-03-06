@@ -120,4 +120,14 @@ class InputBucketTest extends FunSuite with ShouldMatchers {
     timeSource.time = 299
     buck.getSnapshot should equal(None)
   }
+
+  test("No Storage Bucket") {
+    val buck = new NoStorageBucket("test01", 10000)
+    buck.getSnapshot should equal(None)
+
+    val first = makeTraceMeas(1)
+    buck.onReceived(first)
+    buck.getSnapshot should equal(Some(List(first)))
+    buck.getSnapshot should equal(None)
+  }
 }
