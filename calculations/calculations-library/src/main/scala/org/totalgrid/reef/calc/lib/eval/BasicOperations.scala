@@ -106,14 +106,14 @@ object BasicOperations {
     def names = List("INTEGRATE")
 
     def eval(initialValue: AccumulatedValue, args: List[NumericMeas]) = {
-      args.foldLeft(initialValue) {
+      args.foldLeft(initialValue.copy(value = 0)) {
         case (state, meas) =>
           state.lastMeas match {
             case Some(NumericMeas(v, t)) =>
 
               val time = (meas.time - t)
-              if (time < 0) throw new EvalException("Measurements out of order.")
-              val area = if (time > 0) ((meas.doubleValue + v) / 2) * (meas.time - t)
+              if (time < 0) throw new EvalException("Measurements out of order. new: " + meas.time + " previous: " + t + " delta: " + time)
+              val area = if (time > 0) ((meas.doubleValue + v) * time) / 2
               else 0
               state.copy(lastMeas = Some(meas), value = state.value + area)
             case None =>

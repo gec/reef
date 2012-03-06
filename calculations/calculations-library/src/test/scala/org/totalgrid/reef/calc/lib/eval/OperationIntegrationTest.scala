@@ -108,7 +108,6 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
     val f = "INTEGRATE(A)"
 
     val tests = List(
-      ("one or more", List()),
       ("out of order", List((0.0, 10), (0.0, 0))))
 
     tests.foreach {
@@ -124,7 +123,7 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
   test("Numeric INTEGRATE (Accumulated)") {
 
     val f = "INTEGRATE(A)"
-    val expr = parseFormula(f)
+    val expr = new AccumulatedFormula(NumericConst(0), parseFormula(f))
 
     val tests = List(
       (10.0, List((5.0, 0), (5.0, 1), (5.0, 2))),

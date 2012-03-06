@@ -108,7 +108,7 @@ object OperationPatterns {
         accumulatedValue = eval(accumulatedValue, nums)
         NumericConst(accumulatedValue.value)
       } else {
-        throw new EvalException("Operation " + name + " requires one or more value")
+        NumericConst(accumulatedValue.value)
       }
     }
 
