@@ -154,15 +154,20 @@ object CalculationsLoader {
           input.setSingle(SingleMeasurement.newBuilder.setStrategy(strategy))
         case m: Multi if (m.isSetSampleRange) =>
           val range = MeasurementRange.newBuilder.setLimit(m.getSampleRange.getLimit.toInt)
+          if (m.isSinceLastPublish) range.setSinceLast(true)
           input.setRange(range)
         case m: Multi if (m.isSetTimeRange) =>
           val range = MeasurementRange.newBuilder
           val rangeNode = m.getTimeRange
+          if (m.isSinceLastPublish) throw new LoadingException("Cannot use both timeRange and sinceLastPublish on same variable")
           if (!rangeNode.isSetFrom && !rangeNode.isSetTo && !rangeNode.isSetLimit) throw new LoadingException("Must set atleast one of from,to,limit in TimeRange")
           if (rangeNode.isSetFrom) range.setFromMs(rangeNode.getFrom)
           if (rangeNode.isSetTo) range.setToMs(rangeNode.getTo)
           if (rangeNode.isSetLimit) range.setLimit(rangeNode.getLimit.toInt)
           input.setRange(range)
+        case m: Multi if (m.isSetSinceLastPublish) =>
+          if (!m.isSinceLastPublish) throw new LoadingException("Must include sampleRange or timeRange if disabling sinceLastPublish")
+          input.setRange(MeasurementRange.newBuilder.setSinceLast(true))
       }
 
       input.build

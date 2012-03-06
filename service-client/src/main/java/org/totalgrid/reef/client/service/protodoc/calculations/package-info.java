@@ -49,7 +49,9 @@
  * }
  * 
  * // if 'from' or 'to' is set this is a time based range, other wise it is a samples range
+ * // limit can be set for all types
  * message MeasurementRange{
+ *     optional  bool        since_last = 4;
  *     optional  uint64      from_ms = 1;
  *     optional  uint64      to_ms   = 2;
  *     optional  uint32      limit   = 3;
@@ -83,8 +85,8 @@
  * 
  * message OutputQuality{
  *     enum Strategy{
- *         ALWAYS_OK     = 1;
- *         MERGE_QUALITY = 2;
+ *         WORST_QUALITY = 1;
+ *         ALWAYS_OK     = 2;
  *         SET_QUALITY   = 3;
  *     }
  *     optional Strategy strategy        = 1;

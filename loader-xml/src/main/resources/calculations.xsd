@@ -65,6 +65,7 @@
                         <xs:element ref="timeRange"/>
                         <xs:element ref="sampleRange"/>
                     </xs:choice>
+                    <xs:attribute name="sinceLastPublish" type="xs:boolean" default="false"/>
                 </xs:extension>
             </xs:complexContent>
         </xs:complexType>

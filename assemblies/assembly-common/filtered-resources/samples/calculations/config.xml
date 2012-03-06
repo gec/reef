@@ -8,7 +8,10 @@
                xmlns:calc="calculations.loader.reef.totalgrid.org">
 
     <actionModel>
-
+        <!-- We use a blank action set just to define the high/low values for the simulator-->
+        <actionSet name="Nil">
+            <high/>
+        </actionSet>
 
     </actionModel>
 
@@ -17,16 +20,20 @@
             <equip:equipmentProfile name="Line">
 
 
-                <equip:analog name="Voltage" unit="V"/>
-                <equip:analog name="Current" unit="A"/>
+                <equip:analog name="Voltage" unit="V">
+                    <equip:range actionSet="Nil" low="118" high="122" deadband="1"/>
+                </equip:analog>
+                <equip:analog name="Current" unit="A">
+                    <equip:range actionSet="Nil" low="0" high="4" deadband="1"/>
+                </equip:analog>
 
                 <equip:analog name="Power" unit="W">
                     <calc:calculation>
                         <calc:inputs>
-                            <calc:single pointName="Current" variable="A"/>
-                            <calc:single pointName="Voltage" variable="B"/>
+                            <calc:single pointName="Current" variable="C"/>
+                            <calc:single pointName="Voltage" variable="V"/>
                         </calc:inputs>
-                        <calc:formula>A * B</calc:formula>
+                        <calc:formula>C * V</calc:formula>
                     </calc:calculation>
                 </equip:analog>
 
@@ -34,12 +41,9 @@
                     <calc:calculation>
                         <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
                         <calc:inputs>
-                            <calc:multi pointName="Power" variable="A">
-                                <calc:timeRange from="-300000"/>
-                            </calc:multi>
+                            <calc:multi pointName="Power" variable="PINT" sinceLastPublish="true" />
                         </calc:inputs>
-                        <!--<calc:formula>INTEGRATE(A) * 0.0001</calc:formula>-->
-                        <calc:formula>SUM(A)</calc:formula>
+                        <calc:formula>INTEGRATE(PINT) * 0.001 * (1/3600000.0)</calc:formula>
                         <calc:output accumulate="true" />
                     </calc:calculation>
                 </equip:analog>
@@ -74,14 +78,11 @@
 
                 <equip:analog name="StoredEnergy" unit="kWH">
                     <calc:calculation>
-                        <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
+                        <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC"/>
                         <calc:inputs>
-                            <calc:multi pointName="ChargeLoad" variable="A">
-                                <calc:timeRange from="-300000"/>
-                            </calc:multi>
+                            <calc:multi pointName="ChargeLoad" variable="A" sinceLastPublish="true"/>
                         </calc:inputs>
-                        <!--<calc:formula>INTEGRATE(A) * 0.0001</calc:formula>-->
-                        <calc:formula>SUM(A)</calc:formula>
+                        <calc:formula>INTEGRATE(A) * 0.001 * (1/3600000.0)</calc:formula>
                         <calc:output accumulate="true" />
                     </calc:calculation>
                 </equip:analog>

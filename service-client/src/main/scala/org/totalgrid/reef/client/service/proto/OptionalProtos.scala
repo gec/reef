@@ -125,6 +125,7 @@ object OptionalProtos {
   }
   implicit def proto2OptCalculationsMeasurementRange(a: org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange): OptCalculationsMeasurementRange = new OptCalculationsMeasurementRange(Some(a))
   class OptCalculationsMeasurementRange(real: Option[org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange]) extends OptionalStruct(real) {
+    val sinceLast = optionally(_.hasSinceLast, _.getSinceLast)
     val fromMs = optionally(_.hasFromMs, _.getFromMs)
     val toMs = optionally(_.hasToMs, _.getToMs)
     val limit = optionally(_.hasLimit, _.getLimit)
@@ -352,6 +353,7 @@ object OptionalProtos {
     val unit = optionally(_.hasUnit, _.getUnit)
     val time = optionally(_.hasTime, _.getTime)
     val isDeviceTime = optionally(_.hasIsDeviceTime, _.getIsDeviceTime)
+    val systemTime = optionally(_.hasSystemTime, _.getSystemTime)
   }
   implicit def proto2OptMeasurementsMeasurementBatch(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch): OptMeasurementsMeasurementBatch = new OptMeasurementsMeasurementBatch(Some(a))
   class OptMeasurementsMeasurementBatch(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch]) extends OptionalStruct(real) {
