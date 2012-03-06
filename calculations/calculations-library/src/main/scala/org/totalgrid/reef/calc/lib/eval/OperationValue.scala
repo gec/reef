@@ -21,6 +21,14 @@ package org.totalgrid.reef.calc.lib.eval
 sealed trait OperationValue {
   def toList: List[OperationValue] = List(this)
 }
+object OperationValue {
+  def combine(a1: OperationValue, a2: OperationValue): OperationValue = {
+    (a1, a2) match {
+      case (NumericValue(v1), NumericValue(v2)) => NumericConst(v1 + v2)
+      case _ => throw new EvalException("Cannot combine " + a1 + " and " + a2)
+    }
+  }
+}
 
 case class ValueRange(list: List[OperationValue]) extends OperationValue {
   override def toList: List[OperationValue] = list

@@ -28,7 +28,8 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 case class CalculationSettings(components: CalculationComponents,
   triggerStrategy: CalculationTriggerStrategy,
-  inputs: List[InputConfig])
+  inputs: List[InputConfig],
+  accumulate: Boolean)
 
 class BasicCalculationFactory(
     rootClient: Client,
@@ -41,13 +42,26 @@ class BasicCalculationFactory(
 
   def build(config: Calculation): Cancelable = {
 
-    val settings = parseConfig(config, operations)
+    var settings = parseConfig(config, operations)
 
     val metrics = metricsSource.getCalcMetrics(settings.components.measSettings.name)
 
     // get a new client (strand) for each calculation
     val client = rootClient.spawn()
     val services = client.getRpcInterface(classOf[AllScadaService])
+
+    val currentMeasurement = services.getMeasurementByName(settings.components.measSettings.name).await
+
+    if (settings.accumulate) {
+      val meas = try {
+        MeasurementConverter.convertMeasurement(currentMeasurement)
+      } catch {
+        case e: EvalException =>
+          NumericConst(0)
+      }
+      val accumulatedFormula = new AccumulatedFormula(meas, settings.components.formula)
+      settings = settings.copy(components = settings.components.copy(formula = accumulatedFormula))
+    }
 
     val inputDataManager = new MeasInputManager(services, timeSource)
 
@@ -60,7 +74,7 @@ class BasicCalculationFactory(
 
     settings.triggerStrategy.setEvaluationFunction(evaluator.attempt)
 
-    inputDataManager.initialize(settings.inputs, eventedTrigger)
+    inputDataManager.initialize(currentMeasurement, settings.inputs, eventedTrigger)
 
     initiatingTrigger.foreach(_.start(client))
 
@@ -109,7 +123,7 @@ object BasicCalculationFactory {
       throw new Exception("Must have triggering config")
     }
 
-    CalculationSettings(components, triggerStrategy, inputs)
+    CalculationSettings(components, triggerStrategy, inputs, config.getAccumulate)
   }
 }
 

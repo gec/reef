@@ -22,6 +22,16 @@ trait Formula {
   def evaluate(inputs: VariableSource): OperationValue
 }
 
+class AccumulatedFormula(var lastValue: OperationValue, formula: Formula) extends Formula {
+
+  def evaluate(inputs: VariableSource) = {
+    val incrementalValue = formula.evaluate(inputs)
+    val result = OperationValue.combine(lastValue, incrementalValue)
+    lastValue = result
+    result
+  }
+}
+
 object Formula {
   def apply(expr: Expression, opSource: OperationSource) = {
     new BasicFormulaEvaluator(expr, opSource)
