@@ -30,10 +30,10 @@
                 <equip:analog name="Power" unit="W">
                     <calc:calculation>
                         <calc:inputs>
-                            <calc:single pointName="Current" variable="C"/>
-                            <calc:single pointName="Voltage" variable="V"/>
+                            <calc:single pointName="Current" variable="A"/>
+                            <calc:single pointName="Voltage" variable="B"/>
                         </calc:inputs>
-                        <calc:formula>C * V</calc:formula>
+                        <calc:formula>A * B</calc:formula>
                     </calc:calculation>
                 </equip:analog>
 
