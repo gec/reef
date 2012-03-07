@@ -31,7 +31,7 @@ object RpcProvider {
   def apply(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = {
     new ServiceProviderInfo {
       override val getFactory = new ServiceProviderFactory {
-        def createRpcProvider(client: Client) = fun(client.asInstanceOf[Client])
+        def createRpcProvider(client: Client) = fun(client)
       }
 
       import scala.collection.JavaConversions._

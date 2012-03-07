@@ -38,7 +38,7 @@ trait DefaultServiceRegistry {
     }
   }
 
-  def getRpcInterface[A](klass: Class[A], sclient: Client, jclient: JClient): A = this.synchronized {
+  def getRpcInterface[A](klass: Class[A], sclient: => Client, jclient: => JClient): A = this.synchronized {
     providers.get(klass) match {
       //case Some(creator) => creator.createRpcProvider(client).asInstanceOf[A]
       case Some(creator) => creator match {
