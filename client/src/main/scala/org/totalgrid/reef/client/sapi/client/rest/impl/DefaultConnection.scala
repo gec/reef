@@ -80,7 +80,15 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     val strand = Strand(executor)
     DefaultAnnotatedOperations.safeOperation("Error logging in with name: " + userName, strand) {
       val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).setClientVersion(Version.getClientVersion).build
-      def convert(response: Response[AuthRequest]): Result[Client] = response.one.map(r => createClient(r.getToken, strand))
+      def convert(response: Response[AuthRequest]): Result[Client] = {        
+        response.one.map { r =>
+          if(!r.hasServerVersion) logger.warn("Login response did not include the server version")
+          else if(r.getServerVersion != Version.getClientVersion) {
+            logger.warn("The server is running " + r.getServerVersion+", but the client is " + Version.getClientVersion)
+          }
+          createClient(r.getToken, strand)
+        }
+      }
       request(Envelope.Verb.POST, agent, BasicRequestHeaders.empty, strand).map(convert)
     }
   }

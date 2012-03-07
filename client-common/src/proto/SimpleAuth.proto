@@ -13,5 +13,6 @@ message AuthRequest{
     optional string login_location  = 4;
     optional string token           = 5;
     optional uint64 expiration_time = 6;
-    optional string client_version  = 7;
+    optional string client_version  = 7;  // provided by the client at login
+    optional string server_version  = 8;  // provided by the server on response
 }

@@ -35,10 +35,9 @@ class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
   override def postAsync(contextSource: RequestContextSource, req: AuthRequest)(callback: (Response[AuthRequest]) => Unit) {
     val builder = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(req.getName).setPassword(req.getPassword))
     if (req.hasClientVersion) builder.setClientVersion(req.getClientVersion)
-    val proto = builder.build()
-    val authTokenRecord = contextSource.transaction { model.createFromProto(_, proto) }
-
-    callback(Response(Envelope.Status.OK, req.toBuilder.setToken(authTokenRecord.token).build))
+    val authTokenRecord = contextSource.transaction { model.createFromProto(_, builder.build()) }
+    val response = req.toBuilder.setToken(authTokenRecord.token).setServerVersion("SERVER_VERSION").build()
+    callback(Response(Envelope.Status.OK, response))
   }
 
   override def deleteAsync(source: RequestContextSource, req: AuthRequest)(callback: (Response[AuthRequest]) => Unit) {
