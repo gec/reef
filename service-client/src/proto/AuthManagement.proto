@@ -34,4 +34,5 @@ message AuthToken{
     repeated PermissionSet permission_sets = 4;
     optional string        token           = 5;
     optional uint64        expiration_time = 6;
+    optional string        client_version  = 7;
 }

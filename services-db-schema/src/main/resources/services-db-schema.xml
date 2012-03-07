@@ -785,4 +785,11 @@
     <changeSet author="incremental" context="original" id="1328639639036-5">
         <dropTable tableName="Foo"/>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1331138724917-1">
+        <addColumn tableName="AuthToken">
+            <column name="clientVersion" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

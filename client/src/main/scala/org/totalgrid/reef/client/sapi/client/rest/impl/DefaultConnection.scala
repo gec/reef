@@ -29,7 +29,7 @@ import org.totalgrid.reef.client.sapi.client._
 import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
-import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
+import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.client.{ Version, SubscriptionBinding, AnyNodeDestination, Routable }

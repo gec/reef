@@ -97,6 +97,7 @@ case class AuthToken(
     val token: String,
     val agentId: Long,
     val loginLocation: String,
+    val clientVersion: String,
     var expirationTime: Long) extends ModelWithId {
 
   val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))

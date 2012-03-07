@@ -175,7 +175,7 @@ class AuthTokenServiceModel
   override def createFromProto(context: RequestContext, authToken: AuthToken): AuthTokenModel =
     {
       logger.info("logging in agent: " + authToken.getAgent.getName)
-      val currentTime: Long = System.currentTimeMillis // need one time for authToken DB entry and posted event.
+      val currentTime: Long = System.currentTimeMillis // need one time for authToken DB entry and posted event
 
       val agentName: String = authToken.agent.name.getOrElse(postLoginException(context, Status.BAD_REQUEST, "Cannot login without setting agent name."))
       // set the user name for systemEvent publishing
@@ -230,9 +230,17 @@ class AuthTokenServiceModel
         currentTime + permissionSets.map(ps => ps.defaultExpirationTime).min
       }
 
+      // For now, just warn if the client version is unknown
+      val version = if (authToken.hasClientVersion) {
+        authToken.getClientVersion
+      } else {
+        logger.warn("Client attempting to login with unknown version")
+        "Unknown"
+      }
+
       // TODO: generate an unguessable security token
       val token = java.util.UUID.randomUUID().toString
-      val newAuthToken = table.insert(new AuthTokenModel(token, agent.id, authToken.getLoginLocation, expirationTime))
+      val newAuthToken = table.insert(new AuthTokenModel(token, agent.id, authToken.getLoginLocation, version, expirationTime))
       // link the token to all of the permisisonsSet they have checked out access to
       permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, newAuthToken.id)))
 
