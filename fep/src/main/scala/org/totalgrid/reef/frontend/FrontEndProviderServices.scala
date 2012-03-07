@@ -28,6 +28,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.client.SubscriptionResult
+import org.totalgrid.reef.client.sapi.client.rest.RpcProvider
 
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.client.rest.Client
@@ -39,6 +40,10 @@ trait FrontEndProviderServices extends AllScadaService {
   def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[EndpointConnection], EndpointConnection]]
 
   def registerApplicationAsFrontEnd(applicationUuid: ReefUUID, protocols: List[String]): Promise[FrontEndProcessor]
+}
+
+object FrontEndProviderServices {
+  val serviceInfo = RpcProvider(new FrontEndProviderServicesImpl(_), List(classOf[FrontEndProviderServices]))
 }
 
 class FrontEndProviderServicesImpl(client: Client)
