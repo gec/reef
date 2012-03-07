@@ -21,54 +21,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>1.9</version>
-                <executions>
-                    <execution>
-                        <!-- must run before the replacer plugin -->
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>revision</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>maven-replacer-plugin</artifactId>
-                <version>1.3.9</version>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <outputFile>
-                        target/generated-sources/scala/org/totalgrid/reef/client/Version.scala.template
-                    </outputFile>
-                    <includes>
-                        <include>src/main/resources/Version.scala</include>
-                    </includes>
-                    <replacements>
-                        <replacement>
-                            <token>PROJECT_VERSION</token>
-                            <value>${project.version}</value>
-                        </replacement>
-                        <replacement>
-                            <token>GIT_COMMIT_ID</token>
-                            <value>${git.commit.id}</value>
-                        </replacement>
-                    </replacements>
-                </configuration>
-            </plugin>
 			<plugin>
 				<executions>
 					<execution>

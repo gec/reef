@@ -19,6 +19,14 @@
 package org.totalgrid.reef.client
 
 object Version {
+
   def getProjectVersion = "PROJECT_VERSION"
+
   def getGitCommitId = "GIT_COMMIT_ID"
+
+  def isSnapshot = getProjectVersion.contains("SNAPSHOT")
+
+  def getClientVersion = if(isSnapshot) getProjectVersion + "-" + getGitCommitId else getProjectVersion
+
+
 }

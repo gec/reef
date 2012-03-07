@@ -27,12 +27,12 @@ import org.totalgrid.reef.client.sapi.client.rest._
 import org.totalgrid.reef.client.sapi.client._
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Routable }
 
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.UserSettings
+import org.totalgrid.reef.client.{Version, SubscriptionBinding, AnyNodeDestination, Routable}
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -79,7 +79,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   def login(userName: String, password: String): Promise[Client] = {
     val strand = Strand(executor)
     DefaultAnnotatedOperations.safeOperation("Error logging in with name: " + userName, strand) {
-      val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).build
+      val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).setClientVersion(Version.getClientVersion).build
       def convert(response: Response[AuthRequest]): Result[Client] = response.one.map(r => createClient(r.getToken, strand))
       request(Envelope.Verb.POST, agent, BasicRequestHeaders.empty, strand).map(convert)
     }
