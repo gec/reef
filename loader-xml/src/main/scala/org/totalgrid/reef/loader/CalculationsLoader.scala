@@ -23,7 +23,6 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.service.proto.Calculations._
 import org.totalgrid.reef.client.service.proto.Model.Point
-import org.totalgrid.reef.client.service.proto.Calculations.FilteredMeas.FilterType
 
 object CalculationsLoader {
 
@@ -49,9 +48,9 @@ object CalculationsLoader {
     }
 
     val triggerSettings = parseTriggers(calc)
-    val variableTriggerNames = triggerSettings.getVariablesList.toList.map { _.getVariableName }
+    /*val variableTriggerNames = triggerSettings.getVariablesList.toList.map { _.getVariableName }
     if (!variableTriggerNames.diff(variablesDefined).isEmpty)
-      throw new LoadingException("Variables " + variableTriggerNames.mkString("(", ",", ")") + " not defined: " + variablesDefined.mkString("(", ",", ")"))
+      throw new LoadingException("Variables " + variableTriggerNames.mkString("(", ",", ")") + " not defined: " + variablesDefined.mkString("(", ",", ")"))*/
     builder.setTriggering(triggerSettings)
 
     builder.setTriggeringQuality(parseTriggeringQuality(calc))
@@ -105,13 +104,13 @@ object CalculationsLoader {
     val triggerSettings = TriggerStrategy.newBuilder
     if (calc.isSetTriggering) {
       val trigger = calc.getTriggering
-      val options = List(trigger.isSetSchedule, trigger.isSetUpdateEveryPeriodMS, trigger.isSetUpdateOnAnyChange, trigger.getVariableTrigger.size > 0)
+      val options = List(trigger.isSetSchedule, trigger.isSetUpdateEveryPeriodMS, trigger.isSetUpdateOnAnyChange)
       if (options.filter(_ == true).size > 1) throw new LoadingException("Must only specify one trigger type.")
       trigger match {
         case t if (t.isSetSchedule) => triggerSettings.setSchedule(t.getSchedule)
         case t if (t.isSetUpdateEveryPeriodMS) => triggerSettings.setPeriodMs(t.getUpdateEveryPeriodMS)
         case t if (t.isSetUpdateOnAnyChange) => triggerSettings.setUpdateAny(t.isUpdateOnAnyChange)
-        case t if (t.getVariableTrigger.size > 0) =>
+        /*case t if (t.getVariableTrigger.size > 0) =>
           t.getVariableTrigger.toList.foreach { tv =>
             val tb = FilteredMeas.newBuilder.setVariableName(tv.getVariable)
             tv match {
@@ -125,7 +124,7 @@ object CalculationsLoader {
                 tb.setType(safeValueOf(tv.getType, FilterType.values(), FilterType.valueOf _))
             }
             triggerSettings.addVariables(tb)
-          }
+          }*/
         case _ => triggerSettings.setUpdateAny(true)
       }
     } else {

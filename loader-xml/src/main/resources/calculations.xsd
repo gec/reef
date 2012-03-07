@@ -90,13 +90,13 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="variableTrigger">
+    <!--<xs:element name="variableTrigger">
         <xs:complexType>
             <xs:attribute name="variable" type="xs:string" use="required"/>
             <xs:attribute name="type" type="xs:string"/>
             <xs:attribute name="deadband" type="xs:double"/>
         </xs:complexType>
-    </xs:element>
+    </xs:element>-->
 
     <xs:element name="outputQuality">
         <xs:complexType>
@@ -122,9 +122,9 @@
     <xs:element name="triggering">
         <xs:complexType>
 
-            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <!--<xs:sequence minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="variableTrigger"/>
-            </xs:sequence>
+            </xs:sequence>-->
             <xs:attribute name="schedule" type="xs:string"/>
             <xs:attribute name="updateEveryPeriodMS" type="xs:int"/>
             <xs:attribute name="updateOnAnyChange" type="xs:boolean"/>
