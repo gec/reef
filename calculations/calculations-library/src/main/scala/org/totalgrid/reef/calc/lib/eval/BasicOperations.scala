@@ -24,69 +24,55 @@ object BasicOperations {
 
   def getSource = {
     new BasicOperationSource(List(
-      new Sum,
-      new Subtract,
-      new Product,
-      new Divide,
-      new Power,
-      new Average,
-      new Max,
-      new Min,
-      new Greater,
-      new Less,
-      new SquareRoot,
-      new Count,
-      new And,
-      new Or,
-      new Not,
-      new Integrate))
+      (List("SUM", "+"), () => new Sum),
+      (List("SUBTRACT", "-"), () => new Subtract),
+      (List("PRODUCT", "*"), () => new Product),
+      (List("DIVIDE", "/"), () => new Divide),
+      (List("POWER", "^"), () => new Power),
+      (List("AVERAGE"), () => new Average),
+      (List("MAX"), () => new Max),
+      (List("MIN"), () => new Min),
+      (List("GREATER"), () => new Greater),
+      (List("LESS"), () => new Less),
+      (List("SQRT"), () => new SquareRoot),
+      (List("COUNT"), () => new Count),
+      (List("AND"), () => new And),
+      (List("OR"), () => new Or),
+      (List("NOT"), () => new Not),
+      (List("INTEGRATE"), () => new Integrate)))
   }
 
   class Sum extends MultiNumericOperation {
-    def names = List("SUM", "+")
-
     def eval(args: List[Double]): Double = {
       args.foldLeft(0.0) { _ + _ }
     }
   }
 
   class Subtract extends PairNumericOperation {
-    def names = List("SUB", "-")
-
     def eval(l: Double, r: Double): Double = { l - r }
   }
 
   class Product extends MultiNumericOperation {
-    def names = List("PROD", "*")
-
     def eval(args: List[Double]): Double = {
       args.reduceLeft(_ * _)
     }
   }
 
   class Divide extends PairNumericOperation {
-    def names = List("DIV", "/")
-
     def eval(l: Double, r: Double): Double = { l / r }
   }
 
   class Power extends PairNumericOperation {
-    def names = List("POW", "^")
-
     def eval(l: Double, r: Double): Double = { math.pow(l, r) }
   }
 
   class Average extends MultiNumericOperation {
-    def names = List("AVG")
-
     def eval(args: List[Double]): Double = {
       args.foldLeft(0.0) { _ + _ } / args.size
     }
   }
 
   class Max extends MultiNumericOperation {
-    def names = List("MAX")
-
     def eval(args: List[Double]): Double = {
       args.foldLeft(Option.empty[Double]) { (result, value) =>
         result match {
@@ -98,8 +84,6 @@ object BasicOperations {
   }
 
   class Min extends MultiNumericOperation {
-    def names = List("MIN")
-
     def eval(args: List[Double]): Double = {
       args.foldLeft(Option.empty[Double]) { (result, value) =>
         result match {
@@ -111,58 +95,40 @@ object BasicOperations {
   }
 
   class Greater extends ConditionalPairNumericOperation {
-    def names = List("GREATER")
-
     def eval(l: Double, r: Double) = l > r
   }
 
   class Less extends ConditionalPairNumericOperation {
-    def names = List("LESS")
-
     def eval(l: Double, r: Double) = l < r
   }
 
   class SquareRoot extends SingleNumericOperation {
-    def names = List("SQRT")
-
-    def eval(v: Double): Double = {
-      math.sqrt(v)
-    }
+    def eval(v: Double): Double = math.sqrt(v)
   }
 
   class Not extends SingleBooleanOperation {
-    def names = List("NOT")
-
     def eval(arg: Boolean) = !arg
   }
 
   class And extends BooleanReduceOperation {
-    def names = List("AND")
-
     def eval(args: List[Boolean]) = {
       args.foldLeft(true) { case (out, v) => out && v }
     }
   }
 
   class Or extends BooleanReduceOperation {
-    def names = List("OR")
-
     def eval(args: List[Boolean]) = {
       args.foldLeft(false) { case (out, v) => out || v }
     }
   }
 
   class Count extends BooleanFoldOperation {
-    def names = List("COUNT")
-
     def eval(args: List[Boolean]) = {
       args.foldLeft(0) { case (sum, v) => sum + (if (v) 1 else 0) }
     }
   }
 
   class Integrate extends AccumulatedNumericOperation {
-    def names = List("INTEGRATE")
-
     def eval(initialValue: AccumulatedValue, args: List[NumericMeas]) = {
       args.foldLeft(initialValue.copy(value = 0)) {
         case (state, meas) =>

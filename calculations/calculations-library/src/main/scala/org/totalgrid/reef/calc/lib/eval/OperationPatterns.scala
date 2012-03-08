@@ -20,7 +20,7 @@ package org.totalgrid.reef.calc.lib.eval
 
 object OperationPatterns {
   trait AbstractOperation extends Operation {
-    protected val name = names.headOption.getOrElse(this.getClass.getSimpleName)
+    protected val name = this.getClass.getSimpleName
   }
 
   trait MultiNumericOperation extends AbstractOperation {

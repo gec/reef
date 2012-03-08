@@ -18,8 +18,8 @@
  */
 package org.totalgrid.reef.calc.lib.eval
 
-class BasicOperationSource(ops: List[Operation]) extends OperationSource {
-  private val map = ops.flatMap(op => op.names.map((_, op))).toMap
+class BasicOperationSource(ops: List[(List[String], () => Operation)]) extends OperationSource {
+  private val map: Map[String, () => Operation] = ops.flatMap { case (names, opFun) => names.map((_, opFun)) }.toMap
 
-  def forName(name: String): Option[Operation] = map.get(name)
+  def forName(name: String): Option[Operation] = map.get(name).map { _() }
 }

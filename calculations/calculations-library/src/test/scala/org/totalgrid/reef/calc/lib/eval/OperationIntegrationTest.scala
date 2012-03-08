@@ -39,7 +39,7 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   test("Average") {
-    val f = "B + AVG(A)"
+    val f = "B + AVERAGE(A)"
     val expr = parseFormula(f)
     val result = NumericConst(11.5)
 
