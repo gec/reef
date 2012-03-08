@@ -42,6 +42,9 @@
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
                     <header>../AGPL_FILE_HEADER</header>
+                    <excludes>
+                        <exclude>src/main/tools/**/*</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
@@ -62,6 +65,95 @@
                             </staleFile>
                             <clearOutputDir>false</clearOutputDir>
                             <!-- don't remove the previous generated source -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>xslt-generate-links</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <stylesheet>src/main/tools/xs3p_links.xsl</stylesheet>
+                                    <dir>src/main/resources</dir>
+                                    <outputDir>src/main/tools/</outputDir>
+                                    <includes>
+                                        <include>configuration.xsd</include>
+                                    </includes>
+                                    <fileMappers>
+                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                            <targetExtension>.link</targetExtension>
+                                        </fileMapper>
+                                    </fileMappers>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xslt-transform-xsd</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <stylesheet>src/main/tools/xs3p.xsl</stylesheet>
+                                    <dir>src/main/resources</dir>
+                                    <fileMappers>
+                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                            <targetExtension>.xsd.html</targetExtension>
+                                        </fileMapper>
+                                    </fileMappers>
+                                    <parameters>
+                                        <parameter>
+                                            <name>printAllSuperTypes</name>
+                                            <value>false</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>printAllSubTypes</name>
+                                            <value>false</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>useJavaScript</name>
+                                            <value>false</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>printLegend</name>
+                                            <value>false</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>printGlossary</name>
+                                            <value>false</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>sortByComponent</name>
+                                            <value>true</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>linksFile</name>
+                                            <value>configuration.link</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>searchIncludedSchemas</name>
+                                            <value>true</value>
+                                        </parameter>
+                                        <parmeter>
+                                            <name>searchImportedSchemas</name>
+                                            <value>true</value>
+                                        </parmeter>
+                                    </parameters>
+                                </transformationSet>
+                            </transformationSets>
                         </configuration>
                     </execution>
                 </executions>
