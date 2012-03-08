@@ -55,6 +55,6 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   test("samples/calculations") {
-    loadFile(samplesPath + "calculations/config.xml", 163)
+    loadFile(samplesPath + "calculations/config.xml", 167)
   }
 }

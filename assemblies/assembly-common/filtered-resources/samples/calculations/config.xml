@@ -157,6 +157,13 @@
             </equip:counter>
         </equip:equipment>
 
+    <equip:equipment name="Calculator" addParentNames="false">
+        <equip:type name="Root" />
+        <equip:equipment name="System" />
+        <equip:equipment name="Microgrid1" />
+        <equip:equipment name="Microgrid2" />
+    </equip:equipment>
+
     </equip:equipmentModel>
 
 
