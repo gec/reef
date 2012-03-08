@@ -154,7 +154,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def getEntityEdgesWithType(relationship: String) = ops.operation("Couldn't get entity edges of type: " + relationship) {
-    _.get(EntityEdge.newBuilder.setRelationship(relationship).build).map(_.many)
+    _.get(EntityEdge.newBuilder.setRelationship(relationship).setDistance(1).build).map(_.many)
   }
 
   override def getEntityEdgesIncludingIndirect() = ops.operation("Couldn't get entity edges") {

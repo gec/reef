@@ -1424,6 +1424,10 @@
 		// Can't encode searchForEntities : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
 		/**
 		 * Gets all of the direct edges between entities
+		 *
+		 * Given a model where "A --owns--> B" and "B --owns--> C" you would only get those two edges
+		 * with distance 1 (AB and BC).
+		 *
 		 * @return all edges with distance 1 in the system 
 		*/
 		calls.getEntityEdges = function() {
