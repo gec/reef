@@ -1423,6 +1423,50 @@
 		// Can't encode searchForEntityTree : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
 		// Can't encode searchForEntities : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
 		/**
+		 * Gets all of the direct edges between entities
+		 * @return all edges with distance 1 in the system 
+		*/
+		calls.getEntityEdges = function() {
+			return client.apiRequest({
+				request: "getEntityEdges",
+				style: "MULTI",
+				resultType: "entity_edge"
+			});
+		};
+		/**
+		 * Gets all of the direct edges between entities of a certain type.
+		 *
+		 * Given a model where "A --owns--> B" and "B --owns--> C" you would only get those two edges
+		 * with distance 1.
+		 *
+		 * @return all edges with distance 1 in the system 
+		*/
+		calls.getEntityEdgesWithType = function(relationship) {
+			return client.apiRequest({
+				request: "getEntityEdgesWithType",
+				data: {
+					relationship: relationship
+				},
+				style: "MULTI",
+				resultType: "entity_edge"
+			});
+		};
+		/**
+		 * Gets all of the edges between entities irrespective of distance.
+		 *
+		 * Given a model where "A --owns--> B" and "B --owns--> C" you would get the two direct edges
+		 * AB and BC with distance 1 as well as the derived edge AC with distance 2.
+		 *
+		 * @return all edges with any distance in the system
+		*/
+		calls.getEntityEdgesIncludingIndirect = function() {
+			return client.apiRequest({
+				request: "getEntityEdgesIncludingIndirect",
+				style: "MULTI",
+				resultType: "entity_edge"
+			});
+		};
+		/**
 		 * Get all attributes associated with a specified Entity.
 		 *
 		 * @param uuid The entity uuid.

@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 113 of 189 calls ported
+ * 116 of 192 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -406,6 +406,16 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   })
   // Can't encode searchForEntityTree : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
   // Can't encode searchForEntities : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
+  multi("getEntityEdges", classOf[org.totalgrid.reef.client.service.proto.Model.EntityEdge], args => { (c) =>
+    c.getEntityEdges()
+  })
+  multi("getEntityEdgesWithType", classOf[org.totalgrid.reef.client.service.proto.Model.EntityEdge], args => {
+    val a0 = args.getString("relationship")
+    (c) => c.getEntityEdgesWithType(a0)
+  })
+  multi("getEntityEdgesIncludingIndirect", classOf[org.totalgrid.reef.client.service.proto.Model.EntityEdge], args => { (c) =>
+    c.getEntityEdgesIncludingIndirect()
+  })
   single("getEntityAttributes", classOf[org.totalgrid.reef.client.service.proto.Model.EntityAttributes], args => {
     val a0 = args.getUuid("uuid")
     (c) => c.getEntityAttributes(a0)
