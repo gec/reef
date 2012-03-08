@@ -28,9 +28,10 @@ trait QualityOutputStrategy {
 
 object QualityOutputStrategy {
   def build(config: OutputQuality.Strategy) = config match {
-    case OutputQuality.Strategy.ALWAYS_OK => new AlwaysOk
+    case _ => new AlwaysOk
+    /*case OutputQuality.Strategy.ALWAYS_OK => new AlwaysOk
     case OutputQuality.Strategy.WORST_QUALITY => new WorstQuality
-    case _ => throw new Exception("Unknown quality output strategy")
+    case _ => throw new Exception("Unknown quality output strategy")*/
   }
 
   class AlwaysOk extends QualityOutputStrategy {
