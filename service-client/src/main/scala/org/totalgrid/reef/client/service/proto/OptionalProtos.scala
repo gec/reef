@@ -110,18 +110,10 @@ object OptionalProtos {
     val token = optionally(_.hasToken, _.getToken)
     val expirationTime = optionally(_.hasExpirationTime, _.getExpirationTime)
   }
-  implicit def proto2OptCalculationsFilteredMeas(a: org.totalgrid.reef.client.service.proto.Calculations.FilteredMeas): OptCalculationsFilteredMeas = new OptCalculationsFilteredMeas(Some(a))
-  class OptCalculationsFilteredMeas(real: Option[org.totalgrid.reef.client.service.proto.Calculations.FilteredMeas]) extends OptionalStruct(real) {
-    val variableName = optionally(_.hasVariableName, _.getVariableName)
-    val _type = optionally(_.hasType, _.getType)
-    val deadbandValue = optionally(_.hasDeadbandValue, _.getDeadbandValue)
-  }
   implicit def proto2OptCalculationsTriggerStrategy(a: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): OptCalculationsTriggerStrategy = new OptCalculationsTriggerStrategy(Some(a))
   class OptCalculationsTriggerStrategy(real: Option[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy]) extends OptionalStruct(real) {
     val periodMs = optionally(_.hasPeriodMs, _.getPeriodMs)
-    val schedule = optionally(_.hasSchedule, _.getSchedule)
     val updateAny = optionally(_.hasUpdateAny, _.getUpdateAny)
-    val variables = optionally(_.getVariablesList.toList.map { i => new OptCalculationsFilteredMeas(Some(i)) })
   }
   implicit def proto2OptCalculationsMeasurementRange(a: org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange): OptCalculationsMeasurementRange = new OptCalculationsMeasurementRange(Some(a))
   class OptCalculationsMeasurementRange(real: Option[org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange]) extends OptionalStruct(real) {
@@ -148,7 +140,6 @@ object OptionalProtos {
   implicit def proto2OptCalculationsOutputQuality(a: org.totalgrid.reef.client.service.proto.Calculations.OutputQuality): OptCalculationsOutputQuality = new OptCalculationsOutputQuality(Some(a))
   class OptCalculationsOutputQuality(real: Option[org.totalgrid.reef.client.service.proto.Calculations.OutputQuality]) extends OptionalStruct(real) {
     val strategy = optionally(_.hasStrategy, _.getStrategy)
-    val detailQual = new OptMeasurementsQuality(optionally(_.hasDetailQual, _.getDetailQual))
   }
   implicit def proto2OptCalculationsOutputTime(a: org.totalgrid.reef.client.service.proto.Calculations.OutputTime): OptCalculationsOutputTime = new OptCalculationsOutputTime(Some(a))
   class OptCalculationsOutputTime(real: Option[org.totalgrid.reef.client.service.proto.Calculations.OutputTime]) extends OptionalStruct(real) {

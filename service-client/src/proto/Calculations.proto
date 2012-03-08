@@ -7,24 +7,11 @@ import "Measurements.proto";
 option java_package = "org.totalgrid.reef.client.service.proto";
 option java_outer_classname = "Calculations";
 
-message FilteredMeas {
-  enum FilterType {
-      ANY_CHANGE            = 1;
-      DUPLICATES_ONLY       = 2;
-      DEADBAND              = 3;
-  }
-
-  optional string     variable_name   = 1;
-  optional FilterType type            = 2;
-  optional double     deadband_value  = 3;
-}
 
 // only one trigger strategy may be set
 message TriggerStrategy{
     optional uint64       period_ms  = 1;
-    optional string       schedule   = 2;
     optional bool         update_any = 3;
-    repeated FilteredMeas variables  = 4;
 }
 
 // if 'from' or 'to' is set this is a time based range, other wise it is a samples range
@@ -39,7 +26,6 @@ message MeasurementRange{
 message SingleMeasurement{
     enum MeasurementStrategy{
         MOST_RECENT = 1;
-        //COORDINATED = 2;
     }
     optional MeasurementStrategy  strategy = 1;
 }
@@ -56,8 +42,6 @@ message InputQuality{
     enum Strategy{
         ONLY_WHEN_ALL_OK       = 1;
         REMOVE_BAD_AND_CALC    = 2;
-        DONT_CALC_IF_ANY_BAD   = 3;
-        //USE_LAST_GOOD        = 4;
     }
     optional Strategy strategy        = 1;
 }
@@ -66,16 +50,13 @@ message OutputQuality{
     enum Strategy{
         WORST_QUALITY = 1;
         ALWAYS_OK     = 2;
-        SET_QUALITY   = 3;
     }
     optional Strategy strategy        = 1;
-    optional org.totalgrid.reef.client.service.proto.Measurements.Quality detail_qual  = 2;
 }
 
 message OutputTime{
     enum Strategy{
         MOST_RECENT     = 1;
-        AVERAGE_TIME    = 2;
     }
     optional Strategy strategy        = 1;
 }

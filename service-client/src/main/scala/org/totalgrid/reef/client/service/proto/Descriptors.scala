@@ -94,12 +94,6 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken]
     def id = "auth_token"
   }
-  def filteredMeas() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.FilteredMeas] {
-    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.FilteredMeas): Array[Byte] = typ.toByteArray
-    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.FilteredMeas.parseFrom(bytes)
-    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.FilteredMeas]
-    def id = "filtered_meas"
-  }
   def triggerStrategy() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy.parseFrom(bytes)

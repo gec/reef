@@ -45,10 +45,10 @@ object CalculationView {
   def triggeringString(trigger: TriggerStrategy) = {
     trigger match {
       case t if (t.hasPeriodMs) => "Periodic(%d)".format(t.getPeriodMs)
-      case t if (t.hasSchedule) => "Scheduled(%s)".format(t.getSchedule)
+      //case t if (t.hasSchedule) => "Scheduled(%s)".format(t.getSchedule)
       case t if (t.hasUpdateAny) => "AnyUpdate"
-      case t if (t.getVariablesCount > 0) =>
-        t.getVariablesList.toList.map { _.getVariableName }.mkString("Update(", ",", ")")
+      /*case t if (t.getVariablesCount > 0) =>
+        t.getVariablesList.toList.map { _.getVariableName }.mkString("Update(", ",", ")") */
     }
   }
 
