@@ -112,7 +112,7 @@
                         <calc:single pointName="Microgrid1.StoredEnergy" variable="A" addParentNames="false"/>
                         <calc:single pointName="Microgrid2.StoredEnergy" variable="B" addParentNames="false"/>
                     </calc:inputs>
-                    <calc:formula>AVG(A,B)</calc:formula>
+                    <calc:formula>AVERAGE(A,B)</calc:formula>
                 </calc:calculation>
             </equip:analog>
 
@@ -148,7 +148,7 @@
                         <calc:single pointName="Microgrid2.GroundFaults" variable="B" addParentNames="false"/>
                     </calc:inputs>
                     <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
-                    <calc:formula>A+B</calc:formula>
+                    <calc:formula>A + B</calc:formula>
                 </calc:calculation>
             </equip:counter>
         </equip:equipment>
