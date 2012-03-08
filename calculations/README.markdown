@@ -25,47 +25,43 @@ telemetered in the field or generate entirely new points that provide business v
   but seeing a point like "total power made/saved today" increasing throughout the day provides valuable visibility
   into the system as a whole.
 
-> NOTE: the calculation system should *not* be used when serious precision is needed. In particular the time based
-> functions like INTEGRATE should not be used to calculate "billable" quantities. Dedicated hardware should be used
-> for all billable metering points.
+> NOTE: the calculation system is not designed to be used when serious precision is needed. For example, the time based
+> functions like INTEGRATE can provide useful information for monitoring the system, but are unlikely to be accurate enough for
+> involved calculations or billing data.
 
 ## Configuring a new Calculation
 
 Each calculation is composed of 4 main parts:
 
-* OutputPoint : The name of the point we will publish calculated measurements to. The points' unit should be checked
-  manually against the calculation to make sure it is the right unit. Ex: (volts * amps => watts)
+* Output point : The name of the point we will publish calculated measurements to. The points' unit should be checked
+  manually against the calculation to make sure it is the correct unit. Ex: (volts * amps => watts)
 * Inputs : A listing of the fully qualified input point names and the shorter variable names we will use in the
-  calculations. We also can configure what how much data for the input point we want:
+  calculations. We also can configure how many samples of the input point to use:
    * When operating across points we will normally want the single most recent value for each input point
-   * For certain operations like "rolling averages" or "recent max values" we may want a the last few minutes or hours
-     of data for a single point.
-* Triggering conditions : It is often the case that we will want to recalculate and publish our value every time one
-  our inputs changes and that is the default. That may be very noisy or misleading in some situations so we can also
-  choose to recalculate on a schedule (irregardless of whether a new input measurement was received). We can also choose
-  to only recalculate when a specific input changes.
-* Formula : Most importantly we need to define the actual calculation we want to do on the data. This formula needs to
-  be defined in terms of the variable (not point names) used in the inputs. This is necessary so we do not have to limit
-  what you may name your points to keep them "calculable". Variables must be simple text and may not contain spaces or
-  special characters (other than '_')
+   * For certain operations like "rolling averages" or "recent max values" we may want the last few minutes or last few hours of data for a single point.
+* Triggering conditions : By default, outputs are recalculated and published every time one of their inputs change. Calculations may also be triggered
+  at a fixed time interval.
+* Formula : The actual calculation to be performed on the inputs. This formula is defined in terms of the variable
+  defined in the inputs.
 
+> Note: Variables must must only contain alphanumeric characters (or underscores). Spaces are not allowed and they must not start with a number.
 
 ## Calculation Process
 
-There are a number of strategies and tweakable parameters when configuring a calculation and it is helpful to understand
+There are a number of strategies and tweakable parameters when configuring a calculation, and it is helpful to understand
 how a calculation is actually done when choosing the correct strategy.
 
-Calculation Process:
+The calculation process:
 
-* Calculation is triggered either by a new measurement being received or the timer going off. <triggering>
-* A snapshot of the current measurements is taken. <inputs>
-* The snapshot is evaluated to determine if we have enough data to make the calculation. This determination is made
-  based on how the inputs are configured <single> or <multi>
-* We also analyze the input measurement data based on its quality and may strip out bad values or fail the calculation
-  if there are bad inputs. <inputQualityStrategy>
-* We then evaluate the formula with the, possibly adjusted, input measurement snapshot.  <formula>
-* Assuming the calculation was successful we calculate the output quality based on the inputs <outputQuality>
-* We also calculate the time to attach to the new measurement (usually the most recent input time) <outputTime>
+* A calculation is triggered either by a new measurement being received or the timer going off.
+* A snapshot of current measurement values is taken.
+* The snapshot is evaluated to determine if we have enough data to make the calculation. This determination is
+  based on how the inputs are configured.
+* We also analyze the input measurement data based on its quality. If there are bad inputs, may strip out the bad
+  values or fail the calculation.
+* We then evaluate the formula with the (processed) inputs.
+* Assuming the calculation was successful we calculate the output quality based on the inputs.
+* We also calculate the time to attach to the new measurement (usually the most recent input time).
 * Assuming no errors, we publish the calculated measurement.
 
 If there is an error during configuration or calculation we will publish a measurement with the string value "#ERROR",
@@ -79,15 +75,16 @@ Microgrid2.Output.Energy  |  #ERROR |  String  |  #ERROR  |  A  |  Thu Mar 08 11
 
 ### Formulas
 
-Formulas are generally specified using the format "OPERATION(VARIABLE)". The goal is to use as much of the same names
-and conventions as microsoft excel so a formula can be developed and tested using excel and then copy-pasted into reef.
+Formulas are constructed using arithmetic notation and operations (functions) of the form "OPERATION(COMMA, SEPARATED, VARIABLES)".
 
-Each operation in reef takes one or more input values and produces a single output value. This is important to
-understand, operations do not return a set of values, they return a single scalar value.
+Operations are designed to be very similar to those provided by spreadsheet applications, and formulas themselves are
+created using essentially the same expression language as spreadsheet calculations.
+
+Formulas and operations may take one or more input value and always produce a single output value.
 
 ### Operation List
 
-Basic Operations that have ("operators") letting us write simple expressions.
+Basic operations that are also operators:
 
 * SUM (+)
 * SUBTRACT (-)
@@ -97,30 +94,32 @@ Basic Operations that have ("operators") letting us write simple expressions.
 
 The formula may be written using the operators and it is effectively translated to the 'long hand' functional version:
 
-> A * B => PRODUCT(A,B)  ::  A + B + C => SUM(A,B,C)  ::  A - B - C => SUBTRACT(A,B,C)
+    A * B      ->  PRODUCT(A,B)
+    A + B + C  ->  SUM(A,B,C)
+    A - B - C  ->  SUBTRACT(A,B,C)
 
-Extended mathematical operations.
+Extended mathematical operations:
 
-* SQRT     - SquareRoot
+* SQRT (square root)
 * AVERAGE
 * MIN
 * MAX
 
-Boolean operations
+Boolean operations:
 
 * NOT
 * AND
 * OR
-* COUNT - is equal to the number of input booleans that are true
+* COUNT (equal to the number of input booleans that are true)
 
-Comparison operations
+Comparison operations:
 
 * GREATER(a,b)
 * LESS(a,b)
 
-Time based operations.
+Time-based operations:
 
-* INTEGRATE - integrates the value over the input range returning units/millisecond
+* INTEGRATE (integrates the value over the input range returning units/millisecond)
 
 ## CLI commands
 
@@ -139,7 +138,7 @@ Microgrid1.Input.Power         |  A * B                                    |  W
 Microgrid1.LoadRatio           |  A / B                                    |  %
 ```
 
-The calculation:list command will show all of the configured commands in the system along with their formula and
+The `calculation:list` command will show all of the configured commands in the system along with their formula and
 output unit. This is most useful for getting a quick look at which operations and functions are being used.
 
 ```
@@ -161,16 +160,16 @@ Dist     Name                         Value       Type       Unit     Q     Time
 !     |  Microgrid1.Input.Power    |  335.478  |  Analog  |  W     |     |  Wed Mar 07 11:11:50 EST 2012  |  7
 ```
 
-The calculation:view command is useful for checking that a calculation is working as desired (and producing the correct
-values.) It shows all of the details of the calculation configuration such as when the calculation is triggered, what
+The `calculation:view` command is useful for checking that a calculation is working as desired and producing the correct
+values. It shows all of the details of the calculation configuration such as when the calculation is triggered, what
 input measurements it uses and their configurations.
 
-Most usefully it shows the current value of each of the inputs and the calculation output. If a calculation depends on
-other calculations we will show those intermediate calculations and their inputs as well. We will also show the values
-of any calculations that depend on this calc. (both behaviors are controllable with command flags).
+Most usefully, it shows the current value of each of the inputs and the calculation output. If a calculation depends on
+other calculations it will show those intermediate calculations and their inputs as well. It will also show the values
+of any calculations that depend on this calculation. (Both behaviors are controllable with command flags).
 
-Importantly the "-w" option (watch) will subscribe to all of the measurements and continuously display any new updates
-until control-c is pressed.
+Importantly, the "-w" option (watch) will subscribe to all of the measurements and continuously display any new updates
+until CTRL-C is pressed.
 
 
 ## XML Configuration
@@ -195,13 +194,13 @@ the calculation. At minimum a calculation must declare one or more inputs and a 
 
 Calculations can be configured anywhere a normal point could be used, including in point or equipment profiles. The
 important point to note is that the names of variables use the same "prefixing" rules as the point itself. If in the
-above example the Power point was defined in a profile included by a circuit called "CircuitA" the output point would
+above example the point "Power" was defined in a profile included by a circuit called "CircuitA" the output point would
 be "CircuitA.Power" and it would depend on "CircuitA.Current" and "CircuitB.Current". If you do not want the inputs to
-use "relative" naming you can add the attribute addParentNames="false".
+use "relative" naming you can add the attribute `addParentNames="false"`.
 
 Calculated points will also need to be attached to an endpoint with the protocol "calculator".
 
-> In most cases only one calculator endpoint is needed in a system; the example configuration includes a number of
+> NOTE: In most cases only one calculator endpoint is needed in a system; the example configuration includes a number of
 > endpoints to make testing easier.
 
 For more detailed documentation on the XML configuration it is best to look at the [sample configuration][SAMPLE] and the
