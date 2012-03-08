@@ -103,12 +103,20 @@ Extended mathematical operations.
 
 * SQRT     - SquareRoot
 * AVERAGE
+* MIN
+* MAX
 
 Boolean operations
 
+* NOT
 * AND
 * OR
 * COUNT - is equal to the number of input booleans that are true
+
+Comparison operations
+
+* GREATER(a,b)
+* LESS(a,b)
 
 Time based operations.
 

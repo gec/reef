@@ -50,6 +50,17 @@ object OperationPatterns {
     def eval(l: Double, r: Double): Double
   }
 
+  trait ConditionalPairNumericOperation extends AbstractOperation {
+    def apply(args: List[OperationValue]): OperationValue = {
+      args match {
+        case List(NumericValue(l), NumericValue(r)) => BooleanConst(eval(l, r))
+        case _ => throw new EvalException("Operation " + name + " requires exactly two numeric values")
+      }
+    }
+
+    def eval(l: Double, r: Double): Boolean
+  }
+
   trait SingleNumericOperation extends AbstractOperation {
     def apply(args: List[OperationValue]): OperationValue = {
       args match {
@@ -75,6 +86,17 @@ object OperationPatterns {
     }
 
     def eval(args: List[Boolean]): Int
+  }
+
+  abstract class SingleBooleanOperation extends AbstractOperation {
+    def apply(args: List[OperationValue]): OperationValue = {
+      args match {
+        case List(BooleanValue(v)) => BooleanConst(eval(v))
+        case _ => throw new EvalException("Operation " + name + " requires one boolean value")
+      }
+    }
+
+    def eval(arg: Boolean): Boolean
   }
 
   abstract class BooleanReduceOperation extends AbstractOperation {

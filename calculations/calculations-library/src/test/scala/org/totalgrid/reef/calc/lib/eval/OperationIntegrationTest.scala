@@ -51,6 +51,28 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
     expr.evaluate(new ValueMap(longValues)) should equal(result)
   }
 
+  test("Numeric MAX") {
+
+    val tests = List(
+      (5.0, List(5.0)),
+      (10.0, List(10.0, 5.0)),
+      (-10.0, List(-10.0, -50.0)),
+      (50.0, List(50.0, 49.9, 49.8)))
+
+    testNumeric("MAX(A)", tests)
+  }
+
+  test("Numeric MIN") {
+
+    val tests = List(
+      (5.0, List(5.0)),
+      (5.0, List(10.0, 5.0)),
+      (-50.0, List(-10.0, -50.0)),
+      (49.8, List(50.0, 49.9, 49.8)))
+
+    testNumeric("MIN(A)", tests)
+  }
+
   test("Boolean AND") {
 
     val tests = List(
@@ -60,11 +82,33 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
       ("AND(true,false)", BooleanConst(false)),
       ("AND(false,false)", BooleanConst(false)))
 
-    tests.foreach {
-      case (f, result) =>
-        val expr = parseFormula(f)
-        expr.evaluate(new ValueMap(Map())) should equal(result)
-    }
+    testWithoutValues(tests)
+  }
+
+  test("Boolean OR") {
+
+    val tests = List(
+      ("OR(true)", BooleanConst(true)),
+      ("OR(false)", BooleanConst(false)),
+      ("OR(true,true)", BooleanConst(true)),
+      ("OR(true,false)", BooleanConst(true)),
+      ("OR(false,false)", BooleanConst(false)))
+
+    testWithoutValues(tests)
+  }
+
+  test("Boolean NOT") {
+
+    val tests = List(
+      ("NOT(true)", BooleanConst(false)),
+      ("NOT(false)", BooleanConst(true)))
+
+    testWithoutValues(tests)
+
+    val errorTests = List(
+      ("NOT(true,true)", "requires one"))
+
+    testErrorsWithoutValues(errorTests)
   }
 
   test("Boolean COUNT") {
@@ -76,11 +120,33 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
       ("COUNT(true,false)", LongConst(1)),
       ("COUNT(false,false)", LongConst(0)))
 
-    tests.foreach {
-      case (f, result) =>
-        val expr = parseFormula(f)
-        expr.evaluate(new ValueMap(Map())) should equal(result)
-    }
+    testWithoutValues(tests)
+  }
+
+  test("Boolean GREATER") {
+
+    val tests = List(
+      ("GREATER(0,0)", BooleanConst(false)),
+      ("GREATER(1,0)", BooleanConst(true)),
+      ("GREATER(5.5,5.4)", BooleanConst(true)),
+      ("GREATER(-19,-25)", BooleanConst(true)),
+      ("GREATER(-25,-20)", BooleanConst(false)),
+      ("GREATER(4,7)", BooleanConst(false)))
+
+    testWithoutValues(tests)
+  }
+
+  test("Boolean LESS") {
+
+    val tests = List(
+      ("LESS(0,0)", BooleanConst(false)),
+      ("LESS(1,0)", BooleanConst(false)),
+      ("LESS(5.5,5.4)", BooleanConst(false)),
+      ("LESS(-19,-25)", BooleanConst(false)),
+      ("LESS(-25,-20)", BooleanConst(true)),
+      ("LESS(4,7)", BooleanConst(true)))
+
+    testWithoutValues(tests)
   }
 
   test("Numeric INTEGRATE") {
@@ -135,6 +201,34 @@ class OperationIntegrationTest extends FunSuite with ShouldMatchers {
       case (output, inputs) =>
         val values = Map("A" -> ValueRange(inputs.map { v => NumericMeas(v._1, v._2) }))
         val result = NumericConst(output)
+        expr.evaluate(new ValueMap(values)) should equal(result)
+    }
+  }
+
+  private def testErrorsWithoutValues(errorTests: List[(String, String)]) {
+    errorTests.foreach {
+      case (f, errString) =>
+        val expr = parseFormula(f)
+        intercept[EvalException] {
+          expr.evaluate(new ValueMap(Map()))
+        }.getMessage should include(errString)
+    }
+  }
+
+  private def testWithoutValues(tests: List[(String, OperationValue)]) {
+    tests.foreach {
+      case (f, result) =>
+        val expr = parseFormula(f)
+        expr.evaluate(new ValueMap(Map())) should equal(result)
+    }
+  }
+
+  private def testNumeric(f: String, tests: List[(Double, List[Double])]) {
+    tests.foreach {
+      case (output, inputs) =>
+        val values = Map("A" -> ValueRange(inputs.map { NumericConst(_) }))
+        val result = NumericConst(output)
+        val expr = parseFormula(f)
         expr.evaluate(new ValueMap(values)) should equal(result)
     }
   }

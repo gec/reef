@@ -30,9 +30,15 @@ object BasicOperations {
       new Divide,
       new Power,
       new Average,
+      new Max,
+      new Min,
+      new Greater,
+      new Less,
       new SquareRoot,
       new Count,
       new And,
+      new Or,
+      new Not,
       new Integrate))
   }
 
@@ -78,6 +84,44 @@ object BasicOperations {
     }
   }
 
+  class Max extends MultiNumericOperation {
+    def names = List("MAX")
+
+    def eval(args: List[Double]): Double = {
+      args.foldLeft(Option.empty[Double]) { (result, value) =>
+        result match {
+          case Some(last) => Some(if (last > value) last else value)
+          case None => Some(value)
+        }
+      }.get
+    }
+  }
+
+  class Min extends MultiNumericOperation {
+    def names = List("MIN")
+
+    def eval(args: List[Double]): Double = {
+      args.foldLeft(Option.empty[Double]) { (result, value) =>
+        result match {
+          case Some(last) => Some(if (last < value) last else value)
+          case None => Some(value)
+        }
+      }.get
+    }
+  }
+
+  class Greater extends ConditionalPairNumericOperation {
+    def names = List("GREATER")
+
+    def eval(l: Double, r: Double) = l > r
+  }
+
+  class Less extends ConditionalPairNumericOperation {
+    def names = List("LESS")
+
+    def eval(l: Double, r: Double) = l < r
+  }
+
   class SquareRoot extends SingleNumericOperation {
     def names = List("SQRT")
 
@@ -86,11 +130,25 @@ object BasicOperations {
     }
   }
 
+  class Not extends SingleBooleanOperation {
+    def names = List("NOT")
+
+    def eval(arg: Boolean) = !arg
+  }
+
   class And extends BooleanReduceOperation {
     def names = List("AND")
 
     def eval(args: List[Boolean]) = {
-      args.foldLeft(true) { case (out, v) => if (out && v) true else false }
+      args.foldLeft(true) { case (out, v) => out && v }
+    }
+  }
+
+  class Or extends BooleanReduceOperation {
+    def names = List("OR")
+
+    def eval(args: List[Boolean]) = {
+      args.foldLeft(false) { case (out, v) => out || v }
     }
   }
 
