@@ -23,6 +23,7 @@ import java.util.List;
 import org.totalgrid.reef.client.service.entity.EntityRelation;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.proto.Model.Entity;
+import org.totalgrid.reef.client.service.proto.Model.EntityEdge;
 import org.totalgrid.reef.client.service.proto.Model.EntityAttributes;
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
 
@@ -286,6 +287,32 @@ public interface EntityService
      * @throws org.totalgrid.reef.client.exception.ReefServiceException
      */
     List<Entity> searchForEntities( Entity entityTree ) throws ReefServiceException;
+
+    /**
+     * Gets all of the direct edges between entities
+     * @return all edges with distance 1 in the system 
+     */
+    List<EntityEdge> getEntityEdges() throws ReefServiceException;
+
+    /**
+     * Gets all of the direct edges between entities of a certain type.
+     *
+     * Given a model where "A --owns--> B" and "B --owns--> C" you would only get those two edges
+     * with distance 1.
+     *
+     * @return all edges with distance 1 in the system 
+     */
+    List<EntityEdge> getEntityEdgesWithType( String relationship ) throws ReefServiceException;
+
+    /**
+     * Gets all of the edges between entities irrespective of distance.
+     *
+     * Given a model where "A --owns--> B" and "B --owns--> C" you would get the two direct edges
+     * AB and BC with distance 1 as well as the derived edge AC with distance 2.
+     *
+     * @return all edges with any distance in the system
+     */
+    List<EntityEdge> getEntityEdgesIncludingIndirect() throws ReefServiceException;
 
     /**
      * Get all attributes associated with a specified Entity.
