@@ -152,15 +152,15 @@ Dist     Name                         Value       Type       Unit     Q     Time
 !     |  Microgrid1.Input.Power    |  335.478  |  Analog  |  W     |     |  Wed Mar 07 11:11:50 EST 2012  |  7
 ```
 
-The `calculation:view` command is useful for checking that a calculation is working as desired (and producing the correct
-values.) It shows all of the details of the calculation configuration such as when the calculation is triggered, what
+The `calculation:view` command is useful for checking that a calculation is working as desired and producing the correct
+values. It shows all of the details of the calculation configuration such as when the calculation is triggered, what
 input measurements it uses and their configurations.
 
-Most usefully it shows the current value of each of the inputs and the calculation output. If a calculation depends on
-other calculations we will show those intermediate calculations and their inputs as well. We will also show the values
-of any calculations that depend on this calc. (both behaviors are controllable with command flags).
+Most usefully, it shows the current value of each of the inputs and the calculation output. If a calculation depends on
+other calculations it will show those intermediate calculations and their inputs as well. It will also show the values
+of any calculations that depend on this calculation. (Both behaviors are controllable with command flags).
 
-Importantly the "-w" option (watch) will subscribe to all of the measurements and continuously display any new updates
+Importantly, the "-w" option (watch) will subscribe to all of the measurements and continuously display any new updates
 until CTRL-C is pressed.
 
 
