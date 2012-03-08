@@ -62,14 +62,15 @@ class EntityEdgeServiceModel
     } else {
 
       def entExpr(ent: Entity, proto: EntityProto) = {
-        proto.uuid.value.map(v => ent.id === UUID.fromString(v)) ::
-          proto.name.map(v => ent.name === v) :: Nil
+        proto.uuid.value.asParam(v => ent.id === UUID.fromString(v)) ::
+          proto.name.asParam(v => ent.name === v) :: Nil
       }
 
       def edgeExpr(edge: EntityEdge, proto: EntityEdgeProto) = {
         proto.parent.map(entProto => edge.parentId in from(entities)(ent => where(entExpr(ent, entProto).flatten) select (ent.id))) ::
           proto.child.map(entProto => edge.childId in from(entities)(ent => where(entExpr(ent, entProto).flatten) select (ent.id))) ::
-          proto.relationship.map(rel => edge.relationship === rel) :: Nil
+          proto.relationship.asParam(rel => edge.relationship === rel) ::
+          proto.distance.map(dist => edge.distance === dist) :: Nil
       }
 
       from(edges)(edge =>
@@ -81,6 +82,9 @@ class EntityEdgeServiceModel
   def createFromProto(context: RequestContext, req: EntityEdgeProto): EntityEdge = {
     if (!(req.hasParent && req.hasChild)) {
       throw new BadRequestException("Must specify both parent and child")
+    }
+    if (req.hasDistance && req.getDistance != 1) {
+      throw new BadRequestException("Cannot create in-direct (distance != 1) edges")
     }
     val parentEntity = EntityQuery.findEntity(req.getParent).getOrElse(throw new BadRequestException("cannot find parent: " + req.getParent))
     val childEntity = EntityQuery.findEntity(req.getChild).getOrElse(throw new BadRequestException("cannot find child: " + req.getChild))
@@ -146,6 +150,7 @@ class EntityEdgeServiceModel
       .setParent(EntityProto.newBuilder.setUuid(makeUuid(entry.parentId)))
       .setChild(EntityProto.newBuilder.setUuid(makeUuid(entry.childId)))
       .setRelationship(entry.relationship)
+      .setDistance(entry.distance)
       .build
   }
 

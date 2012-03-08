@@ -422,6 +422,7 @@ object OptionalProtos {
     val parent = new OptModelEntity(optionally(_.hasParent, _.getParent))
     val child = new OptModelEntity(optionally(_.hasChild, _.getChild))
     val relationship = optionally(_.hasRelationship, _.getRelationship)
+    val distance = optionally(_.hasDistance, _.getDistance)
   }
   implicit def proto2OptModelEntityAttributes(a: org.totalgrid.reef.client.service.proto.Model.EntityAttributes): OptModelEntityAttributes = new OptModelEntityAttributes(Some(a))
   class OptModelEntityAttributes(real: Option[org.totalgrid.reef.client.service.proto.Model.EntityAttributes]) extends OptionalStruct(real) {

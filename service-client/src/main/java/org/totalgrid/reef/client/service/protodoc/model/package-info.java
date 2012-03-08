@@ -94,6 +94,7 @@
  *   optional Entity parent = 2;
  *   optional Entity child = 3;
  *   optional string relationship = 4;
+ *   optional uint32 distance = 5;
  * }
  * 
  * 
