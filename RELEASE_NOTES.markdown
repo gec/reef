@@ -9,6 +9,25 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.6 - March 8, 2012
+==============
+
+Release is focused on the new calculator protocol and some minor bug fixes.
+
+### Major Features:
+
+* Initial implementation of "calculator" protocol (see /calculator/README.markdown)
+* jQuery client files are now served at /jquery-libs/reef.client.js and /jquery-libs/reef.client.core-services.js
+
+### Service/API Updates:
+
+* EntityEdges are available through EntityService (and edges got distance field).
+
+### Bug Fixes:
+
+* sim:config command can select individual endpoints again
+* fixed accidental logouts with multiple protocols sharing an FEP
+
 Version 0.4.5 - February 21, 2012
 ==============
 
