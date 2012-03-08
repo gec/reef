@@ -113,7 +113,6 @@ object OptionalProtos {
   implicit def proto2OptCalculationsTriggerStrategy(a: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): OptCalculationsTriggerStrategy = new OptCalculationsTriggerStrategy(Some(a))
   class OptCalculationsTriggerStrategy(real: Option[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy]) extends OptionalStruct(real) {
     val periodMs = optionally(_.hasPeriodMs, _.getPeriodMs)
-    val schedule = optionally(_.hasSchedule, _.getSchedule)
     val updateAny = optionally(_.hasUpdateAny, _.getUpdateAny)
   }
   implicit def proto2OptCalculationsMeasurementRange(a: org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange): OptCalculationsMeasurementRange = new OptCalculationsMeasurementRange(Some(a))

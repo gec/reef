@@ -200,7 +200,7 @@ class CalculationsLoaderTest extends FunSuite with ShouldMatchers {
     val t = trigger("")
 
     t.hasPeriodMs should equal(false)
-    t.hasSchedule should equal(false)
+    //t.hasSchedule should equal(false)
     t.getUpdateAny should equal(true)
   }
 
@@ -208,7 +208,7 @@ class CalculationsLoaderTest extends FunSuite with ShouldMatchers {
     val t = trigger("""<calc:triggering updateEveryPeriodMS="10000"/>""")
 
     t.getPeriodMs should equal(10000)
-    t.hasSchedule should equal(false)
+    //t.hasSchedule should equal(false)
     t.hasUpdateAny should equal(false)
   }
   /*

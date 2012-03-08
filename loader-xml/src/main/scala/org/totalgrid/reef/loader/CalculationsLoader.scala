@@ -48,9 +48,6 @@ object CalculationsLoader {
     }
 
     val triggerSettings = parseTriggers(calc)
-    /*val variableTriggerNames = triggerSettings.getVariablesList.toList.map { _.getVariableName }
-    if (!variableTriggerNames.diff(variablesDefined).isEmpty)
-      throw new LoadingException("Variables " + variableTriggerNames.mkString("(", ",", ")") + " not defined: " + variablesDefined.mkString("(", ",", ")"))*/
     builder.setTriggering(triggerSettings)
 
     builder.setTriggeringQuality(parseTriggeringQuality(calc))
@@ -104,27 +101,11 @@ object CalculationsLoader {
     val triggerSettings = TriggerStrategy.newBuilder
     if (calc.isSetTriggering) {
       val trigger = calc.getTriggering
-      val options = List(trigger.isSetSchedule, trigger.isSetUpdateEveryPeriodMS, trigger.isSetUpdateOnAnyChange)
+      val options = List(trigger.isSetUpdateEveryPeriodMS, trigger.isSetUpdateOnAnyChange)
       if (options.filter(_ == true).size > 1) throw new LoadingException("Must only specify one trigger type.")
       trigger match {
-        case t if (t.isSetSchedule) => triggerSettings.setSchedule(t.getSchedule)
         case t if (t.isSetUpdateEveryPeriodMS) => triggerSettings.setPeriodMs(t.getUpdateEveryPeriodMS)
         case t if (t.isSetUpdateOnAnyChange) => triggerSettings.setUpdateAny(t.isUpdateOnAnyChange)
-        /*case t if (t.getVariableTrigger.size > 0) =>
-          t.getVariableTrigger.toList.foreach { tv =>
-            val tb = FilteredMeas.newBuilder.setVariableName(tv.getVariable)
-            tv match {
-              case opt if (!opt.isSetType) =>
-                tb.setType(FilterType.ANY_CHANGE)
-              case opt if (opt.getType == "DEADBAND") =>
-                if (!opt.isSetDeadband) throw new LoadingException("Must include deadband value if type is DEADBAND")
-                tb.setType(FilterType.DEADBAND)
-                tb.setDeadbandValue(opt.getDeadband)
-              case _ =>
-                tb.setType(safeValueOf(tv.getType, FilterType.values(), FilterType.valueOf _))
-            }
-            triggerSettings.addVariables(tb)
-          }*/
         case _ => triggerSettings.setUpdateAny(true)
       }
     } else {

@@ -64,9 +64,6 @@
 
                 <equip:analog name="ChargeLoad" unit="W">
                     <calc:calculation>
-                        <!--<calc:triggering>
-                          <calc:variableTrigger variable="B" />
-                        </calc:triggering>-->
                         <calc:inputs>
                             <calc:single pointName="Input.Power" variable="A"/>
                             <calc:single pointName="Output.Power" variable="B"/>
