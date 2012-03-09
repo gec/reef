@@ -785,13 +785,6 @@
     <changeSet author="incremental" context="original" id="1328639639036-5">
         <dropTable tableName="Foo"/>
     </changeSet>
-    <changeSet author="incremental" context="original" id="1331138724917-1">
-        <addColumn tableName="AuthToken">
-            <column name="clientVersion" type="VARCHAR(128)">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
-    </changeSet>
     <changeSet author="incremental" context="original" id="1330050395895-1">
         <createTable tableName="CalculationConfig">
             <column name="entityId" type="UUID">
@@ -809,5 +802,13 @@
         </createTable>
     </changeSet>
     <changeSet author="incremental" context="original" id="1330050395895-2">
-    <createSequence schemaName="public" sequenceName="s_CalculationConfig_id"/>
+        <createSequence schemaName="public" sequenceName="s_CalculationConfig_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331138724917-1">
+        <addColumn tableName="AuthToken">
+            <column name="clientVersion" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
