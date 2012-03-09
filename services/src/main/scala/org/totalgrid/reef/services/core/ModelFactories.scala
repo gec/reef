@@ -54,7 +54,8 @@ class ModelFactories(measurementStore: MeasurementStore, contextSource: RequestC
 
   val overrides = new OverrideConfigServiceModel
   val triggerSets = new TriggerSetServiceModel
-  val points = new PointServiceModel(triggerSets, overrides, measurementStore)
+  val calculations = new CalculationConfigServiceModel
+  val points = new PointServiceModel(triggerSets, overrides, calculations, measurementStore)
 
   val configFiles = new ConfigFileServiceModel
   val endpoints = new CommEndCfgServiceModel(cmds, configFiles, points, fepPort, coordinator)

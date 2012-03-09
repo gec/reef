@@ -21,7 +21,6 @@ package org.totalgrid.reef.services.core
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.client.service.proto.Model.{ Point, PointType, Entity }
 import org.totalgrid.reef.client.service.proto.Processing.{ MeasOverride, TriggerSet }
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.services.ServiceDependencies
@@ -29,9 +28,9 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point, PointType, Entity }
 
-@RunWith(classOf[JUnitRunner])
-class PointServiceTest extends DatabaseUsingTestBase {
+abstract class PointServiceTestBase extends DatabaseUsingTestBase {
 
   import SubscriptionTools._
 
@@ -84,6 +83,11 @@ class PointServiceTest extends DatabaseUsingTestBase {
       entityService.get(e).expectOneOrNone()
     }
 
+    def getEntity(uuid: ReefUUID) = {
+      val e = Entity.newBuilder.setUuid(uuid).build
+      entityService.get(e).expectOneOrNone()
+    }
+
     def deletePoint(name: String = "point01") = {
       val p = Point.newBuilder.setName(name)
       pointService.delete(p.build)
@@ -91,6 +95,10 @@ class PointServiceTest extends DatabaseUsingTestBase {
 
     def events = contextSource.sink.events
   }
+}
+
+@RunWith(classOf[JUnitRunner])
+class PointServiceTest extends PointServiceTestBase {
 
   test("Creating point creates offline measurement") {
     val f = new Fixture

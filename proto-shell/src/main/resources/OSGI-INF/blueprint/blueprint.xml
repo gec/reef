@@ -78,6 +78,9 @@
         <command name="meas/from">
             <action class="org.totalgrid.reef.shell.proto.MeasFromCommand"/>
         </command>
+        <command name="meas/view">
+            <action class="org.totalgrid.reef.shell.proto.MeasViewCommand"/>
+        </command>
         <command name="meas/endpoint">
             <action class="org.totalgrid.reef.shell.proto.MeasFromEndpointCommand"/>
         </command>
@@ -227,6 +230,12 @@
         </command>
         <command name="metrics/throughput">
             <action class="org.totalgrid.reef.shell.proto.MetricsThroughput"/>
+        </command>
+        <command name="calculation/list">
+            <action class="org.totalgrid.reef.shell.proto.CalculationListCommand"/>
+        </command>
+        <command name="calculation/view">
+            <action class="org.totalgrid.reef.shell.proto.CalculationViewCommand"/>
         </command>
     </command-bundle>
 

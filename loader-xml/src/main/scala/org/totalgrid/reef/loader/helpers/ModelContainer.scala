@@ -30,6 +30,7 @@ import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.loader.LoadingException
 import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 
 class ModelContainer extends Logging {
   private val models = new ArrayBuffer[GeneratedMessage]
@@ -113,6 +114,12 @@ class ModelContainer extends Logging {
     {
       addTriggerSet(triggerSet);
       triggerSet
+    }
+
+  def add(calculation: Calculation): Calculation =
+    {
+      addModel(calculation)
+      calculation
     }
 
   def getEntities() =

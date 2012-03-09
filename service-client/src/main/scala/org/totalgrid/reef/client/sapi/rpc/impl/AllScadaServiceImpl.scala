@@ -41,6 +41,7 @@ trait AllScadaServiceImpl
   with EndpointServiceImpl
   with ApplicationServiceImpl
   with CommunicationChannelServiceImpl
+  with CalculationServiceImpl
 
 class AllScadaServiceWrapper(client: Client) extends ApiBase(client) with AllScadaServiceImpl
 
@@ -61,5 +62,6 @@ object AllScadaServiceImplServiceList {
       classOf[AgentService],
       classOf[EndpointService],
       classOf[ApplicationService],
-      classOf[CommunicationChannelService]))
+      classOf[CommunicationChannelService],
+      classOf[CalculationService]))
 }

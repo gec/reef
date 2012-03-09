@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.6-SNAPSHOT</version>
+        <version>0.4.7-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-fep</artifactId>
@@ -86,6 +86,13 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.compendium</artifactId>
             <version>${felix-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-client</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
         </dependency>
     </dependencies>
 </project>

@@ -30,7 +30,7 @@ import org.mockito.{ ArgumentCaptor, Mockito }
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 
 @RunWith(classOf[JUnitRunner])
 class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
@@ -47,7 +47,7 @@ class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
   test("Heartbeats are sent") {
     val services = Mockito.mock(classOf[ApplicationService])
     val argument = ArgumentCaptor.forClass(classOf[StatusSnapshot])
-    val promise = new FixedPromise(Success(StatusSnapshot.getDefaultInstance))
+    val promise = success(StatusSnapshot.getDefaultInstance)
     Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(promise)
 
     val mockExecutor = new MockExecutor

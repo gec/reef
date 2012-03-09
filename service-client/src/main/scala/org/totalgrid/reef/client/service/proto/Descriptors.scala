@@ -94,6 +94,54 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken]
     def id = "auth_token"
   }
+  def triggerStrategy() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy]
+    def id = "trigger_strategy"
+  }
+  def measurementRange() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange]
+    def id = "measurement_range"
+  }
+  def singleMeasurement() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.SingleMeasurement] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.SingleMeasurement): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.SingleMeasurement.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.SingleMeasurement]
+    def id = "single_measurement"
+  }
+  def calculationInput() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.CalculationInput] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.CalculationInput): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.CalculationInput.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.CalculationInput]
+    def id = "calculation_input"
+  }
+  def inputQuality() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.InputQuality] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.InputQuality): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.InputQuality.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.InputQuality]
+    def id = "input_quality"
+  }
+  def outputQuality() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.OutputQuality] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.OutputQuality): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.OutputQuality.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.OutputQuality]
+    def id = "output_quality"
+  }
+  def outputTime() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.OutputTime] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.OutputTime): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.OutputTime.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.OutputTime]
+    def id = "output_time"
+  }
+  def calculation() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.Calculation] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.Calculation): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.Calculation.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Calculations.Calculation]
+    def id = "calculation"
+  }
   def userCommandRequest() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest.parseFrom(bytes)

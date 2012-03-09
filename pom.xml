@@ -6,7 +6,7 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4.6-SNAPSHOT</version>
+	<version>0.4.7-SNAPSHOT</version>
 
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,7 +15,7 @@
         <slf4s.version>1.0.6</slf4s.version>
         <scalamodules.version>2.0.3</scalamodules.version>
         <qpid.version>0.10</qpid.version>
-		<reef.version>0.4.6-SNAPSHOT</reef.version>
+		<reef.version>0.4.7-SNAPSHOT</reef.version>
         <squeryl.version>0.9.5-RC1</squeryl.version>
         <cglib.version>2.2</cglib.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
@@ -77,6 +77,8 @@
 		<module>proto-shell</module>
         <module>http-bridge/http-bridge</module>
         <module>http-bridge/jQuery</module>
+        <module>calculations/calculations-library</module>
+        <module>calculations/protocol-calculator</module>
 		<module>loader-common</module>
 		<module>loader-xml</module>
 		<module>processing</module>

@@ -28,9 +28,9 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
-import org.totalgrid.reef.client.ConnectionCloseListener
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.metrics.client.MetricsServiceList
+import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, SubscriptionEvent, Subscription, ConnectionCloseListener }
 
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
@@ -197,4 +197,22 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
   protected def doCommand(): Unit
 
+  /**
+   * starts a subscription, calling back the function with each event and waits until users presses control-c
+   * and then cancels the subscription for us
+   */
+  def runSubscription[A](subscription: Subscription[A])(fun: SubscriptionEvent[A] => Unit) {
+    subscription.start(new SubscriptionEventAcceptor[A] {
+      def onEvent(event: SubscriptionEvent[A]) {
+        fun(event)
+      }
+    })
+    try {
+      // sleep foreverish
+      Thread.sleep(1000000)
+    } catch {
+      case i: InterruptedException =>
+    }
+    subscription.cancel()
+  }
 }

@@ -26,8 +26,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
-import net.agileautomata.executor4s.{ Failure, Success }
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.service.proto.Measurements
 import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCallLibrary
@@ -105,7 +104,7 @@ class ApiServletTest extends BaseServletTest {
 
     request.addParameter("pointName", measName)
 
-    val promise = new FixedPromise[Measurement](Failure(new BadRequestException("no measurement")))
+    val promise = failure(new BadRequestException("no measurement"))
     Mockito.doReturn(promise).when(services).getMeasurementByName(Matchers.eq(measName))
 
     service.doGet(request, response)
@@ -120,7 +119,7 @@ class ApiServletTest extends BaseServletTest {
 
     request.addParameter("pointName", measName)
 
-    val promise = new FixedPromise(Success(meas))
+    val promise = success(meas)
     Mockito.doReturn(promise).when(services).getMeasurementByName(Matchers.eq(measName))
 
     service.doGet(request, response)
@@ -135,7 +134,7 @@ class ApiServletTest extends BaseServletTest {
 
     request.addParameter("pointNames", List(measName, measName).toArray)
 
-    val promise = new FixedPromise(Success(List(meas, meas)))
+    val promise = success(List(meas, meas))
     Mockito.doReturn(promise).when(services).getMeasurementsByNames(Matchers.eq(List(measName, measName)))
 
     service.doGet(request, response)

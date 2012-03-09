@@ -31,7 +31,9 @@ import org.totalgrid.reef.loader.commons.ui.RequestViewer
 import java.io.PrintStream
 import org.totalgrid.reef.client.sapi.client.{ Promise, RequestSpy }
 import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
+import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 
+// TODO: get rid of caching model loader
 class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
   private var puts = List.empty[AnyRef]
   private val modelContainer = new ModelContainer
@@ -93,6 +95,12 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
   def putOrThrow(triggerSet: TriggerSet) {
     puts ::= triggerSet;
     modelContainer.add(triggerSet)
+    autoFlush
+  }
+
+  def putOrThrow(e: Calculation) = {
+    puts ::= e
+    modelContainer.add(e)
     autoFlush
   }
 

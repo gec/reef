@@ -26,6 +26,7 @@ import org.totalgrid.reef.app.ClearableMap
 import org.mockito.Mockito
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import FrontEndTestHelpers._
 import net.agileautomata.executor4s.testing.InstantExecutor
 

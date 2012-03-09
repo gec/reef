@@ -27,13 +27,12 @@ import org.mockito.{ Mockito, Matchers }
 import org.totalgrid.reef.client.service.proto.Model.Command
 import org.totalgrid.reef.client.service.proto.Mapping._
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus => ProtoCommandStatus, CommandLock }
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.sapi.rpc.CommandService
-import net.agileautomata.executor4s.{ Failure, Success }
 
 @RunWith(classOf[JUnitRunner])
 class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
@@ -133,9 +132,9 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
 
   def getWorkingCommandService(commandName: String, _result: ProtoCommandStatus) = {
     val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
-    val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
-    val lock = new FixedPromise(Success(CommandLock.newBuilder.build))
-    val result = new FixedPromise(Success(CommandResult.newBuilder.setStatus(_result).build))
+    val resultantCommand = success(Command.newBuilder.setName(commandName).build)
+    val lock = success(CommandLock.newBuilder.build)
+    val result = success(CommandResult.newBuilder.setStatus(_result).build)
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
     Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand.await)
     Mockito.doReturn(lock).when(commandService).deleteCommandLock(lock.await)
@@ -146,28 +145,28 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
   }
   def getMissingCommandService() = {
     val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
-    val failure = new FixedPromise(Failure(new BadRequestException("Command not found")))
-    Mockito.doReturn(failure).when(commandService).getCommandByName(Matchers.anyString)
+    val fail = failure(new BadRequestException("Command not found"))
+    Mockito.doReturn(fail).when(commandService).getCommandByName(Matchers.anyString)
     commandService
   }
   def getNoLockCommandService(commandName: String) = {
     val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
-    val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
-    val failure = new FixedPromise(Failure(new BadRequestException("Can't lock command")))
+    val resultantCommand = success(Command.newBuilder.setName(commandName).build)
+    val fail = failure(new BadRequestException("Can't lock command"))
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
-    Mockito.doReturn(failure).when(commandService).createCommandExecutionLock(resultantCommand.await)
+    Mockito.doReturn(fail).when(commandService).createCommandExecutionLock(resultantCommand.await)
     commandService
   }
 
   def getExecutionFailureService(commandName: String) = {
     val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
-    val resultantCommand = new FixedPromise(Success(Command.newBuilder.setName(commandName).build))
-    val lock = new FixedPromise(Success(CommandLock.newBuilder.build))
-    val failure = new FixedPromise(Failure(new BadRequestException("Can't execute command")))
+    val resultantCommand = success(Command.newBuilder.setName(commandName).build)
+    val lock = success(CommandLock.newBuilder.build)
+    val fail = failure(new BadRequestException("Can't execute command"))
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
     Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand.await)
     Mockito.doReturn(lock).when(commandService).deleteCommandLock(lock.await)
-    Mockito.doReturn(failure).when(commandService).executeCommandAsControl(resultantCommand.await)
+    Mockito.doReturn(fail).when(commandService).executeCommandAsControl(resultantCommand.await)
     commandService
   }
 

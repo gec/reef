@@ -110,6 +110,53 @@ object OptionalProtos {
     val token = optionally(_.hasToken, _.getToken)
     val expirationTime = optionally(_.hasExpirationTime, _.getExpirationTime)
   }
+  implicit def proto2OptCalculationsTriggerStrategy(a: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): OptCalculationsTriggerStrategy = new OptCalculationsTriggerStrategy(Some(a))
+  class OptCalculationsTriggerStrategy(real: Option[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy]) extends OptionalStruct(real) {
+    val periodMs = optionally(_.hasPeriodMs, _.getPeriodMs)
+    val updateAny = optionally(_.hasUpdateAny, _.getUpdateAny)
+  }
+  implicit def proto2OptCalculationsMeasurementRange(a: org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange): OptCalculationsMeasurementRange = new OptCalculationsMeasurementRange(Some(a))
+  class OptCalculationsMeasurementRange(real: Option[org.totalgrid.reef.client.service.proto.Calculations.MeasurementRange]) extends OptionalStruct(real) {
+    val sinceLast = optionally(_.hasSinceLast, _.getSinceLast)
+    val fromMs = optionally(_.hasFromMs, _.getFromMs)
+    val toMs = optionally(_.hasToMs, _.getToMs)
+    val limit = optionally(_.hasLimit, _.getLimit)
+  }
+  implicit def proto2OptCalculationsSingleMeasurement(a: org.totalgrid.reef.client.service.proto.Calculations.SingleMeasurement): OptCalculationsSingleMeasurement = new OptCalculationsSingleMeasurement(Some(a))
+  class OptCalculationsSingleMeasurement(real: Option[org.totalgrid.reef.client.service.proto.Calculations.SingleMeasurement]) extends OptionalStruct(real) {
+    val strategy = optionally(_.hasStrategy, _.getStrategy)
+  }
+  implicit def proto2OptCalculationsCalculationInput(a: org.totalgrid.reef.client.service.proto.Calculations.CalculationInput): OptCalculationsCalculationInput = new OptCalculationsCalculationInput(Some(a))
+  class OptCalculationsCalculationInput(real: Option[org.totalgrid.reef.client.service.proto.Calculations.CalculationInput]) extends OptionalStruct(real) {
+    val point = new OptModelPoint(optionally(_.hasPoint, _.getPoint))
+    val variableName = optionally(_.hasVariableName, _.getVariableName)
+    val range = new OptCalculationsMeasurementRange(optionally(_.hasRange, _.getRange))
+    val single = new OptCalculationsSingleMeasurement(optionally(_.hasSingle, _.getSingle))
+  }
+  implicit def proto2OptCalculationsInputQuality(a: org.totalgrid.reef.client.service.proto.Calculations.InputQuality): OptCalculationsInputQuality = new OptCalculationsInputQuality(Some(a))
+  class OptCalculationsInputQuality(real: Option[org.totalgrid.reef.client.service.proto.Calculations.InputQuality]) extends OptionalStruct(real) {
+    val strategy = optionally(_.hasStrategy, _.getStrategy)
+  }
+  implicit def proto2OptCalculationsOutputQuality(a: org.totalgrid.reef.client.service.proto.Calculations.OutputQuality): OptCalculationsOutputQuality = new OptCalculationsOutputQuality(Some(a))
+  class OptCalculationsOutputQuality(real: Option[org.totalgrid.reef.client.service.proto.Calculations.OutputQuality]) extends OptionalStruct(real) {
+    val strategy = optionally(_.hasStrategy, _.getStrategy)
+  }
+  implicit def proto2OptCalculationsOutputTime(a: org.totalgrid.reef.client.service.proto.Calculations.OutputTime): OptCalculationsOutputTime = new OptCalculationsOutputTime(Some(a))
+  class OptCalculationsOutputTime(real: Option[org.totalgrid.reef.client.service.proto.Calculations.OutputTime]) extends OptionalStruct(real) {
+    val strategy = optionally(_.hasStrategy, _.getStrategy)
+  }
+  implicit def proto2OptCalculationsCalculation(a: org.totalgrid.reef.client.service.proto.Calculations.Calculation): OptCalculationsCalculation = new OptCalculationsCalculation(Some(a))
+  class OptCalculationsCalculation(real: Option[org.totalgrid.reef.client.service.proto.Calculations.Calculation]) extends OptionalStruct(real) {
+    val uuid = new OptModelReefUUID(optionally(_.hasUuid, _.getUuid))
+    val outputPoint = new OptModelPoint(optionally(_.hasOutputPoint, _.getOutputPoint))
+    val accumulate = optionally(_.hasAccumulate, _.getAccumulate)
+    val triggering = new OptCalculationsTriggerStrategy(optionally(_.hasTriggering, _.getTriggering))
+    val calcInputs = optionally(_.getCalcInputsList.toList.map { i => new OptCalculationsCalculationInput(Some(i)) })
+    val triggeringQuality = new OptCalculationsInputQuality(optionally(_.hasTriggeringQuality, _.getTriggeringQuality))
+    val qualityOutput = new OptCalculationsOutputQuality(optionally(_.hasQualityOutput, _.getQualityOutput))
+    val timeOutput = new OptCalculationsOutputTime(optionally(_.hasTimeOutput, _.getTimeOutput))
+    val formula = optionally(_.hasFormula, _.getFormula)
+  }
   implicit def proto2OptCommandsUserCommandRequest(a: org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest): OptCommandsUserCommandRequest = new OptCommandsUserCommandRequest(Some(a))
   class OptCommandsUserCommandRequest(real: Option[org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest]) extends OptionalStruct(real) {
     val id = new OptModelReefID(optionally(_.hasId, _.getId))
@@ -297,6 +344,7 @@ object OptionalProtos {
     val unit = optionally(_.hasUnit, _.getUnit)
     val time = optionally(_.hasTime, _.getTime)
     val isDeviceTime = optionally(_.hasIsDeviceTime, _.getIsDeviceTime)
+    val systemTime = optionally(_.hasSystemTime, _.getSystemTime)
   }
   implicit def proto2OptMeasurementsMeasurementBatch(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch): OptMeasurementsMeasurementBatch = new OptMeasurementsMeasurementBatch(Some(a))
   class OptMeasurementsMeasurementBatch(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch]) extends OptionalStruct(real) {
@@ -365,6 +413,7 @@ object OptionalProtos {
     val parent = new OptModelEntity(optionally(_.hasParent, _.getParent))
     val child = new OptModelEntity(optionally(_.hasChild, _.getChild))
     val relationship = optionally(_.hasRelationship, _.getRelationship)
+    val distance = optionally(_.hasDistance, _.getDistance)
   }
   implicit def proto2OptModelEntityAttributes(a: org.totalgrid.reef.client.service.proto.Model.EntityAttributes): OptModelEntityAttributes = new OptModelEntityAttributes(Some(a))
   class OptModelEntityAttributes(real: Option[org.totalgrid.reef.client.service.proto.Model.EntityAttributes]) extends OptionalStruct(real) {

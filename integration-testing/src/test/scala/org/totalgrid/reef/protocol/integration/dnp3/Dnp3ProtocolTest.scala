@@ -30,7 +30,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
-import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{ EndpointConnectionStateMap, ServiceClientSuite }
 
 @RunWith(classOf[JUnitRunner])
 class Dnp3ProtocolTest extends ServiceClientSuite {
@@ -144,27 +144,4 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
     measList.waitFor(_.find(m => m.getDoubleVal == meas.getDoubleVal && m.getTime == meas.getTime).isDefined)
   }
 
-  class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnection], EndpointConnection]) {
-
-    private def makeEntry(e: EndpointConnection) = {
-      //println(e.getEndpointByUuid.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
-      e.getEndpoint.getUuid -> e
-    }
-
-    val endpointStateMap = result.getResult.map { makeEntry(_) }.toMap
-    val syncVar = new SyncVar(endpointStateMap)
-
-    result.getSubscription.start(new SubscriptionEventAcceptor[EndpointConnection] {
-      def onEvent(event: SubscriptionEvent[EndpointConnection]) {
-        syncVar.atomic(m => m + makeEntry(event.getValue))
-      }
-    })
-
-    def checkAllState(enabled: Boolean, state: EndpointConnection.State) {
-      syncVar.waitFor(x => x.values.forall(e => e.getEnabled == enabled && e.getState == state), 20000)
-    }
-    def checkState(uuid: ReefUUID, enabled: Boolean, state: EndpointConnection.State) {
-      syncVar.waitFor(x => x.get(uuid).map(e => e.getEnabled == enabled && e.getState == state).getOrElse(false), 20000)
-    }
-  }
 }

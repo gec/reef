@@ -399,4 +399,18 @@ public class TestEntityService extends ReefConnectionTestBase
             // expected failure
         }
     }
+
+    @Test
+    public void testEdges() throws ReefServiceException
+    {
+
+        EntityService es = helpers;
+
+        List<EntityEdge> directEdges = es.getEntityEdges();
+        List<EntityEdge> ownsEdges = es.getEntityEdgesWithType( "owns" );
+        List<EntityEdge> allEdges = es.getEntityEdgesIncludingIndirect();
+
+        assert (directEdges.size() < allEdges.size());
+        assert (ownsEdges.size() < allEdges.size());
+    }
 }

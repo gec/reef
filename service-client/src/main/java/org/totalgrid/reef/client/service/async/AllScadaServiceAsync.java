@@ -39,7 +39,8 @@ public abstract class AllScadaServiceAsync implements
                                           AgentServiceAsync,
                                           EndpointServiceAsync,
                                           ApplicationServiceAsync,
-                                          CommunicationChannelServiceAsync
+                                          CommunicationChannelServiceAsync,
+                                          CalculationServiceAsync
 {
 
 }

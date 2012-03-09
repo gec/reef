@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the GNU Affero General Public License
+    Version 3.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="calculations.loader.reef.totalgrid.org"
+           xmlns="calculations.loader.reef.totalgrid.org"
+           elementFormDefault="qualified"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           jaxb:version="1.0">
+
+    <xs:element name="timeRange">
+        <xs:complexType>
+            <xs:attribute name="from" type="xs:long"/>
+            <xs:attribute name="to" type="xs:long"/>
+            <xs:attribute name="limit" type="xs:int"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="sampleRange">
+        <xs:complexType>
+            <xs:attribute name="limit" type="xs:int" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="inputType" abstract="true">
+
+        <xs:attribute name="pointName" type="xs:string" use="required"/>
+        <xs:attribute name="variable" type="xs:string" use="required"/>
+        <xs:attribute name="addParentNames" type="xs:boolean" default="true"/>
+    </xs:complexType>
+
+    <xs:element name="single">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="inputType">
+                    <xs:attribute name="strategy" type="xs:string" />
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="multi">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="inputType">
+                    <xs:choice minOccurs="0" maxOccurs="1">
+                        <xs:element ref="timeRange"/>
+                        <xs:element ref="sampleRange"/>
+                    </xs:choice>
+                    <xs:attribute name="sinceLastPublish" type="xs:boolean" default="false"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="inputs">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="single"/>
+                <xs:element ref="multi"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="formula">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+    <!--<xs:element name="variableTrigger">
+        <xs:complexType>
+            <xs:attribute name="variable" type="xs:string" use="required"/>
+            <xs:attribute name="type" type="xs:string"/>
+            <xs:attribute name="deadband" type="xs:double"/>
+        </xs:complexType>
+    </xs:element>-->
+
+    <xs:element name="outputQuality">
+        <xs:complexType>
+            <xs:attribute name="strategy" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="outputTime">
+        <xs:complexType>
+            <xs:attribute name="strategy" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="output">
+        <xs:complexType>
+            <xs:all>
+                <xs:element ref="outputQuality" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="outputTime" minOccurs="0" maxOccurs="1"/>
+            </xs:all>
+            <xs:attribute name="accumulate" type="xs:boolean" default="false"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="triggering">
+        <xs:complexType>
+
+            <!--<xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="variableTrigger"/>
+            </xs:sequence>-->
+            <xs:attribute name="schedule" type="xs:string"/>
+            <xs:attribute name="updateEveryPeriodMS" type="xs:int"/>
+            <xs:attribute name="updateOnAnyChange" type="xs:boolean"/>
+            <xs:attribute name="inputQualityStrategy" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="calculation">
+        <xs:complexType>
+            <xs:all>
+                <xs:element ref="inputs" minOccurs="1" maxOccurs="1"/>
+                <xs:element ref="triggering" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="formula"  minOccurs="1" maxOccurs="1" />
+                <xs:element ref="output" minOccurs="0" maxOccurs="1" />
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

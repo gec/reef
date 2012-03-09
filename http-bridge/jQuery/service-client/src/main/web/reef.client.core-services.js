@@ -256,6 +256,137 @@
 			});
 		};
 		////////////////////
+		// CalculationService
+		////////////////////
+		/**
+		 * Tag for api-enhancer, do not delete: 
+		*/
+		/**
+		 * @return list of all of the calculations in the system
+		*/
+		calls.getCalculations = function() {
+			return client.apiRequest({
+				request: "getCalculations",
+				style: "MULTI",
+				resultType: "calculation"
+			});
+		};
+		/**
+		 * Get a particular calculation by its uuid
+		 * @param uuid calculation uuid
+		 * @return the calculation (or exception)
+		*/
+		calls.getCalculationByUuid = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.apiRequest({
+				request: "getCalculationByUuid",
+				data: {
+					uuid: uuid
+				},
+				style: "SINGLE",
+				resultType: "calculation"
+			});
+		};
+		/**
+		 * lookup a calculation associated with a point.
+		 * @param pointName name of the point (point should have type CalculatedPoint)
+		 * @return calculation or exception if doesn't exist
+		*/
+		calls.getCalculationForPointByName = function(pointName) {
+			return client.apiRequest({
+				request: "getCalculationForPointByName",
+				data: {
+					pointName: pointName
+				},
+				style: "SINGLE",
+				resultType: "calculation"
+			});
+		};
+		/**
+		 * lookup a calculation associated with a point.
+		 * @param uuid uuid of the point (point should have type CalculatedPoint)
+		 * @return calculation or exception if doesn't exist
+		*/
+		calls.getCalculationForPointByUuid = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.apiRequest({
+				request: "getCalculationForPointByUuid",
+				data: {
+					uuid: uuid
+				},
+				style: "SINGLE",
+				resultType: "calculation"
+			});
+		};
+		/**
+		 * calculations are associated with an endpoint and this allows us to get a list of all
+		 * calcs associated with that endpoint.
+		 * @param endpointName name of the endpoint
+		 * @return list of the calculations or an exception if the endpoint doesnt exist
+		*/
+		calls.getCalculationsSourcedByEndpointByName = function(endpointName) {
+			return client.apiRequest({
+				request: "getCalculationsSourcedByEndpointByName",
+				data: {
+					endpointName: endpointName
+				},
+				style: "MULTI",
+				resultType: "calculation"
+			});
+		};
+		/**
+		 * calculations are associated with an endpoint and this allows us to get a list of all
+		 * calcs associated with that endpoint.
+		 * @param uuid uuid of the endpoint
+		 * @return list of the calculations or an exception if the endpoint doesnt exist
+		*/
+		calls.getCalculationsSourcedByEndpointByUuid = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.apiRequest({
+				request: "getCalculationsSourcedByEndpointByUuid",
+				data: {
+					uuid: uuid
+				},
+				style: "MULTI",
+				resultType: "calculation"
+			});
+		};
+		/**
+		 * calculations are associated with an endpoint and this allows us to get a list of all
+		 * calcs associated with that endpoint.
+		 * @param uuid uuid of the endpoint
+		 * @return list of the calculations and a subscription to changes or an exception if the endpoint doesnt exist
+		*/
+		calls.subscribeToCalculationsSourcedByEndpointByUuid = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.subscribeApiRequest({
+				request: "subscribeToCalculationsSourcedByEndpointByUuid",
+				data: {
+					uuid: uuid
+				},
+				style: "MULTI",
+				resultType: "calculation"
+			});
+		};
+		// Can't encode addCalculation : Can't encode type: org.totalgrid.reef.client.service.proto.Calculations.Calculation
+		/**
+		 * remove a calculation specified by uuid
+		 * @param uuid calculation uuid
+		 * @return the deleted calculation (or exception)
+		*/
+		calls.deleteCalculation = function(uuid) {
+			if(uuid.value != undefined) uuid = uuid.value;
+			return client.apiRequest({
+				request: "deleteCalculation",
+				data: {
+					uuid: uuid
+				},
+				style: "SINGLE",
+				resultType: "calculation"
+			});
+		};
+		// Can't encode deleteCalculation : Can't encode type: org.totalgrid.reef.client.service.proto.Calculations.Calculation
+		////////////////////
 		// ClientOperations
 		////////////////////
 		/**
@@ -1308,6 +1439,54 @@
 		};
 		// Can't encode searchForEntityTree : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
 		// Can't encode searchForEntities : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
+		/**
+		 * Gets all of the direct edges between entities
+		 *
+		 * Given a model where "A --owns--> B" and "B --owns--> C" you would only get those two edges
+		 * with distance 1 (AB and BC).
+		 *
+		 * @return all edges with distance 1 in the system 
+		*/
+		calls.getEntityEdges = function() {
+			return client.apiRequest({
+				request: "getEntityEdges",
+				style: "MULTI",
+				resultType: "entity_edge"
+			});
+		};
+		/**
+		 * Gets all of the direct edges between entities of a certain type.
+		 *
+		 * Given a model where "A --owns--> B" and "B --owns--> C" you would only get those two edges
+		 * with distance 1.
+		 *
+		 * @return all edges with distance 1 in the system 
+		*/
+		calls.getEntityEdgesWithType = function(relationship) {
+			return client.apiRequest({
+				request: "getEntityEdgesWithType",
+				data: {
+					relationship: relationship
+				},
+				style: "MULTI",
+				resultType: "entity_edge"
+			});
+		};
+		/**
+		 * Gets all of the edges between entities irrespective of distance.
+		 *
+		 * Given a model where "A --owns--> B" and "B --owns--> C" you would get the two direct edges
+		 * AB and BC with distance 1 as well as the derived edge AC with distance 2.
+		 *
+		 * @return all edges with any distance in the system
+		*/
+		calls.getEntityEdgesIncludingIndirect = function() {
+			return client.apiRequest({
+				request: "getEntityEdgesIncludingIndirect",
+				style: "MULTI",
+				resultType: "entity_edge"
+			});
+		};
 		/**
 		 * Get all attributes associated with a specified Entity.
 		 *

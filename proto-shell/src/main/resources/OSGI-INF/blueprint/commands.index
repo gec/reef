@@ -17,6 +17,7 @@ org.totalgrid.reef.shell.proto.EntityTreeCommand
 org.totalgrid.reef.shell.proto.EntityRelationsCommand
 org.totalgrid.reef.shell.proto.MeasListCommand
 org.totalgrid.reef.shell.proto.MeasFromCommand
+org.totalgrid.reef.shell.proto.MeasViewCommand
 org.totalgrid.reef.shell.proto.MeasFromEndpointCommand
 org.totalgrid.reef.shell.proto.MeasHistCommand
 org.totalgrid.reef.shell.proto.MeasDownloadCommand
@@ -57,5 +58,8 @@ org.totalgrid.reef.shell.proto.AgentPermissionsCreateCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsDeleteCommand
 org.totalgrid.reef.shell.proto.AgentCreateCommand
 org.totalgrid.reef.shell.proto.AgentDeleteCommand
+
+org.totalgrid.reef.shell.proto.CalculationListCommand
+org.totalgrid.reef.shell.proto.CalculationViewCommand
 
 org.apache.karaf.shell.commands.LogoutAction

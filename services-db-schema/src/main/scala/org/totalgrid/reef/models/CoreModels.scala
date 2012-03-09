@@ -56,6 +56,8 @@ case class Point(
   val triggers = LazyVar(ApplicationSchema.triggerSets.where(t => t.pointId === id).toList.map { p => p.point.value = this; p })
 
   val overrides = LazyVar(ApplicationSchema.overrides.where(t => t.pointId === id).toList.map { p => p.point.value = this; p })
+
+  val calculations = LazyVar(ApplicationSchema.calculations.where(t => t.outputPointId === id).toList.map { p => p.outputPoint.value = this; p })
 }
 
 object Command {

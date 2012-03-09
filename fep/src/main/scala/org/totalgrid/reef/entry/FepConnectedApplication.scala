@@ -22,7 +22,6 @@ import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.protocol.api.Protocol
-import org.totalgrid.reef.client.sapi.client.rest.RpcProvider
 import org.totalgrid.reef.frontend._
 import com.weiglewilczek.slf4s.Logging
 
@@ -45,7 +44,7 @@ class FepConnectedApplication(p: Protocol) extends ConnectedApplication with Log
   }
 
   private def makeFepNode(client: Client, appConfig: ApplicationConfig, protocols: List[Protocol]) = {
-    client.addRpcProvider(RpcProvider(c => new FrontEndProviderServicesImpl(client), List(classOf[FrontEndProviderServices])))
+    client.addRpcProvider(FrontEndProviderServices.serviceInfo)
 
     val services = client.getRpcInterface(classOf[FrontEndProviderServices])
 

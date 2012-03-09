@@ -27,18 +27,24 @@ object Table {
     rows.map(row => row.padTo(max, ""))
   }
 
-  def justifyColumns(rows: List[List[String]]) = {
-    val widths = rows.foldLeft(List.empty[Int]) {
+  def getWidths(rows: List[List[String]]): List[Int] = {
+    rows.foldLeft(List.empty[Int]) {
       case (widths, row) =>
         val w = if (widths.length < row.length) widths.padTo(row.length, 0) else widths
         row.map(_.length).zip(w).map { case (a, b) => if (a > b) a else b }
     }
+  }
 
+  def justifyColumns(rows: List[List[String]], widths: List[Int]) = {
     rows.map { row =>
-      row.zip(widths).map {
-        case (str, width) =>
-          str.padTo(width, " ").mkString
-      }
+      justifyColumnsInRow(row, widths)
+    }
+  }
+
+  def justifyColumnsInRow(row: List[String], widths: List[Int]) = {
+    row.zip(widths).map {
+      case (str, width) =>
+        str.padTo(width, " ").mkString
     }
   }
 
@@ -47,15 +53,24 @@ object Table {
   }
 
   def printTable(header: List[String], rows: List[List[String]], stream: PrintStream = Console.out) = {
-    val just = justifyColumns(header :: rows)
+    val overallList = normalizeNumCols(header :: rows)
+    val widths = getWidths(overallList)
+    val just = justifyColumns(overallList, widths)
     val headStr = just.head.mkString("     ")
+    stream.println("Found: " + rows.size)
     stream.println(headStr)
     stream.println("".padTo(headStr.length, "-").mkString)
     just.tail.foreach(line => stream.println(line.mkString("  |  ")))
+    widths
   }
 
   def renderRows(rows: List[List[String]], sep: String = "", stream: PrintStream = Console.out) = {
-    Table.justifyColumns(rows).foreach(line => stream.println(line.mkString(sep)))
+    val normalizedRows = normalizeNumCols(rows)
+    val widths = getWidths(normalizedRows)
+    Table.justifyColumns(normalizedRows, widths).foreach(line => stream.println(line.mkString(sep)))
   }
 
+  def renderTableRow(row: List[String], widths: List[Int], sep: String = "  |  ", stream: PrintStream = Console.out) = {
+    stream.println(Table.justifyColumnsInRow(row, widths).mkString(sep))
+  }
 }

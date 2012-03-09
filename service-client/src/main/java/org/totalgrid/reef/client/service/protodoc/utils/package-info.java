@@ -53,7 +53,7 @@
  * 
  *   required string name       = 1;  // Name of the attribute
  *   required Type   vtype      = 2;  // Which value type below
- *   optional string vdescriptor = 3;  // High-level client-specified descriptor: name, ID, phone, date, time, etc.
+ *   optional string vdescriptor = 3;  // High-level client-specified descriptor: name, ID, phone, date, time, etc. // TODO 0.5.0 remove?
  * 
  *   // One of the following
  *   optional string  value_string  = 10;
