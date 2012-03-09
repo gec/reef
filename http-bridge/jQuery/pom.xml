@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef</artifactId>
-        <version>0.4.6</version>
+        <version>0.4.7-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
     <artifactId>reef-jquery-bindings</artifactId>
