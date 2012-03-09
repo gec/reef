@@ -262,7 +262,7 @@
 		 * Tag for api-enhancer, do not delete: 
 		*/
 		/**
-
+		 * @return list of all of the calculations in the system
 		*/
 		calls.getCalculations = function() {
 			return client.apiRequest({
@@ -272,7 +272,9 @@
 			});
 		};
 		/**
-
+		 * Get a particular calculation by its uuid
+		 * @param uuid calculation uuid
+		 * @return the calculation (or exception)
 		*/
 		calls.getCalculationByUuid = function(uuid) {
 			if(uuid.value != undefined) uuid = uuid.value;
@@ -286,7 +288,9 @@
 			});
 		};
 		/**
-
+		 * lookup a calculation associated with a point.
+		 * @param pointName name of the point (point should have type CalculatedPoint)
+		 * @return calculation or exception if doesn't exist
 		*/
 		calls.getCalculationForPointByName = function(pointName) {
 			return client.apiRequest({
@@ -299,7 +303,9 @@
 			});
 		};
 		/**
-
+		 * lookup a calculation associated with a point.
+		 * @param uuid uuid of the point (point should have type CalculatedPoint)
+		 * @return calculation or exception if doesn't exist
 		*/
 		calls.getCalculationForPointByUuid = function(uuid) {
 			if(uuid.value != undefined) uuid = uuid.value;
@@ -313,7 +319,10 @@
 			});
 		};
 		/**
-
+		 * calculations are associated with an endpoint and this allows us to get a list of all
+		 * calcs associated with that endpoint.
+		 * @param endpointName name of the endpoint
+		 * @return list of the calculations or an exception if the endpoint doesnt exist
 		*/
 		calls.getCalculationsSourcedByEndpointByName = function(endpointName) {
 			return client.apiRequest({
@@ -326,7 +335,10 @@
 			});
 		};
 		/**
-
+		 * calculations are associated with an endpoint and this allows us to get a list of all
+		 * calcs associated with that endpoint.
+		 * @param uuid uuid of the endpoint
+		 * @return list of the calculations or an exception if the endpoint doesnt exist
 		*/
 		calls.getCalculationsSourcedByEndpointByUuid = function(uuid) {
 			if(uuid.value != undefined) uuid = uuid.value;
@@ -340,7 +352,10 @@
 			});
 		};
 		/**
-
+		 * calculations are associated with an endpoint and this allows us to get a list of all
+		 * calcs associated with that endpoint.
+		 * @param uuid uuid of the endpoint
+		 * @return list of the calculations and a subscription to changes or an exception if the endpoint doesnt exist
 		*/
 		calls.subscribeToCalculationsSourcedByEndpointByUuid = function(uuid) {
 			if(uuid.value != undefined) uuid = uuid.value;
@@ -355,7 +370,9 @@
 		};
 		// Can't encode addCalculation : Can't encode type: org.totalgrid.reef.client.service.proto.Calculations.Calculation
 		/**
-
+		 * remove a calculation specified by uuid
+		 * @param uuid calculation uuid
+		 * @return the deleted calculation (or exception)
 		*/
 		calls.deleteCalculation = function(uuid) {
 			if(uuid.value != undefined) uuid = uuid.value;

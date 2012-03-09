@@ -30,24 +30,75 @@ import java.util.List;
  */
 public interface CalculationService
 {
+    /**
+     * @return list of all of the calculations in the system
+     */
     List<Calculation> getCalculations() throws ReefServiceException;
 
+    /**
+     * Get a particular calculation by its uuid
+     * @param uuid calculation uuid
+     * @return the calculation (or exception)
+     */
     Calculation getCalculationByUuid( ReefUUID uuid ) throws ReefServiceException;
 
+    /**
+     * lookup a calculation associated with a point.
+     * @param pointName name of the point (point should have type CalculatedPoint)
+     * @return calculation or exception if doesn't exist
+     */
     Calculation getCalculationForPointByName( String pointName ) throws ReefServiceException;
 
+    /**
+     * lookup a calculation associated with a point.
+     * @param uuid uuid of the point (point should have type CalculatedPoint)
+     * @return calculation or exception if doesn't exist
+     */
     Calculation getCalculationForPointByUuid( ReefUUID uuid ) throws ReefServiceException;
 
+    /**
+     * calculations are associated with an endpoint and this allows us to get a list of all
+     * calcs associated with that endpoint.
+     * @param endpointName name of the endpoint
+     * @return list of the calculations or an exception if the endpoint doesnt exist
+     */
     List<Calculation> getCalculationsSourcedByEndpointByName( String endpointName ) throws ReefServiceException;
 
+    /**
+     * calculations are associated with an endpoint and this allows us to get a list of all
+     * calcs associated with that endpoint.
+     * @param uuid uuid of the endpoint
+     * @return list of the calculations or an exception if the endpoint doesnt exist
+     */
     List<Calculation> getCalculationsSourcedByEndpointByUuid( ReefUUID uuid ) throws ReefServiceException;
 
+    /**
+     * calculations are associated with an endpoint and this allows us to get a list of all
+     * calcs associated with that endpoint.
+     * @param uuid uuid of the endpoint
+     * @return list of the calculations and a subscription to changes or an exception if the endpoint doesnt exist
+     */
     SubscriptionResult<List<Calculation>, Calculation> subscribeToCalculationsSourcedByEndpointByUuid( ReefUUID uuid ) throws ReefServiceException;
 
+    /**
+     * add (or update) a new calculation
+     * @param calculation calculation proto that needs to be fully populated and valid
+     * @return the created calculation (with uuids filled in) or an exception
+     */
     Calculation addCalculation( Calculation calculation ) throws ReefServiceException;
 
+    /**
+     * remove a calculation specified by uuid
+     * @param uuid calculation uuid
+     * @return the deleted calculation (or exception)
+     */
     Calculation deleteCalculation( ReefUUID uuid ) throws ReefServiceException;
 
+    /**
+     * remove a calculation specified by uuid
+     * @param calculation calculation proto object
+     * @return the deleted calculation (or exception)
+     */
     Calculation deleteCalculation( Calculation calculation ) throws ReefServiceException;
 
 }

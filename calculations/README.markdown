@@ -171,6 +171,35 @@ of any calculations that depend on this calculation. (Both behaviors are control
 Importantly, the "-w" option (watch) will subscribe to all of the measurements and continuously display any new updates
 until CTRL-C is pressed.
 
+## Modeling
+
+When a calculation is tied to a point the model will be updated in the following ways:
+
+* The output point will have the type "CalculatedPoint" added to its list of types
+* A new entity is created to represent the calculation
+  * the calc entity will be a "source" child of the output point.
+  * the calc entity will be a "calcs" parent of the output point and a "calcs"
+    child of the input points.
+
+These relationships allow us to track the inter-dependencies between calculations. Below is the tree of
+calculations and points based that are dependent on the original point "Microgrid1.Input.Current".
+
+```
+karaf@root> entity:tree -name Microgrid1.Input.Current calcs 10 Point Calculation
+  +- Microgrid1.Input.Current (Analog, Point)
+    +- Microgrid1.Input.PowerCalc (Calculation)
+      +- Microgrid1.Input.Power (Analog, CalculatedPoint, Point)
+        +- Microgrid1.LoadRatioCalc (Calculation)
+          |- Microgrid1.LoadRatio (Analog, CalculatedPoint, Point)
+        +- Microgrid1.ChargeLoadCalc (Calculation)
+          +- Microgrid1.ChargeLoad (Analog, CalculatedPoint, Point)
+            +- Microgrid1.StoredEnergyCalc (Calculation)
+              +- Microgrid1.StoredEnergy (Analog, CalculatedPoint, Point)
+                +- System.AverageStoredEnergyCalc (Calculation)
+                  |- System.AverageStoredEnergy (Analog, CalculatedPoint, Point)
+        +- Microgrid1.Input.EnergyCalc (Calculation)
+          |- Microgrid1.Input.Energy (Analog, CalculatedPoint, Point)
+```
 
 ## XML Configuration
 
