@@ -54,7 +54,7 @@
                 </executions>
                 <configuration>
                     <outputFile>
-                        target/generated-sources/scala/org/totalgrid/reef/client/Version.scala
+                        target/generated-sources/scala/org/totalgrid/reef/client/settings/Version.scala
                     </outputFile>
                     <includes>
                         <include>src/main/resources/Version.scala.template</include>

@@ -31,8 +31,8 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
-import org.totalgrid.reef.client.settings.UserSettings
-import org.totalgrid.reef.client.{ Version, SubscriptionBinding, AnyNodeDestination, Routable }
+import org.totalgrid.reef.client.settings.{ UserSettings, Version }
+import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Routable }
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -80,11 +80,11 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     val strand = Strand(executor)
     DefaultAnnotatedOperations.safeOperation("Error logging in with name: " + userName, strand) {
       val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).setClientVersion(Version.getClientVersion).build
-      def convert(response: Response[AuthRequest]): Result[Client] = {        
+      def convert(response: Response[AuthRequest]): Result[Client] = {
         response.one.map { r =>
-          if(!r.hasServerVersion) logger.warn("Login response did not include the server version")
-          else if(r.getServerVersion != Version.getClientVersion) {
-            logger.warn("The server is running " + r.getServerVersion+", but the client is " + Version.getClientVersion)
+          if (!r.hasServerVersion) logger.warn("Login response did not include the server version")
+          else if (r.getServerVersion != Version.getClientVersion) {
+            logger.warn("The server is running " + r.getServerVersion + ", but the client is " + Version.getClientVersion)
           }
           createClient(r.getToken, strand)
         }

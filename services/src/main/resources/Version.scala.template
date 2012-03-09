@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.settings
+package org.totalgrid.reef.services
 
 object Version {
 
@@ -27,6 +27,5 @@ object Version {
   def isSnapshot = getProjectVersion.contains("SNAPSHOT")
 
   def getClientVersion = if(isSnapshot) getProjectVersion + "-" + getGitCommitId else getProjectVersion
-
 
 }
