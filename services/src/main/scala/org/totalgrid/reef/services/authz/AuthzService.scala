@@ -19,8 +19,9 @@
 package org.totalgrid.reef.services.authz
 
 import org.totalgrid.reef.services.framework.RequestContext
-import org.totalgrid.reef.client.exception.UnauthorizedException
-import org.totalgrid.reef.models.Entity
+import org.totalgrid.reef.authz._
+import org.totalgrid.reef.models.{ ApplicationSchema, Entity, AuthPermission }
+import org.totalgrid.reef.client.exception.{ InternalServiceException, UnauthorizedException }
 
 trait AuthzService {
 
@@ -37,17 +38,78 @@ class NullAuthzService extends AuthzService {
   def prepare(context: RequestContext) {}
 }
 
-class SqlAuthzService extends AuthzService with SimpleSqlAuthzService {
+class SqlAuthzService extends AuthzService {
+
+  import AuthzFilteringService._
 
   def authorize(context: RequestContext, componentId: String, action: String, entities: List[Entity]) {
-    isAuthorized(componentId, action, context) match {
-      case Some(AuthDenied(reason, _)) => throw new UnauthorizedException(reason)
+
+    val permissions = context.get[List[Permission]]("permissions")
+      .getOrElse(throw new UnauthorizedException(context.get[String]("auth_error").get))
+
+    val convertedEntities = if (entities.isEmpty) {
+      // HACK, just pass in a temporary entity for now so we have something to get filtered out
+      List(new AuthEntity {
+        def name = "test"
+        def types = Nil
+      })
+      //throw new InternalServiceException("No entities passed to authorize call")
+    } else {
+      entities.map { toAuthEntity(_) }
+    }
+
+    val filtered = filter(permissions, componentId, action, convertedEntities.zip(convertedEntities))
+
+    filtered.find(!_.isAllowed) match {
+      case Some(filterResult) => throw new UnauthorizedException(filterResult.toString)
       case None =>
     }
   }
 
   def prepare(context: RequestContext) = {
     // load the permissions by forcing an auth attempt
-    isAuthorized("", "", context)
+    loadPermissions(context)
+  }
+
+  def loadPermissions(context: RequestContext) {
+
+    import org.squeryl.PrimitiveTypeMode._
+
+    val authTokens = context.getHeaders.authTokens
+
+    if (authTokens.size == 0) context.set("auth_error", "No auth tokens in envelope header")
+    else {
+      // lookup the tokens that are not expired
+      val now = System.currentTimeMillis
+
+      val tokens = ApplicationSchema.authTokens.where(t => t.token in authTokens and t.expirationTime.~ > now).toList
+      if (tokens.size == 0) context.set("auth_error", "All tokens unknown or expired")
+      else {
+
+        val permissions = tokens.map(token => token.permissionSets.value.toList.map(ps => ps.permissions.value).flatten).flatten.distinct
+
+        val userName = tokens.head.agent.value.entityName
+
+        // loaded valid permissions, store them on the context
+        context.modifyHeaders(_.setUserName(userName))
+
+        val convertedPermissions = permissions.map { toAuthPermission(_) }
+
+        context.set("permissions", convertedPermissions)
+      }
+    }
+  }
+
+  def toAuthPermission(permission: AuthPermission) = {
+    val allSelector = List(new ResourceSet(List(new AllMatcher)))
+    new Permission(permission.allow, permission.resource, permission.verb, allSelector)
+  }
+
+  def toAuthEntity(entity: Entity) = {
+    new AuthEntity {
+      def name = entity.name
+
+      def types = entity.types.value
+    }
   }
 }

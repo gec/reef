@@ -114,14 +114,20 @@ class UserAuthorizationTest extends ServiceClientSuite {
 
       // show that we can't create a new agent
       val permissionSets = guestServices.getPermissionSets.await
-      intercept[UnauthorizedException] {
+      val errorMessage = intercept[UnauthorizedException] {
         guestServices.createNewAgent("newUser", "newUser", permissionSets.map { _.getName }).await
-      }
+      }.getMessage
+      println(errorMessage)
+      errorMessage should include("agent")
+      errorMessage should include("create")
 
       // or delete one
-      intercept[UnauthorizedException] {
+      val errorMessage2 = intercept[UnauthorizedException] {
         guestServices.deleteAgent(agent).await
-      }
+      }.getMessage
+      println(errorMessage2)
+      errorMessage2 should include("agent")
+      errorMessage2 should include("delete")
     }
   }
 

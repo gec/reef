@@ -22,7 +22,7 @@ import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Client }
 import org.totalgrid.reef.services.authz.AuthzService
-import org.totalgrid.reef.models.{ Agent, Entity, AuthPermission }
+import scala.collection.mutable
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models
@@ -63,17 +63,22 @@ trait RequestContext {
    */
   def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders
 
-  /**
-   * permissions only need to be loaded once per request, they are stored in the context for future
-   * authorization or filtering work
-   */
-  def getPermissions: Option[List[AuthPermission]]
+  // per-request store for cached objects
+  private lazy val requestObjects = mutable.Map.empty[String, Object]
 
   /**
-   * store the list of permissions on the context
+   * store a value in the per request store
    */
-  def setPermissions(permissions: List[AuthPermission])
+  def set(key: String, value: Object) = requestObjects.put(key, value)
 
+  /**
+   * pull a value out of the store and cast it to a particular class
+   */
+  def get[A](key: String) = requestObjects.get(key).map { _.asInstanceOf[A] }
+
+  /**
+   * auth service
+   */
   def auth: AuthzService
 }
 
