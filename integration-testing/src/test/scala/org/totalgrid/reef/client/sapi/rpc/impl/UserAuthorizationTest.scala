@@ -125,6 +125,18 @@ class UserAuthorizationTest extends ServiceClientSuite {
     }
   }
 
+  test("Can't update own permissions") {
+    val userName = "test-agent5"
+    val password = "test-password5"
+    asGuestUser(userName, password) { (guestClient, guestServices) =>
+      // show that we can't create a new agent
+      val permissionSets = guestServices.getPermissionSets.await
+      intercept[UnauthorizedException] {
+        guestServices.createNewAgent(userName, password, permissionSets.map { _.getName }).await
+      }
+    }
+  }
+
   ignore("Can't update others passwords") {
     // need attributes for agent updates
     asGuestUser("test-agent4", "test-password4") { (guestClient, guestServices) =>

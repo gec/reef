@@ -32,10 +32,10 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 import org.totalgrid.reef.services.authz.SqlAuthzService
-import org.totalgrid.reef.services.framework.AuthorizesEverything
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
-import org.totalgrid.reef.services.{ SilentRequestContext, NullRequestContext }
+import org.totalgrid.reef.services.framework.RequestContext
+import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext, SilentRequestContext }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
@@ -185,19 +185,28 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 @RunWith(classOf[JUnitRunner])
 class AuthTokenVerifierTest extends AuthSystemTestBase {
 
-  class AuthTester extends ServiceTypeIs[Verb] with AuthorizesEverything {
+  // TODO: get rid of all uses of NullRequestContext
+  class AuthRequestContext extends RequestContext with HeadersContext with PermissionsContext {
+
+    def client = throw new Exception
+    def eventSink = throw new Exception
+    def operationBuffer = throw new Exception
+    def subHandler = throw new Exception
+    val auth = new SqlAuthzService
+  }
+
+  class AuthTester extends ServiceTypeIs[Verb] {
 
     val componentId = "auth_tester"
 
-    authService = SqlAuthzService
     def request(verb: Verb, authTokens: List[String]) = {
-      val context = new NullRequestContext
+      val context = new AuthRequestContext
       context.modifyHeaders { _.setAuthTokens(authTokens) }
       verb match {
-        case Verb.GET => authorizeRead(context, verb)
-        case Verb.PUT => authorizeUpdate(context, verb)
-        case Verb.POST => authorizeCreate(context, verb)
-        case Verb.DELETE => authorizeDelete(context, verb)
+        case Verb.GET => context.auth.authorize(context, componentId, "read", Nil)
+        case Verb.PUT => context.auth.authorize(context, componentId, "update", Nil)
+        case Verb.POST => context.auth.authorize(context, componentId, "create", Nil)
+        case Verb.DELETE => context.auth.authorize(context, componentId, "delete", Nil)
       }
     }
   }

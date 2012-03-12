@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.services.framework.{ AuthorizesCreate, RequestContextSource, ServiceEntryPoint }
+import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
 
 import net.agileautomata.executor4s.Futures
 import org.totalgrid.reef.client.AddressableDestination
@@ -35,14 +35,13 @@ import org.totalgrid.reef.client.AddressableDestination
 import org.totalgrid.reef.client.sapi.client._
 
 class MeasurementBatchService
-    extends ServiceEntryPoint[MeasurementBatch] with AuthorizesCreate {
+    extends ServiceEntryPoint[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 
   override def putAsync(contextSource: RequestContextSource, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) = {
 
     val future = contextSource.transaction { context =>
-      authorizeCreate(context, req)
 
       // TODO: load all endpoints efficiently
       val names = req.getMeasList().toList.map(_.getName).distinct
@@ -60,6 +59,8 @@ class MeasurementBatchService
       }
 
       val commEndpoints = points.groupBy(_.endpoint.value.get)
+
+      context.auth.authorize(context, componentId, "create", points.map { _.entity.value })
 
       val headers = BasicRequestHeaders.empty
       val commonHeaders = context.getHeaders.getTimeout.map { headers.setTimeout(_) }.getOrElse(headers)

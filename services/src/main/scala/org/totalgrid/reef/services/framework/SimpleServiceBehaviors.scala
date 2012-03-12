@@ -23,11 +23,12 @@ import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.proto.Envelope
 
 object SimpleServiceBehaviors {
-  trait SimpleRead extends HasServiceType with AsyncContextRestGet with AuthorizesRead {
+  trait SimpleRead extends HasServiceType with AsyncContextRestGet {
 
     override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit) {
       val response = contextSource.transaction { context =>
-        authorizeRead(context, req)
+        //authorizeRead(context, req)
+        // TODO: context.auth.authorize(componentId, "read", attrs.map{_.entity.value})
         val result = doGet(context, req)
         subscribe(context, req)
         Response(Envelope.Status.OK, result)

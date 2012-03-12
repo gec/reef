@@ -32,6 +32,7 @@ import org.totalgrid.reef.client.service.list.ReefServicesList
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.DbConnection
+import org.totalgrid.reef.services.authz.SqlAuthzService
 
 object ServiceBootstrap {
 
@@ -60,7 +61,7 @@ object ServiceBootstrap {
    * repeating that setup logic somewhere else
    */
   def bootstrapComponents(dbConnection: DbConnection, connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
-    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink)
+    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink, new SqlAuthzService)
 
     // define the events exchanges before "logging in" which will generate some events
     defineEventExchanges(connection)
@@ -73,6 +74,7 @@ object ServiceBootstrap {
 
     val login = buildLogin(systemUser)
     val authToken = authService.put(contextSource, login).expectOne
+    contextSource.headers = headers.setAuthToken(authToken.getToken)
 
     val config = ApplicationConfigBuilders.makeProto(appSettings, appSettings.getDefaultNodeName + "-Services", List("Services"))
     val appConfig = applicationConfigService.put(contextSource, config).expectOne

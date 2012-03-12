@@ -25,6 +25,7 @@ import org.totalgrid.reef.client.sapi.client.rest.{ Connection, SubscriptionHand
 import org.totalgrid.reef.models.AuthPermission
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.persistence.squeryl.DbConnection
+import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
 
 class ServiceDependencies(
   dbConnection: DbConnection,
@@ -32,14 +33,16 @@ class ServiceDependencies(
   pubs: SubscriptionHandler,
   val measurementStore: MeasurementStore,
   eventSink: SystemEventSink,
-  authToken: String) extends RequestContextDependencies(dbConnection, connection, pubs, authToken, eventSink)
+  authToken: String,
+  auth: AuthzService) extends RequestContextDependencies(dbConnection, connection, pubs, authToken, eventSink, auth)
 
 class RequestContextDependencies(
   val dbConnection: DbConnection,
   val connection: Connection,
   val pubs: SubscriptionHandler,
   val authToken: String,
-  val eventSink: SystemEventSink)
+  val eventSink: SystemEventSink,
+  val auth: AuthzService)
 
 trait HeadersContext {
   protected var headers = BasicRequestHeaders.empty
@@ -69,6 +72,8 @@ class DependenciesRequestContext(dependencies: RequestContextDependencies) exten
   val eventSink = dependencies.eventSink
 
   def client = dependencies.connection.login(dependencies.authToken)
+
+  val auth = dependencies.auth
 }
 
 class DependenciesSource(dependencies: RequestContextDependencies) extends RequestContextSource {
@@ -83,6 +88,7 @@ class SilentRequestContext extends RequestContext with HeadersContext with Permi
   def eventSink = new SilentEventSink
   def operationBuffer = new BasicOperationBuffer
   def subHandler = new SilentServiceSubscriptionHandler
+  val auth = new NullAuthzService
 }
 
 // TODO: get rid of all uses of NullRequestContext
@@ -92,4 +98,5 @@ class NullRequestContext extends RequestContext with HeadersContext with Permiss
   def eventSink = throw new Exception
   def operationBuffer = throw new Exception
   def subHandler = throw new Exception
+  val auth = new NullAuthzService
 }

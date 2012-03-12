@@ -37,7 +37,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Get" behavior
    */
-  trait GetEnabled extends HasRead with AuthorizesRead with HasSubscribe with HasModelFactory with AsyncContextRestGet {
+  trait GetEnabled extends HasRead with HasSubscribe with HasModelFactory with AsyncContextRestGet {
     def get(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
         val results = read(context, model, req)
@@ -63,7 +63,7 @@ object ServiceBehaviors {
    * POSTs create a new entry, there are no updates
    */
 
-  trait PutOnlyCreates extends HasCreate with AuthorizesCreate with HasSubscribe with HasModelFactory with AsyncContextRestPut {
+  trait PutOnlyCreates extends HasCreate with HasSubscribe with HasModelFactory with AsyncContextRestPut {
 
     def put(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
@@ -77,7 +77,7 @@ object ServiceBehaviors {
       callback(put(contextSource, req))
   }
 
-  trait PostPartialUpdate extends HasUpdate with AuthorizesUpdate with HasSubscribe with HasModelFactory with AsyncContextRestPost {
+  trait PostPartialUpdate extends HasUpdate with HasSubscribe with HasModelFactory with AsyncContextRestPost {
 
     def post(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
@@ -102,8 +102,8 @@ object ServiceBehaviors {
    * Default REST "Put" behavior updates or creates
    */
   trait PutCreatesOrUpdates
-      extends HasCreate with AuthorizesCreate
-      with HasUpdate with AuthorizesUpdate
+      extends HasCreate
+      with HasUpdate
       with HasSubscribe
       with HasModelFactory
       with AsyncContextRestPut {
@@ -143,7 +143,7 @@ object ServiceBehaviors {
   /**
    * Default REST "Delete" behavior
    */
-  trait DeleteEnabled extends HasDelete with AuthorizesDelete with HasSubscribe with HasModelFactory with AsyncContextRestDelete {
+  trait DeleteEnabled extends HasDelete with HasSubscribe with HasModelFactory with AsyncContextRestDelete {
 
     def delete(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>

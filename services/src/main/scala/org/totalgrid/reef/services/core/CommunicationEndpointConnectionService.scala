@@ -91,7 +91,7 @@ class CommunicationEndpointConnectionServiceModel
     def isSame(entry: FrontEndAssignment) = entry.enabled == currentlyEnabled && entry.state == currentState
 
     if (proto.hasEnabled && proto.getEnabled != currentlyEnabled) {
-
+      context.auth.authorize(context, "endpoint_enabled", "update", endpoint.entity.value)
       exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
         val code = if (currentlyEnabled) EventType.Scada.CommEndpointDisabled else EventType.Scada.CommEndpointEnabled
         eventFunc(code)
@@ -99,6 +99,7 @@ class CommunicationEndpointConnectionServiceModel
         toBeUpdated.copy(enabled = proto.getEnabled)
       }
     } else if (proto.hasState && proto.getState.getNumber != currentState) {
+      context.auth.authorize(context, "endpoint_state", "update", endpoint.entity.value)
       val newState = proto.getState.getNumber
       val online = newState == ConnProto.State.COMMS_UP.getNumber
       exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>

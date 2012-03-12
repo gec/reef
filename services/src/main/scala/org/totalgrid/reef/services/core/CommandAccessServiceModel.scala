@@ -53,8 +53,9 @@ class CommandLockServiceModel
 
     val commands = findCommands(req.getCommandsList.toList)
 
+    context.auth.authorize(context, "command_lock", "create", commands.map { _.entity.value })
     if (req.getAccess == AccessProto.AccessMode.ALLOWED) {
-
+      context.auth.authorize(context, "command_lock_select", "create", commands.map { _.entity.value })
       // process the time here. On requests the time is relative, on responses it is 
       // an absolute UTC time
       val time = req.expireTime match {
@@ -64,6 +65,7 @@ class CommandLockServiceModel
       // Do the select on the model, given the requested list of commands
       selectCommands(context, user, time, commands)
     } else {
+      context.auth.authorize(context, "command_lock_block", "create", commands.map { _.entity.value })
       blockCommands(context, user, commands)
     }
   }
@@ -150,10 +152,13 @@ class CommandLockServiceModel
   }
 
   def removeAccess(context: RequestContext, access: AccessModel): Unit = {
+    //context.auth.authorize("command_lock", "delete", access.agent)
     delete(context, access)
     ApplicationSchema.commandToBlocks.deleteWhere(t => t.accessId === access.id)
 
     val cmds = commandModel.table.where(cmd => cmd.lastSelectId === access.id).toList
+
+    context.auth.authorize(context, "command_lock", "delete", cmds.map { _.entity.value })
     if (cmds.length > 0) {
 
       // Remove last select (since it doesn't refer to anything real) on all commands

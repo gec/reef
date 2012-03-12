@@ -70,7 +70,7 @@ object AuthTokenService {
 
       val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
       val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
-      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
+      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent_password", "update"))
 
       val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
 
@@ -104,7 +104,7 @@ object AuthTokenService {
 
       val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
       val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
-      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
+      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent_password", "update"))
 
       val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
 
@@ -282,4 +282,8 @@ class AuthTokenService(protected val model: AuthTokenServiceModel)
     with DeleteEnabled {
 
   override val descriptor = Descriptors.authToken
+
+  override def performCreate(context: RequestContext, model: ServiceModelType, request: ServiceType): ModelType = {
+    model.createFromProto(context, request)
+  }
 }

@@ -24,6 +24,7 @@ import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext }
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.persistence.squeryl.DbConnection
+import org.totalgrid.reef.services.authz.NullAuthzService
 
 object SubscriptionTools {
 
@@ -59,6 +60,7 @@ object SubscriptionTools {
     def client = throw new Exception("Asked for client in silent request context")
     val eventSink = new SilentEventSink
     val operationBuffer = new BasicOperationBuffer
+    val auth = new NullAuthzService
     //val subHandler = new QueueingEventSink
   }
 

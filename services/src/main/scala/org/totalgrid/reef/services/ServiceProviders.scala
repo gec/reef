@@ -25,7 +25,7 @@ import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
-import org.totalgrid.reef.services.authz.{ AuthServiceMetricsWrapper, AuthService }
+import org.totalgrid.reef.services.authz.AuthzService
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.client.sapi.client.rest.Connection
@@ -42,13 +42,13 @@ class ServiceProviders(
     connection: Connection,
     cm: MeasurementStore,
     serviceConfiguration: ServiceOptions,
-    authzService: AuthService,
+    authzService: AuthzService,
     metricsPublisher: IMetricsSink,
     authToken: String,
     executor: Executor) {
 
   private val eventPublisher = new LocalSystemEventSink(executor)
-  private val dependencies = new ServiceDependencies(dbConnection, connection, connection, cm, eventPublisher, authToken)
+  private val dependencies = new ServiceDependencies(dbConnection, connection, connection, cm, eventPublisher, authToken, authzService)
 
   private val contextSource = new DependenciesSource(dependencies)
 
@@ -66,7 +66,7 @@ class ServiceProviders(
     new SimpleAuthRequestService(modelFac.authTokens),
     new AuthTokenService(modelFac.authTokens))
 
-  private var crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef] with HasAuthService] = List(
+  private var crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef]] = List(
     new EntityEdgeService(modelFac.edges),
     new EntityService(modelFac.entities),
     new EntityAttributesService,
@@ -104,9 +104,6 @@ class ServiceProviders(
     new AlarmService(modelFac.alarms))
 
   crudAuthorizedServices ::= new BatchServiceRequestService(unauthorizedServices ::: crudAuthorizedServices)
-
-  val authService = new AuthServiceMetricsWrapper(authzService, metricsPublisher.getStore("services.auth"))
-  crudAuthorizedServices.foreach(s => s.authService = authService)
 
   val allServices = (unauthorizedServices ::: crudAuthorizedServices)
 

@@ -33,7 +33,7 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.services.authz.NullAuthService
+import org.totalgrid.reef.services.authz.NullAuthzService
 import net.agileautomata.executor4s.testing.InstantExecutor
 
 /**
@@ -85,7 +85,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
       val metrics = MetricsSink.getInstance("test")
 
       val provider = new ServiceProviders(dbConnection, amqp, measStore, serviceOptions,
-        NullAuthService, metrics, "", new InstantExecutor())
+        new NullAuthzService, metrics, "", new InstantExecutor())
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

@@ -57,7 +57,8 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   }
 
   override def createFromProto(context: RequestContext, req: ApplicationConfig): ApplicationInstance = {
-    val sql = create(context, createModelEntry(context: RequestContext, req, context.getHeaders.userName.get))
+    val username = context.getHeaders.userName.getOrElse(throw new BadRequestException("No username in headers"))
+    val sql = create(context, createModelEntry(context: RequestContext, req, username))
 
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })

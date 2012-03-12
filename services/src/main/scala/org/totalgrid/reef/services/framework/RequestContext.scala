@@ -21,7 +21,8 @@ package org.totalgrid.reef.services.framework
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Client }
-import org.totalgrid.reef.models.AuthPermission
+import org.totalgrid.reef.services.authz.AuthzService
+import org.totalgrid.reef.models.{ Agent, Entity, AuthPermission }
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models
@@ -72,6 +73,8 @@ trait RequestContext {
    * store the list of permissions on the context
    */
   def setPermissions(permissions: List[AuthPermission])
+
+  def auth: AuthzService
 }
 
 /**
@@ -86,11 +89,12 @@ trait RequestContextSource {
 /**
  * wrapper class that takes a source and merges in some extra RequestEnv headers before the transaction
  */
-class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: BasicRequestHeaders)
+class RequestContextSourceWithHeaders(contextSource: RequestContextSource, var headers: BasicRequestHeaders)
     extends RequestContextSource {
   def transaction[A](f: (RequestContext) => A) = {
     contextSource.transaction { context =>
       context.modifyHeaders(_.merge(headers))
+      context.auth.prepare(context)
       f(context)
     }
   }
