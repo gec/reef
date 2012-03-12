@@ -54,7 +54,6 @@ class SqlAuthzService extends AuthzService with Logging {
         def name = "SYSTEM"
         def types = Nil
       })
-      //      throw new InternalServiceException("No entities passed to authorize call")
     } else {
       entities.map { toAuthEntity(_) }
     }
@@ -95,16 +94,21 @@ class SqlAuthzService extends AuthzService with Logging {
         // loaded valid permissions, store them on the context
         context.modifyHeaders(_.setUserName(userName))
 
-        val convertedPermissions = permissions.map { toAuthPermission(_) }
+        val convertedPermissions = permissions.map { toAuthPermission(context, _) }
 
         context.set("permissions", convertedPermissions)
       }
     }
   }
 
-  def toAuthPermission(permission: AuthPermission) = {
-    val allSelector = List(new ResourceSet(List(new AllMatcher)))
-    new Permission(permission.allow, permission.resource, permission.verb, allSelector)
+  def toAuthPermission(context: RequestContext, permission: AuthPermission) = {
+
+    // TODO: remove agent_password:update special casing
+    val selectors = if (permission.resource == "agent_password" && permission.verb == "update") {
+      List(new ResourceSet(List(new EntityHasName(context.getHeaders.userName.get))))
+    } else List(new ResourceSet(List(new AllMatcher)))
+
+    new Permission(permission.allow, permission.resource, permission.verb, selectors)
   }
 
   def toAuthEntity(entity: Entity) = {

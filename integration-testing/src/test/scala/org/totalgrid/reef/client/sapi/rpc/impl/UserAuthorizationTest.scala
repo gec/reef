@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.request
+package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.scalatest.matchers.ShouldMatchers
 import scala.collection.JavaConversions._
@@ -142,7 +142,7 @@ class UserAuthorizationTest extends ServiceClientSuite {
     }
   }
 
-  ignore("Can't update others passwords") {
+  test("Can't update others passwords") {
     // need attributes for agent updates
     asGuestUser("test-agent4", "test-password4") { (guestClient, guestServices) =>
       asGuestUser("test-agent2", "test-password2") { (_, _) =>

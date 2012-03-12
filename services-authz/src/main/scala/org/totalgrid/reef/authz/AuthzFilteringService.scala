@@ -39,7 +39,11 @@ object AuthzFilteringService {
     // figure out which permissions may apply to this request
     val applicablePermissions = permissions.filter(_.applicable(service, action))
 
-    filterByEntity(applicablePermissions, entities)
+    if (applicablePermissions.isEmpty) {
+      throw new UnauthorizedException("No permission matched " + service + ":" + action + ". Assuming deny *")
+    } else {
+      filterByEntity(applicablePermissions, entities)
+    }
   }
 
   def filterByEntity[A](applicablePermissions: List[Permission], entities: List[(AuthEntity, A)]): List[FilteredResult[A]] = {
@@ -48,7 +52,7 @@ object AuthzFilteringService {
         val firstApplicable: Option[(Permission, MatcherResult)] = first(applicablePermissions, { x: Permission => x.includes(entity) })
         val a: FilteredResult[A] = firstApplicable match {
           case Some((rule, matcher)) => if (rule.allow && matcher.allow) Allowed[A](payload, rule) else Denied(rule)
-          case None => throw new UnauthorizedException("No rule matched resource, missing deny *")
+          case None => throw new UnauthorizedException("No permission selector matched " + entity.name + ". Assuming deny *.")
         }
         a
     }
@@ -90,6 +94,13 @@ class EntityTypeDoesntIncludeMatcher(types: List[String]) extends Matcher {
   def allow = false
 
   override def toString() = "entity.types doesnt include " + types.mkString("(", ",", ")")
+}
+
+class EntityHasName(name: String) extends Matcher {
+  def includes(e: AuthEntity) = Some(name == e.name)
+  def allow = true
+
+  override def toString() = "entity.name is not " + name
 }
 
 class AllMatcher extends Matcher {
