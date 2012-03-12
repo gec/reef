@@ -22,11 +22,14 @@ import org.totalgrid.reef.client.SubscriptionResult
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
-class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnection], EndpointConnection]) {
+class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnection], EndpointConnection], verbose: Boolean = false) extends Logging {
 
   private def makeEntry(e: EndpointConnection) = {
-    //println(e.getEndpointByUuid.getName + " s: " + e.getState + " e: " + e.getEnabled + " a:" + e.getFrontEnd.getUuid.getUuid + " at: " + e.getLastUpdate)
+    if (verbose) logger.info(e.endpoint.name + " s: " + e.getState + " e: " +
+      e.getEnabled + " a:" + e.frontEnd.uuid.value + " at: " + e.getLastUpdate)
     e.getEndpoint.getUuid -> e
   }
 
@@ -36,9 +39,9 @@ class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnect
   result.getSubscription.start(new SubscriptionEventAcceptorShim(ea => syncVar.atomic(m => m + makeEntry(ea.getValue))))
 
   def checkAllState(enabled: Boolean, state: EndpointConnection.State) {
-    syncVar.waitFor(x => x.values.forall(e => e.getEnabled == enabled && e.getState == state), 20000)
+    syncVar.waitFor(x => x.values.forall(e => e.getEnabled == enabled && e.getState == state), 30000)
   }
   def checkState(uuid: ReefUUID, enabled: Boolean, state: EndpointConnection.State) {
-    syncVar.waitFor(x => x.get(uuid).map(e => e.getEnabled == enabled && e.getState == state).getOrElse(false), 20000)
+    syncVar.waitFor(x => x.get(uuid).map(e => e.getEnabled == enabled && e.getState == state).getOrElse(false), 30000)
   }
 }

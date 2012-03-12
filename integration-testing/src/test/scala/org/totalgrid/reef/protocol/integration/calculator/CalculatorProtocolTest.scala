@@ -57,7 +57,7 @@ class CalculatorProtocolTest extends ServiceClientSuite {
 
     val result = services.subscribeToEndpointConnections().await
 
-    val map = new EndpointConnectionStateMap(result)
+    val map = new EndpointConnectionStateMap(result, true)
 
     // make sure everything starts comms_up and enabled
     map.checkAllState(true, COMMS_UP)
