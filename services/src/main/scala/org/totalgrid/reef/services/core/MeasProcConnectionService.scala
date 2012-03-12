@@ -88,6 +88,10 @@ trait MeasurementProcessingConnectionConversion
     req.measProc.uuid.value :: req.id.value :: Nil
   }
 
+  def relatedEntities(entries: List[MeasProcAssignment]) = {
+    entries.map { _.application.value.map { _.entity.value } }.flatten
+  }
+
   def searchQuery(proto: ConnProto, sql: MeasProcAssignment) = {
     Nil
   }

@@ -140,6 +140,10 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
     req.loginLocation :: req.agent.name :: Nil
   }
 
+  def relatedEntities(entries: List[AuthTokenModel]) = {
+    entries.map { _.agent.value.entity.value }
+  }
+
   def uniqueQuery(proto: AuthToken, sql: AuthTokenModel) = {
     List(
       proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(agent, { _.id })),

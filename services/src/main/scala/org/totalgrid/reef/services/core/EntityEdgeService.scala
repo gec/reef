@@ -142,6 +142,10 @@ class EntityEdgeServiceModel
     req.uuid.value :: req.parent.uuid.value :: req.child.uuid.value :: req.relationship :: Nil
   }
 
+  def relatedEntities(entries: List[EntityEdge]) = {
+    entries.map { e => e.parent.value :: e.child.value :: Nil }.flatten
+  }
+
   def convertToProto(entry: EntityEdge): EntityEdgeProto = {
     import org.totalgrid.reef.services.framework.SquerylModel._
 

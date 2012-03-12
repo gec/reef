@@ -120,6 +120,10 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     req.uuid.value :: req.name :: req.entity.uuid.value :: Nil
   }
 
+  def relatedEntities(entries: List[Command]) = {
+    entries.map { _.entity.value }
+  }
+
   def uniqueQuery(proto: CommandProto, sql: Command) = {
 
     val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))

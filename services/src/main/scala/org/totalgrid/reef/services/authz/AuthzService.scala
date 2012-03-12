@@ -22,6 +22,7 @@ import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.authz._
 import org.totalgrid.reef.models.{ ApplicationSchema, Entity, AuthPermission }
 import org.totalgrid.reef.client.exception.{ InternalServiceException, UnauthorizedException }
+import com.weiglewilczek.slf4s.Logging
 
 trait AuthzService {
 
@@ -38,7 +39,7 @@ class NullAuthzService extends AuthzService {
   def prepare(context: RequestContext) {}
 }
 
-class SqlAuthzService extends AuthzService {
+class SqlAuthzService extends AuthzService with Logging {
 
   import AuthzFilteringService._
 
@@ -50,13 +51,14 @@ class SqlAuthzService extends AuthzService {
     val convertedEntities = if (entities.isEmpty) {
       // HACK, just pass in a temporary entity for now so we have something to get filtered out
       List(new AuthEntity {
-        def name = "test"
+        def name = "SYSTEM"
         def types = Nil
       })
-      //throw new InternalServiceException("No entities passed to authorize call")
+      //      throw new InternalServiceException("No entities passed to authorize call")
     } else {
       entities.map { toAuthEntity(_) }
     }
+    logger.info(componentId + ":" + action + "  " + convertedEntities.map { _.name }.mkString("(", ",", ")"))
 
     val filtered = filter(permissions, componentId, action, convertedEntities.zip(convertedEntities))
 

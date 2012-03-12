@@ -217,6 +217,10 @@ class EntityServiceModel
     list.sortWith { (a, b) => a.getName.toLowerCase.compareTo(b.getName.toLowerCase) < 0 }
   }
 
+  override def relatedEntities(models: List[Entity]) = {
+    models
+  }
+
   def getRoutingKey(req: EntityProto): String = ProtoRoutingKeys.generateRoutingKey {
     req.uuid.value :: req.name :: Nil
   }

@@ -73,7 +73,7 @@ trait ServiceModel[MessageType, ModelType]
    * gets the entities associated with the resource so we can get any necessary
    * authorization checks.
    */
-  def relatedEntities(entry: ModelType): List[Entity] = Nil
+  def relatedEntities(entries: List[ModelType]): List[Entity]
 }
 
 /**

@@ -186,6 +186,10 @@ trait AlarmQueries {
     (proto.id.value.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
   }
 
+  def relatedEntities(entries: List[AlarmModel]) = {
+    entries.map { _.event.value.entity.value }.flatten
+  }
+
   def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
     select.map(EventConversion.searchQuery(_, event).flatten) getOrElse (Nil)
   }

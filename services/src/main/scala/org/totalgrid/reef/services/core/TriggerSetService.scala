@@ -53,6 +53,10 @@ trait TriggerSetConversion
     req.point.endpoint.uuid.value :: req.point.name :: Nil
   }
 
+  def relatedEntities(models: List[TriggerSet]) = {
+    models.map { _.point.value.entity.value }
+  }
+
   def uniqueQuery(proto: TriggerProto, sql: TriggerSet) = {
     List(proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
   }

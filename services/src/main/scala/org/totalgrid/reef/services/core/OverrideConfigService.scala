@@ -96,6 +96,10 @@ trait OverrideConfigConversion
   def getRoutingKey(req: MeasOverride) = ProtoRoutingKeys.generateRoutingKey(
     req.point.endpoint.uuid.value :: req.point.name :: Nil)
 
+  def relatedEntities(models: List[OverrideConfig]) = {
+    models.map { _.point.value.entity.value }
+  }
+
   def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {
     List(
       proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))

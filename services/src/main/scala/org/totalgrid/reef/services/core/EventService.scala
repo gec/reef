@@ -161,6 +161,10 @@ trait EventConversion
   // we've already sorted with the getOrdering we needed to reterive from the database
   def sortResults(list: List[Event]) = list
 
+  def relatedEntities(entries: List[EventStore]) = {
+    entries.map { _.entity.value }.flatten
+  }
+
   // Derive a AMQP routing key from a proto. Used by post?
   def getRoutingKey(req: Event) = ProtoRoutingKeys.generateRoutingKey {
     req.eventType ::

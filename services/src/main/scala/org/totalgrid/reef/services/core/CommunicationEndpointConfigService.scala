@@ -141,6 +141,10 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
     proto.uuid.value :: proto.name :: Nil
   }
 
+  def relatedEntities(entries: List[CommunicationEndpoint]) = {
+    entries.map { _.entity.value }
+  }
+
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     List(
       proto.uuid.value.asParam(id => sql.entityId in EntitySearches.searchQueryForId(EntityProto.newBuilder.setUuid(ReefUUID.newBuilder.setValue(id)).build, { _.id })),

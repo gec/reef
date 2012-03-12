@@ -188,6 +188,10 @@ trait CommandLockConversion
       req.user :: Nil
   }
 
+  def relatedEntities(entries: List[AccessModel]) = {
+    entries.map { _.commands.map { _.entity.value } }.flatten
+  }
+
   def uniqueQuery(proto: AccessProto, sql: AccessModel) = {
     List(
       proto.id.value.asParam(id => sql.id === id.toLong))

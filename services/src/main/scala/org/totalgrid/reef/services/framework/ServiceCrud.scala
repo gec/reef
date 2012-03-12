@@ -32,7 +32,7 @@ trait HasCreate extends HasAllTypes with HasComponentId {
 
   protected def performCreate(context: RequestContext, model: ServiceModelType, request: ServiceType): ModelType = {
     val entry = model.createFromProto(context, request)
-    context.auth.authorize(context, componentId, "create", model.relatedEntities(entry))
+    context.auth.authorize(context, componentId, "create", model.relatedEntities(List(entry)))
     entry
   }
 
@@ -70,7 +70,7 @@ trait HasRead extends HasAllTypes with HasComponentId {
 
   protected def performRead(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ServiceType] = {
     val records = model.findRecords(context, request)
-    context.auth.authorize(context, componentId, "read", records.map { model.relatedEntities(_) }.flatten.distinct)
+    context.auth.authorize(context, componentId, "read", model.relatedEntities(records))
     //val filtered = context.auth.filter(componentId, "read", records.map{model.relatedEntities(_)}.flatten.distinct)
     model.sortResults(records.map(model.convertToProto(_)))
   }
@@ -104,7 +104,7 @@ trait HasUpdate extends HasAllTypes with HasComponentId {
   }
 
   protected def performUpdate(context: RequestContext, model: ServiceModelType, request: ServiceType, existing: ModelType): Tuple2[ModelType, Boolean] = {
-    context.auth.authorize(context, componentId, "update", model.relatedEntities(existing))
+    context.auth.authorize(context, componentId, "update", model.relatedEntities(List(existing)))
     model.updateFromProto(context, request, existing)
   }
 }
@@ -132,7 +132,7 @@ trait HasDelete extends HasAllTypes with HasComponentId {
 
   protected def performDelete(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ModelType] = {
     val existing = model.findRecords(context, request)
-    context.auth.authorize(context, componentId, "delete", existing.map { model.relatedEntities(_) }.flatten.distinct)
+    context.auth.authorize(context, componentId, "delete", model.relatedEntities(existing))
     existing.foreach(model.delete(context, _))
     existing
   }

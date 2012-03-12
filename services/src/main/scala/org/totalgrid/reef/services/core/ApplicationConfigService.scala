@@ -113,6 +113,10 @@ trait ApplicationConfigConversion
     proto.uuid.value :: proto.instanceName :: Nil
   }
 
+  def relatedEntities(entries: List[ApplicationInstance]) = {
+    entries.map { _.entity.value }
+  }
+
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
     List(proto.userName.asParam(sql.userName === _),
       proto.network.asParam(sql.network === _),

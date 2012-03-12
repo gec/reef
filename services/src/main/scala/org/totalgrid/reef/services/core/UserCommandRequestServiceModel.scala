@@ -159,6 +159,10 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
       req.commandRequest.correlationId :: Nil
   }
 
+  def relatedEntities(models: List[UserCommandModel]) = {
+    models.map { _.command.entity.value }
+  }
+
   // Relies on implicit to combine LogicalBooleans
   def uniqueQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
     List(

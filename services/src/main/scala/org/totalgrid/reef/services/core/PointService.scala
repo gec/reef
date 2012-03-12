@@ -143,6 +143,10 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
       Nil
   }
 
+  def relatedEntities(models: List[Point]) = {
+    models.map { _.entity.value }
+  }
+
   /**
    * this is the service event notifaction routingKey
    */

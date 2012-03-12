@@ -133,6 +133,10 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
     configFileProto.uuid.value :: configFileProto.name :: configFileProto.mimeType :: Nil
   }
 
+  def relatedEntities(entries: List[ConfigFile]) = {
+    entries.map { cf => cf.entity.value :: cf.owners.value }.flatten
+  }
+
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
 
     // when searching we go through all the entities in the proto constucting the intersection of the used config files

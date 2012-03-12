@@ -183,6 +183,10 @@ trait EventConfigConversion
     req.eventType :: Nil
   }
 
+  def relatedEntities(entries: List[EventConfigStore]) = {
+    Nil
+  }
+
   def searchQuery(proto: EventConfig, sql: EventConfigStore) = {
     proto.builtIn.asParam(sql.builtIn === _) :: Nil
   }

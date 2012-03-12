@@ -137,6 +137,10 @@ trait CommunicationEndpointConnectionConversion
     req.frontEnd.uuid.value :: req.id.value :: req.endpoint.uuid.value :: req.endpoint.name :: Nil
   }
 
+  def relatedEntities(entries: List[FrontEndAssignment]) = {
+    entries.map { _.endpoint.value.map { _.entity.value } }.flatten
+  }
+
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {
     proto.frontEnd.appConfig.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })) ::
       proto.state.asParam(sql.state === _.getNumber) ::
