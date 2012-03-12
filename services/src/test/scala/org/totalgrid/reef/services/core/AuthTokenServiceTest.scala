@@ -36,6 +36,7 @@ import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
 import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext, SilentRequestContext }
+import org.totalgrid.reef.client.settings.Version
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
@@ -66,7 +67,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
     def login(user: String, pass: String, permissionSetName: Option[String] = None, timeoutAt: Option[Long] = None, location: String = "test code"): AuthToken = {
       val agent = Agent.newBuilder.setName(user).setPassword(pass)
 
-      val b = AuthToken.newBuilder.setAgent(agent).setLoginLocation(location)
+      val b = AuthToken.newBuilder.setAgent(agent).setLoginLocation(location).setClientVersion(Version.getClientVersion)
       permissionSetName.foreach(ps => b.addPermissionSets(PermissionSet.newBuilder.setName(ps)))
       timeoutAt.foreach(t => b.setExpirationTime(t))
       val authToken = authService.put(b.build).expectOne()
@@ -202,6 +203,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     def request(verb: Verb, authTokens: List[String]) = {
       val context = new AuthRequestContext
       context.modifyHeaders { _.setAuthTokens(authTokens) }
+      context.auth.prepare(context)
       verb match {
         case Verb.GET => context.auth.authorize(context, componentId, "read", Nil)
         case Verb.PUT => context.auth.authorize(context, componentId, "update", Nil)
