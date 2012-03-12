@@ -65,13 +65,13 @@ trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
   }
 
   override def deleteAgent(agent: Agent) = {
-    ops.operation("Couldn't delete agent with name: " + agent.name + " uuid: " + agent.uuid) {
+    ops.operation("Couldn't delete agent with name: " + agent.name + " uuid: " + agent.uuid.value) {
       _.delete(agent).map(_.one)
     }
   }
 
   override def setAgentPassword(agent: Agent, newPassword: String) = {
-    ops.operation("Couldn't change password for agent name: " + agent.name + " uuid: " + agent.uuid) {
+    ops.operation("Couldn't change password for agent name: " + agent.name + " uuid: " + agent.uuid.value) {
       _.put(agent.toBuilder.setPassword(newPassword).build).map(_.one)
     }
   }

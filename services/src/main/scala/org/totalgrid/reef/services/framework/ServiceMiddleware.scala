@@ -24,17 +24,31 @@ import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, Service
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
 
 /**
  * parses a ServiceRequest and calls an asynchronous service handler
  */
 class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, service: ServiceEntryPoint[A]) extends AsyncService[A] with Logging with ServiceHelpers[A] {
 
+  import ServiceHelpers._
+
   val descriptor: TypeDescriptor[A] = service.descriptor
 
   def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {
-    ServiceHelpers.catchErrors(req, callback) {
+    try {
       handleRequest(req, env, callback)
+    } catch {
+      case authx: UnauthorizedException =>
+        logger.info(authx.getMessage)
+        callback.onResponse(getFailure(req.getId, authx.getStatus, authx.getMessage))
+      case px: ReefServiceException =>
+        logger.error(px.getMessage, px)
+        callback.onResponse(getFailure(req.getId, px.getStatus, px.getMessage))
+      case x: Exception =>
+        logger.error(x.getMessage, x)
+        val msg = x.getMessage + "\n" + x.getStackTraceString
+        callback.onResponse(getFailure(req.getId, Envelope.Status.INTERNAL_ERROR, msg))
     }
   }
 
