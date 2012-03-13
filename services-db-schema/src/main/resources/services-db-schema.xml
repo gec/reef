@@ -811,4 +811,23 @@
             </column>
         </addColumn>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-1">
+        <addColumn tableName="PermissionSet">
+            <column name="protoData" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-2">
+        <dropColumn columnName="defaultExpirationTime" tableName="PermissionSet"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-3">
+        <dropSequence schemaName="public" sequenceName="s_AuthPermission_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-4">
+        <dropTable tableName="AuthPermission"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-5">
+        <dropTable tableName="PermissionSetJoin"/>
+    </changeSet>
 </databaseChangeLog>

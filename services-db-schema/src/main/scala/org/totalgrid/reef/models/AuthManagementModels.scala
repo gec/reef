@@ -21,6 +21,7 @@ package org.totalgrid.reef.models
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
+import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => PermissionSetProto }
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords
@@ -80,17 +81,11 @@ class Agent(
   }
 }
 
-case class AuthPermission(
-    val allow: Boolean,
-    val resource: String,
-    val verb: String) extends ModelWithId {
-}
-
 case class PermissionSet(
     _entityId: UUID,
-    val defaultExpirationTime: Long) extends EntityBasedModel(_entityId) {
+    var protoData: Array[Byte]) extends EntityBasedModel(_entityId) {
 
-  val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionSetId === id) select (&(p.permissionId)))))
+  def proto = PermissionSetProto.parseFrom(protoData)
 }
 
 case class AuthToken(
@@ -105,5 +100,4 @@ case class AuthToken(
 }
 
 case class AgentPermissionSetJoin(val permissionSetId: Long, val agentId: Long)
-case class PermissionSetJoin(val permissionSetId: Long, val permissionId: Long)
 case class AuthTokenPermissionSetJoin(val permissionSetId: Long, val authTokenId: Long)

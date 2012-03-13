@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
-import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext }
+import org.totalgrid.reef.services.HeadersContext
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.persistence.squeryl.DbConnection
@@ -56,7 +56,7 @@ object SubscriptionTools {
     def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
   }
 
-  class QueueingRequestContext(val subHandler: SubscriptionHandler) extends RequestContext with HeadersContext with PermissionsContext {
+  class QueueingRequestContext(val subHandler: SubscriptionHandler) extends RequestContext with HeadersContext {
     def client = throw new Exception("Asked for client in silent request context")
     val eventSink = new SilentEventSink
     val operationBuffer = new BasicOperationBuffer

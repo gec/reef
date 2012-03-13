@@ -20,9 +20,12 @@ package org.totalgrid.reef.services.authz
 
 import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.authz._
-import org.totalgrid.reef.models.{ ApplicationSchema, Entity, AuthPermission }
+import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
 import org.totalgrid.reef.client.exception.{ InternalServiceException, UnauthorizedException }
+import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => PermissionSetProto }
 import com.weiglewilczek.slf4s.Logging
+
+import scala.collection.JavaConversions._
 
 trait AuthzService {
 
@@ -76,37 +79,40 @@ class SqlAuthzService extends AuthzService with Logging {
 
     val authTokens = context.getHeaders.authTokens
 
-    if (authTokens.size == 0) context.set("auth_error", "No auth tokens in envelope header")
+    if (authTokens.isEmpty) context.set("auth_error", "No auth tokens in envelope header")
     else {
       // lookup the tokens that are not expired
       val now = System.currentTimeMillis
 
       val tokens = ApplicationSchema.authTokens.where(t => t.token in authTokens and t.expirationTime.~ > now).toList
-      if (tokens.size == 0) context.set("auth_error", "All tokens unknown or expired")
+      if (tokens.isEmpty) context.set("auth_error", "All tokens unknown or expired")
       else {
 
-        val permissions = tokens.map(token => token.permissionSets.value.toList.map(ps => ps.permissions.value).flatten).flatten.distinct
+        val permissionSets = tokens.map { _.permissionSets.value.toList }.flatten
+        val permissions = permissionSets.map { ps => ps.proto }
 
         val userName = tokens.head.agent.value.entityName
 
         // loaded valid permissions, store them on the context
         context.modifyHeaders(_.setUserName(userName))
 
-        val convertedPermissions = permissions.map { toAuthPermission(context, _) }
+        val convertedPermissions = permissions.map { toAuthPermission(context, _) }.flatten
 
         context.set("permissions", convertedPermissions)
       }
     }
   }
 
-  def toAuthPermission(context: RequestContext, permission: AuthPermission) = {
+  def toAuthPermission(context: RequestContext, permissionSet: PermissionSetProto) = {
 
-    // TODO: remove agent_password:update special casing
-    val selectors = if (permission.resource == "agent_password" && permission.verb == "update") {
-      List(new ResourceSet(List(new EntityHasName(context.getHeaders.userName.get))))
-    } else List(new ResourceSet(List(new AllMatcher)))
+    permissionSet.getPermissionsList.toList.map { permission =>
+      // TODO: remove agent_password:update special casing
+      val selectors = if (permission.getResource == "agent_password" && permission.getVerb == "update") {
+        List(new ResourceSet(List(new EntityHasName(context.getHeaders.userName.get))))
+      } else List(new ResourceSet(List(new AllMatcher)))
 
-    new Permission(permission.allow, permission.resource, permission.verb, selectors)
+      new Permission(permission.getAllow, permission.getResource, permission.getVerb, selectors)
+    }
   }
 
   def toAuthEntity(entity: Entity) = {

@@ -77,9 +77,7 @@ object ApplicationSchema extends Schema {
     s.eventId is (indexed)))
 
   val agents = table[Agent]
-  val permissions = table[AuthPermission]
   val permissionSets = table[PermissionSet]
-  val permissionSetJoins = table[PermissionSetJoin]
   val authTokens = table[AuthToken]
 
   on(authTokens)(s => declare(s.token is (indexed), s.expirationTime is (indexed)))

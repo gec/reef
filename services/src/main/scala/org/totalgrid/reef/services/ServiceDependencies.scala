@@ -22,7 +22,6 @@ import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.sapi.client.rest.{ Connection, SubscriptionHandler }
-import org.totalgrid.reef.models.AuthPermission
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
@@ -56,14 +55,7 @@ trait HeadersContext {
   }
 }
 
-trait PermissionsContext {
-  protected var permissions = Option.empty[List[AuthPermission]]
-
-  def getPermissions = permissions
-  def setPermissions(p: List[AuthPermission]) = permissions = Some(p)
-}
-
-class DependenciesRequestContext(dependencies: RequestContextDependencies) extends RequestContext with HeadersContext with PermissionsContext {
+class DependenciesRequestContext(dependencies: RequestContextDependencies) extends RequestContext with HeadersContext {
 
   val operationBuffer = new BasicOperationBuffer
 
@@ -83,7 +75,7 @@ class DependenciesSource(dependencies: RequestContextDependencies) extends Reque
   }
 }
 
-class SilentRequestContext extends RequestContext with HeadersContext with PermissionsContext {
+class SilentRequestContext extends RequestContext with HeadersContext {
   def client = throw new Exception("Asked for client in silent request context")
   def eventSink = new SilentEventSink
   def operationBuffer = new BasicOperationBuffer
@@ -92,7 +84,7 @@ class SilentRequestContext extends RequestContext with HeadersContext with Permi
 }
 
 // TODO: get rid of all uses of NullRequestContext
-class NullRequestContext extends RequestContext with HeadersContext with PermissionsContext {
+class NullRequestContext extends RequestContext with HeadersContext {
 
   def client = throw new Exception
   def eventSink = throw new Exception

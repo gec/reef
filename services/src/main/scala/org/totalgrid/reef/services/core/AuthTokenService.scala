@@ -26,6 +26,7 @@ import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.services.core.util._
 import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => RoleProto }
 
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
@@ -37,10 +38,7 @@ import org.totalgrid.reef.models.{
   Agent,
   ApplicationSchema,
   AuthToken => AuthTokenModel,
-  AuthTokenPermissionSetJoin,
-  PermissionSet => PermissionSetModel,
-  AuthPermission,
-  EventStore
+  AuthTokenPermissionSetJoin
 }
 
 // Implicit squeryl list -> query conversion
@@ -50,81 +48,43 @@ import org.totalgrid.reef.models.{
  * TODO: remove static user seed data
  */
 object AuthTokenService {
-  import org.totalgrid.reef.models.{ Agent, AuthPermission, PermissionSet, PermissionSetJoin, AgentPermissionSetJoin }
+  import org.totalgrid.reef.models.{ Agent, PermissionSet, AgentPermissionSetJoin }
 
-  def seedPermissionSet(context: RequestContext, entityModel: EntityServiceModel, name: String, defaultExpirationTime: Long) = {
-    val entity = entityModel.findOrCreate(context, name, "PermissionSet" :: Nil, None)
-    val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
-    permissionSet.entity.value = entity
-    permissionSet
-  }
-
-  def seed(context: RequestContext, systemPassword: String) {
+  def seed(context: RequestContext, systemPassword: String) = {
 
     val entityModel = new EntityServiceModel
     val agentModel = new AgentServiceModel
 
-    if (ApplicationSchema.agents.Count.head == 0) {
+    val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", systemPassword))
 
-      val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", systemPassword))
+    val allSelector = EntitySelector.newBuilder.setSelector("*").setName("all").build
 
-      val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
-      val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
-      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent_password", "update"))
+    val all = Permission.newBuilder.setAllow(true).setVerb("*").setResource("*").setSelector(allSelector).build
+    val readOnly = Permission.newBuilder.setAllow(true).setVerb("read").setResource("*").setSelector(allSelector).build
 
-      val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
+    val selfAgent = EntitySelector.newBuilder.setSelector("$self").setName("self").build
+    val updatePassword = Permission.newBuilder.setAllow(true).setVerb("update").setResource("agent_password").setSelector(selfAgent).build
 
-      val timeout = 18144000000L // one month
+    val allRole = RoleProto.newBuilder.setName("all").addPermissions(all)
+    val guestRole = RoleProto.newBuilder.setName("read_only").addPermissions(readOnly).addPermissions(updatePassword)
 
-      val read_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "read_only", timeout))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
+    val defaultExpirationTime = 18144000000L // one month
 
-      val all_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "all", timeout))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
-
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
-
+    def addPermissionSet(proto: RoleProto.Builder) = {
+      proto.setDefaultExpirationTime(defaultExpirationTime)
+      val entity = entityModel.findOrCreate(context, proto.getName, "PermissionSet" :: Nil, None)
+      val permissionSet = new PermissionSet(entity.id, proto.build.toByteArray)
+      ApplicationSchema.permissionSets.insert(permissionSet)
     }
+
+    val allSet = addPermissionSet(allRole)
+    val readOnlySet = addPermissionSet(guestRole)
+
+    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(allSet.id, system.id))
+
+    (allSet, readOnlySet)
   }
 
-  def seedTesting(context: RequestContext) {
-
-    val entityModel = new EntityServiceModel
-    val agentModel = new AgentServiceModel
-
-    if (ApplicationSchema.agents.Count.head == 0) {
-
-      val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", "system"))
-
-      val core = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "core", "core"))
-      val op = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "operator", "operator"))
-      val guest = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "guest", "guest"))
-
-      val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
-      val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
-      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent_password", "update"))
-
-      val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
-
-      val timeout = 18144000000L // one month
-
-      val read_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "read_only", timeout))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
-
-      val all_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "all", timeout))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
-
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, core.id))
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, core.id))
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, op.id))
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, guest.id))
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
-    }
-  }
 }
 
 /**
@@ -231,7 +191,8 @@ class AuthTokenServiceModel
         }
         time
       } else {
-        currentTime + permissionSets.map(ps => ps.defaultExpirationTime).min
+        // one month
+        currentTime + 18144000000L
       }
 
       // For now, just warn if the client version is unknown

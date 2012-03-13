@@ -29,14 +29,14 @@ import scala.collection.JavaConversions._
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.totalgrid.reef.models.DatabaseUsingTestBase
 
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
 import org.totalgrid.reef.services.framework.RequestContext
-import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext, SilentRequestContext }
+import org.totalgrid.reef.services.{ HeadersContext, SilentRequestContext }
 import org.totalgrid.reef.client.settings.Version
+import org.totalgrid.reef.models.{ AgentPermissionSetJoin, ApplicationSchema, DatabaseUsingTestBase }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
@@ -44,8 +44,25 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
     super.beforeAll()
   }
 
+  def seedTesting(context: RequestContext) {
+
+    val (allSet, readOnlySet) = AuthTokenService.seed(context, "system")
+
+    val agentModel = new AgentServiceModel
+
+    val core = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "core", "core"))
+    val op = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "operator", "operator"))
+    val guest = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "guest", "guest"))
+
+    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(allSet.id, core.id))
+    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(readOnlySet.id, core.id))
+    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(allSet.id, op.id))
+    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(readOnlySet.id, op.id))
+    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(readOnlySet.id, guest.id))
+  }
+
   override def beforeEachInTransaction() = {
-    AuthTokenService.seedTesting(new SilentRequestContext)
+    seedTesting(new SilentRequestContext)
   }
 
   class Fixture extends SubscriptionTools.SubscriptionTesting {
@@ -187,7 +204,7 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 class AuthTokenVerifierTest extends AuthSystemTestBase {
 
   // TODO: get rid of all uses of NullRequestContext
-  class AuthRequestContext extends RequestContext with HeadersContext with PermissionsContext {
+  class AuthRequestContext extends RequestContext with HeadersContext {
 
     def client = throw new Exception
     def eventSink = throw new Exception
