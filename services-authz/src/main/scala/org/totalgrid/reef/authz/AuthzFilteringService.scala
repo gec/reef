@@ -34,7 +34,7 @@ object AuthzFilteringService {
   //
   //  def filterByAgent[A](service : String, action : String, agents: List[(Agent,A)]) : List[FilteredResult[A]]
 
-  def filter[A](permissions: => List[Permission], service: String, action: String, entities: List[(AuthEntity, A)]): List[FilteredResult[A]] = {
+  def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], entities: => List[AuthEntity]): List[FilteredResult[A]] = {
 
     // figure out which permissions may apply to this request
     val applicablePermissions = permissions.filter(_.applicable(service, action))
@@ -42,7 +42,15 @@ object AuthzFilteringService {
     if (applicablePermissions.isEmpty) {
       throw new UnauthorizedException("No permission matched " + service + ":" + action + ". Assuming deny *")
     } else {
-      filterByEntity(applicablePermissions, entities)
+      if (applicablePermissions.find(_.resourceDependent).isEmpty) {
+        val rule = applicablePermissions.head
+        payloads.map { payload =>
+          if (rule.allow) Allowed[A](payload, rule)
+          else Denied[A](rule)
+        }
+      } else {
+        filterByEntity(applicablePermissions, entities.zip(payloads))
+      }
     }
   }
 
@@ -50,11 +58,10 @@ object AuthzFilteringService {
     entities.map {
       case (entity, payload) =>
         val firstApplicable: Option[(Permission, MatcherResult)] = first(applicablePermissions, { x: Permission => x.includes(entity) })
-        val a: FilteredResult[A] = firstApplicable match {
-          case Some((rule, matcher)) => if (rule.allow && matcher.allow) Allowed[A](payload, rule) else Denied(rule)
+        firstApplicable match {
+          case Some((rule, matcher)) => if (rule.allow && matcher.allow) Allowed[A](payload, rule) else Denied[A](rule)
           case None => throw new UnauthorizedException("No permission selector matched " + entity.name + ". Assuming deny *.")
         }
-        a
     }
   }
 }
@@ -67,6 +74,8 @@ trait AuthEntity {
 case class Permission(allow: Boolean, service: String, action: String, resourceSets: List[ResourceSet]) {
   def applicable(s: String, a: String) = (service == "*" || service == s) && (action == "*" || action == a)
 
+  def resourceDependent = resourceSets.find(_.resourceDependent).isDefined
+
   def includes(e: AuthEntity): Option[MatcherResult] =
     first(resourceSets, { x: ResourceSet => x.includes(e) }).map { x => x._2 }
 }
@@ -74,38 +83,46 @@ case class Permission(allow: Boolean, service: String, action: String, resourceS
 case class ResourceSet(matchers: List[Matcher]) {
   def includes(e: AuthEntity): Option[MatcherResult] =
     first(matchers, { x: Matcher => x.includes(e) }).map { x => MatcherResult(x._1, x._2) }
+
+  def resourceDependent = matchers.find(_.resourceDependent).isDefined
 }
 
 sealed trait Matcher {
   def includes(e: AuthEntity): Option[Boolean]
 
   def allow: Boolean
+
+  def resourceDependent: Boolean
 }
 
 class EntityTypeIncludesMatcher(types: List[String]) extends Matcher {
   def includes(e: AuthEntity) = e.types.find(typ => types.find(typ == _).isDefined).map { s => true }
-  def allow = true
+  val allow = true
+  val resourceDependent = true
 
   override def toString() = "entity.types include " + types.mkString("(", ",", ")")
 }
 
 class EntityTypeDoesntIncludeMatcher(types: List[String]) extends Matcher {
   def includes(e: AuthEntity) = e.types.find(typ => types.find(typ == _).isDefined).map { s => false }
-  def allow = false
+  val allow = false
+  val resourceDependent = true
 
   override def toString() = "entity.types doesnt include " + types.mkString("(", ",", ")")
 }
 
 class EntityHasName(name: String) extends Matcher {
   def includes(e: AuthEntity) = Some(name == e.name)
-  def allow = true
+  val allow = true
+  val resourceDependent = true
 
   override def toString() = "entity.name is not " + name
 }
 
 class AllMatcher extends Matcher {
   def includes(e: AuthEntity) = Some(true)
-  def allow = true
+  val allow = true
+  val resourceDependent = false
   override def toString() = "*"
 }
 

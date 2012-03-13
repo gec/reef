@@ -49,7 +49,7 @@ class MeasurementStatisticsService(cm: Historian)
 
     val name = result.entity.value.name
 
-    context.auth.authorize(context, Descriptors.measurement.id, "read", result.entity.value)
+    context.auth.authorize(context, Descriptors.measurement.id, "read", List(result.entity.value))
 
     val count = cm.numValues(name)
 

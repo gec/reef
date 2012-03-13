@@ -26,16 +26,14 @@ import com.weiglewilczek.slf4s.Logging
 
 trait AuthzService {
 
-  def authorize(context: RequestContext, componentId: String, action: String, entity: Entity): Unit = authorize(context, componentId, action, entity :: Nil)
-
-  def authorize(context: RequestContext, componentId: String, action: String, entities: List[Entity]): Unit
+  def authorize(context: RequestContext, componentId: String, action: String, entities: => List[Entity]): Unit
 
   // load up the permissions sets
   def prepare(context: RequestContext)
 }
 
 class NullAuthzService extends AuthzService {
-  def authorize(context: RequestContext, componentId: String, action: String, entities: List[Entity]) {}
+  def authorize(context: RequestContext, componentId: String, action: String, entities: => List[Entity]) {}
   def prepare(context: RequestContext) {}
 }
 
@@ -43,7 +41,7 @@ class SqlAuthzService extends AuthzService with Logging {
 
   import AuthzFilteringService._
 
-  def authorize(context: RequestContext, componentId: String, action: String, entities: List[Entity]) {
+  def authorize(context: RequestContext, componentId: String, action: String, entities: => List[Entity]) {
 
     val permissions = context.get[List[Permission]]("permissions")
       .getOrElse(throw new UnauthorizedException(context.get[String]("auth_error").get))
@@ -59,7 +57,7 @@ class SqlAuthzService extends AuthzService with Logging {
     }
     logger.info(componentId + ":" + action + "  " + convertedEntities.map { _.name }.mkString("(", ",", ")"))
 
-    val filtered = filter(permissions, componentId, action, convertedEntities.zip(convertedEntities))
+    val filtered = filter(permissions, componentId, action, convertedEntities, convertedEntities)
 
     filtered.find(!_.isAllowed) match {
       case Some(filterResult) => throw new UnauthorizedException(filterResult.toString)
