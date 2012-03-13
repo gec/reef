@@ -33,6 +33,8 @@ class MeasurementSnapshotService(cm: RTDatabase)
     extends ServiceEntryPoint[MeasurementSnapshot]
     with SimpleRead {
 
+  private val entityModel = new EntityServiceModel()
+
   override val descriptor = Descriptors.measurementSnapshot
 
   override def getSubscribeKeys(req: MeasurementSnapshot): List[String] = {
@@ -62,6 +64,9 @@ class MeasurementSnapshotService(cm: RTDatabase)
       b.addAllPointNames(foundNames)
       measList.foreach(name => b.addMeasurements(measurements.get(name).get))
     }
+
+    context.auth.authorize(context, Descriptors.measurement.id, "read", entityModel.findEntitiesByNames(context, searchList))
+
     b.build
   }
 }

@@ -27,8 +27,6 @@ object SimpleServiceBehaviors {
 
     override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit) {
       val response = contextSource.transaction { context =>
-        //authorizeRead(context, req)
-        // TODO: context.auth.authorize(componentId, "read", attrs.map{_.entity.value})
         val result = doGet(context, req)
         subscribe(context, req)
         Response(Envelope.Status.OK, result)

@@ -131,6 +131,8 @@ class AlarmQueryService
           AlarmConversion.convertToProto(alarm, event)
       }
 
+    context.auth.authorize(context, Descriptors.alarm.id, "read", entMap.values.toList)
+
     val alarmList = AlarmList.newBuilder.addAllAlarms(alarmProtos).build
 
     alarmList

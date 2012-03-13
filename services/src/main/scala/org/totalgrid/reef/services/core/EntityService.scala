@@ -87,6 +87,14 @@ class EntityServiceModel
     }
   }
 
+  def findEntityByName(context: RequestContext, name: String): Option[Entity] = {
+    EntityQuery.returnSingleOption(table.where(t => t.name === name).toList, "Entity")
+  }
+
+  def findEntitiesByNames(context: RequestContext, names: List[String]): List[Entity] = {
+    EntityQuery.findEntities(names, List("Entity")).toList
+  }
+
   def removeTypes(context: RequestContext, entity: Entity, entityTypes: List[String]): Entity = {
 
     val removeTypes = entity.types.value.intersect(entityTypes)
