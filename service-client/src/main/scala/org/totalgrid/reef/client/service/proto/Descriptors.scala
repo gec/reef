@@ -76,6 +76,12 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.client.service.proto.Auth.Agent]
     def id = "agent"
   }
+  def entitySelector() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Auth.EntitySelector] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Auth.EntitySelector): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Auth.EntitySelector.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Auth.EntitySelector]
+    def id = "entity_selector"
+  }
   def permission() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Auth.Permission] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.Auth.Permission): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Auth.Permission.parseFrom(bytes)

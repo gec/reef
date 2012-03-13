@@ -34,11 +34,18 @@
  *     repeated PermissionSet permission_sets = 4;
  * }
  * 
+ * message EntitySelector{
+ *     //optional org.totalgrid.reef.client.service.proto.Model.ReefID  id      = 1;
+ *     optional string  name     = 2;
+ *     optional string  selector = 3;
+ * }
+ * 
  * message Permission{
  *     optional org.totalgrid.reef.client.service.proto.Model.ReefID  id      = 1;
  *     optional bool    allow    = 2;
  *     optional string  resource = 3;
  *     optional string  verb     = 4;
+ *     optional EntitySelector  selector = 5;
  * }
  * 
  * message PermissionSet{
@@ -55,6 +62,7 @@
  *     repeated PermissionSet permission_sets = 4;
  *     optional string        token           = 5;
  *     optional uint64        expiration_time = 6;
+ *     optional string        client_version  = 7;
  * }
  * </pre>
  */

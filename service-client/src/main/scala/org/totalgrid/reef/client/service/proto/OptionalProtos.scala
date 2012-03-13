@@ -87,12 +87,18 @@ object OptionalProtos {
     val password = optionally(_.hasPassword, _.getPassword)
     val permissionSets = optionally(_.getPermissionSetsList.toList.map { i => new OptAuthPermissionSet(Some(i)) })
   }
+  implicit def proto2OptAuthEntitySelector(a: org.totalgrid.reef.client.service.proto.Auth.EntitySelector): OptAuthEntitySelector = new OptAuthEntitySelector(Some(a))
+  class OptAuthEntitySelector(real: Option[org.totalgrid.reef.client.service.proto.Auth.EntitySelector]) extends OptionalStruct(real) {
+    val name = optionally(_.hasName, _.getName)
+    val selector = optionally(_.hasSelector, _.getSelector)
+  }
   implicit def proto2OptAuthPermission(a: org.totalgrid.reef.client.service.proto.Auth.Permission): OptAuthPermission = new OptAuthPermission(Some(a))
   class OptAuthPermission(real: Option[org.totalgrid.reef.client.service.proto.Auth.Permission]) extends OptionalStruct(real) {
     val id = new OptModelReefID(optionally(_.hasId, _.getId))
     val allow = optionally(_.hasAllow, _.getAllow)
     val resource = optionally(_.hasResource, _.getResource)
     val verb = optionally(_.hasVerb, _.getVerb)
+    val selector = new OptAuthEntitySelector(optionally(_.hasSelector, _.getSelector))
   }
   implicit def proto2OptAuthPermissionSet(a: org.totalgrid.reef.client.service.proto.Auth.PermissionSet): OptAuthPermissionSet = new OptAuthPermissionSet(Some(a))
   class OptAuthPermissionSet(real: Option[org.totalgrid.reef.client.service.proto.Auth.PermissionSet]) extends OptionalStruct(real) {
@@ -109,6 +115,7 @@ object OptionalProtos {
     val permissionSets = optionally(_.getPermissionSetsList.toList.map { i => new OptAuthPermissionSet(Some(i)) })
     val token = optionally(_.hasToken, _.getToken)
     val expirationTime = optionally(_.hasExpirationTime, _.getExpirationTime)
+    val clientVersion = optionally(_.hasClientVersion, _.getClientVersion)
   }
   implicit def proto2OptCalculationsTriggerStrategy(a: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): OptCalculationsTriggerStrategy = new OptCalculationsTriggerStrategy(Some(a))
   class OptCalculationsTriggerStrategy(real: Option[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy]) extends OptionalStruct(real) {
