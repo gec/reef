@@ -80,7 +80,7 @@ object LoadManager extends Logging {
       var equipmentPointUnits = HashMap[String, String]()
       val actionModel = HashMap[String, ActionSet]()
 
-      if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel)
+      if (!xml.isSetEquipmentModel && !xml.isSetCommunicationsModel && !xml.isSetMessageModel && !xml.isSetAuthorization)
         throw new Exception("No equipmentModel, communicationsModel, or messageModel. Nothing to do.")
 
       val loadCache = new LoadCache
@@ -111,6 +111,10 @@ object LoadManager extends Logging {
           val comLoader = new CommunicationsLoader(client, loadCache.loadCacheCommunication, exceptionCollector, commonLoader)
           val comModel = xml.getCommunicationsModel
           comLoader.load(comModel, equipmentPointUnits, benchmark)
+        }
+
+        if (xml.isSetAuthorization) {
+
         }
 
         configurationFileTuple.foreach {
