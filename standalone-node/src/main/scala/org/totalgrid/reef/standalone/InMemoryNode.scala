@@ -56,6 +56,9 @@ object InMemoryNode {
 
       fileName.foreach { system.loadModel(_) }
 
+      // long enough for the endpoints to start coming online
+      Thread.sleep(2000)
+
       true
     } else {
       false
