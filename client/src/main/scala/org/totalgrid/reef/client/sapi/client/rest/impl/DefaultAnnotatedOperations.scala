@@ -20,7 +20,8 @@ package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import net.agileautomata.executor4s._
 
-import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
+import java.util.concurrent.RejectedExecutionException
+import org.totalgrid.reef.client.exception.{ ServiceIOException, InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client.types.TypeDescriptor
 
 import org.totalgrid.reef.client.sapi.client.{ Subscription, Promise }
@@ -65,6 +66,8 @@ object DefaultAnnotatedOperations {
       case npe: NullPointerException =>
         definedFuture[Result[A]](exe, Failure(new InternalClientError("Null pointer error while making request. " +
           "Check that all parameters are not null.", npe)))
+      case rje: RejectedExecutionException =>
+        definedFuture[Result[A]](exe, Failure(new ServiceIOException("Underlying connection executor has been closed or disconnected", rje)))
       case rse: ReefServiceException =>
         definedFuture[Result[A]](exe, Failure(rse))
       case ex: Exception =>
