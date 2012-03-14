@@ -32,20 +32,21 @@ class AuthorizationLoader(modelLoader: ModelLoader, exceptionCollector: Exceptio
 
     if (access.isSetActions) {
       val actions = access.getActions.split(' ')
-      actions.headOption.foreach(b.setVerb(_))
+      actions.foreach(b.addVerb(_))
     } else {
       throw new Exception("Must set actions in permission: " + where)
     }
 
     if (access.isSetResources) {
       val resources = access.getResources.split(' ')
-      resources.headOption.foreach(b.setResource(_))
+      resources.foreach(b.addResource(_))
     } else {
       throw new Exception("Must set resources in permission: " + where)
     }
 
     if (access.isSetSelect) {
-      b.setSelector(EntitySelector.newBuilder().setName(access.getSelect))
+      val selectors = access.getSelect.split(' ')
+      selectors.foreach(s => b.addSelector(EntitySelector.newBuilder().setName(s)))
     }
 
     b.build

@@ -46,8 +46,8 @@ object AgentView {
 
   def permissionSetRow(a: PermissionSet) = {
     val permissions = a.getPermissionsList.toList
-    val allows = permissions.filter(_.getAllow == true).map { p => p.getVerb + "," + p.getResource }
-    val denies = permissions.filter(_.getAllow == false).map { p => p.getVerb + "," + p.getResource }
+    val allows = permissions.filter(_.getAllow == true).map { p => p.getVerbList.mkString("[", ",", "]") + " , " + p.getResourceList.mkString("[", ",", "]") }
+    val denies = permissions.filter(_.getAllow == false).map { p => p.getVerbList.mkString("[", ",", "]") + " , " + p.getResourceList.mkString("[", ",", "]") }
     a.getUuid.getValue :: a.getName :: allows.mkString(";") :: denies.mkString(";") :: Nil
   }
 }
