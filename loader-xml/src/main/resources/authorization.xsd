@@ -86,14 +86,6 @@
                 <xs:element ref="roles" minOccurs="0"/>
                 <xs:element ref="agents" minOccurs="0"/>
             </xs:all>
-            <xs:attribute name="version" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="1.0"/>
-                        <!-- Add new versions here and keep old versions that are backwards compatible -->
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
         </xs:complexType>
     </xs:element>
 

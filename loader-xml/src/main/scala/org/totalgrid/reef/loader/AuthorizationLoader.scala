@@ -83,6 +83,8 @@ class AuthorizationLoader(modelLoader: ModelLoader, exceptionCollector: Exceptio
 
     val roles = mapRoles(auth)
 
+    roles.foreach(modelLoader.putOrThrow(_))
+
   }
 
 }

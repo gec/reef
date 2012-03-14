@@ -114,7 +114,8 @@ object LoadManager extends Logging {
         }
 
         if (xml.isSetAuthorization) {
-
+          val authLoader = new AuthorizationLoader(client, exceptionCollector)
+          authLoader.load(xml.getAuthorization)
         }
 
         configurationFileTuple.foreach {
