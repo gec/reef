@@ -179,7 +179,7 @@
 				</comm:equipment>
 
 				<comm:equipment name="Line01">
-					<comm:analog name="Current" index="0" unit="A" />
+					<comm:analog name="Current" index="0" unit="A" outputScale="1.0" />
 					<comm:setpoint name="VoltageSetpoint" index="0"/>
 				</comm:equipment>
 			</comm:equipment>

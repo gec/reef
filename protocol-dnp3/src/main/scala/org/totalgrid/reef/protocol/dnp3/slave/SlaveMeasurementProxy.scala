@@ -33,13 +33,16 @@ import net.agileautomata.executor4s.Cancelable
 class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dataObserver: IDataObserver)
     extends SubscriptionDataHandler[Measurement] with Logging {
 
+  private def measList = mapping.getMeasmapList.toList
+
   private val publisher = new DataObserverPublisher(mapping, dataObserver)
   private val packTimer = new PackTimer(100, 400, publisher.publishMeasurements _, service)
+  private val scaler = new MeasurementOutputScaler(measList)
 
   private var subscription = Option.empty[Cancelable]
 
   service.execute {
-    service.subscribeToMeasurementsByNames(mapping.getMeasmapList.toList.map { _.getPointName }).listen { p =>
+    service.subscribeToMeasurementsByNames(measList.map { _.getPointName }).listen { p =>
       val subscriptionResult = p.await
       subscription = Some(ServiceContext.attachToServiceContext(subscriptionResult, this))
     }
@@ -50,7 +53,7 @@ class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dat
     packTimer.cancel()
   }
 
-  def handleResponse(result: List[Measurement]) = packTimer.addEntries(result)
-  def handleEvent(event: SubscriptionEventType, result: Measurement) = packTimer.addEntry(result)
+  def handleResponse(result: List[Measurement]) = packTimer.addEntries(result.map { scaler.scaleMeasurement(_) })
+  def handleEvent(event: SubscriptionEventType, result: Measurement) = packTimer.addEntry(scaler.scaleMeasurement(result))
 
 }
