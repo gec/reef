@@ -66,6 +66,7 @@
                 <xs:element ref="allow" minOccurs="0"/>
                 <xs:element ref="deny" minOccurs="0"/>
             </xs:choice>
+            <xs:attribute name="name" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 

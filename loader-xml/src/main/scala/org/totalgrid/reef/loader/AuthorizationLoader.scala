@@ -18,22 +18,70 @@
  */
 package org.totalgrid.reef.loader
 
-import authorization.Authorization
+import authorization._
 import com.weiglewilczek.slf4s.Logging
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.client.service.proto.Auth.{ EntitySelector, Permission, PermissionSet }
 
-class AuthorizationLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommunication, exceptionCollector: ExceptionCollector, commonLoader: CommonLoader)
-    extends Logging with BaseConfigurationLoader {
+class AuthorizationLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector)
+    extends Logging {
 
-  def load(auth: Authorization) {
+  def mapPermission(where: String, allow: Boolean, access: Access): Permission = {
+    val b = Permission.newBuilder
+      .setAllow(allow)
+
+    if (access.isSetActions) {
+      val actions = access.getActions.split(' ')
+      actions.headOption.foreach(b.setVerb(_))
+    } else {
+      throw new Exception("Must set actions in permission: " + where)
+    }
+
+    if (access.isSetResources) {
+      val resources = access.getResources.split(' ')
+      resources.headOption.foreach(b.setResource(_))
+    } else {
+      throw new Exception("Must set resources in permission: " + where)
+    }
+
+    if (access.isSetSelect) {
+      b.setSelector(EntitySelector.newBuilder().setName(access.getSelect))
+    }
+
+    b.build
+  }
+
+  def mapRole(role: Role): PermissionSet = {
+    val name = role.getName
+
+    val b = PermissionSet.newBuilder
+      .setName(name)
+
+    val perms = role.getAllowOrDeny.map {
+      case a: Allow => mapPermission(name, true, a)
+      case d: Deny => mapPermission(name, false, d)
+    }
+
+    perms.foreach(b.addPermissions(_))
+
+    b.build
+  }
+
+  def mapRoles(auth: Authorization): List[PermissionSet] = {
     if (auth.isSetRoles) {
       val rolesObject = auth.getRoles
       val rolesList = rolesObject.getRole.toList
 
+      rolesList.map(mapRole(_))
+    } else {
+      Nil
     }
   }
 
-  def getExceptionCollector: ExceptionCollector = exceptionCollector
+  def load(auth: Authorization) {
 
-  def getModelLoader: ModelLoader = modelLoader
+    val roles = mapRoles(auth)
+
+  }
+
 }
