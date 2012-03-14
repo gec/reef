@@ -6,10 +6,10 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4.2</version>
+	<version>0.4.2-DNP</version>
 
 	<properties>
-		<reef.version>0.4.2</reef.version>
+		<reef.version>0.4.2-DNP</reef.version>
 		<mavenBundleVersion>2.1.0</mavenBundleVersion>
 		<felixCoreVersion>1.4.0</felixCoreVersion>
         <executor4s.version>0.1.9</executor4s.version>
