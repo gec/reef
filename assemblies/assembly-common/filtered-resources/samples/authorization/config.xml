@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration version="1.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="configuration.loader.reef.totalgrid.org"
+               xmlns:auth="authorization.loader.reef.totalgrid.org">
+
+    <auth:authorization>
+        <auth:roles>
+            <auth:role name="my_auth01">
+                <auth:allow actions="create update delete" resources="endpoint endpoint_config" />
+            </auth:role>
+        </auth:roles>
+    </auth:authorization>
+
+</configuration>

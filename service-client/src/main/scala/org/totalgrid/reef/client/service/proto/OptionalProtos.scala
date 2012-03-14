@@ -96,9 +96,9 @@ object OptionalProtos {
   class OptAuthPermission(real: Option[org.totalgrid.reef.client.service.proto.Auth.Permission]) extends OptionalStruct(real) {
     val id = new OptModelReefID(optionally(_.hasId, _.getId))
     val allow = optionally(_.hasAllow, _.getAllow)
-    val resource = optionally(_.hasResource, _.getResource)
-    val verb = optionally(_.hasVerb, _.getVerb)
-    val selector = new OptAuthEntitySelector(optionally(_.hasSelector, _.getSelector))
+    val resource = optionally(_.getResourceList.toList)
+    val verb = optionally(_.getVerbList.toList)
+    val selector = optionally(_.getSelectorList.toList.map { i => new OptAuthEntitySelector(Some(i)) })
   }
   implicit def proto2OptAuthPermissionSet(a: org.totalgrid.reef.client.service.proto.Auth.PermissionSet): OptAuthPermissionSet = new OptAuthPermissionSet(Some(a))
   class OptAuthPermissionSet(real: Option[org.totalgrid.reef.client.service.proto.Auth.PermissionSet]) extends OptionalStruct(real) {

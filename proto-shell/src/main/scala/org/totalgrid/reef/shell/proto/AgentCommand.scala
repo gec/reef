@@ -112,7 +112,7 @@ class AgentPermissionsCreateCommand extends AgentCommandBase {
     Option(qualifiers).map { _.toList }.getOrElse(Nil).map { qualifier =>
       val parts = qualifier.split(',')
       if (parts.size != 2) throw new Exception("Qualifer should be of form \"[OPERATION],[RESOURCE]\". " + qualifier + " not valid.")
-      Permission.newBuilder.setAllow(allow).setVerb(parts(0)).setResource(parts(1)).build
+      Permission.newBuilder.setAllow(allow).addVerb(parts(0)).addResource(parts(1)).build
     }
   }
 }

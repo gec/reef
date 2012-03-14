@@ -37,8 +37,8 @@ class PermissionSetServiceTest extends AuthSystemTestBase {
   def makePermissionSet(name: String = "set", expirationTime: Option[Long] = None, allowedPermissions: List[VerbResource] = List(VerbResource("*", "*")), deniedPermissions: List[VerbResource] = Nil) = {
     val b = PermissionSet.newBuilder.setName(name)
     expirationTime.foreach(p => b.setDefaultExpirationTime(p))
-    allowedPermissions.foreach(n => b.addPermissions(Permission.newBuilder.setAllow(true).setResource(n.resource).setVerb(n.verb)))
-    deniedPermissions.foreach(n => b.addPermissions(Permission.newBuilder.setAllow(false).setResource(n.resource).setVerb(n.verb)))
+    allowedPermissions.foreach(n => b.addPermissions(Permission.newBuilder.setAllow(true).addResource(n.resource).addVerb(n.verb)))
+    deniedPermissions.foreach(n => b.addPermissions(Permission.newBuilder.setAllow(false).addResource(n.resource).addVerb(n.verb)))
     b.build
   }
 

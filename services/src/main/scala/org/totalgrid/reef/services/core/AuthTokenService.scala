@@ -59,11 +59,11 @@ object AuthTokenService {
 
     val allSelector = EntitySelector.newBuilder.setSelector("*").setName("all").build
 
-    val all = Permission.newBuilder.setAllow(true).setVerb("*").setResource("*").setSelector(allSelector).build
-    val readOnly = Permission.newBuilder.setAllow(true).setVerb("read").setResource("*").setSelector(allSelector).build
+    val all = Permission.newBuilder.setAllow(true).addVerb("*").addResource("*").addSelector(allSelector).build
+    val readOnly = Permission.newBuilder.setAllow(true).addVerb("read").addResource("*").addSelector(allSelector).build
 
     val selfAgent = EntitySelector.newBuilder.setSelector("$self").setName("self").build
-    val updatePassword = Permission.newBuilder.setAllow(true).setVerb("update").setResource("agent_password").setSelector(selfAgent).build
+    val updatePassword = Permission.newBuilder.setAllow(true).addVerb("update").addResource("agent_password").addSelector(selfAgent).build
 
     val allRole = RoleProto.newBuilder.setName("all").addPermissions(all)
     val guestRole = RoleProto.newBuilder.setName("read_only").addPermissions(readOnly).addPermissions(updatePassword)

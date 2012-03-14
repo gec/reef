@@ -43,9 +43,9 @@
  * message Permission{
  *     optional org.totalgrid.reef.client.service.proto.Model.ReefID  id      = 1;
  *     optional bool    allow    = 2;
- *     optional string  resource = 3;
- *     optional string  verb     = 4;
- *     optional EntitySelector  selector = 5;
+ *     repeated string  resource = 3;
+ *     repeated string  verb     = 4;
+ *     repeated EntitySelector  selector = 5;
  * }
  * 
  * message PermissionSet{

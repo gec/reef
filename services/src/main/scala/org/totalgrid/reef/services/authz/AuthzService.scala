@@ -105,13 +105,24 @@ class SqlAuthzService extends AuthzService with Logging {
 
   def toAuthPermission(context: RequestContext, permissionSet: PermissionSetProto) = {
 
-    permissionSet.getPermissionsList.toList.map { permission =>
-      // TODO: remove agent_password:update special casing
-      val selectors = if (permission.getResource == "agent_password" && permission.getVerb == "update") {
-        List(new ResourceSet(List(new EntityHasName(context.getHeaders.userName.get))))
-      } else List(new ResourceSet(List(new AllMatcher)))
+    permissionSet.getPermissionsList.toList.flatMap { perm =>
 
-      new Permission(permission.getAllow, permission.getResource, permission.getVerb, selectors)
+      val actions = perm.getVerbList
+      val resources = perm.getResourceList
+      //val selectors = perm.getSelectorList
+
+      actions.flatMap { a =>
+        resources.map { r =>
+          // TODO: remove agent_password:update special casing
+          val selectors = if (a == "update" && r == "agent_password") {
+            List(new ResourceSet(List(new EntityHasName(context.getHeaders.userName.get))))
+          } else {
+            List(new ResourceSet(List(new AllMatcher)))
+          }
+
+          new Permission(perm.getAllow, r, a, selectors)
+        }
+      }
     }
   }
 
