@@ -472,6 +472,7 @@
                     <xs:element ref="scale" minOccurs="0" maxOccurs="1"/>
                 </xs:sequence>
                 <xs:attribute name="pointProfile" type="xs:string"/>
+                <xs:attribute name="outputScaling" type="xs:double"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

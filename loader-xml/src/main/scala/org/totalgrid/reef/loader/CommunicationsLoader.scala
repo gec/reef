@@ -614,6 +614,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
         case analog: Analog => MAPPING_ANALOG
         case counter: Counter => MAPPING_COUNTER
       }
+      if (point.isSetOutputScaling) builder.setScaling(point.getOutputScaling)
       builder.setType(pointType)
 
       builder
