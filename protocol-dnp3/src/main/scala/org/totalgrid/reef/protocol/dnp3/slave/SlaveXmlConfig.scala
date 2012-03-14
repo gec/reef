@@ -99,6 +99,10 @@ object SlaveXmlConfig {
     cfg.setMUnsolPackDelay(xml.getUnsolDefaults.getPackDelayMS)
     cfg.setMUnsolRetryDelay(xml.getUnsolDefaults.getRetryMS)
 
+    // use double by default
+    cfg.setMEventAnalog(new GrpVar(32, 8))
+    cfg.setMStaticAnalog(new GrpVar(30, 6))
+
     Option(xml.getStaticRsp).foreach { configureStaticResponses(_, cfg) }
     Option(xml.getEventRsp).foreach { configureEventResponses(_, cfg) }
 

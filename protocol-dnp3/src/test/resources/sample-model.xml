@@ -179,7 +179,9 @@
 				</comm:equipment>
 
 				<comm:equipment name="Line01">
-					<comm:analog name="Current" index="0" unit="A" outputScale="1.0" />
+                    <!-- outputScaling can be omitted if no scaling is necessary -->
+                    <!-- Values: # => (omit), ##.# => 10, ##.## => 100 -->
+					<comm:analog name="Current" index="0" unit="A" outputScaling="1.0" />
 					<comm:setpoint name="VoltageSetpoint" index="0"/>
 				</comm:equipment>
 			</comm:equipment>
