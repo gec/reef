@@ -40,12 +40,13 @@ import org.totalgrid.reef.client.exception.ReefServiceException;
 public interface ApplicationConnectionManager
 {
     /**
-     * starts connection process
+     * starts connection process, must only be called once by a single management thread.
      */
     void start();
 
     /**
-     * blocks until connection manager has totally stopped
+     * blocks until connection manager has totally stopped. Once stopped a connection manager cannot be
+     * restarted
      */
     void stop();
 
