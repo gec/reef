@@ -37,8 +37,7 @@ class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
   class Fixture {
     val dependencies = new ServiceDependenciesDefaults(dbConnection)
     val factories = new ModelFactories(dependencies)
-    val headers = BasicRequestHeaders.empty.setUserName("user")
-    val contextSource = new MockRequestContextSource(dependencies, headers)
+    val contextSource = new MockRequestContextSource(dependencies, "user")
 
     val eventService = new SyncService(new EventService(factories.events), contextSource)
     val eventConfigService = new SyncService(new EventConfigService(factories.eventConfig), contextSource)

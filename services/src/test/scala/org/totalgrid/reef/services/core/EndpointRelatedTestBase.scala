@@ -111,10 +111,9 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     val rtDb = new InMemoryMeasurementStore()
     val eventSink = new CountingEventSink
-    val headers = BasicRequestHeaders.empty.setUserName("user")
 
     val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp, rtDb, eventSink)
-    val contextSource = new MockRequestContextSource(deps, headers)
+    val contextSource = new MockRequestContextSource(deps)
 
     val modelFac = new ModelFactories(deps)
 
@@ -269,13 +268,13 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     }
 
     def setEndpointEnabled(ce: EndpointConnection, enabled: Boolean) = {
-      val ret = frontEndConnection.put(ce.toBuilder.setEnabled(enabled).build, headers).expectOne()
+      val ret = frontEndConnection.put(ce.toBuilder.setEnabled(enabled).build).expectOne()
       ret.getEnabled should equal(enabled)
       ret
     }
 
     def setEndpointState(ce: EndpointConnection, state: EndpointConnection.State) = {
-      val ret = frontEndConnection.put(ce.toBuilder.setState(state).build, headers).expectOne()
+      val ret = frontEndConnection.put(ce.toBuilder.setState(state).build).expectOne()
       ret.getState should equal(state)
       ret
     }

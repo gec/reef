@@ -64,13 +64,10 @@ object SubscriptionTools {
     //val subHandler = new QueueingEventSink
   }
 
-  class MockContextSource(dbConnection: DbConnection) extends RequestContextSource {
+  class MockContextSource(dbConnection: DbConnection) extends RequestContextSource with AgentAddingContextSource {
     private var subHandler = new QueueingEventSink
-    private def makeContext = {
-      val context = new QueueingRequestContext(subHandler)
-      context.modifyHeaders(_.setUserName("user"))
-      context
-    }
+
+    val userName = "user01"
 
     def reset() {
       subHandler = new QueueingEventSink
@@ -78,8 +75,11 @@ object SubscriptionTools {
     def sink = subHandler
 
     def transaction[A](f: (RequestContext) => A): A = {
-      val context = makeContext
-      ServiceTransactable.doTransaction(dbConnection, context.operationBuffer, { b: OperationBuffer => f(context) })
+      val context = new QueueingRequestContext(subHandler)
+      ServiceTransactable.doTransaction(dbConnection, context.operationBuffer, { b: OperationBuffer =>
+        addUser(context)
+        f(context)
+      })
     }
   }
 }

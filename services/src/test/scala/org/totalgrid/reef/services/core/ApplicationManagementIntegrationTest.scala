@@ -48,9 +48,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     val start = System.currentTimeMillis
 
     val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp)
-    val headers = BasicRequestHeaders.empty.setUserName("user1")
-
-    val contextSource = new MockRequestContextSource(deps, headers)
+    val contextSource = new MockRequestContextSource(deps)
 
     val modelFac = new ModelFactories(deps)
 

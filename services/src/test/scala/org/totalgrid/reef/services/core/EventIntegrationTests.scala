@@ -40,8 +40,7 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
 
   class AlarmTestFixture(amqp: Connection) {
     val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp)
-    val env = BasicRequestHeaders.empty.setUserName("user")
-    val contextSource = new MockRequestContextSource(deps, env)
+    val contextSource = new MockRequestContextSource(deps)
 
     val factories = new ModelFactories(deps)
 

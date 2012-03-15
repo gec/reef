@@ -22,8 +22,8 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.sapi.client.impl.SynchronizedPromise
-import org.totalgrid.reef.services.{ ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
-import org.totalgrid.reef.models.DatabaseUsingTestBaseNoTransaction
+import org.totalgrid.reef.services.{ SilentRequestContext, ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
+import org.totalgrid.reef.models.{ ApplicationSchema, Agent, DatabaseUsingTestBaseNoTransaction }
 
 class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: RequestContextSource) {
 
@@ -60,19 +60,38 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   }
 }
 
-class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders: BasicRequestHeaders) extends RequestContextSource {
+trait AgentAddingContextSource {
+  def userName: String
+
+  var agent = Option.empty[Agent]
+
+  def addUser(context: RequestContext) {
+    if (agent.isEmpty) {
+      if (userName == null) throw new Exception()
+      val agentModel = new AgentServiceModel().createAgentWithPassword(new SilentRequestContext, userName, "password")
+      agent = Some(ApplicationSchema.agents.insert(agentModel))
+    }
+    context.set("agent", agent.get)
+    context.modifyHeaders(_.setUserName(agent.get.entityName))
+  }
+}
+
+class MockRequestContextSource(dependencies: ServiceDependencies, val userName: String = "user01") extends RequestContextSource with AgentAddingContextSource {
 
   // just define all of the event exchanges at the beginning of the test
   ServiceBootstrap.defineEventExchanges(dependencies.connection)
 
   def transaction[A](f: RequestContext => A) = {
     val context = getContext
-    ServiceTransactable.doTransaction(dependencies.dbConnection, context.operationBuffer, { b: OperationBuffer => f(context) })
+    ServiceTransactable.doTransaction(dependencies.dbConnection, context.operationBuffer, { b: OperationBuffer =>
+      addUser(context)
+      f(context)
+    })
   }
 
   def getContext = {
     val context = new DependenciesRequestContext(dependencies)
-    context.modifyHeaders(_.merge(commonHeaders))
+
     context
   }
 }
@@ -80,8 +99,8 @@ class MockRequestContextSource(dependencies: ServiceDependencies, commonHeaders:
 trait SyncServicesTestHelpers { self: DatabaseUsingTestBaseNoTransaction =>
 
   def getRequestContextSource() = {
-    val headers = BasicRequestHeaders.empty.setUserName("user")
-    new MockRequestContextSource(new ServiceDependenciesDefaults(dbConnection), headers)
+
+    new MockRequestContextSource(new ServiceDependenciesDefaults(dbConnection))
   }
   lazy val defaultContextSource = getRequestContextSource()
   def sync[A <: AnyRef](service: ServiceEntryPoint[A]): SyncService[A] = {

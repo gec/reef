@@ -23,6 +23,8 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Client }
 import org.totalgrid.reef.services.authz.AuthzService
 import scala.collection.mutable
+import org.totalgrid.reef.models.Agent
+import org.totalgrid.reef.client.exception.UnauthorizedException
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models
@@ -80,6 +82,12 @@ trait RequestContext {
    * auth service
    */
   def auth: AuthzService
+
+  /**
+   * get agent associated with this request or throw an unauthorized exception
+   * if not authorized
+   */
+  def agent: Agent = get[Agent]("agent").getOrElse(throw new UnauthorizedException("Not logged in"))
 }
 
 /**

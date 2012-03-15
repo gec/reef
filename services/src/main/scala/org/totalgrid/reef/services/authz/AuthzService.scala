@@ -91,13 +91,12 @@ class SqlAuthzService extends AuthzService with Logging {
         val permissionSets = tokens.map { _.permissionSets.value.toList }.flatten
         val permissions = permissionSets.map { ps => ps.proto }
 
-        val userName = tokens.head.agent.value.entityName
+        val agent = tokens.head.agent.value
 
-        // loaded valid permissions, store them on the context
-        context.modifyHeaders(_.setUserName(userName))
+        context.modifyHeaders(_.setUserName(agent.entityName))
+        context.set("agent", agent)
 
         val convertedPermissions = permissions.map { toAuthPermission(context, _) }.flatten
-
         context.set("permissions", convertedPermissions)
       }
     }
@@ -117,7 +116,7 @@ class SqlAuthzService extends AuthzService with Logging {
         resources.map { r =>
           // TODO: remove agent_password:update special casing
           val selectors = if (a == "update" && r == "agent_password") {
-            List(new ResourceSet(List(new EntityHasName(context.getHeaders.userName.get))))
+            List(new ResourceSet(List(new EntityHasName(context.agent.entityName))))
           } else {
             List(new ResourceSet(List(new AllMatcher)))
           }
