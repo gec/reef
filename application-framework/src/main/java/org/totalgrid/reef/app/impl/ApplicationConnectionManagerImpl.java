@@ -91,7 +91,8 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
 
     public void start()
     {
-        if(shutdown) throw new IllegalArgumentException("Manager cannot be restarted.");
+        if ( shutdown )
+            throw new IllegalArgumentException( "Manager cannot be restarted." );
 
         connectionManager.start();
         applicationManager.start();

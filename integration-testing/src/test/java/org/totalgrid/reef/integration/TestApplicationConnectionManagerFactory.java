@@ -75,13 +75,13 @@ public class TestApplicationConnectionManagerFactory
         TestListener listener = new TestListener();
         factory.addConnectionListener( listener );
 
-        assertEquals( factory.isConnected(), false);
+        assertEquals( factory.isConnected(), false );
 
         factory.start();
 
         listener.opened.waitUntil( Boolean.TRUE );
 
-        assertEquals( factory.isConnected(), true);
+        assertEquals( factory.isConnected(), true );
 
         Connection c = factory.getConnection();
         Client client = c.login( userSettings );
@@ -91,7 +91,8 @@ public class TestApplicationConnectionManagerFactory
 
         factory.stop();
 
-        try{
+        try
+        {
             factory.getConnection();
             assertTrue( "Can't get connection when disconnected", false );
         }
@@ -100,13 +101,13 @@ public class TestApplicationConnectionManagerFactory
             assertTrue( true );
         }
 
-        assertEquals( factory.isConnected(), false);
+        assertEquals( factory.isConnected(), false );
 
         assertEquals( listener.opened.current(), Boolean.FALSE );
 
 
-
-        try{
+        try
+        {
             factory.start();
             assertTrue( "Can't restart a connection manager", false );
         }
@@ -114,7 +115,7 @@ public class TestApplicationConnectionManagerFactory
         {
             assertTrue( true );
         }
-        
+
         try
         {
             appService.getApplicationByName( nodeSettings.getDefaultNodeName() + "-test-app" );

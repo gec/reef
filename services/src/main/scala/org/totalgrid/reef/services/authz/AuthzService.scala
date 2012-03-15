@@ -107,8 +107,10 @@ class SqlAuthzService extends AuthzService with Logging {
 
     permissionSet.getPermissionsList.toList.flatMap { perm =>
 
-      val actions = perm.getVerbList
-      val resources = perm.getResourceList
+      def nonRedundant(list: List[String]) = if (list.contains("*")) List("*") else list
+
+      val actions = nonRedundant(perm.getVerbList.toList)
+      val resources = nonRedundant(perm.getResourceList.toList)
       //val selectors = perm.getSelectorList
 
       actions.flatMap { a =>
