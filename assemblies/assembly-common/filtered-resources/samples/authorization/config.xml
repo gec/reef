@@ -6,13 +6,18 @@
 
     <auth:authorization>
         <auth:roles>
-            <auth:role name="role01">
-                <auth:allow actions="create update read" resources="endpoint endpoint_connection" />
+            <auth:role name="endpoint_state_manager">
+                <auth:allow actions="read" resources="endpoint endpoint_connection" />
+                <auth:allow actions="update" resources="endpoint_connection endpoint_enabled" />
+            </auth:role>
+            <auth:role name="meas_reader">
+                <auth:allow actions="read" resources="point measurement" />
             </auth:role>
         </auth:roles>
 
         <auth:agents>
-            <auth:agent name="agent01" roles="role01" />
+            <auth:agent name="agent01" roles="endpoint_state_manager" />
+            <auth:agent name="agent02" roles="endpoint_state_manager meas_reader" />
         </auth:agents>
     </auth:authorization>
 

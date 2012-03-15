@@ -26,6 +26,21 @@ import org.totalgrid.reef.client.service.proto.Auth.{ EntitySelector, Permission
 class AuthorizationLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector)
     extends Logging {
 
+  import AuthorizationLoader._
+
+  def load(auth: Authorization) {
+
+    val roles = mapRoles(auth)
+
+    roles.foreach(modelLoader.putOrThrow(_))
+
+    val agents = mapAgents(auth)
+
+    agents.foreach(modelLoader.putOrThrow(_))
+  }
+}
+
+object AuthorizationLoader {
   def mapPermission(where: String, allow: Boolean, access: Access): Permission = {
     val b = Permission.newBuilder
       .setAllow(allow)
@@ -99,17 +114,5 @@ class AuthorizationLoader(modelLoader: ModelLoader, exceptionCollector: Exceptio
       Nil
     }
   }
-
-  def load(auth: Authorization) {
-
-    val roles = mapRoles(auth)
-
-    roles.foreach(modelLoader.putOrThrow(_))
-
-    val agents = mapAgents(auth)
-
-    agents.foreach(modelLoader.putOrThrow(_))
-
-  }
-
 }
+
