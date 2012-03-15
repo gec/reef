@@ -92,9 +92,9 @@ class ApplicationManagerTest extends ServiceClientSuite with Logging {
       } finally {
         appManager.stop()
       }
-    }
 
-    client.unregisterApplication(client.getApplicationByName(instanceName).await).await
+      client.unregisterApplication(client.getApplicationByName(instanceName).await).await
+    }
   }
 
   private def withGuestUser(userSettings: UserSettings, permission: String = "read_only")(fun: => Unit) = {
