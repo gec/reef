@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import org.mockito.{ Mockito, Matchers }
-import org.totalgrid.reef.client.service.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Model.{ Command, CommandType => ModelCommandType }
 import org.totalgrid.reef.client.service.proto.Mapping._
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus => ProtoCommandStatus, CommandLock }
 import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
@@ -41,7 +41,7 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
 
   test("Only handles configured controls") {
 
-    val commandService = getWorkingCommandService(commandName, ProtoCommandStatus.SUCCESS)
+    val commandService = getWorkingCommandService(commandName, ProtoCommandStatus.SUCCESS, ModelCommandType.CONTROL)
 
     val mapping = makeMappings(
       makeMapping(commandName, 0, CommandType.PULSE),
@@ -54,10 +54,6 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     tryControl(proxy, 99, 0, ControlCode.CC_PULSE, CommandStatus.CS_SUCCESS)
     tryControl(proxy, 150, 1, ControlCode.CC_PULSE_TRIP, CommandStatus.CS_SUCCESS)
 
-    // check setpoints (notice indices overlap with binaries)
-    trySetpoint(proxy, 1, 0, 100.1, CommandStatus.CS_SUCCESS)
-    trySetpoint(proxy, 66, 2, 55, CommandStatus.CS_SUCCESS)
-
     // try wrong format controls
     tryControl(proxy, 150, 0, ControlCode.CC_LATCH_OFF, CommandStatus.CS_FORMAT_ERROR)
     tryControl(proxy, 150, 1, ControlCode.CC_LATCH_OFF, CommandStatus.CS_FORMAT_ERROR)
@@ -66,6 +62,41 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     tryControl(proxy, 166, 10, ControlCode.CC_PULSE, CommandStatus.CS_NOT_SUPPORTED)
     tryControl(proxy, 166, 2, ControlCode.CC_LATCH_OFF, CommandStatus.CS_NOT_SUPPORTED)
     tryControl(proxy, 166, 5, ControlCode.CC_LATCH_ON, CommandStatus.CS_NOT_SUPPORTED)
+  }
+
+  test("Only handles configured setpoints") {
+
+    val commandService = getWorkingCommandService(commandName, ProtoCommandStatus.SUCCESS, ModelCommandType.SETPOINT_DOUBLE)
+
+    val mapping = makeMappings(
+      makeMapping(commandName, 0, CommandType.PULSE),
+      makeMapping(commandName, 1, CommandType.PULSE_TRIP),
+      makeMapping(commandName, 0, CommandType.SETPOINT),
+      makeMapping(commandName, 2, CommandType.SETPOINT))
+    val proxy = new SlaveCommandProxy(commandService, mapping)
+
+    // check setpoints (notice indices overlap with binaries)
+    trySetpoint(proxy, 1, 0, 100.1, CommandStatus.CS_SUCCESS)
+    trySetpoint(proxy, 66, 2, 55.0, CommandStatus.CS_SUCCESS)
+
+    // try bad indicies for setpoint
+    trySetpoint(proxy, 77, 100, 55, CommandStatus.CS_NOT_SUPPORTED)
+  }
+
+  test("Only handles configured setpoints (int)") {
+
+    val commandService = getWorkingCommandService(commandName, ProtoCommandStatus.SUCCESS, ModelCommandType.SETPOINT_INT)
+
+    val mapping = makeMappings(
+      makeMapping(commandName, 0, CommandType.PULSE),
+      makeMapping(commandName, 1, CommandType.PULSE_TRIP),
+      makeMapping(commandName, 0, CommandType.SETPOINT),
+      makeMapping(commandName, 2, CommandType.SETPOINT))
+    val proxy = new SlaveCommandProxy(commandService, mapping)
+
+    // check setpoints (notice indices overlap with binaries)
+    trySetpoint(proxy, 1, 0, 100.1, CommandStatus.CS_SUCCESS)
+    trySetpoint(proxy, 66, 2, 55.0, CommandStatus.CS_SUCCESS)
 
     // try bad indicies for setpoint
     trySetpoint(proxy, 77, 100, 55, CommandStatus.CS_NOT_SUPPORTED)
@@ -130,17 +161,23 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
     ret
   }
 
-  def getWorkingCommandService(commandName: String, _result: ProtoCommandStatus) = {
+  def getWorkingCommandService(commandName: String, _result: ProtoCommandStatus, cmdType: ModelCommandType) = {
     val commandService = Mockito.mock(classOf[CommandService], new MockitoStubbedOnly)
-    val resultantCommand = success(Command.newBuilder.setName(commandName).build)
+    val resultantCommand = success(Command.newBuilder.setName(commandName).setType(cmdType).build)
     val lock = success(CommandLock.newBuilder.build)
     val result = success(CommandResult.newBuilder.setStatus(_result).build)
     Mockito.doReturn(resultantCommand).when(commandService).getCommandByName(commandName)
     Mockito.doReturn(lock).when(commandService).createCommandExecutionLock(resultantCommand.await)
     Mockito.doReturn(lock).when(commandService).deleteCommandLock(lock.await)
-    Mockito.doReturn(result).when(commandService).executeCommandAsControl(resultantCommand.await)
-    Mockito.doReturn(result).when(commandService).executeCommandAsSetpoint(Matchers.eq(resultantCommand.await), Matchers.anyInt)
-    Mockito.doReturn(result).when(commandService).executeCommandAsSetpoint(Matchers.eq(resultantCommand.await), Matchers.anyDouble)
+    // we will only accept calls to the service that match the type of the command, anything else is a failure
+    cmdType match {
+      case ModelCommandType.SETPOINT_DOUBLE =>
+        Mockito.doReturn(result).when(commandService).executeCommandAsSetpoint(Matchers.eq(resultantCommand.await), Matchers.anyDouble)
+      case ModelCommandType.SETPOINT_INT =>
+        Mockito.doReturn(result).when(commandService).executeCommandAsSetpoint(Matchers.eq(resultantCommand.await), Matchers.anyInt)
+      case ModelCommandType.CONTROL =>
+        Mockito.doReturn(result).when(commandService).executeCommandAsControl(resultantCommand.await)
+    }
     commandService
   }
   def getMissingCommandService() = {
