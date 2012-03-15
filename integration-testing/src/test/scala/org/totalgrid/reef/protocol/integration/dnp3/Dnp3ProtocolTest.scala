@@ -90,10 +90,10 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
     try {
       commands.foreach { cmd =>
         cmd.getType match {
-          case CommandType.CONTROL => services.executeCommandAsControl(cmd)
-          case CommandType.SETPOINT_DOUBLE => services.executeCommandAsSetpoint(cmd, 55.55)
-          case CommandType.SETPOINT_INT => services.executeCommandAsSetpoint(cmd, 100)
-          case CommandType.SETPOINT_STRING => services.executeCommandAsSetpoint(cmd, "TestString")
+          case CommandType.CONTROL => services.executeCommandAsControl(cmd).await
+          case CommandType.SETPOINT_DOUBLE => services.executeCommandAsSetpoint(cmd, 55.55).await
+          case CommandType.SETPOINT_INT => services.executeCommandAsSetpoint(cmd, 100).await
+          case CommandType.SETPOINT_STRING => services.executeCommandAsSetpoint(cmd, "TestString").await
         }
       }
     } finally {
@@ -114,34 +114,45 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
     map.checkAllState(true, EndpointConnection.State.COMMS_UP)
   }
 
-  def waitForRepublishedMeasurement() {
-
-    val measList = new SyncVar(List.empty[Measurement])
-
+  private def setupMeasSubscribe(names: List[String]): Map[String, SyncVar[List[Measurement]]] = {
     def validMeas(meas: Measurement) = meas.getQuality.getValidity == Validity.GOOD
 
-    val subResult = services.subscribeToMeasurementsByNames("RoundtripSubstation.Line01.Current" :: Nil).await
+    val syncVars = names.map { _ -> new SyncVar(List.empty[Measurement]) }.toMap
+
+    val subResult = services.subscribeToMeasurementsByNames(names).await
     subResult.getSubscription.start(new SubscriptionEventAcceptor[Measurement] {
       def onEvent(event: SubscriptionEvent[Measurement]) {
-        measList.atomic(a => if (validMeas(event.getValue)) event.getValue :: a else a)
+        val m = event.getValue
+        if (validMeas(m)) syncVars(m.getName).atomic(a => m :: a)
       }
     })
 
-    // wait for the original substation to publish a measurement
-    val originalList = new SyncVar(List.empty[Measurement])
+    syncVars
+  }
 
-    val originalResult = services.subscribeToMeasurementsByNames("OriginalSubstation.Line01.Current" :: Nil).await
-    originalResult.getSubscription.start(new SubscriptionEventAcceptor[Measurement] {
-      def onEvent(event: SubscriptionEvent[Measurement]) {
-        originalList.atomic(a => if (validMeas(event.getValue)) event.getValue :: a else a)
-      }
-    })
+  def waitForRepublishedMeasurement() {
 
-    originalList.waitFor(_.size > 0)
+    val originalMeas = setupMeasSubscribe("OriginalSubstation.Line01.Current" :: "OriginalSubstation.Line01.ScaledCurrent" :: Nil)
 
-    val meas = originalList.current.apply(0)
+    val roundtripMeas = setupMeasSubscribe("RoundtripSubstation.Line01.Current" :: "RoundtripSubstation.Line01.ScaledCurrent" :: Nil)
 
-    measList.waitFor(_.find(m => m.getDoubleVal == meas.getDoubleVal && m.getTime == meas.getTime).isDefined)
+    def checkRoundtrip(originalName: String, roundtripName: String, scaling: Double = 1.0) {
+
+      val originalEvents = originalMeas(originalName)
+      val roundtrip = roundtripMeas(roundtripName)
+
+      originalEvents.waitFor(_.size > 0)
+
+      val meas = originalEvents.current.apply(0)
+
+      def dEqual(d1: Double, d2: Double, ep: Double = 0.0001) = scala.math.abs(d1 - d2) <= ep
+
+      roundtrip.waitFor(_.find(m => dEqual(m.getDoubleVal, meas.getDoubleVal * scaling) && m.getTime == meas.getTime).isDefined)
+    }
+
+    checkRoundtrip("OriginalSubstation.Line01.Current", "RoundtripSubstation.Line01.Current")
+
+    checkRoundtrip("OriginalSubstation.Line01.ScaledCurrent", "RoundtripSubstation.Line01.ScaledCurrent", 1000.0)
   }
 
 }
