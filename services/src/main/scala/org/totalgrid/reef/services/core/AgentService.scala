@@ -117,6 +117,11 @@ class AgentServiceModel
   }
 
   override def preDelete(context: RequestContext, entry: AgentModel) {
+
+    if (!entry.applications.value.isEmpty) {
+      throw new BadRequestException("Can't delete agent when application is registered with this application")
+    }
+
     if (entry.authTokens.value.size > 0) {
       ApplicationSchema.authTokens.deleteWhere(at => at.id in entry.authTokens.value.map(_.id))
     }

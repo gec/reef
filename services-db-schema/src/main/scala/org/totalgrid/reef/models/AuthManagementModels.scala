@@ -66,6 +66,8 @@ class Agent(
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.agentSetJoins)(p => where(p.agentId === id) select (&(p.permissionSetId)))))
   val authTokens = LazyVar(ApplicationSchema.authTokens.where(au => au.agentId === id))
 
+  val applications = LazyVar(ApplicationSchema.apps.where(au => au.agentId === id))
+
   def checkPassword(password: String): Boolean = {
     import SaltedPasswordHelper._
     dec64(digest) == calcDigest(dec64(salt), password)
