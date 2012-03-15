@@ -33,13 +33,15 @@ case class ApplicationCapability(
 case class ApplicationInstance(
     _entityId: UUID,
     val instanceName: String,
-    val userName: String,
+    val agentId: Long,
     var location: String,
     var network: String) extends EntityBasedModel(_entityId) {
 
   val heartbeat = LazyVar(belongTo(ApplicationSchema.heartbeats.where(p => p.applicationId === id)))
 
   val capabilities = LazyVar(ApplicationSchema.capabilities.where(p => p.applicationId === id))
+
+  val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
 }
 
 class HeartbeatStatus(

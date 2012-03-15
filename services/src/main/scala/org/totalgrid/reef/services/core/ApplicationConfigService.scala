@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema, ApplicationCapability }
 import org.totalgrid.reef.client.service.proto.Application._
 import org.totalgrid.reef.services.framework._
 
@@ -27,6 +26,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
+import org.totalgrid.reef.models.{ Agent => AgentModel, ApplicationInstance, ApplicationSchema, ApplicationCapability }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -48,17 +48,17 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     with ApplicationConfigConversion {
 
   val entityModel = new EntityServiceModel
+  val agentModel = new AgentServiceModel
 
-  private def createModelEntry(context: RequestContext, proto: ApplicationConfig, userName: String): ApplicationInstance = {
+  private def createModelEntry(context: RequestContext, proto: ApplicationConfig, agent: AgentModel): ApplicationInstance = {
     val ent = entityModel.findOrCreate(context, proto.getInstanceName, "Application" :: Nil, None) //EntityQuery.findOrCreateEntity(proto.getInstanceName, "Application" :: Nil, None)
-    val a = new ApplicationInstance(ent.id, proto.getInstanceName, userName, proto.getLocation, proto.getNetwork)
+    val a = new ApplicationInstance(ent.id, proto.getInstanceName, agent.id, proto.getLocation, proto.getNetwork)
     a.entity.value = ent
     a
   }
 
   override def createFromProto(context: RequestContext, req: ApplicationConfig): ApplicationInstance = {
-    val username = context.getHeaders.userName.getOrElse(throw new BadRequestException("No username in headers"))
-    val sql = create(context, createModelEntry(context: RequestContext, req, username))
+    val sql = create(context, createModelEntry(context: RequestContext, req, context.agent))
 
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })
@@ -72,8 +72,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
 
   override def updateFromProto(context: RequestContext, req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
 
-    val username = context.getHeaders.userName.getOrElse(throw new BadRequestException("No username in headers"))
-    val (sql, updated) = update(context, createModelEntry(context, req, username), existing)
+    val (sql, updated) = update(context, createModelEntry(context, req, context.agent), existing)
 
     val newCaps: List[String] = req.getCapabilitesList.toList
     val oldCaps: List[String] = sql.capabilities.value.toList.map { _.capability }
@@ -114,12 +113,11 @@ trait ApplicationConfigConversion
   }
 
   def relatedEntities(entries: List[ApplicationInstance]) = {
-    entries.map { _.entity.value }
+    entries.map { _.agent.value.entity.value }
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
-    List(proto.userName.asParam(sql.userName === _),
-      proto.network.asParam(sql.network === _),
+    List(proto.network.asParam(sql.network === _),
       proto.location.asParam(sql.location === _))
   }
 
@@ -143,7 +141,7 @@ trait ApplicationConfigConversion
 
     val b = ApplicationConfig.newBuilder
       .setUuid(makeUuid(entry))
-      .setUserName(entry.userName)
+      .setUserName(entry.agent.value.entityName)
       .setInstanceName(entry.instanceName)
       .setNetwork(entry.network)
       .setLocation(entry.location)
