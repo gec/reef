@@ -6,10 +6,14 @@
 
     <auth:authorization>
         <auth:roles>
-            <auth:role name="my_auth01">
-                <auth:allow actions="create update delete" resources="endpoint endpoint_config" />
+            <auth:role name="role01">
+                <auth:allow actions="create update read" resources="endpoint endpoint_connection" />
             </auth:role>
         </auth:roles>
+
+        <auth:agents>
+            <auth:agent name="agent01" roles="role01" />
+        </auth:agents>
     </auth:authorization>
 
 </configuration>

@@ -21,7 +21,7 @@ package org.totalgrid.reef.loader
 import authorization._
 import com.weiglewilczek.slf4s.Logging
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.service.proto.Auth.{ EntitySelector, Permission, PermissionSet }
+import org.totalgrid.reef.client.service.proto.Auth.{ EntitySelector, Permission, PermissionSet, Agent => ProtoAgent }
 
 class AuthorizationLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector)
     extends Logging {
@@ -79,11 +79,36 @@ class AuthorizationLoader(modelLoader: ModelLoader, exceptionCollector: Exceptio
     }
   }
 
+  def mapAgent(agent: Agent): ProtoAgent = {
+    val name = agent.getName
+    val roles = agent.getRoles.split(' ')
+
+    val b = ProtoAgent.newBuilder
+      .setName(name)
+      .setPassword(name)
+
+    roles.map(n => PermissionSet.newBuilder().setName(n).build()).foreach(b.addPermissionSets(_))
+
+    b.build
+  }
+
+  def mapAgents(auth: Authorization): List[ProtoAgent] = {
+    if (auth.isSetAgents) {
+      auth.getAgents.getAgent.toList.map(mapAgent(_))
+    } else {
+      Nil
+    }
+  }
+
   def load(auth: Authorization) {
 
     val roles = mapRoles(auth)
 
     roles.foreach(modelLoader.putOrThrow(_))
+
+    val agents = mapAgents(auth)
+
+    agents.foreach(modelLoader.putOrThrow(_))
 
   }
 

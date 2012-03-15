@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.service.proto.Alarms._
 import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.client.service.proto.Calculations.Calculation
-import org.totalgrid.reef.client.service.proto.Auth.PermissionSet
+import org.totalgrid.reef.client.service.proto.Auth.{ Agent, PermissionSet }
 
 trait ModelLoader {
   def putOrThrow(e: Entity)
@@ -42,6 +42,7 @@ trait ModelLoader {
   def putOrThrow(e: Calculation)
 
   def putOrThrow(e: PermissionSet)
+  def putOrThrow(e: Agent)
 
   def getModelContainer: ModelContainer
   def reset()

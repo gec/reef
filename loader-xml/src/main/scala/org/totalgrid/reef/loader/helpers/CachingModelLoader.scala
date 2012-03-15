@@ -32,7 +32,7 @@ import java.io.PrintStream
 import org.totalgrid.reef.client.sapi.client.{ Promise, RequestSpy }
 import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
 import org.totalgrid.reef.client.service.proto.Calculations.Calculation
-import org.totalgrid.reef.client.service.proto.Auth.PermissionSet
+import org.totalgrid.reef.client.service.proto.Auth.{ Agent, PermissionSet }
 
 // TODO: get rid of caching model loader
 class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
@@ -106,6 +106,11 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
   }
 
   def putOrThrow(e: PermissionSet) = {
+    puts ::= e
+    autoFlush
+  }
+
+  def putOrThrow(e: Agent) = {
     puts ::= e
     autoFlush
   }
