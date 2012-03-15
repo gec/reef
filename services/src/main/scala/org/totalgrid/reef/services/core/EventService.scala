@@ -124,7 +124,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
     // in the case of the "thunked events" or "server generated events" we are not creating the event
     // in a standard request/response cycle so we dont have access to the username via the headers
     val userId = if (!request.hasUserId) {
-      context.getHeaders.userName.getOrElse(throw new BadRequestException("invalid event: " + request + ", UserName must be logged in user"))
+      context.agent.entityName
     } else {
       request.getUserId
     }

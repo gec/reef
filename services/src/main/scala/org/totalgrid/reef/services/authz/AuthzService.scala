@@ -93,7 +93,6 @@ class SqlAuthzService extends AuthzService with Logging {
 
         val agent = tokens.head.agent.value
 
-        context.modifyHeaders(_.setUserName(agent.entityName))
         context.set("agent", agent)
 
         val convertedPermissions = permissions.map { toAuthPermission(context, _) }.flatten

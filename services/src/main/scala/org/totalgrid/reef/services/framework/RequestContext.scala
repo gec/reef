@@ -102,7 +102,7 @@ trait RequestContextSource {
 /**
  * wrapper class that takes a source and merges in some extra RequestEnv headers before the transaction
  */
-class RequestContextSourceWithHeaders(contextSource: RequestContextSource, var headers: BasicRequestHeaders)
+class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: BasicRequestHeaders)
     extends RequestContextSource {
   def transaction[A](f: (RequestContext) => A) = {
     contextSource.transaction { context =>

@@ -116,10 +116,6 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
   def setAuthTokens(ss: List[String]): BasicRequestHeaders =
     ss.foldLeft(clearAuthToken)((rh, token) => rh.addAuthToken(token))
 
-  def userName = getString(BasicRequestHeaders.user)
-
-  def setUserName(s: String) = setHeader(BasicRequestHeaders.user, s)
-
   def toEnvelopeRequestHeaders: Iterable[Envelope.RequestHeader] = {
     for {
       (key, list) <- headers

@@ -72,7 +72,6 @@ trait AgentAddingContextSource {
       agent = Some(ApplicationSchema.agents.insert(agentModel))
     }
     context.set("agent", agent.get)
-    context.modifyHeaders(_.setUserName(agent.get.entityName))
   }
 }
 

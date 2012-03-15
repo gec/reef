@@ -48,7 +48,7 @@ class CommandLockServiceModel
 
   override def createFromProto(context: RequestContext, req: AccessProto): AccessModel = {
 
-    val user = context.getHeaders.userName getOrElse { throw new BadRequestException("User must be in header.") }
+    val user = context.agent.entityName
     req.user.foreach { u => if (user != u) throw new BadRequestException("User name in request doesn't match any auth token owners, correct name or leave blank.") }
 
     val commands = findCommands(req.getCommandsList.toList)

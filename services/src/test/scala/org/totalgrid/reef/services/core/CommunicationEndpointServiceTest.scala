@@ -59,8 +59,6 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
   }
 
-  val headers = BasicRequestHeaders.empty.setUserName("user")
-
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
     Endpoint.newBuilder().setProtocol(protocol).setName(name)
   }
@@ -213,15 +211,15 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // cannot delete endpoint because it is "enabled" and "online", would confuse Feps
-    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build, headers)
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build)
     intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // cannot delete endpoint because even though it has been disabled it is still "online"
-    f.connectionService.put(getConnection(enabled = Some(false)).build, headers)
+    f.connectionService.put(getConnection(enabled = Some(false)).build)
     intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // we can now delete because endpoint is "disabled" and "offline"
-    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build, headers)
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build)
     f.endpointService.delete(endpoint).expectOne(Status.DELETED)
   }
 
@@ -243,7 +241,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     //intercept[BadRequestException] { configFileService.delete(configFile) }
 
     // we can now delete because endpoint is "disabled" and "offline"
-    f.connectionService.put(getConnection(enabled = Some(false)).build, headers)
+    f.connectionService.put(getConnection(enabled = Some(false)).build)
 
     // now remove endpoint "unlocking" other resources
     f.endpointService.delete(endpoint).expectOne(Status.DELETED)

@@ -141,31 +141,26 @@ class AuthTokenServiceModel
       logger.info("logging in agent: " + authToken.getAgent.getName)
       val currentTime: Long = System.currentTimeMillis // need one time for authToken DB entry and posted event
 
-      val agentName: String = authToken.agent.name.getOrElse(postLoginException(context, Status.BAD_REQUEST, "Cannot login without setting agent name."))
-      // set the user name for systemEvent publishing
-      context.modifyHeaders(_.setUserName(agentName))
+      val agentName: String = authToken.agent.name.getOrElse(postLoginException(context, "", Status.BAD_REQUEST, "Cannot login without setting agent name."))
 
       // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
       val agentRecord: Option[Agent] = AgentConversions.findRecord(context, authToken.getAgent)
       agentRecord match {
         case None =>
           logger.info("unable to find agent: " + authToken.getAgent)
-          postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
+          postLoginException(context, agentName, Status.UNAUTHORIZED, "Invalid agent or password")
 
         case Some(agent) =>
           if (!agent.checkPassword(authToken.getAgent.getPassword)) {
-            logger.debug("invalid password supplied for agent: " + authToken.getAgent.getName)
-            postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
+            postLoginException(context, agentName, Status.UNAUTHORIZED, "Invalid agent or password")
           }
+          context.set("agent", agent)
           processLogin(context, agent, authToken, currentTime)
       }
     }
 
   def processLogin(context: RequestContext, agent: Agent, authToken: AuthToken, currentTime: Long): AuthTokenModel =
     {
-      if (!agent.checkPassword(authToken.getAgent.getPassword)) {
-        postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
-      }
 
       val availableSets = agent.permissionSets.value.toList // permissions we can have
       // permissions we are asking for allow the user to request either all of their permission sets or just a subset, barf if they
@@ -176,7 +171,7 @@ class AuthTokenServiceModel
         val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
         val unavailableSets = askedForSets.diff(availableSets)
         if (unavailableSets.size > 0) {
-          postLoginException(context, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
+          postLoginException(context, agent.entityName, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
         }
         askedForSets
       } else {
@@ -187,7 +182,7 @@ class AuthTokenServiceModel
       val expirationTime = if (authToken.hasExpirationTime) {
         val time = authToken.getExpirationTime
         if (time <= currentTime) {
-          postLoginException(context, Status.BAD_REQUEST, "Expiration time cannot be in the past")
+          postLoginException(context, agent.entityName, Status.BAD_REQUEST, "Expiration time cannot be in the past")
         }
         time
       } else {
@@ -213,8 +208,8 @@ class AuthTokenServiceModel
       newAuthToken
     }
 
-  def postLoginException[A](context: RequestContext, status: Status, reason: String): A = {
-    postSystemEvent(context, EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil)
+  def postLoginException[A](context: RequestContext, userName: String, status: Status, reason: String): A = {
+    postSystemEvent(context, EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil, userId = Some(userName))
     throw new BadRequestException(reason, status)
   }
 
@@ -228,8 +223,7 @@ class AuthTokenServiceModel
     entry.expirationTime = -1
     table.update(entry)
 
-    context.modifyHeaders(_.setUserName(entry.agent.value.entityName))
-    postSystemEvent(context, EventType.System.UserLogout)
+    postSystemEvent(context, EventType.System.UserLogout, userId = Some(entry.agent.value.entityName))
 
     onUpdated(context, entry)
     postDelete(context, entry)
