@@ -297,6 +297,7 @@ object OptionalProtos {
     val index = optionally(_.getIndex)
     val pointName = optionally(_.getPointName)
     val unit = optionally(_.hasUnit, _.getUnit)
+    val scaling = optionally(_.hasScaling, _.getScaling)
   }
   implicit def proto2OptMappingCommandMap(a: org.totalgrid.reef.client.service.proto.Mapping.CommandMap): OptMappingCommandMap = new OptMappingCommandMap(Some(a))
   class OptMappingCommandMap(real: Option[org.totalgrid.reef.client.service.proto.Mapping.CommandMap]) extends OptionalStruct(real) {
@@ -306,6 +307,7 @@ object OptionalProtos {
     val onTime = optionally(_.hasOnTime, _.getOnTime)
     val offTime = optionally(_.hasOffTime, _.getOffTime)
     val count = optionally(_.hasCount, _.getCount)
+    val scaling = optionally(_.hasScaling, _.getScaling)
   }
   implicit def proto2OptMappingIndexMapping(a: org.totalgrid.reef.client.service.proto.Mapping.IndexMapping): OptMappingIndexMapping = new OptMappingIndexMapping(Some(a))
   class OptMappingIndexMapping(real: Option[org.totalgrid.reef.client.service.proto.Mapping.IndexMapping]) extends OptionalStruct(real) {

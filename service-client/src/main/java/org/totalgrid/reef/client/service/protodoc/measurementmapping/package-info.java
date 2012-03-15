@@ -47,6 +47,7 @@
  *     required uint32      index      = 2;
  *     required string      point_name = 3;
  *     optional string      unit       = 4; // this is the "raw" unit of the measurement.
+ *     optional double      scaling    = 5; // used to scale the value before sending it out
  * }
  * 
  * message CommandMap {
@@ -56,6 +57,7 @@
  *     optional uint32         on_time      = 4 [default = 100];
  *     optional uint32         off_time     = 5 [default = 100];
  *     optional uint32         count        = 6 [default = 1];
+ *     optional double         scaling      = 7; // used to scale down an external scaled value
  * }
  * 
  * message IndexMapping {
