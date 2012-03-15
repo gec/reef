@@ -116,7 +116,11 @@ object CommandView {
   }
 
   def historyHeader = {
-    "Id" :: "Command" :: "Status" :: "Message" :: "User" :: "Type" :: Nil
+    "Id" :: "Command" :: "Status" :: "Message" :: "User" :: "Type" :: "Value" :: Nil
+  }
+
+  private def commandValueString(cr: OptCommandsCommandRequest) = {
+    cr.intVal.map { _.toString }.orElse(cr.doubleVal.map { _.toString }).orElse(cr.stringVal).getOrElse("")
   }
 
   def historyRow(a: UserCommandRequest) = {
@@ -125,7 +129,8 @@ object CommandView {
       a.status.map { _.toString }.getOrElse("unknown") ::
       a.errorMessage.getOrElse("") ::
       a.user.getOrElse("unknown") ::
-      a.commandRequest._type.toString ::
+      a.commandRequest._type.map { _.toString }.getOrElse("unknown") ::
+      commandValueString(a.commandRequest) ::
       Nil
   }
 }
