@@ -339,9 +339,23 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     f.checkAuth(AuthRequest("endpoint_state", "update", List("device")))
 
     f.endpointService.delete(endpoint).expectOne(Status.DELETED)
-    f.checkAuth(AuthRequest("endpoint", "deleted", List("device")))
+    f.checkAuth(AuthRequest("endpoint", "delete", List("device")))
+  }
 
-    println(f.popAuth)
+  test("Endpoint auth no change") {
+    val f = new Fixture
+    val point = f.pointService.put(getPoint().build).expectOne()
+    val command = f.commandService.put(getCommand().build).expectOne()
+    val configFile = f.configFileService.put(getConfigFile().build).expectOne()
+    val port = f.portService.put(getIPPort().build).expectOne()
+
+    f.popAuth // don't care about setup objects
+
+    val endpoint = f.endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
+    f.checkAuth(AuthRequest("endpoint", "create", List("device")))
+
+    f.connectionService.put(getConnection().build)
+    f.checkAuth(AuthRequest("endpoint_connection", "update", List("device")))
   }
 
 }

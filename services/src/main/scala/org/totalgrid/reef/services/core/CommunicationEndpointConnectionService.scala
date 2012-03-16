@@ -51,6 +51,10 @@ class CommunicationEndpointConnectionService(protected val model: CommunicationE
 
   // we will manually merge by checking to see what fields are set and using exclusive acccess blocks
   override def merge(context: RequestContext, req: ConnProto, current: FrontEndAssignment) = req
+
+  override protected def performUpdate(context: RequestContext, model: ServiceModelType, request: ServiceType, existing: ModelType): (ModelType, Boolean) = {
+    model.updateFromProto(context, request, existing)
+  }
 }
 
 import org.totalgrid.reef.services.coordinators._
@@ -112,6 +116,10 @@ class CommunicationEndpointConnectionServiceModel
         }
       }
     } else {
+      // If we don't do an auth check AT ALL, this is a sneaky way to read without permissions
+      // TODO: magic string
+      context.auth.authorize(context, "endpoint_connection", "update", List(endpoint.entity.value))
+
       // state and enabled weren't altered, return NOT_MODIFIED
       (existing, false)
     }
