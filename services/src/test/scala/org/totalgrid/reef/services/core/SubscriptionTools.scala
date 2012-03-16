@@ -24,8 +24,10 @@ import org.totalgrid.reef.services.HeadersContext
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.persistence.squeryl.DbConnection
-import org.totalgrid.reef.services.authz.NullAuthzService
+import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
+import org.totalgrid.reef.models.Entity
 
+// TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
 
   trait SubscriptionTesting {
@@ -33,6 +35,13 @@ object SubscriptionTools {
     def _dbConnection: DbConnection
 
     val contextSource = new MockContextSource(_dbConnection)
+
+    def authQueue = contextSource.authQueue
+    def popAuth: List[AuthRequest] = {
+      val result = authQueue.toList
+      authQueue.clear()
+      result
+    }
 
     def events = contextSource.sink.events
 
@@ -56,30 +65,44 @@ object SubscriptionTools {
     def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
   }
 
-  class QueueingRequestContext(val subHandler: SubscriptionHandler) extends RequestContext with HeadersContext {
+  class QueueingRequestContext(val subHandler: SubscriptionHandler, val auth: AuthzService) extends RequestContext with HeadersContext {
     def client = throw new Exception("Asked for client in silent request context")
     val eventSink = new SilentEventSink
     val operationBuffer = new BasicOperationBuffer
-    val auth = new NullAuthzService
-    //val subHandler = new QueueingEventSink
   }
 
   class MockContextSource(dbConnection: DbConnection) extends RequestContextSource with AgentAddingContextSource {
     private var subHandler = new QueueingEventSink
+    private var auth = new QueueingAuthz
 
     val userName = "user01"
 
     def reset() {
       subHandler = new QueueingEventSink
+      auth = new QueueingAuthz
     }
     def sink = subHandler
+    def authQueue = auth.queue
 
     def transaction[A](f: (RequestContext) => A): A = {
-      val context = new QueueingRequestContext(subHandler)
+      val context = new QueueingRequestContext(subHandler, auth)
       ServiceTransactable.doTransaction(dbConnection, context.operationBuffer, { b: OperationBuffer =>
         addUser(context)
         f(context)
       })
     }
   }
+
+  case class AuthRequest(resource: String, action: String, entities: List[String])
+  class QueueingAuthz extends AuthzService {
+
+    val queue = new scala.collection.mutable.Queue[AuthRequest]
+
+    def authorize(context: RequestContext, componentId: String, action: String, entities: => List[Entity]) {
+      queue.enqueue(AuthRequest(componentId, action, entities.map(_.name)))
+    }
+
+    def prepare(context: RequestContext) {}
+  }
+
 }

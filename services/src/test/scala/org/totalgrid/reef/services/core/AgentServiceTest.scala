@@ -32,6 +32,7 @@ import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 @RunWith(classOf[JUnitRunner])
 class AgentServiceTest extends AuthSystemTestBase {
+  import SubscriptionTools._
 
   def makeAgent(name: String = "Nate", password: Option[String] = Some("password"), permissionSetNames: List[String] = List("all")) = {
     val b = Agent.newBuilder.setName(name)
@@ -77,9 +78,13 @@ class AgentServiceTest extends AuthSystemTestBase {
 
     val agent = fix.agentService.put(makeAgent()).expectOne()
 
+    fix.popAuth should equal(List(AuthRequest("agent", "create", List("Nate"))))
+
     fix.login("Nate", "password")
 
     val deleted = fix.agentService.delete(agent).expectOne()
+
+    fix.popAuth should equal(List(AuthRequest("agent", "delete", List("Nate"))))
 
     intercept[BadRequestException] {
       fix.login("Nate", "password")
