@@ -103,10 +103,12 @@ class AgentServiceTest extends AuthSystemTestBase {
     val fix = new Fixture
 
     val agent1 = fix.agentService.put(makeAgent()).expectOne()
+    fix.popAuth should equal(List(AuthRequest("agent", "create", List("Nate"))))
 
     fix.login("Nate", "password")
 
     val agent2 = fix.agentService.put(makeAgent(password = Some("newPassword"))).expectOne()
+    fix.popAuth should equal(List(AuthRequest("agent_password", "update", List("Nate"))))
 
     intercept[BadRequestException] {
       fix.login("Nate", "password")
@@ -127,12 +129,15 @@ class AgentServiceTest extends AuthSystemTestBase {
 
     val agent1 = fix.agentService.put(makeAgent(permissionSetNames = List("read_only"))).expectOne()
     agent1.getPermissionSets(0).getName should equal("read_only")
+    fix.popAuth should equal(List(AuthRequest("agent", "create", List("Nate"))))
 
     val agent2 = fix.agentService.put(makeAgent(permissionSetNames = List("all"))).expectOne()
     agent2.getPermissionSets(0).getName should equal("all")
+    fix.popAuth should equal(List(AuthRequest("agent_roles", "update", List("Nate"))))
 
     val agent3 = fix.agentService.put(makeAgent(permissionSetNames = List("all", "read_only"))).expectOne()
     agent3.getPermissionSetsList.toList.map { _.getName }.sorted should equal(List("all", "read_only"))
+    fix.popAuth should equal(List(AuthRequest("agent_roles", "update", List("Nate"))))
 
     val eventList = List(
       (ADDED, classOf[Entity]),
