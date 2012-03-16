@@ -21,6 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 
 import org.totalgrid.reef.services._
+import core.SubscriptionTools.AuthRequest
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
 
 import com.google.protobuf.ByteString
@@ -57,6 +58,9 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     val pointService = new SyncService(new PointService(modelFac.points), contextSource)
     val commandService = new SyncService(new CommandService(modelFac.cmds), contextSource)
     val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
+
+    def checkAuth(auth: AuthRequest) { this.popAuth should equal(List(auth)) }
+    def checkAuth(auths: List[AuthRequest]) { this.popAuth should equal(auths) }
   }
 
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
@@ -307,4 +311,37 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)
   }
+
+  test("Endpoint auth requests") {
+    val f = new Fixture
+    val point = f.pointService.put(getPoint().build).expectOne()
+    val command = f.commandService.put(getCommand().build).expectOne()
+    val configFile = f.configFileService.put(getConfigFile().build).expectOne()
+    val port = f.portService.put(getIPPort().build).expectOne()
+
+    f.popAuth // don't care about setup objects
+
+    val endpoint = f.endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
+    f.checkAuth(AuthRequest("endpoint", "create", List("device")))
+
+    val initialConnectionState = f.connectionService.get(getConnection().build).expectOne()
+    initialConnectionState.getState should equal(EndpointConnection.State.COMMS_DOWN)
+    initialConnectionState.getEnabled should equal(true)
+    f.checkAuth(AuthRequest("endpoint_connection", "read", List("device")))
+
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build)
+    f.checkAuth(AuthRequest("endpoint_state", "update", List("device")))
+
+    f.connectionService.put(getConnection(enabled = Some(false)).build)
+    f.checkAuth(AuthRequest("endpoint_enabled", "update", List("device")))
+
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build)
+    f.checkAuth(AuthRequest("endpoint_state", "update", List("device")))
+
+    f.endpointService.delete(endpoint).expectOne(Status.DELETED)
+    f.checkAuth(AuthRequest("endpoint", "deleted", List("device")))
+
+    println(f.popAuth)
+  }
+
 }
