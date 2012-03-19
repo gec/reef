@@ -20,6 +20,7 @@
 		<module>basic-system-tests</module>
 		<module>protocol-dnp3</module>
 		<module>protocol-calculator</module>
+        <module>complex-authz</module>
 	</modules>
 
 </project>
