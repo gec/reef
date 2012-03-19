@@ -48,6 +48,8 @@
         <backport-util-concurrent.version>2.2</backport-util-concurrent.version>
         <geronimo-jms_1.1_spec.version>1.0</geronimo-jms_1.1_spec.version>
         <liquibase.version>2.0.4-OSGI</liquibase.version>
+
+        <main.basedir>../</main.basedir>
     </properties>
 
 	<modules>
@@ -310,7 +312,7 @@
 						<include>**/*.java</include>
 						<include>**/*.xml</include>
 					</includes>
-					<configFile>${project.basedir}/../CodeFormat.xml</configFile>
+					<configFile>${main.basedir}/CodeFormat.xml</configFile>
 					<lineEnding>LF</lineEnding>
 				</configuration>
 			</plugin>

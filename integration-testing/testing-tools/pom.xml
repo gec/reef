@@ -1,0 +1,71 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>reef-integration-testing-tools</artifactId>
+    <parent>
+        <groupId>org.totalgrid.reef</groupId>
+        <artifactId>reef-integration-testing</artifactId>
+        <version>0.4.7-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <packaging>jar</packaging>
+
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <header>../../APACHE_FILE_HEADER</header>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- We build this as a "regular project" even though it uses junit and other testing libraries to workaround
+    the lack of transitive dependencies for test projects-->
+    <dependencies>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-service-client</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-loader-xml</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-benchmarks</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-standalone-node</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.version}</artifactId>
+            <version>${scalatest.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.2</version>
+        </dependency>
+    </dependencies>
+
+</project>
+
+

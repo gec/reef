@@ -41,6 +41,9 @@ object InMemoryNode {
   private var delayedShutdown = Option.empty[Timer]
   private var exeOption = Option.empty[ExecutorService]
 
+  def initialize(configFile: String, resetFirst: Boolean): Boolean = {
+    initialize(configFile, resetFirst, None)
+  }
   def initialize(configFile: String, resetFirst: Boolean, fileName: String): Boolean = {
     initialize(configFile, resetFirst, Some(fileName))
   }
