@@ -75,4 +75,10 @@ trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
       _.put(agent.toBuilder.setPassword(newPassword).build).map(_.one)
     }
   }
+
+  override def setAgentPassword(name: String, newPassword: String) = {
+    ops.operation("Couldn't change password for agent name: " + name) {
+      _.put(Agent.newBuilder.setName(name).setPassword(newPassword).build).map(_.one)
+    }
+  }
 }

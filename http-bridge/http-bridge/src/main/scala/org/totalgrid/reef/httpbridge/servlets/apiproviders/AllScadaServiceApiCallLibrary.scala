@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 116 of 192 calls ported
+ * 117 of 193 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -46,6 +46,11 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   })
   // Can't encode deleteAgent : Can't encode type: org.totalgrid.reef.client.service.proto.Auth.Agent
   // Can't encode setAgentPassword : Can't encode type: org.totalgrid.reef.client.service.proto.Auth.Agent
+  single("setAgentPassword", classOf[org.totalgrid.reef.client.service.proto.Auth.Agent], args => {
+    val a0 = args.getString("name")
+    val a1 = args.getString("newPassword")
+    (c) => c.setAgentPassword(a0, a1)
+  })
   multi("getPermissionSets", classOf[org.totalgrid.reef.client.service.proto.Auth.PermissionSet], args => { (c) =>
     c.getPermissionSets()
   })

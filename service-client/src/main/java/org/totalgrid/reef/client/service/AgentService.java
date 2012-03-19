@@ -71,6 +71,14 @@ public interface AgentService
     Agent setAgentPassword( Agent agent, String newPassword ) throws ReefServiceException;
 
     /**
+     * Updates the agent password
+     *
+     * @param name        name of the agent to update
+     * @param newPassword the new password, must obey systems password rules
+     */
+    Agent setAgentPassword( String name, String newPassword ) throws ReefServiceException;
+
+    /**
      * @return list of all of the possible permission sets
      */
     List<PermissionSet> getPermissionSets() throws ReefServiceException;

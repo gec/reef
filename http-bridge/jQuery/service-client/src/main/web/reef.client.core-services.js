@@ -77,6 +77,23 @@
 		// Can't encode deleteAgent : Can't encode type: org.totalgrid.reef.client.service.proto.Auth.Agent
 		// Can't encode setAgentPassword : Can't encode type: org.totalgrid.reef.client.service.proto.Auth.Agent
 		/**
+		 * Updates the agent password
+		 *
+		 * @param name        name of the agent to update
+		 * @param newPassword the new password, must obey systems password rules
+		*/
+		calls.setAgentPassword = function(name, newPassword) {
+			return client.apiRequest({
+				request: "setAgentPassword",
+				data: {
+					name: name,
+					newPassword: newPassword
+				},
+				style: "SINGLE",
+				resultType: "agent"
+			});
+		};
+		/**
 		 * @return list of all of the possible permission sets
 		*/
 		calls.getPermissionSets = function() {
