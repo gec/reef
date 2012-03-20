@@ -65,7 +65,9 @@ class MeasurementSnapshotService(cm: RTDatabase)
       measList.foreach(name => b.addMeasurements(measurements.get(name).get))
     }
 
-    context.auth.authorize(context, Descriptors.measurement.id, "read", entityModel.findEntitiesByNames(context, searchList))
+    val entities = entityModel.findEntitiesByNames(context, searchList).toList
+
+    context.auth.authorize(context, Descriptors.measurement.id, "read", entities.map { _.id })
 
     b.build
   }

@@ -26,17 +26,18 @@ import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => Permissio
 import com.weiglewilczek.slf4s.Logging
 
 import scala.collection.JavaConversions._
+import java.util.UUID
 
 trait AuthzService {
 
-  def authorize(context: RequestContext, componentId: String, action: String, entities: => List[Entity]): Unit
+  def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]): Unit
 
   // load up the permissions sets
   def prepare(context: RequestContext)
 }
 
 class NullAuthzService extends AuthzService {
-  def authorize(context: RequestContext, componentId: String, action: String, entities: => List[Entity]) {}
+  def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {}
   def prepare(context: RequestContext) {}
 }
 
@@ -44,10 +45,13 @@ class SqlAuthzService extends AuthzService with Logging {
 
   import AuthzFilteringService._
 
-  def authorize(context: RequestContext, componentId: String, action: String, entities: => List[Entity]) {
+  def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
 
     val permissions = context.get[List[Permission]]("permissions")
       .getOrElse(throw new UnauthorizedException(context.get[String]("auth_error").get))
+
+    import org.squeryl.PrimitiveTypeMode._
+    val entities = uuids.map { ApplicationSchema.entities.lookup(_).get }
 
     val convertedEntities = if (entities.isEmpty) {
       // HACK, just pass in a temporary entity for now so we have something to get filtered out

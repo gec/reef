@@ -95,7 +95,7 @@ class CommunicationEndpointConnectionServiceModel
     def isSame(entry: FrontEndAssignment) = entry.enabled == currentlyEnabled && entry.state == currentState
 
     if (proto.hasEnabled && proto.getEnabled != currentlyEnabled) {
-      context.auth.authorize(context, "endpoint_enabled", "update", List(endpoint.entity.value))
+      context.auth.authorize(context, "endpoint_enabled", "update", List(endpoint.entityId))
       exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
         val code = if (currentlyEnabled) EventType.Scada.CommEndpointDisabled else EventType.Scada.CommEndpointEnabled
         eventFunc(code)
@@ -103,7 +103,7 @@ class CommunicationEndpointConnectionServiceModel
         toBeUpdated.copy(enabled = proto.getEnabled)
       }
     } else if (proto.hasState && proto.getState.getNumber != currentState) {
-      context.auth.authorize(context, "endpoint_state", "update", List(endpoint.entity.value))
+      context.auth.authorize(context, "endpoint_state", "update", List(endpoint.entityId))
       val newState = proto.getState.getNumber
       val online = newState == ConnProto.State.COMMS_UP.getNumber
       exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
@@ -118,7 +118,7 @@ class CommunicationEndpointConnectionServiceModel
     } else {
       // If we don't do an auth check AT ALL, this is a sneaky way to read without permissions
       // TODO: magic string
-      context.auth.authorize(context, "endpoint_connection", "update", List(endpoint.entity.value))
+      context.auth.authorize(context, "endpoint_connection", "update", List(endpoint.entityId))
 
       // state and enabled weren't altered, return NOT_MODIFIED
       (existing, false)
@@ -146,7 +146,7 @@ trait CommunicationEndpointConnectionConversion
   }
 
   def relatedEntities(entries: List[FrontEndAssignment]) = {
-    entries.map { _.endpoint.value.map { _.entity.value } }.flatten
+    entries.map { _.endpoint.value.map { _.entityId } }.flatten
   }
 
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {

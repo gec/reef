@@ -46,7 +46,7 @@ class EntityAttributesService extends ServiceEntryPoint[AttrProto] {
 
       val entitiesWithAttributes = queryEntities(req.getEntity)
 
-      context.auth.authorize(context, componentId, "read", entitiesWithAttributes.map { _._1 })
+      context.auth.authorize(context, componentId, "read", entitiesWithAttributes.map { _._1.id })
 
       Response(Status.OK, resultToProto(entitiesWithAttributes))
     })

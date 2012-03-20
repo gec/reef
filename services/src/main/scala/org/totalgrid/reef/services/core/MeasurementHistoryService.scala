@@ -47,7 +47,9 @@ class MeasurementHistoryService(cm: Historian)
 
     val pointName = req.getPointName()
 
-    context.auth.authorize(context, Descriptors.measurement.id, "read", entityModel.findEntityByName(context, pointName).toList)
+    val entity = entityModel.findEntityByName(context, pointName).getOrElse(throw new BadRequestException("Unknown point: " + pointName))
+
+    context.auth.authorize(context, Descriptors.measurement.id, "read", List(entity.id))
 
     val keepNewest = req.getKeepNewest()
     val begin = req.getStartTime()

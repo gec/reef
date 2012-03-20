@@ -143,7 +143,7 @@ class EntityEdgeServiceModel
   }
 
   def relatedEntities(entries: List[EntityEdge]) = {
-    entries.map { e => e.parent.value :: e.child.value :: Nil }.flatten
+    entries.map { e => e.parentId :: e.childId :: Nil }.flatten
   }
 
   def convertToProto(entry: EntityEdge): EntityEdgeProto = {

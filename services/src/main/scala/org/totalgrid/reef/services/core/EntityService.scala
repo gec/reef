@@ -226,7 +226,7 @@ class EntityServiceModel
   }
 
   override def relatedEntities(models: List[Entity]) = {
-    models
+    models.map { _.id }
   }
 
   def getRoutingKey(req: EntityProto): String = ProtoRoutingKeys.generateRoutingKey {

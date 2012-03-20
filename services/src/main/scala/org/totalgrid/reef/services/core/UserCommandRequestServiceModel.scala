@@ -160,7 +160,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   }
 
   def relatedEntities(models: List[UserCommandModel]) = {
-    models.map { _.command.entity.value }
+    models.map { _.command.entityId }
   }
 
   // Relies on implicit to combine LogicalBooleans

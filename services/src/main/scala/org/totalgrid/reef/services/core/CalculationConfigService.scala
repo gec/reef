@@ -166,7 +166,7 @@ trait CalculationConfigConversion
   def sortResults(list: List[Calculation]) = list.sortBy(_.getOutputPoint.getName)
 
   def relatedEntities(models: List[CalculationConfig]) = {
-    models.map { _.outputPoint.value.entity.value }
+    models.map { _.outputPoint.value.entityId }
   }
 
   def getRoutingKey(req: Calculation) = ProtoRoutingKeys.generateRoutingKey(

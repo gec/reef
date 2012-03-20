@@ -187,7 +187,7 @@ trait AlarmQueries {
   }
 
   def relatedEntities(entries: List[AlarmModel]) = {
-    entries.map { _.event.value.entity.value }.flatten
+    entries.map { _.event.value.entityId }.flatten
   }
 
   def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {

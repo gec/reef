@@ -25,7 +25,9 @@ import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
-import org.totalgrid.reef.models.Entity
+import java.util.UUID
+import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
+import org.squeryl.PrimitiveTypeMode._
 
 // TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
@@ -98,8 +100,11 @@ object SubscriptionTools {
 
     val queue = new scala.collection.mutable.Queue[AuthRequest]
 
-    def authorize(context: RequestContext, componentId: String, action: String, entities: => List[Entity]) {
-      queue.enqueue(AuthRequest(componentId, action, entities.map(_.name)))
+    def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
+
+      val names = uuids.map { ApplicationSchema.entities.lookup(_).get.name }
+
+      queue.enqueue(AuthRequest(componentId, action, names))
     }
 
     def prepare(context: RequestContext) {}

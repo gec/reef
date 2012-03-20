@@ -117,7 +117,7 @@ class EventQueryService
           select (row)
           orderBy timeOrder(row.time, select.ascending)).page(0, limit)
 
-    context.auth.authorize(context, Descriptors.event.id, "read", entries.toList.map { _.entity.value }.flatten)
+    context.auth.authorize(context, Descriptors.event.id, "read", entries.toList.map { _.entityId }.flatten)
 
     val respList = EventList.newBuilder.addAllEvents(entries.toList.map(EventConversion.convertToProto(_))).build
     respList

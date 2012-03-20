@@ -83,7 +83,7 @@ trait FrontEndProcessorConversion
   }
 
   def relatedEntities(entries: List[ApplicationInstance]) = {
-    entries.map { _.entity.value }
+    entries.map { _.entityId }
   }
 
   def searchQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {

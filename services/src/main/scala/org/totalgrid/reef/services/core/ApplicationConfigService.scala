@@ -113,7 +113,7 @@ trait ApplicationConfigConversion
   }
 
   def relatedEntities(entries: List[ApplicationInstance]) = {
-    entries.map { _.agent.value.entity.value }
+    entries.map { _.agent.value.entityId }
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {

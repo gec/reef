@@ -89,7 +89,7 @@ trait MeasurementProcessingConnectionConversion
   }
 
   def relatedEntities(entries: List[MeasProcAssignment]) = {
-    entries.map { _.application.value.map { _.entity.value } }.flatten
+    entries.map { _.application.value.map { _.entityId } }.flatten
   }
 
   def searchQuery(proto: ConnProto, sql: MeasProcAssignment) = {

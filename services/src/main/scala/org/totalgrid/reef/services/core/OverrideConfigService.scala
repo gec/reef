@@ -97,7 +97,7 @@ trait OverrideConfigConversion
     req.point.endpoint.uuid.value :: req.point.name :: Nil)
 
   def relatedEntities(models: List[OverrideConfig]) = {
-    models.map { _.point.value.entity.value }
+    models.map { _.point.value.entityId }
   }
 
   def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {

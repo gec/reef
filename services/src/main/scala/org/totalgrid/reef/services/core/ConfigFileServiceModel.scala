@@ -134,7 +134,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
   }
 
   def relatedEntities(entries: List[ConfigFile]) = {
-    entries.map { cf => cf.entity.value :: cf.owners.value }.flatten
+    entries.map { cf => cf.entityId :: cf.owners.value.map { _.id } }.flatten
   }
 
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {

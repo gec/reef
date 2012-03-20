@@ -101,7 +101,7 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
   }
 
   def relatedEntities(entries: List[AuthTokenModel]) = {
-    entries.map { _.agent.value.entity.value }
+    entries.map { _.agent.value.entityId }
   }
 
   def uniqueQuery(proto: AuthToken, sql: AuthTokenModel) = {

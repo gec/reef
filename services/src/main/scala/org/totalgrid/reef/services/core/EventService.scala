@@ -162,7 +162,7 @@ trait EventConversion
   def sortResults(list: List[Event]) = list
 
   def relatedEntities(entries: List[EventStore]) = {
-    entries.map { _.entity.value }.flatten
+    entries.map { _.entityId }.flatten
   }
 
   // Derive a AMQP routing key from a proto. Used by post?

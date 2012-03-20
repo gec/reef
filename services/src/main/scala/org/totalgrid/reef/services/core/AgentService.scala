@@ -99,12 +99,12 @@ class AgentServiceModel
     }
 
     if (changingPassword) {
-      context.auth.authorize(context, "agent_password", "update", List(existing.entity.value))
+      context.auth.authorize(context, "agent_password", "update", List(existing.entityId))
       validatePassword(req.getPassword)
       update(context, existing.copyWithUpdatedPassword(req.getPassword), existing)
     } else {
       if (removed.size > 0 || added.size > 0) {
-        context.auth.authorize(context, "agent_roles", "update", List(existing.entity.value))
+        context.auth.authorize(context, "agent_roles", "update", List(existing.entityId))
         added.foreach { p => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(p.id, existing.id)) }
         ApplicationSchema.agentSetJoins.deleteWhere(join => join.permissionSetId in removed.map { _.id } and join.agentId === existing.id)
 
@@ -159,7 +159,7 @@ trait AgentConversions
   def sortResults(list: List[Agent]) = list.sortBy(_.getName)
 
   def relatedEntities(entries: List[AgentModel]) = {
-    entries.map { _.entity.value }
+    entries.map { _.entityId }
   }
 
   def uniqueQuery(proto: Agent, sql: AgentModel) = {

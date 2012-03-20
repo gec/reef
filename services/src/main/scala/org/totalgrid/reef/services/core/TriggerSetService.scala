@@ -54,7 +54,7 @@ trait TriggerSetConversion
   }
 
   def relatedEntities(models: List[TriggerSet]) = {
-    models.map { _.point.value.entity.value }
+    models.map { _.point.value.entityId }
   }
 
   def uniqueQuery(proto: TriggerProto, sql: TriggerSet) = {

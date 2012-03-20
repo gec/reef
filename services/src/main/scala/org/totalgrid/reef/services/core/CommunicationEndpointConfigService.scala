@@ -142,7 +142,7 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
   }
 
   def relatedEntities(entries: List[CommunicationEndpoint]) = {
-    entries.map { _.entity.value }
+    entries.map { _.entityId }
   }
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {

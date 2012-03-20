@@ -53,9 +53,9 @@ class CommandLockServiceModel
 
     val commands = findCommands(req.getCommandsList.toList)
 
-    context.auth.authorize(context, "command_lock", "create", commands.map { _.entity.value })
+    context.auth.authorize(context, "command_lock", "create", commands.map { _.entityId })
     if (req.getAccess == AccessProto.AccessMode.ALLOWED) {
-      context.auth.authorize(context, "command_lock_select", "create", commands.map { _.entity.value })
+      context.auth.authorize(context, "command_lock_select", "create", commands.map { _.entityId })
       // process the time here. On requests the time is relative, on responses it is 
       // an absolute UTC time
       val time = req.expireTime match {
@@ -65,7 +65,7 @@ class CommandLockServiceModel
       // Do the select on the model, given the requested list of commands
       selectCommands(context, user, time, commands)
     } else {
-      context.auth.authorize(context, "command_lock_block", "create", commands.map { _.entity.value })
+      context.auth.authorize(context, "command_lock_block", "create", commands.map { _.entityId })
       blockCommands(context, user, commands)
     }
   }
@@ -158,7 +158,7 @@ class CommandLockServiceModel
 
     val cmds = commandModel.table.where(cmd => cmd.lastSelectId === access.id).toList
 
-    context.auth.authorize(context, "command_lock", "delete", cmds.map { _.entity.value })
+    context.auth.authorize(context, "command_lock", "delete", cmds.map { _.entityId })
     if (cmds.length > 0) {
 
       // Remove last select (since it doesn't refer to anything real) on all commands
@@ -189,7 +189,7 @@ trait CommandLockConversion
   }
 
   def relatedEntities(entries: List[AccessModel]) = {
-    entries.map { _.commands.map { _.entity.value } }.flatten
+    entries.map { _.commands.map { _.entityId } }.flatten
   }
 
   def uniqueQuery(proto: AccessProto, sql: AccessModel) = {

@@ -144,7 +144,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
   }
 
   def relatedEntities(models: List[Point]) = {
-    models.map { _.entity.value }
+    models.map { _.entityId }
   }
 
   /**

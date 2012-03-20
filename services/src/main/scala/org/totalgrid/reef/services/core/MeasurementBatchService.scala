@@ -60,7 +60,7 @@ class MeasurementBatchService
 
       val commEndpoints = points.groupBy(_.endpoint.value.get)
 
-      context.auth.authorize(context, componentId, "create", points.map { _.entity.value })
+      context.auth.authorize(context, componentId, "create", points.map { _.entityId })
 
       val headers = BasicRequestHeaders.empty
       val commonHeaders = context.getHeaders.getTimeout.map { headers.setTimeout(_) }.getOrElse(headers)

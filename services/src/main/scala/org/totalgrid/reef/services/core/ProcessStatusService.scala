@@ -147,7 +147,7 @@ trait ProcessStatusConversion
   }
 
   def relatedEntities(models: List[HeartbeatStatus]) = {
-    models.map { _.application.value.agent.value.entity.value }
+    models.map { _.application.value.agent.value.entityId }
   }
 
   def searchQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {

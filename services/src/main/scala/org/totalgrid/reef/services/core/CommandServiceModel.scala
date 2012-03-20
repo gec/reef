@@ -121,7 +121,7 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
   }
 
   def relatedEntities(entries: List[Command]) = {
-    entries.map { _.entity.value }
+    entries.map { _.entityId }
   }
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {
