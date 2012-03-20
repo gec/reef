@@ -40,8 +40,8 @@ object ServiceBehaviors {
   trait GetEnabled extends HasRead with HasSubscribe with HasModelFactory with AsyncContextRestGet {
     def get(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
-        val results = read(context, model, req)
         context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
+        val results = read(context, model, req)
         Response(Envelope.Status.OK, results)
       }
     }
@@ -67,8 +67,8 @@ object ServiceBehaviors {
 
     def put(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
+        context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
         val (value, status) = create(context, model, req)
-        context.getHeaders.subQueue.foreach(subscribe(context, model, value, _))
         Response(status, value :: Nil)
       }
     }
@@ -81,11 +81,11 @@ object ServiceBehaviors {
 
     def post(contextSource: RequestContextSource, req: ServiceType): Response[ServiceType] = {
       contextSource.transaction { context =>
+        context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
         val (value, status) = model.findRecord(context, req) match {
           case Some(x) => update(context, model, req, x)
           case None => throw new BadRequestException("Record not found: " + req)
         }
-        context.getHeaders.subQueue.foreach(subscribe(context, model, value, _))
         Response(status, value :: Nil)
       }
     }
@@ -110,6 +110,7 @@ object ServiceBehaviors {
 
     protected def doPut(contextSource: RequestContextSource, req: ServiceType, model: ServiceModelType): Response[ServiceType] = {
       contextSource.transaction { context =>
+        context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
         val (proto, status) = try {
           model.findRecord(context, req) match {
             case None => create(context, model, req)
@@ -121,7 +122,6 @@ object ServiceBehaviors {
           // TODO: evaluate replacing NoSearchTermsException with flags
           case e: NoSearchTermsException => create(context, model, req)
         }
-        context.getHeaders.subQueue.foreach(subscribe(context, model, proto, _))
         Response(status, proto :: Nil)
       }
     }

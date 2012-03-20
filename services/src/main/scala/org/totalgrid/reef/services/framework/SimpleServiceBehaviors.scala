@@ -27,8 +27,8 @@ object SimpleServiceBehaviors {
 
     override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit) {
       val response = contextSource.transaction { context =>
-        val result = doGet(context, req)
         subscribe(context, req)
+        val result = doGet(context, req)
         Response(Envelope.Status.OK, result)
       }
       callback(response)
