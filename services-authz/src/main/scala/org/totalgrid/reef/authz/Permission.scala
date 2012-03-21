@@ -19,25 +19,28 @@
 package org.totalgrid.reef.authz
 
 import java.util.UUID
-import org.totalgrid.reef.client.service.proto.Auth.PermissionSet
+import org.totalgrid.reef.client.service.proto.Auth.{ Permission => PermissionProto, PermissionSet => PermissionSetProto }
 
 import scala.collection.JavaConversions._
 
 object Permission {
-  def fromProto(permissionSet: PermissionSet, agentName: String): List[Permission] = {
+  def fromProto(permissionSet: PermissionSetProto, agentName: String): List[Permission] = {
 
-    permissionSet.getPermissionsList.toList.map { perm =>
+    permissionSet.getPermissionsList.toList.map { permission =>
 
-      def nonRedundant(list: List[String]) = if (list.contains("*")) List("*") else list
-
-      val actions = nonRedundant(perm.getVerbList.toList)
-      val resources = nonRedundant(perm.getResourceList.toList)
-      val selectorStrings = if (perm.getSelectorCount == 0) List("*") else nonRedundant(perm.getSelectorList.toList.map { _.getName })
-
-      //val selectors = selectorStrings.map{  }
-
-      new Permission(perm.getAllow, resources, actions, ResourceSelectorFactory.build(selectorStrings.head, agentName))
+      fromProto(permission, agentName)
     }
+  }
+
+  def fromProto(permission: PermissionProto, agentName: String): Permission = {
+
+    def nonRedundant(list: List[String]) = if (list.contains("*")) List("*") else list
+
+    val actions = nonRedundant(permission.getVerbList.toList)
+    val resources = nonRedundant(permission.getResourceList.toList)
+    val selectors = permission.getSelectorList.toList
+
+    new Permission(permission.getAllow, resources, actions, ResourceSelectorFactory.build(selectors, agentName))
   }
 
   def denyAllPermission(msg: => String) = {

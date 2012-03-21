@@ -57,12 +57,12 @@ object AuthTokenService {
 
     val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", systemPassword))
 
-    val allSelector = EntitySelector.newBuilder.setSelector("*").setName("*").build
+    val allSelector = EntitySelector.newBuilder.setStyle("*").build
 
     val all = Permission.newBuilder.setAllow(true).addVerb("*").addResource("*").addSelector(allSelector).build
     val readOnly = Permission.newBuilder.setAllow(true).addVerb("read").addResource("*").addSelector(allSelector).build
 
-    val selfAgent = EntitySelector.newBuilder.setSelector("$self").setName("$self").build
+    val selfAgent = EntitySelector.newBuilder.setStyle("self").build
     val updatePassword = Permission.newBuilder.setAllow(true).addVerb("update").addResource("agent_password").addSelector(selfAgent).build
 
     val allRole = RoleProto.newBuilder.setName("all").addPermissions(all)

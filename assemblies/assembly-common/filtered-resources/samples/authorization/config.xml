@@ -14,13 +14,13 @@
                 <auth:allow actions="*" resources="agent permission_set agent_password agent_permissions"/>
             </auth:role>
             <auth:role name="user">
-                <auth:allow actions="update" resources="agent_password" select="$self"/>
-                <auth:allow actions="read" resources="auth_token" select="$self"/>
+                <auth:allow actions="update" resources="agent_password" selectStyle="self"/>
+                <auth:allow actions="read" resources="auth_token" selectStyle="self"/>
             </auth:role>
             <auth:role name="application">
                 <auth:allow actions="create" resources="application_config"/>
-                <auth:allow actions="update delete" resources="application_config" select="$self"/>
-                <auth:allow actions="update" resources="status_snapshot" select="$self"/>
+                <auth:allow actions="update delete" resources="application_config" selectStyle="self"/>
+                <auth:allow actions="update" resources="status_snapshot" selectStyle="self"/>
             </auth:role>
 
             <auth:role name="protocol_adapter">
@@ -38,28 +38,28 @@
                 <auth:allow actions="read" resources="*"/>
             </auth:role>
             <auth:role name="command_issuer">
-                <auth:allow actions="update delete" resources="command_lock" select="$self"/>
+                <auth:allow actions="update delete" resources="command_lock" selectStyle="self"/>
             </auth:role>
 
             <auth:role name="regional">
                 <auth:allow actions="create"
                             resources="command_lock command_lock_select command_lock_block user_command_request"
-                            select="parent includes ('West','East')"/>
+                            selectStyle="parent" selectArguments="West East"/>
             </auth:role>
             <auth:role name="non_critical">
                 <auth:deny actions="create"
                            resources="command_lock command_lock_select command_lock_block user_command_request"
-                           select="type includes ('Critical')"/>
+                           selectStyle="type" selectArguments="Critical"/>
             </auth:role>
             <auth:role name="dlrc">
                 <auth:allow actions="create"
                             resources="command_lock command_lock_select command_lock_block user_command_request"
-                            select="type includes ('DLRC')"/>
+                            selectStyle="type" selectArguments="DLRC"/>
             </auth:role>
             <auth:role name="nuke">
                 <auth:allow actions="create"
                             resources="command_lock command_lock_select command_lock_block user_command_request"
-                            select="parent includes ('Nuke1')"/>
+                            selectStyle="parent" selectArguments="Nuke1"/>
             </auth:role>
         </auth:roles>
 

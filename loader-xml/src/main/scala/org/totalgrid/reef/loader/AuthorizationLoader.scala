@@ -49,19 +49,28 @@ object AuthorizationLoader {
       val actions = access.getActions.split(' ')
       actions.foreach(b.addVerb(_))
     } else {
-      throw new Exception("Must set actions in permission: " + where)
+      throw new LoadingException("Must set actions in permission: " + where)
     }
 
     if (access.isSetResources) {
       val resources = access.getResources.split(' ')
       resources.foreach(b.addResource(_))
     } else {
-      throw new Exception("Must set resources in permission: " + where)
+      throw new LoadingException("Must set resources in permission: " + where)
     }
 
-    if (access.isSetSelect) {
-      val selectors = access.getSelect.split(' ')
-      selectors.foreach(s => b.addSelector(EntitySelector.newBuilder().setName(s)))
+    if (access.isSetSelectStyle) {
+      val sb = EntitySelector.newBuilder()
+
+      sb.setStyle(access.getSelectStyle)
+      if (access.isSetSelectArguments) {
+        val arguments = access.getSelectArguments.split(' ').toList
+        sb.addAllArguments(arguments)
+      }
+
+      b.addSelector(sb)
+    } else {
+      if (access.isSetSelectArguments) throw new LoadingException("Cannot set selectArguments without selectType")
     }
 
     b.build

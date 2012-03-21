@@ -20,7 +20,6 @@ package org.totalgrid.reef.authz
 
 import java.util.UUID
 
-
 trait ResourceSpecificFiltering {
   /**
    * each payload object is associated with a list of related resources, if any of those resources are restricted we will
@@ -28,7 +27,6 @@ trait ResourceSpecificFiltering {
    */
   def resourceSpecificFiltering[A](applicablePermissions: List[Permission], pairs: List[(A, List[UUID])]): List[FilteredResult[A]]
 }
-
 
 object ResourceSpecificFilter extends ResourceSpecificFiltering {
 

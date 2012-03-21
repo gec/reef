@@ -42,7 +42,8 @@
     <xs:complexType name="access" abstract="true">
         <xs:attribute name="actions" type="xs:string" use="required" />
         <xs:attribute name="resources" type="xs:string" use="required" />
-        <xs:attribute name="select" type="xs:string" use="optional" />
+        <xs:attribute name="selectStyle" type="xs:string" use="optional" />
+        <xs:attribute name="selectArguments" type="xs:string" use="optional" />
     </xs:complexType>
 
     <xs:element name="allow">

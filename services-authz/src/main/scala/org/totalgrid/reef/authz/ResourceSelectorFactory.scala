@@ -19,14 +19,24 @@
 package org.totalgrid.reef.authz
 
 import org.totalgrid.reef.client.exception.UnauthorizedException
+import org.totalgrid.reef.client.service.proto.Auth.EntitySelector
+
+import scala.collection.JavaConversions._
 
 object ResourceSelectorFactory {
-  def build(selectorString: String, agentName: String): ResourceSelector = {
-    selectorString match {
-      case "*" => new WildcardMatcher
-      case "$self" => new EntityHasName(List(agentName))
-      case _ =>
-        throw new UnauthorizedException("Unknown selector: " + selectorString)
+  def build(selectors: List[EntitySelector], agentName: String): ResourceSelector = {
+
+    if (selectors.isEmpty) new WildcardMatcher
+    else {
+      if (selectors.size > 1) throw new UnauthorizedException("Only one selector at a time is implemented.")
+      val selector = selectors.head
+      selector.getStyle match {
+        case "*" => new WildcardMatcher
+        case "self" => new EntityHasName(List(agentName))
+        case "type" => new EntityTypeIncludes(selector.getArgumentsList.toList)
+        case _ =>
+          throw new UnauthorizedException("Unknown selector style: " + selector.getStyle + ". Valid styles are (*, self, type, parent, child)")
+      }
     }
   }
 }

@@ -36,8 +36,8 @@
  * 
  * message EntitySelector{
  *     //optional org.totalgrid.reef.client.service.proto.Model.ReefID  id      = 1;
- *     optional string  name     = 2;
- *     optional string  selector = 3;
+ *     optional string  style     = 2;
+ *     repeated string  arguments = 3;
  * }
  * 
  * message Permission{
