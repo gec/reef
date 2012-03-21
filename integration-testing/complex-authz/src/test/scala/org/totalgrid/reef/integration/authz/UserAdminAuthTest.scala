@@ -45,6 +45,10 @@ class UserAdminAuthTest extends AuthTestBase {
         // fake user can change own password
         as("fakeUser") { limitedUser =>
           limitedUser.setAgentPassword("fakeUser", "password").await
+
+          unAuthed("Cannot update admin user password") {
+            limitedUser.setAgentPassword("admin", "password").await
+          }
         }
         unAuthed("Password should have been changed") {
           as("fakeUser") { _ => }

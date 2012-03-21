@@ -18,14 +18,15 @@
  */
 package org.totalgrid.reef.authz
 
+import org.totalgrid.reef.client.exception.UnauthorizedException
+
 object ResourceSelectorFactory {
   def build(selectorString: String, agentName: String): ResourceSelector = {
     selectorString match {
       case "*" => new WildcardMatcher
       case "$self" => new EntityHasName(List(agentName))
       case _ =>
-        new WildcardMatcher
-      //throw new Exception("Unknown matcher")
+        throw new UnauthorizedException("Unknown selector: " + selectorString)
     }
   }
 }

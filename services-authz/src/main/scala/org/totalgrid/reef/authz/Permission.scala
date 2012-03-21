@@ -32,7 +32,7 @@ object Permission {
 
       val actions = nonRedundant(perm.getVerbList.toList)
       val resources = nonRedundant(perm.getResourceList.toList)
-      val selectorStrings = if (perm.getSelectorCount == 0) List("*") else nonRedundant(perm.getSelectorList.toList.map { _.getSelector })
+      val selectorStrings = if (perm.getSelectorCount == 0) List("*") else nonRedundant(perm.getSelectorList.toList.map { _.getName })
 
       //val selectors = selectorStrings.map{  }
 

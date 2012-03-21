@@ -51,7 +51,7 @@ class ApplicationAuthTest extends AuthTestBase {
     }
   }
 
-  ignore("Cant heartbeat or delete another users application") {
+  test("Cant heartbeat or delete another users application") {
     as("fep_app") { fep =>
       val nodeSettings = new NodeSettings("node1", "any", "any")
       val appConfig = fep.registerApplication(nodeSettings, "fakeApplication", List("HMI")).await

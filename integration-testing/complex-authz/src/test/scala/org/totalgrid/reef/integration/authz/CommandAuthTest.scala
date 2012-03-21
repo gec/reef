@@ -30,7 +30,7 @@ class CommandAuthTest extends AuthTestBase {
 
   override val modelFile = "../../assemblies/assembly-common/filtered-resources/samples/authorization/config.xml"
 
-  test("Regional ops can view commands and command history") {
+  ignore("Regional ops can view commands and command history") {
     as("regional_op") { regionalOp =>
       regionalOp.getCommands().await
 
