@@ -19,22 +19,24 @@
 package org.totalgrid.reef.authz
 
 import java.util.UUID
+import org.totalgrid.reef.models.{ ApplicationSchema, EntityToTypeJoins, Entity, DatabaseUsingTestBase }
 
-sealed trait FilteredResult[A] {
-  def result: Option[A]
-  def isAllowed: Boolean
-  def permission: Permission
-}
+class AuthzTestBase extends DatabaseUsingTestBase {
 
-case class Allowed[A](a: A, permission: Permission) extends FilteredResult[A] {
-  def isAllowed = true
-  def result = Some(a)
-}
-case class Denied[A](permission: Permission) extends FilteredResult[A] {
-  def isAllowed = false
-  def result = Option.empty[A]
-}
+  case class TestEntity(name: String, types: List[String]) {
+    val uuid = UUID.randomUUID()
+  }
 
-trait AuthzFilteringService {
-  def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]]
+  def defineEntities(entities: List[TestEntity]) = {
+    val es = entities.map { t =>
+      val e = new Entity(t.name)
+      e.id = t.uuid
+      e
+    }
+    val types = entities.map { t => t.types.map { new EntityToTypeJoins(t.uuid, _) } }.flatten
+    ApplicationSchema.entities.insert(es)
+    ApplicationSchema.entityTypes.insert(types)
+
+    entities.map { x => x.uuid }
+  }
 }

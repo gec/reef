@@ -59,7 +59,7 @@ object ServiceBootstrap {
    * repeating that setup logic somewhere else
    */
   def bootstrapComponents(dbConnection: DbConnection, connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
-    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink, new SqlAuthzService)
+    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink, new SqlAuthzService())
 
     // define the events exchanges before "logging in" which will generate some events
     defineEventExchanges(connection)
@@ -78,7 +78,7 @@ object ServiceBootstrap {
       def transaction[A](f: (RequestContext) => A) = {
         contextSource.transaction { context =>
           context.modifyHeaders(_.setAuthToken(authToken.getToken))
-          (new SqlAuthzService).prepare(context)
+          (new SqlAuthzService()).prepare(context)
           f(context)
         }
       }

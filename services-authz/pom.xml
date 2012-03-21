@@ -62,6 +62,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-persistence-postgresql</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

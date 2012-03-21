@@ -20,12 +20,10 @@ package org.totalgrid.reef.services.authz
 
 import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.authz._
-import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
-import org.totalgrid.reef.client.exception.{ InternalServiceException, UnauthorizedException }
-import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => PermissionSetProto }
+import org.totalgrid.reef.models.ApplicationSchema
+import org.totalgrid.reef.client.exception.UnauthorizedException
 import com.weiglewilczek.slf4s.Logging
 
-import scala.collection.JavaConversions._
 import java.util.UUID
 
 trait AuthzService {
@@ -41,30 +39,17 @@ class NullAuthzService extends AuthzService {
   def prepare(context: RequestContext) {}
 }
 
-class SqlAuthzService extends AuthzService with Logging {
+class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzService with Logging {
 
-  import AuthzFilteringService._
+  def this() = this(AuthzFilter)
 
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
 
     val permissions = context.get[List[Permission]]("permissions")
       .getOrElse(throw new UnauthorizedException(context.get[String]("auth_error").get))
 
-    import org.squeryl.PrimitiveTypeMode._
-    val entities = uuids.map { ApplicationSchema.entities.lookup(_).get }
-
-    val convertedEntities = if (entities.isEmpty) {
-      // HACK, just pass in a temporary entity for now so we have something to get filtered out
-      List(new AuthEntity {
-        def name = "SYSTEM"
-        def types = Nil
-      })
-    } else {
-      entities.map { toAuthEntity(_) }
-    }
-    logger.info(componentId + ":" + action + "  " + convertedEntities.map { _.name }.mkString("(", ",", ")"))
-
-    val filtered = filter(permissions, componentId, action, convertedEntities, convertedEntities)
+    // just pass in a single boolean value, if it gets filtered we know we are not auhorized
+    val filtered = filteringService.filter(permissions, componentId, action, List(true), List(uuids))
 
     filtered.find(!_.isAllowed) match {
       case Some(filterResult) => throw new UnauthorizedException(filterResult.toString)
@@ -99,42 +84,12 @@ class SqlAuthzService extends AuthzService with Logging {
 
         context.set("agent", agent)
 
-        val convertedPermissions = permissions.map { toAuthPermission(context, _) }.flatten
+        val agentName = agent.entityName
+
+        val convertedPermissions = permissions.map { Permission.fromProto(_, agentName) }.flatten
         context.set("permissions", convertedPermissions)
       }
     }
   }
 
-  def toAuthPermission(context: RequestContext, permissionSet: PermissionSetProto) = {
-
-    permissionSet.getPermissionsList.toList.flatMap { perm =>
-
-      def nonRedundant(list: List[String]) = if (list.contains("*")) List("*") else list
-
-      val actions = nonRedundant(perm.getVerbList.toList)
-      val resources = nonRedundant(perm.getResourceList.toList)
-      //val selectors = perm.getSelectorList
-
-      actions.flatMap { a =>
-        resources.map { r =>
-          // TODO: remove agent_password:update special casing
-          val selectors = if (a == "update" && r == "agent_password") {
-            List(new ResourceSet(List(new EntityHasName(context.agent.entityName))))
-          } else {
-            List(new ResourceSet(List(new AllMatcher)))
-          }
-
-          new Permission(perm.getAllow, r, a, selectors)
-        }
-      }
-    }
-  }
-
-  def toAuthEntity(entity: Entity) = {
-    new AuthEntity {
-      def name = entity.name
-
-      def types = entity.types.value
-    }
-  }
 }

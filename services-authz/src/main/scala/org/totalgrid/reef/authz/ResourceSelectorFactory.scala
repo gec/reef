@@ -18,23 +18,14 @@
  */
 package org.totalgrid.reef.authz
 
-import java.util.UUID
-
-sealed trait FilteredResult[A] {
-  def result: Option[A]
-  def isAllowed: Boolean
-  def permission: Permission
-}
-
-case class Allowed[A](a: A, permission: Permission) extends FilteredResult[A] {
-  def isAllowed = true
-  def result = Some(a)
-}
-case class Denied[A](permission: Permission) extends FilteredResult[A] {
-  def isAllowed = false
-  def result = Option.empty[A]
-}
-
-trait AuthzFilteringService {
-  def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]]
+object ResourceSelectorFactory {
+  def build(selectorString: String, agentName: String): ResourceSelector = {
+    selectorString match {
+      case "*" => new WildcardMatcher
+      case "$self" => new EntityHasName(List(agentName))
+      case _ =>
+        new WildcardMatcher
+      //throw new Exception("Unknown matcher")
+    }
+  }
 }

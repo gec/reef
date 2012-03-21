@@ -210,7 +210,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     def eventSink = throw new Exception
     def operationBuffer = throw new Exception
     def subHandler = throw new Exception
-    val auth = new SqlAuthzService
+    val auth = new SqlAuthzService()
   }
 
   class AuthTester extends ServiceTypeIs[Verb] {

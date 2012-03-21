@@ -19,22 +19,15 @@
 package org.totalgrid.reef.authz
 
 import java.util.UUID
+import org.totalgrid.reef.models.ApplicationSchema
 
-sealed trait FilteredResult[A] {
-  def result: Option[A]
-  def isAllowed: Boolean
-  def permission: Permission
-}
+import org.squeryl.PrimitiveTypeMode._
 
-case class Allowed[A](a: A, permission: Permission) extends FilteredResult[A] {
-  def isAllowed = true
-  def result = Some(a)
-}
-case class Denied[A](permission: Permission) extends FilteredResult[A] {
-  def isAllowed = false
-  def result = Option.empty[A]
-}
+object EntityHelpers {
+  def getNames(uuids: List[UUID]): List[String] = {
 
-trait AuthzFilteringService {
-  def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]]
+    from(ApplicationSchema.entities)(sql =>
+      where(sql.id in uuids)
+        select (sql.name)).toList
+  }
 }
