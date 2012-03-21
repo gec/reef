@@ -21,6 +21,7 @@ package org.totalgrid.reef.authz
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import java.util.UUID
+import org.totalgrid.reef.models.EntityEdge
 
 @RunWith(classOf[JUnitRunner])
 class ResourceSelectorTest extends AuthzTestBase {
@@ -74,6 +75,51 @@ class ResourceSelectorTest extends AuthzTestBase {
     val matcher1 = new WildcardMatcher
 
     matcher1.includes(uuids) should equal(List(Some(true), Some(true), Some(true), Some(true)))
+  }
+
+  test("EntityParentIncludes") {
+
+    val entities = List(
+      TestEntity("grandpa", Nil),
+      TestEntity("uncle", Nil),
+      TestEntity("father", Nil),
+      TestEntity("son", Nil))
+
+    val uuids = defineEntities(entities)
+
+    //            +---------+
+    //            | grandpa |
+    //            +---x-----+
+    //       xxxxxxxxx xxxxxx
+    //  +----x-----+   +----x------+
+    //  | uncle    |   | father    |
+    //  +----------+   +-----x-----+
+    //                       xxxx
+    //                     +----x------+
+    //                     | son       |
+    //                     +-----------+
+
+    val edges = List(
+      new EntityEdge(uuids(0), uuids(1), "owns", 1),
+      new EntityEdge(uuids(0), uuids(2), "owns", 1),
+      new EntityEdge(uuids(2), uuids(3), "owns", 1),
+      new EntityEdge(uuids(0), uuids(3), "owns", 2))
+
+    defineEdges(edges)
+
+    val testCases = List(
+      ("grandpa", List(Some(true), Some(true), Some(true), Some(true))),
+      ("uncle", List(None, Some(true), None, None)),
+      ("father", List(None, None, Some(true), Some(true))),
+      ("son", List(None, None, None, Some(true))),
+      ("stranger", List(None, None, None, None)))
+
+    testCases.foreach {
+      case (parentName, results) =>
+        val matcher = new EntityParentIncludes(List(parentName))
+        matcher.includes(uuids) should equal(results)
+    }
+
   }
 
 }

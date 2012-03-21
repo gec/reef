@@ -34,6 +34,7 @@ object ResourceSelectorFactory {
         case "*" => new WildcardMatcher
         case "self" => new EntityHasName(List(agentName))
         case "type" => new EntityTypeIncludes(selector.getArgumentsList.toList)
+        case "parent" => new EntityParentIncludes(selector.getArgumentsList.toList)
         case _ =>
           throw new UnauthorizedException("Unknown selector style: " + selector.getStyle + ". Valid styles are (*, self, type, parent, child)")
       }

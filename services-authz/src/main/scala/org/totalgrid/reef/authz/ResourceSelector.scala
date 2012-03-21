@@ -90,3 +90,27 @@ class EntityHasName(names: List[String]) extends ResourceSelector {
   override def toString() = "entity.name is not " + names.mkString("(", ",", ")")
 }
 
+class EntityParentIncludes(parentNames: List[String]) extends ResourceSelector {
+  val allow = true
+  val resourceDependent = true
+
+  def includes(uuids: List[UUID]): List[Option[Boolean]] = {
+    val matching = from(ApplicationSchema.entities, ApplicationSchema.edges, ApplicationSchema.entities)((parent, edge, child) =>
+      where(
+        (parent.name in parentNames) and (child.id in uuids)
+          and ((child.name in parentNames)
+            or ((parent.id === edge.parentId)
+              and (child.id === edge.childId)
+              and (edge.relationship === "owns"))))
+        select (child.id)).toList
+
+    uuids.map { x =>
+      matching.find(_ == x) match {
+        case Some(ent) => Some(true)
+        case None => None
+      }
+    }
+  }
+  override def toString() = "entity.parents include " + parentNames.mkString("(", ",", ")")
+}
+

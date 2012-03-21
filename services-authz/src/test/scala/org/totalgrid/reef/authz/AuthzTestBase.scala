@@ -19,7 +19,7 @@
 package org.totalgrid.reef.authz
 
 import java.util.UUID
-import org.totalgrid.reef.models.{ ApplicationSchema, EntityToTypeJoins, Entity, DatabaseUsingTestBase }
+import org.totalgrid.reef.models._
 
 class AuthzTestBase extends DatabaseUsingTestBase {
 
@@ -38,5 +38,9 @@ class AuthzTestBase extends DatabaseUsingTestBase {
     ApplicationSchema.entityTypes.insert(types)
 
     entities.map { x => x.uuid }
+  }
+
+  def defineEdges(edges: List[EntityEdge]) {
+    ApplicationSchema.edges.insert(edges)
   }
 }
