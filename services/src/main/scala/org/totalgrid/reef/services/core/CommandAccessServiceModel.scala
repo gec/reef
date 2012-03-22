@@ -167,9 +167,21 @@ class CommandLockServiceModel
     }
   }
 
-  // really delete the access logs when we delete the command
-  def deleteAccess(context: RequestContext, access: AccessModel): Unit = {
-    delete(context, access)
+  // really delete the access logs when we delete the last associated command
+  def unlinkLocks(context: RequestContext, command: CommandModel) {
+
+    val selectsOnCommand = AccessModel.selectsForCommands(List(command.id)).toList
+
+    val selectsOnOnlyThisCommand = selectsOnCommand.filter { s =>
+      val links = from(ApplicationSchema.commandToBlocks)(join =>
+        where((join.accessId === s.id))
+          select (join.id)).toList
+      links.size == 1
+    }
+
+    ApplicationSchema.commandToBlocks.deleteWhere(t => t.commandId === command.id)
+
+    selectsOnOnlyThisCommand.foreach { delete(context, _) }
   }
 }
 

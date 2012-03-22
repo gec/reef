@@ -50,8 +50,7 @@ class CommandRequestServicesIntegration
     val endpointService = new SyncService(new CommunicationEndpointService(modelFac.endpoints), contextSource)
     val access = new SyncService(new CommandLockService(modelFac.accesses, false), contextSource)
 
-    def enableCommandRequests() {
-      val commandNames = List("cmd01")
+    def enableCommandRequests(commandNames: List[String] = List("cmd01")) {
       addCommands(commandNames)
       addEndpoint(commandNames)
       addMeasProc("meas")
@@ -375,6 +374,29 @@ class CommandRequestServicesIntegration
 
       fixture.access.get(allLocksRequest).expectMany() should equal(Nil)
       fixture.commandRequest.get(allCommandsRequest).expectMany() should equal(Nil)
+    }
+  }
+
+  test("Can delete partial lock commands") {
+    ConnectionFixture.mock() { amqp =>
+      val fixture = new CommandFixture(amqp)
+
+      val commandNames = List("cmd01", "cmd02", "cmd03")
+      fixture.enableCommandRequests(commandNames)
+
+      val lockId = fixture.access.put(selectRequest(commandNames)).expectOne()
+      commandNames.foreach { cmdName =>
+        fixture.commandRequest.put(issueCommand(cmdName)).expectOne()
+      }
+      fixture.access.delete(lockId).expectOne()
+
+      fixture.removeEndpoint()
+      commandNames.foreach { cmdName =>
+        fixture.access.get(allLocksRequest).expectMany(1)
+        fixture.deleteCommand(cmdName)
+      }
+
+      fixture.access.get(allLocksRequest).expectMany(0)
     }
   }
 }

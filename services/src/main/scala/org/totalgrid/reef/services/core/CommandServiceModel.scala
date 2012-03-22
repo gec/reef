@@ -83,13 +83,12 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
   override def postDelete(context: RequestContext, entry: Command) {
 
-    val selects = entry.selectHistory.value
     val commandHistory = entry.commandHistory.value
 
-    logger.info("Deleting Command: " + entry.entityName + " selects: " + selects.size + " history: " + commandHistory.size)
+    logger.info("Deleting Command: " + entry.entityName + " history: " + commandHistory.size)
 
     commandHistory.foreach(s => commandHistoryModel.delete(context, s))
-    selects.foreach(s => commandSelectModel.deleteAccess(context, s))
+    commandSelectModel.unlinkLocks(context, entry)
 
     entityModel.delete(context, entry.entity.value)
   }
