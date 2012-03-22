@@ -186,6 +186,7 @@ object OptionalProtos {
     val access = optionally(_.hasAccess, _.getAccess)
     val expireTime = optionally(_.hasExpireTime, _.getExpireTime)
     val user = optionally(_.hasUser, _.getUser)
+    val deleted = optionally(_.hasDeleted, _.getDeleted)
   }
   implicit def proto2OptCommandsCommandRequest(a: org.totalgrid.reef.client.service.proto.Commands.CommandRequest): OptCommandsCommandRequest = new OptCommandsCommandRequest(Some(a))
   class OptCommandsCommandRequest(real: Option[org.totalgrid.reef.client.service.proto.Commands.CommandRequest]) extends OptionalStruct(real) {

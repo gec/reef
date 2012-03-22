@@ -82,6 +82,7 @@
  *   optional AccessMode   access          = 3;
  *   optional uint64       expire_time     = 4;
  *   optional string       user            = 5;
+ *   optional bool         deleted         = 6;
  * }
  * 
  * 

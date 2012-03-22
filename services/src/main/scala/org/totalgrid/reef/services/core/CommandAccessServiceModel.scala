@@ -149,9 +149,6 @@ class CommandLockServiceModel
   }
 
   def removeAccess(context: RequestContext, access: AccessModel): Unit = {
-
-    ApplicationSchema.commandToBlocks.deleteWhere(t => t.accessId === access.id)
-
     // don't delete, just mark as deleted
     update(context, access.copy(deleted = true), access)
 
@@ -210,7 +207,7 @@ trait CommandLockConversion
     val commandsListOption = if (proto.getCommandsCount > 0) Some(proto.getCommandsList.toList.map { _.getName }) else None
     List(
       proto.access.asParam(ac => sql.access === ac.getNumber),
-      Some(false).map(deleted => sql.deleted === deleted),
+      proto.deleted.asParam(deleted => sql.deleted === deleted),
       commandsListOption.map(names => sql.id in findAccessesByCommandNames(names)))
   }
 
@@ -242,6 +239,7 @@ trait CommandLockConversion
     // optional sql fields
     entry.expireTime.foreach(b.setExpireTime(_))
     b.setUser(entry.agent.value.entityName)
+    b.setDeleted(entry.deleted)
 
     b.build
   }

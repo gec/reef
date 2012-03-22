@@ -310,7 +310,7 @@ class CommandRequestServicesIntegration
   val allLocksRequest = CommandLock.newBuilder.setId(ReefID.newBuilder.setValue("*")).build
   val allCommandsRequest = UserCommandRequest.newBuilder.setId(ReefID.newBuilder.setValue("*")).build
 
-  ignore("CommandHistory and AccessHistory") {
+  test("CommandHistory and AccessHistory") {
     ConnectionFixture.mock() { amqp =>
       val fixture = new CommandFixture(amqp)
 
@@ -358,7 +358,7 @@ class CommandRequestServicesIntegration
     }
   }
 
-  ignore("CommandHistory and Locks are cleaned up if command is deleted") {
+  test("CommandHistory and Locks are cleaned up if command is deleted") {
     ConnectionFixture.mock() { amqp =>
       val fixture = new CommandFixture(amqp)
 
