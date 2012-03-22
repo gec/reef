@@ -77,8 +77,6 @@ object SubscriptionTools {
     private var subHandler = new QueueingEventSink
     private var auth = new QueueingAuthz
 
-    val userName = "user01"
-
     def reset() {
       subHandler = new QueueingEventSink
       auth = new QueueingAuthz

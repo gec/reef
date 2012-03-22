@@ -61,21 +61,24 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
 }
 
 trait AgentAddingContextSource {
-  def userName: String
 
-  var agent = Option.empty[Agent]
+  var agents = Map.empty[String, Agent]
 
   def addUser(context: RequestContext) {
-    if (agent.isEmpty) {
-      if (userName == null) throw new Exception()
-      val agentModel = new AgentServiceModel().createAgentWithPassword(new SilentRequestContext, userName, "password")
-      agent = Some(ApplicationSchema.agents.insert(agentModel))
+    val userName = context.get[String]("user_name").getOrElse("user01")
+    val agentModel = agents.get(userName) match {
+      case Some(agent) => agent
+      case None =>
+        val agentModel = new AgentServiceModel().createAgentWithPassword(new SilentRequestContext, userName, "password")
+        val agent = ApplicationSchema.agents.insert(agentModel)
+        agents += userName -> agent
+        agent
     }
-    context.set("agent", agent.get)
+    context.set("agent", agentModel)
   }
 }
 
-class MockRequestContextSource(dependencies: ServiceDependencies, val userName: String = "user01") extends RequestContextSource with AgentAddingContextSource {
+class MockRequestContextSource(dependencies: ServiceDependencies, var userName: String = "user01") extends RequestContextSource with AgentAddingContextSource {
 
   // just define all of the event exchanges at the beginning of the test
   ServiceBootstrap.defineEventExchanges(dependencies.connection)
@@ -90,7 +93,7 @@ class MockRequestContextSource(dependencies: ServiceDependencies, val userName: 
 
   def getContext = {
     val context = new DependenciesRequestContext(dependencies)
-
+    context.set("user_name", userName)
     context
   }
 }
