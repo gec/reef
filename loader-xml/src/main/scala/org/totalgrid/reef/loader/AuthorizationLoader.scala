@@ -46,7 +46,14 @@ object AuthorizationLoader {
       .setAllow(allow)
 
     if (access.isSetActions) {
-      val actions = access.getActions.split(' ')
+      val actions = access.getActions.split(' ').toList
+
+      val validActions = List("*", "create", "read", "update", "delete")
+      val invalidActions = actions.diff(validActions)
+      if (!invalidActions.isEmpty) {
+        throw new LoadingException("Invalid actions: " + invalidActions + " should be one of: " + validActions)
+      }
+
       actions.foreach(b.addVerb(_))
     } else {
       throw new LoadingException("Must set actions in permission: " + where)
@@ -62,7 +69,14 @@ object AuthorizationLoader {
     if (access.isSetSelectStyle) {
       val sb = EntitySelector.newBuilder()
 
-      sb.setStyle(access.getSelectStyle)
+      val validStyles = List("*", "self", "type", "parent")
+
+      val style = access.getSelectStyle
+      if (validStyles.find(_ == style).isEmpty) {
+        throw new LoadingException("Invalid selectorStyle: " + style + " should be one of: " + validStyles)
+      }
+
+      sb.setStyle(style)
       if (access.isSetSelectArguments) {
         val arguments = access.getSelectArguments.split(' ').toList
         sb.addAllArguments(arguments)

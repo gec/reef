@@ -98,10 +98,10 @@ class AuthorizationLoaderTest extends FunSuite with ShouldMatchers {
     val xml = """
       <roles>
           <role name="role01">
-              <allow actions="act01" resources="res01" />
+              <allow actions="create" resources="res01" />
           </role>
           <role name="role02">
-              <deny actions="act02" resources="res02" />
+              <deny actions="update" resources="res02" />
           </role>
       </roles>
         """
@@ -109,8 +109,8 @@ class AuthorizationLoaderTest extends FunSuite with ShouldMatchers {
     val auth = getAuthObject(xml)
     val permList = AuthorizationLoader.mapRoles(auth)
 
-    val check1 = List(PermCheck(true, List("act01"), List("res01")))
-    val check2 = List(PermCheck(false, List("act02"), List("res02")))
+    val check1 = List(PermCheck(true, List("create"), List("res01")))
+    val check2 = List(PermCheck(false, List("update"), List("res02")))
 
     permList.size should equal(2)
     checkPermSet(permList(0), "role01", check1)
@@ -170,6 +170,68 @@ class AuthorizationLoaderTest extends FunSuite with ShouldMatchers {
     agentList.size should equal(2)
     checkAgent(agentList(0), AgentCheck("agent01", "agent01", List("role01")))
     checkAgent(agentList(1), AgentCheck("agent02", "agent02", List("role02")))
+  }
+
+  test("Bad action") {
+    val xml = """
+      <roles>
+          <role name="role01">
+              <allow actions="act01" resources="res01" />
+          </role>
+      </roles>
+        """
+
+    val roles = getAuthObject(xml)
+    intercept[LoadingException] {
+      AuthorizationLoader.mapRoles(roles)
+    }.getMessage should include("act01")
+  }
+
+  test("Bad selector style") {
+    val xml = """
+      <roles>
+          <role name="role01">
+              <allow actions="create" resources="res01" selectStyle="unknownStyle"/>
+          </role>
+      </roles>
+        """
+
+    val roles = getAuthObject(xml)
+    intercept[LoadingException] {
+      AuthorizationLoader.mapRoles(roles)
+    }.getMessage should include("unknownStyle")
+  }
+
+  test("Bad selector arguments without style") {
+    val xml = """
+      <roles>
+          <role name="role01">
+              <allow actions="create" resources="res01" selectArguments="arg1 arg2 arg3"/>
+          </role>
+      </roles>
+        """
+
+    val roles = getAuthObject(xml)
+    intercept[LoadingException] {
+      AuthorizationLoader.mapRoles(roles)
+    }.getMessage should include("selectArguments")
+  }
+
+  test("Parent selector") {
+    val xml = """
+      <roles>
+          <role name="role01">
+              <allow actions="create" resources="res01" selectStyle="parent" selectArguments="arg1 arg2 arg3"/>
+          </role>
+      </roles>
+        """
+
+    val rolesXml = getAuthObject(xml)
+    val roles = AuthorizationLoader.mapRoles(rolesXml)
+    val permission = roles.get(0).getPermissions(0)
+
+    permission.getSelector(0).getStyle should equal("parent")
+    permission.getSelector(0).getArgumentsList.toList should equal(List("arg1", "arg2", "arg3"))
   }
 
 }
