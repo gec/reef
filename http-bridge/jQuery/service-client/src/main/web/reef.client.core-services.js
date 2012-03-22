@@ -554,6 +554,17 @@
 			});
 		};
 		/**
+		 * Get a list of all command locks in system, including deleted locks that are no
+		 * longer active.
+		*/
+		calls.getCommandLocksIncludingDeleted = function() {
+			return client.apiRequest({
+				request: "getCommandLocksIncludingDeleted",
+				style: "MULTI",
+				resultType: "command_lock"
+			});
+		};
+		/**
 		 * Get a command lock by UUID
 		 * @param id the id of the command to lock
 		 * @throws ReefServiceException if an error occurs

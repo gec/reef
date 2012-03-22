@@ -50,7 +50,8 @@ object CommandLockRequestBuilders {
   }
   def blockAccessForCommands(commands: java.util.List[Command]): CommandLock = blockAccessForCommands(commands.toList)
 
-  def getAll() = CommandLock.newBuilder.setId(ReefID.newBuilder.setValue("*")).build
+  def getNotDeleted = CommandLock.newBuilder.setId(ReefID.newBuilder.setValue("*")).setDeleted(false).build
+  def getAll = CommandLock.newBuilder.setId(ReefID.newBuilder.setValue("*")).build
   def getByCommand(command: Command) = CommandLock.newBuilder.addCommands(command).build
   def getByCommands(commands: java.util.List[Command]) = CommandLock.newBuilder.addAllCommands(commands).build
 

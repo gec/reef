@@ -56,7 +56,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def clearCommandLocks() = ops.operation("Couldn't delete all command locks in system.") {
-    _.delete(CommandLockRequestBuilders.getAll).map(_.many)
+    _.delete(CommandLockRequestBuilders.getNotDeleted).map(_.many)
   }
 
   override def executeCommandAsControl(id: Command) = ops.operation("Couldn't execute control: " + id.getName) {
@@ -88,6 +88,10 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def getCommandLocks() = ops.operation("Couldn't get all command locks in system") {
+    _.get(CommandLockRequestBuilders.getNotDeleted).map(_.many)
+  }
+
+  override def getCommandLocksIncludingDeleted() = ops.operation("Couldn't get all command locks in system") {
     _.get(CommandLockRequestBuilders.getAll).map(_.many)
   }
 

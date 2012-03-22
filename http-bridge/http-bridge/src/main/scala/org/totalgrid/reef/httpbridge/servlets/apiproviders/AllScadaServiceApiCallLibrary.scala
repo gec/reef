@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 117 of 193 calls ported
+ * 118 of 194 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -178,6 +178,9 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   // Can't encode createCommandDenialLock : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Command
   multi("getCommandLocks", classOf[org.totalgrid.reef.client.service.proto.Commands.CommandLock], args => { (c) =>
     c.getCommandLocks()
+  })
+  multi("getCommandLocksIncludingDeleted", classOf[org.totalgrid.reef.client.service.proto.Commands.CommandLock], args => { (c) =>
+    c.getCommandLocksIncludingDeleted()
   })
   single("getCommandLockById", classOf[org.totalgrid.reef.client.service.proto.Commands.CommandLock], args => {
     val a0 = args.getId("id")

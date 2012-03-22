@@ -101,6 +101,12 @@ public class TestCommandService extends ReefConnectionTestBase
         CommandLock ca = cs.createCommandExecutionLock( cmd );
         // removes the command access request by name
         cs.deleteCommandLock( ca );
+
+        List<CommandLock> noAccess = cs.getCommandLocks();
+        assertEquals( noAccess.size(), 0 );
+
+        List<CommandLock> deleted = cs.getCommandLocksIncludingDeleted();
+        assertTrue( deleted.size() >= 1 );
     }
 
     /**
