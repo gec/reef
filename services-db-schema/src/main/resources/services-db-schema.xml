@@ -840,4 +840,31 @@
     <changeSet author="incremental" context="original" id="1331837983992-2">
         <dropColumn columnName="userName" tableName="ApplicationInstance"/>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-1">
+        <addColumn tableName="CommandLockModel">
+            <column name="agentId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-2">
+        <addColumn tableName="CommandLockModel">
+            <column name="deleted" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-3">
+        <addColumn tableName="UserCommandModel">
+            <column name="lockId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-4">
+        <dropColumn columnName="agent" tableName="CommandLockModel"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-5">
+        <dropColumn columnName="agent" tableName="UserCommandModel"/>
+    </changeSet>
 </databaseChangeLog>

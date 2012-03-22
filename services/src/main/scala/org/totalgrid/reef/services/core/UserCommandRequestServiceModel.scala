@@ -45,35 +45,7 @@ class UserCommandRequestServiceModel(
 
   val table = ApplicationSchema.userRequests
 
-  def findExecuting = table.where(t => t.status === CommandStatus.EXECUTING.getNumber).toList
-  def findExpired = table.where(t => t.status === CommandStatus.EXECUTING.getNumber and (t.expireTime lte System.currentTimeMillis)).toList
-
-  def findAndMarkExpired(context: RequestContext) = markExpired(context, findExpired)
-
-  def markExpired(context: RequestContext, expired: List[UserCommandModel]) = {
-    def isExpired(cmd: UserCommandModel) =
-      (cmd.expireTime < System.currentTimeMillis) &&
-        (cmd.status != CommandStatus.TIMEOUT.getNumber)
-
-    exclusiveUpdate(context, expired, isExpired _) { cmds =>
-      cmds.map(cmd => { cmd.status = CommandStatus.TIMEOUT.getNumber; cmd })
-    }
-  }
-
-  def markCompleted(context: RequestContext, cmd: UserCommandModel, status: CommandStatus) = {
-    def isExecuting(cmd: UserCommandModel) = cmd.status == CommandStatus.EXECUTING.getNumber
-
-    exclusiveUpdate(context, cmd, isExecuting _) { cmd =>
-      cmd.status = status.getNumber
-      cmd
-    }
-  }
-
-  def issueCommand(context: RequestContext, command: String, corrId: String, user: String, timeout: Long, cmdRequest: CommandRequest): UserCommandModel = {
-    issueRequest(context, findCommand(command), corrId, user, timeout, cmdRequest)
-  }
-
-  def findCommand(command: String) = {
+  private def findCommand(command: String) = {
     // Search for the requested command and validate it exists
     val cmds = FepCommandModel.findByNames(command :: Nil).toList
     if (cmds.length != 1)
@@ -82,8 +54,11 @@ class UserCommandRequestServiceModel(
     cmds.head
   }
 
-  def issueRequest(context: RequestContext, cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
-    if (accessModel.userHasSelect(cmd, user, atTime)) {
+  private def issueRequest(context: RequestContext, cmd: FepCommandModel, corrolationId: String, user: String, timeout: Long, cmdRequest: CommandRequest, atTime: Long = System.currentTimeMillis): UserCommandModel = {
+
+    val userSelect = accessModel.userHasSelect(cmd, context.agent.id, atTime)
+
+    if (userSelect.isDefined) {
 
       def checkCommandType(modelType: Int, requestType: CommandType) {
         if (modelType != requestType.getNumber)
@@ -108,10 +83,10 @@ class UserCommandRequestServiceModel(
 
       val expireTime = atTime + timeout
       val status = CommandStatus.EXECUTING.getNumber
-      create(context, new UserCommandModel(cmd.id, corrolationId, user, status, expireTime, cmdRequest.toByteArray, None))
+      create(context, new UserCommandModel(cmd.id, userSelect.get.id, corrolationId, status, expireTime, cmdRequest.toByteArray, None))
 
     } else {
-      throw new BadRequestException("Command not selected")
+      throw new BadRequestException("Command not selected for execution")
     }
   }
 
@@ -148,9 +123,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   import SquerylModel._ // Implicit squeryl list -> query conversion
 
   override def getOrdering[R](select: SelectState[R], sql: UserCommandModel): QueryYield[R] = select.orderBy(new OrderByArg(sql.id).desc)
-
-  // don't need to resort list, getOrdering has already sorted them correctly
-  def sortResults(list: List[UserCommandRequest]) = list
+  def sortResults(list: List[UserCommandRequest]) = list.reverse
 
   def getRoutingKey(req: UserCommandRequest) = ProtoRoutingKeys.generateRoutingKey {
     req.id.value ::
@@ -172,19 +145,18 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
 
   def searchQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
-      proto.user.map(sql.agent === _),
       proto.status.map(st => sql.status === st.getNumber),
       proto.commandRequest.command.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
   }
 
   def isModified(existing: UserCommandModel, updated: UserCommandModel): Boolean = {
-    existing.status != updated.status || existing.agent != updated.agent
+    existing.status != updated.status
   }
 
   def convertToProto(entry: UserCommandModel): UserCommandRequest = {
     val b = UserCommandRequest.newBuilder
       .setId(makeId(entry))
-      .setUser(entry.agent)
+      .setUser(entry.agent.value.entityName)
       .setStatus(CommandStatus.valueOf(entry.status))
       .setCommandRequest(CommandRequest.parseFrom(entry.commandProto))
 

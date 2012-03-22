@@ -30,7 +30,7 @@ class CommandAuthTest extends AuthTestBase {
 
   override val modelFile = "../../assemblies/assembly-common/filtered-resources/samples/authorization/config.xml"
 
-  ignore("Regional ops can view commands and command history") {
+  test("Regional ops can view commands and command history") {
     as("regional_op") { regionalOp =>
       regionalOp.getCommands().await
 
@@ -38,7 +38,7 @@ class CommandAuthTest extends AuthTestBase {
     }
   }
 
-  ignore("Regional_op cant delete dlrc lock") {
+  test("Regional_op cant delete dlrc lock") {
     as("dlrc_app") { dlrc =>
       as("regional_op") { regionalOp =>
         val dlrcCommandName = dlrc.getEntitiesWithType("DLRC").await.map { _.getName }.head
@@ -47,7 +47,7 @@ class CommandAuthTest extends AuthTestBase {
         val lock = dlrc.createCommandDenialLock(List(cmd)).await
         try {
           unAuthed("regionalOp cant delete dlrc lock") {
-            regionalOp.deleteCommandLock(lock)
+            regionalOp.deleteCommandLock(lock).await
           }
         } finally {
           dlrc.deleteCommandLock(lock).await
@@ -56,7 +56,7 @@ class CommandAuthTest extends AuthTestBase {
     }
   }
 
-  ignore("Test regional ops can only commands in West and East") {
+  test("Test regional ops can only commands in West and East") {
     as("regional_op") { regionalOp =>
 
       val parents = List("West", "East")
@@ -76,7 +76,7 @@ class CommandAuthTest extends AuthTestBase {
     }
   }
 
-  ignore("Test dlrc app can only execute dlrc commands") {
+  test("Test dlrc app can only execute dlrc commands") {
     as("dlrc_app") { dlrc =>
 
       val dlrcCommands = dlrc.getEntitiesWithType("DLRC").await.map { _.getName }

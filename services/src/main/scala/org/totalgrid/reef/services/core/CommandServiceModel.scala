@@ -88,8 +88,8 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
     logger.info("Deleting Command: " + entry.entityName + " selects: " + selects.size + " history: " + commandHistory.size)
 
-    selects.foreach(s => commandSelectModel.removeAccess(context, s))
     commandHistory.foreach(s => commandHistoryModel.delete(context, s))
+    selects.foreach(s => commandSelectModel.deleteAccess(context, s))
 
     entityModel.delete(context, entry.entity.value)
   }
