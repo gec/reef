@@ -34,12 +34,7 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import SquerylModel._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
-import org.totalgrid.reef.models.{
-  Agent,
-  ApplicationSchema,
-  AuthToken => AuthTokenModel,
-  AuthTokenPermissionSetJoin
-}
+import org.totalgrid.reef.models.{ UUIDConversions, Agent, ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin }
 
 // Implicit squeryl list -> query conversion
 
@@ -108,6 +103,7 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
     List(
       proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(agent, { _.id })),
       proto.loginLocation.asParam(sql.loginLocation === _),
+      proto.clientVersion.asParam(sql.clientVersion === _),
       proto.token.asParam(sql.token === _))
   }
 
@@ -121,11 +117,14 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
 
   def convertToProto(entry: AuthTokenModel): AuthToken = {
     val b = AuthToken.newBuilder
+    b.setId(UUIDConversions.makeId(entry))
     b.setAgent(AgentConversions.convertToProto(entry.agent.value))
     b.setExpirationTime(entry.expirationTime)
     b.setLoginLocation(entry.loginLocation)
+    b.setClientVersion(entry.clientVersion)
     entry.permissionSets.value.foreach(ps => b.addPermissionSets(PermissionSetConversions.convertToProto(ps)))
-    b.setToken(entry.token).build
+    if (entry.displayToken) b.setToken(entry.token)
+    b.build
   }
 
 }
@@ -203,6 +202,7 @@ class AuthTokenServiceModel
     permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, newAuthToken.id)))
 
     postSystemEvent(context, EventType.System.UserLogin, args = List("user" -> agent.entity.value.name))
+    newAuthToken.displayToken = true
     newAuthToken
   }
 

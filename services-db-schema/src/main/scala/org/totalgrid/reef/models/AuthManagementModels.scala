@@ -22,6 +22,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
 import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => PermissionSetProto }
+import org.squeryl.annotations.Transient
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords
@@ -96,6 +97,10 @@ case class AuthToken(
     val loginLocation: String,
     val clientVersion: String,
     var expirationTime: Long) extends ModelWithId {
+
+  // we only want to display the token _once_ when its created
+  @Transient
+  var displayToken = false
 
   val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.tokenSetJoins)(p => where(p.authTokenId === id) select (&(p.permissionSetId)))))

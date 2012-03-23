@@ -37,6 +37,7 @@ import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.services.{ HeadersContext, SilentRequestContext }
 import org.totalgrid.reef.client.settings.Version
 import org.totalgrid.reef.models.{ AgentPermissionSetJoin, ApplicationSchema, DatabaseUsingTestBase }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
@@ -77,14 +78,20 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
     val agentService = new SyncService(new AgentService(modelFac.agents), contextSource)
     val permissionSetService = new SyncService(new PermissionSetService(modelFac.permissionSets), contextSource)
 
-    def loginFrom(user: String, location: String) = {
-      login(user, user, None, None, location)
+    def loginFrom(user: String, location: String, version: String = Version.getClientVersion) = {
+      login(user, user, None, None, location, version)
     }
 
-    def login(user: String, pass: String, permissionSetName: Option[String] = None, timeoutAt: Option[Long] = None, location: String = "test code"): AuthToken = {
+    def login(
+      user: String,
+      pass: String,
+      permissionSetName: Option[String] = None,
+      timeoutAt: Option[Long] = None,
+      location: String = "test code",
+      version: String = Version.getClientVersion): AuthToken = {
       val agent = Agent.newBuilder.setName(user).setPassword(pass)
 
-      val b = AuthToken.newBuilder.setAgent(agent).setLoginLocation(location).setClientVersion(Version.getClientVersion)
+      val b = AuthToken.newBuilder.setAgent(agent).setLoginLocation(location).setClientVersion(version)
       permissionSetName.foreach(ps => b.addPermissionSets(PermissionSet.newBuilder.setName(ps)))
       timeoutAt.foreach(t => b.setExpirationTime(t))
       val authToken = authService.put(b.build).expectOne()
@@ -190,13 +197,41 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
   test("Multiple Logins") {
     val fix = new Fixture
 
-    val authToken_hmi1 = fix.loginFrom("core", "hmi")
-    val authToken_hmi2 = fix.loginFrom("core", "hmi")
-    val authToken_mobile1 = fix.loginFrom("core", "mobile")
+    val authToken_hmi1 = fix.loginFrom("core", "hmi", "version1")
+    val authToken_hmi2 = fix.loginFrom("core", "hmi", "version2")
+    val authToken_mobile1 = fix.loginFrom("guest", "mobile", "version3")
 
     authToken_hmi1.getToken should not equal (authToken_hmi2.getToken)
     authToken_hmi1.getToken should not equal (authToken_mobile1.getToken)
 
+    def noTokens(list: List[AuthToken]): List[AuthToken] = {
+      list.map { t => if (t.hasToken) fail("token visible on get") else t }
+    }
+
+    def searchByLoginLocation(login: String, count: Int) = {
+      noTokens(fix.authService.get(AuthToken.newBuilder.setLoginLocation(login).build).expectMany(count))
+    }
+    def searchByAgent(name: String, count: Int) = {
+      noTokens(fix.authService.get(AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(name)).build).expectMany(count))
+    }
+    def searchByVersion(name: String, count: Int) = {
+      noTokens(fix.authService.get(AuthToken.newBuilder.setClientVersion(name).build).expectMany(count))
+    }
+
+    searchByLoginLocation("*", 3)
+    searchByLoginLocation("hmi", 2)
+    searchByLoginLocation("mobile", 1)
+    searchByLoginLocation("unknown", 0)
+
+    searchByAgent("*", 3)
+    searchByAgent("core", 2)
+    searchByAgent("guest", 1)
+    searchByAgent("unknown", 0)
+
+    searchByVersion("version1", 1)
+    searchByVersion("version2", 1)
+    searchByVersion("version3", 1)
+    searchByVersion("unknown", 0)
   }
 }
 
