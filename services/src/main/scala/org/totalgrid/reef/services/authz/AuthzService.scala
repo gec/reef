@@ -20,11 +20,12 @@ package org.totalgrid.reef.services.authz
 
 import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.authz._
-import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.client.exception.UnauthorizedException
 import com.weiglewilczek.slf4s.Logging
 
 import java.util.UUID
+import org.totalgrid.reef.models.{ Agent, ApplicationSchema }
+import org.totalgrid.reef.client.service.proto.Auth.PermissionSet
 
 trait AuthzService {
 
@@ -39,7 +40,35 @@ class NullAuthzService extends AuthzService {
   def prepare(context: RequestContext) {}
 }
 
+object SqlAuthzService {
+  import org.squeryl.PrimitiveTypeMode._
+
+  case class AuthLookup(agent: Agent, permissionSets: List[PermissionSet])
+
+  def lookupTokens(tokenList: List[String]): Option[AuthLookup] = {
+    val now = System.currentTimeMillis
+
+    import ApplicationSchema.{ authTokens, permissionSets, agents, tokenSetJoins }
+    import org.totalgrid.reef.models.{ AuthToken => SqlToken, PermissionSet => SqlSet }
+
+    val results: List[(SqlToken, Option[SqlSet])] =
+      from(authTokens, permissionSets.leftOuter)((tok, set) =>
+      where(tok.token in tokenList and tok.expirationTime.~ > now and
+        (set.map(s => s.id) in from(tokenSetJoins)(j => where(j.authTokenId === tok.id) select (j.permissionSetId))))
+        select (tok, set)).toList
+
+    if (!results.isEmpty) {
+      val agent = results.head._1.agent.value
+      val permissions = results.flatMap(_._2.map(p => p.proto))
+      Some(AuthLookup(agent, permissions))
+    } else {
+      None
+    }
+  }
+}
+
 class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzService with Logging {
+  import SqlAuthzService._
 
   def this() = this(AuthzFilter)
 
@@ -64,30 +93,16 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
 
   def loadPermissions(context: RequestContext) {
 
-    import org.squeryl.PrimitiveTypeMode._
-
     val authTokens = context.getHeaders.authTokens
 
     if (authTokens.isEmpty) context.set("auth_error", "No auth tokens in envelope header")
     else {
-      // lookup the tokens that are not expired
-      val now = System.currentTimeMillis
 
-      val tokens = ApplicationSchema.authTokens.where(t => t.token in authTokens and t.expirationTime.~ > now).toList
-      if (tokens.isEmpty) context.set("auth_error", "All tokens unknown or expired")
-      else {
-
-        val permissionSets = tokens.map { _.permissionSets.value.toList }.flatten
-        val permissions = permissionSets.map { ps => ps.proto }
-
-        val agent = tokens.head.agent.value
-
-        context.set("agent", agent)
-
-        val agentName = agent.entityName
-
-        val convertedPermissions = permissions.map { Permission.fromProto(_, agentName) }.flatten
-        context.set("permissions", convertedPermissions)
+      lookupTokens(authTokens) match {
+        case None => context.set("auth_error", "All tokens unknown or expired")
+        case Some(AuthLookup(agent, permSets)) =>
+          context.set("agent", agent)
+          context.set("permissions", permSets.flatMap { Permission.fromProto(_, agent.entityName) })
       }
     }
   }
