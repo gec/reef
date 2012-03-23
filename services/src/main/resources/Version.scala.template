@@ -26,6 +26,6 @@ object Version {
 
   def isSnapshot = getProjectVersion.contains("SNAPSHOT")
 
-  def getClientVersion = if(isSnapshot) getProjectVersion + "-" + getGitCommitId else getProjectVersion
+  def getClientVersion = if(isSnapshot) getProjectVersion + "-" + getGitCommitId.slice(0,8) else getProjectVersion
 
 }
