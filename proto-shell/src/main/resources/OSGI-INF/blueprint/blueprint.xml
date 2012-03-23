@@ -237,6 +237,9 @@
         <command name="calculation/view">
             <action class="org.totalgrid.reef.shell.proto.CalculationViewCommand"/>
         </command>
+        <command name="auth/list">
+            <action class="org.totalgrid.reef.shell.proto.AuthTokenListCommand"/>
+        </command>
     </command-bundle>
 
 </blueprint>
