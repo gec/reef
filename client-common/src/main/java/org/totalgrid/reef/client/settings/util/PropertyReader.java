@@ -21,6 +21,7 @@ package org.totalgrid.reef.client.settings.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -45,7 +46,9 @@ public class PropertyReader
      */
     public static Properties readFromFile( String fileName ) throws IOException
     {
-        return readFromFile( new File( fileName ) );
+        List<File> files = new ArrayList<File>();
+        files.add( new File( fileName ) );
+        return readFromFileObjects( files );
     }
 
     /**
@@ -56,20 +59,53 @@ public class PropertyReader
      */
     public static Properties readFromFile( File file ) throws IOException
     {
-        if ( !file.canRead() )
-        {
-            throw new IOException( "Cannot find or access file: " + file.getAbsolutePath() );
-        }
+        List<File> files = new ArrayList<File>();
+        files.add( file );
+        return readFromFileObjects( files );
+    }
 
-        FileInputStream fis = new FileInputStream( file );
+    /**
+     * Read out properties from a set of text files. If the same key is in multiple files the
+     * _last_ file with the key wins. This allows the use of default files which are then overriden
+     * by more specific files.
+     * @param fileNames names of files to load (all must exist)
+     * @return Properties object
+     * @throws IOException if any fileis unreadable or inaccessible
+     */
+    public static Properties readFromFiles( List<String> fileNames ) throws IOException
+    {
+        List<File> files = new ArrayList<File>();
+        for ( String fName : fileNames )
+            files.add( new File( fName ) );
+        return readFromFileObjects( files );
+    }
+
+    /**
+     * Read a properties object from a number of text files
+     * @param files File reference
+     * @return Properties object
+     * @throws IOException if file is unreadable or inaccessible
+     */
+    private static Properties readFromFileObjects( List<File> files ) throws IOException
+    {
+
         Properties props = new Properties();
-        try
+        for ( File file : files )
         {
-            props.load( fis );
-        }
-        finally
-        {
-            fis.close();
+            if ( !file.canRead() )
+            {
+                throw new IOException( "Cannot find or access file: " + file.getAbsolutePath() );
+            }
+
+            FileInputStream fis = new FileInputStream( file );
+            try
+            {
+                props.load( fis );
+            }
+            finally
+            {
+                fis.close();
+            }
         }
         return props;
     }

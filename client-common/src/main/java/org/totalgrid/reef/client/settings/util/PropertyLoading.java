@@ -20,6 +20,8 @@ package org.totalgrid.reef.client.settings.util;
 
 
 import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 /**
  * Static helper functions for pulling specific items out of a Dictionary object and
@@ -96,5 +98,28 @@ public class PropertyLoading
     {
         String prop = getString( id, props );
         return Boolean.parseBoolean( prop );
+    }
+
+    /**
+     * merge a set of dictionaries and using the _last_ value for any duplicate keys
+     * @param inputs input dictionaries
+     * @return the merged dictionary
+     */
+    @SuppressWarnings("unchecked")
+    public static Dictionary mergeDictionaries( Dictionary... inputs )
+    {
+        Dictionary target = new Hashtable();
+
+        for ( Dictionary source : inputs )
+        {
+            Enumeration e = source.keys();
+
+            while ( e.hasMoreElements() )
+            {
+                Object key = e.nextElement();
+                target.put( key, source.get( key ) );
+            }
+        }
+        return target;
     }
 }
