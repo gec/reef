@@ -26,24 +26,32 @@ import com.weiglewilczek.scalamodules._
 import java.util.{ Dictionary, Hashtable }
 import com.weiglewilczek.slf4s.Logging
 
-class OsgiConfigReader(context: BundleContext, pid: String) extends Logging {
-
-  private val config = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
-    service.getConfiguration(pid)
-  } match {
-    case Some(x) => x
-    case None => throw new Exception("Unable to find ConfigurationAdmin service")
-  }
-
-  private val props: Dictionary[AnyRef, AnyRef] = Option(config.getProperties) match {
-    case None => new Hashtable[AnyRef, AnyRef]
-    case Some(x: Dictionary[AnyRef, AnyRef]) => x
-  }
-
-  def getProperties = props
-}
-
 object OsgiConfigReader {
-  def apply(context: BundleContext, pid: String) = new OsgiConfigReader(context, pid)
+  import scala.collection.JavaConversions._
 
+  private def tryLoadingConfig(context: BundleContext, pid: String): Option[Dictionary[AnyRef, AnyRef]] = {
+    val config = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
+      service.getConfiguration(pid)
+    } match {
+      case Some(x) => x
+      case None => throw new Exception("Unable to find ConfigurationAdmin service")
+    }
+
+    Option(config.getProperties) match {
+      case None => None
+      case Some(x: Dictionary[AnyRef, AnyRef]) => Some(x)
+    }
+  }
+
+  def load(context: BundleContext, pid: String): Dictionary[AnyRef, AnyRef] = load(context, List(pid))
+  def load(context: BundleContext, pids: List[String]): Dictionary[AnyRef, AnyRef] = {
+
+    def combine[A, B](maps: List[Dictionary[A, B]]): Dictionary[A, B] = {
+      val out = new Hashtable[A, B]
+      maps.foreach { m => m.toMap.foreach { kv => out.put(kv._1, kv._2) } }
+      out
+    }
+
+    combine(pids.map { pid => tryLoadingConfig(context, pid) }.flatten)
+  }
 }

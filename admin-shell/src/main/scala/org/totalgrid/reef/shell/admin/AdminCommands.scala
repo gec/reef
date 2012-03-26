@@ -50,7 +50,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
         System.out.println("WARNING: Password will be visible in karaf command history!")
         pass.trim
       case None =>
-        val userSettings = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
+        val userSettings = new UserSettings(OsgiConfigReader.load(getBundleContext, "org.totalgrid.reef.user"))
         if (userSettings.getUserName == "system" && !askPassword) {
           System.out.println("Using System Password from etc/org.totalgrid.reef.user.cfg file.\nUse -p or --ask-password to manually provide password.")
           userSettings.getUserPassword
@@ -65,7 +65,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
         }
     }
 
-    val sql = new DbInfo(OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql").getProperties)
+    val sql = new DbInfo(OsgiConfigReader.load(getBundleContext, "org.totalgrid.reef.sql"))
     logout()
 
     val bundleContext = getBundleContext()
@@ -101,7 +101,7 @@ class MigrateDatabaseCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
 
-    val sql = new DbInfo(OsgiConfigReader(getBundleContext, "org.totalgrid.reef.sql").getProperties)
+    val sql = new DbInfo(OsgiConfigReader.load(getBundleContext, "org.totalgrid.reef.sql"))
 
     val dbConnection = DbConnector.connect(sql, getBundleContext)
 

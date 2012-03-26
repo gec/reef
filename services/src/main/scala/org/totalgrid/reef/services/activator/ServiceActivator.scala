@@ -40,11 +40,14 @@ class ServiceActivator extends ExecutorBundleActivator with Logging {
 
     logger.info("Starting Service bundle..")
 
-    val brokerConfig = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
-    val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
-    val options = new ServiceOptions(OsgiConfigReader(context, "org.totalgrid.reef.services").getProperties)
-    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
-    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
+    val fileEndings = List("amqp", "user", "node", "sql", "services")
+    val properties = OsgiConfigReader.load(context, fileEndings.map { "org.totalgrid.reef." + _ })
+
+    val brokerConfig = new AmqpSettings(properties)
+    val sql = new DbInfo(properties)
+    val options = new ServiceOptions(properties)
+    val userSettings = new UserSettings(properties)
+    val nodeSettings = new NodeSettings(properties)
 
     val modules = new ServiceModulesFactory {
       def getDbConnector() = DbConnector.connect(sql, context)

@@ -51,9 +51,10 @@ abstract class ConnectedApplicationBundleActivator extends ExecutorBundleActivat
 
     logger.info("Starting " + bundleName + " bundle..")
 
-    val brokerOptions = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
-    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
-    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
+    val properties = OsgiConfigReader.load(context, List("org.totalgrid.reef.amqp", "org.totalgrid.reef.user", "org.totalgrid.reef.node"))
+    val brokerOptions = new AmqpSettings(properties)
+    val userSettings = new UserSettings(properties)
+    val nodeSettings = new NodeSettings(properties)
 
     val applicationSettings = new ApplicationManagerSettings(userSettings, nodeSettings)
 

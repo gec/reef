@@ -175,8 +175,10 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
       if (requiresLogin && !isLoggedIn) {
         println("You must be logged into Reef before you can run this command.")
         try {
-          val userSettings = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
-          val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
+
+          val properties = OsgiConfigReader.load(getBundleContext, List("org.totalgrid.reef.user", "org.totalgrid.reef.amqp"))
+          val userSettings = new UserSettings(properties)
+          val connectionInfo = new AmqpSettings(properties)
           println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file: " + userSettings.getUserName)
           ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings, handleDisconnect)
           doCommand()
