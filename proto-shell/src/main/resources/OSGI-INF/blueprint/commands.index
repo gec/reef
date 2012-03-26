@@ -63,5 +63,6 @@ org.totalgrid.reef.shell.proto.CalculationListCommand
 org.totalgrid.reef.shell.proto.CalculationViewCommand
 
 org.totalgrid.reef.shell.proto.AuthTokenListCommand
+org.totalgrid.reef.shell.proto.AuthTokenRevokeCommand
 
 org.apache.karaf.shell.commands.LogoutAction

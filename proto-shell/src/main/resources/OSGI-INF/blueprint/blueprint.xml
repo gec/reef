@@ -237,7 +237,10 @@
         <command name="calculation/view">
             <action class="org.totalgrid.reef.shell.proto.CalculationViewCommand"/>
         </command>
-        <command name="auth/list">
+        <command name="login/list">
+            <action class="org.totalgrid.reef.shell.proto.AuthTokenListCommand"/>
+        </command>
+        <command name="login/revoke">
             <action class="org.totalgrid.reef.shell.proto.AuthTokenListCommand"/>
         </command>
     </command-bundle>

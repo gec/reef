@@ -26,7 +26,7 @@ import scala.collection.JavaConversions._
 import org.apache.felix.gogo.commands.{ Argument, Option => GogoOption, Command }
 import org.totalgrid.reef.client.service.proto.Model.ReefID
 
-@Command(scope = "auth", name = "list", description = "List active auth tokens")
+@Command(scope = "login", name = "list", description = "List active logins")
 class AuthTokenListCommand extends ReefCommandSupport {
 
   @GogoOption(name = "--own", description = "Search for our own tokens", required = false, multiValued = false)
@@ -69,7 +69,7 @@ class AuthTokenListCommand extends ReefCommandSupport {
   }
 }
 
-@Command(scope = "auth", name = "revoke", description = "Revoke an auth token")
+@Command(scope = "login", name = "revoke", description = "Revoke an auth token")
 class AuthTokenRevokeCommand extends ReefCommandSupport {
 
   @GogoOption(name = "--others", description = "Revoke all of this agents other tokens", required = false, multiValued = false)
