@@ -24,6 +24,7 @@ import org.totalgrid.reef.shell.proto.presentation.AuthTokenView
 
 import scala.collection.JavaConversions._
 import org.apache.felix.gogo.commands.{ Argument, Option => GogoOption, Command }
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 
 @Command(scope = "auth", name = "list", description = "List active auth tokens")
 class AuthTokenListCommand extends ReefCommandSupport {
@@ -65,6 +66,39 @@ class AuthTokenListCommand extends ReefCommandSupport {
     } else {
       AuthTokenView.printAuthTokens(results)
     }
+  }
+}
+
+@Command(scope = "auth", name = "revoke", description = "Revoke an auth token")
+class AuthTokenRevokeCommand extends ReefCommandSupport {
+
+  @GogoOption(name = "--others", description = "Revoke all of this agents other tokens", required = false, multiValued = false)
+  var revokeOthers: Boolean = false
+
+  @GogoOption(name = "--id", description = "Revoke a specific auth token", required = false, multiValued = false)
+  var id: String = null
+
+  @GogoOption(name = "--agent", description = "Revoke all tokens for a specific agent", required = false, multiValued = false)
+  var agentName: String = null
+
+  override def doCommand(): Unit = {
+
+    val request = AuthToken.newBuilder()
+
+    request.setRevoked(false)
+
+    if (revokeOthers) {
+      // blank request means revoke all
+
+    } else {
+      if (id != null) request.setId(ReefID.newBuilder.setValue(id))
+      else if (agentName != null) request.setAgent(Agent.newBuilder.setName(agentName))
+      else throw new Exception("must use --others , --id or --agent options")
+    }
+
+    val clientOps = reefClient.getRpcInterface(classOf[ClientOperations])
+
+    AuthTokenView.printAuthTokens(clientOps.deleteMany(request.build).toList)
   }
 }
 

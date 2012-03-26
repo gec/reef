@@ -101,6 +101,7 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
 
   def uniqueQuery(proto: AuthToken, sql: AuthTokenModel) = {
     List(
+      proto.id.value.asParam(sql.id === _.toInt),
       proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(agent, { _.id })),
       proto.loginLocation.asParam(sql.loginLocation === _),
       proto.clientVersion.asParam(sql.clientVersion === _),
@@ -258,4 +259,17 @@ class AuthTokenService(protected val model: AuthTokenServiceModel)
     }
   }
 
+  override protected def performDelete(context: RequestContext, model: ServiceModelType, request: ServiceType) = {
+    val (allButActive, proto) = if (!request.hasAgent && !request.hasToken && !request.hasId) {
+      val updated = request.toBuilder.setAgent(Agent.newBuilder.setName(context.agent.entityName)).build
+      (true, updated)
+    } else {
+      (false, request)
+    }
+    val existing = model.findRecords(context, proto)
+    val filtered = if (allButActive) existing.filter(context.getHeaders.getAuthToken != _.token) else existing
+    context.auth.authorize(context, componentId, "delete", model.relatedEntities(filtered))
+    filtered.foreach(model.delete(context, _))
+    filtered
+  }
 }

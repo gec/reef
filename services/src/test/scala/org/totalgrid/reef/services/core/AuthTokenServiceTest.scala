@@ -38,6 +38,7 @@ import org.totalgrid.reef.services.{ HeadersContext, SilentRequestContext }
 import org.totalgrid.reef.client.settings.Version
 import org.totalgrid.reef.models.{ AgentPermissionSetJoin, ApplicationSchema, DatabaseUsingTestBase }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
 class AuthSystemTestBase extends DatabaseUsingTestBase {
 
@@ -101,10 +102,27 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
       authToken
     }
 
+    def checkRevoked(tokens: List[AuthToken], revokedState: Boolean) = {
+      tokens.map { _.getRevoked } should equal(tokens.map { t => revokedState })
+      tokens
+    }
+
     def revoke(authToken: AuthToken) = {
       val revoked = authService.delete(authToken).expectOne()
-      revoked.getRevoked should equal(true)
+      checkRevoked(List(revoked), true)
       revoked
+    }
+    def revokeOthers(authToken: AuthToken) = {
+      val headers = BasicRequestHeaders.empty.setAuthToken(authToken.getToken)
+
+      val request = AuthToken.newBuilder.setRevoked(false)
+
+      checkRevoked(authService.delete(request.build, headers).expectMany(), true)
+    }
+
+    def revokeAgentsTokens(agentName: String) = {
+      val request = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(agentName)).setRevoked(false)
+      checkRevoked(authService.delete(request.build).expectMany(), true)
     }
 
     def permissionSets(authToken: AuthToken) = {
@@ -222,6 +240,40 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
 
     val deletedToken = fix.revoke(authToken)
     deletedToken.getRevoked should equal(true)
+  }
+
+  def sameIds(found: List[AuthToken], expected: List[AuthToken]) = {
+    def getSorted(l: List[AuthToken]) = l.map { _.getId.getValue }.sorted
+
+    getSorted(found) should equal(getSorted(expected))
+  }
+
+  test("Revoke all for agent") {
+    val fix = new Fixture
+
+    val core1 = fix.login("core", "core")
+    val core2 = fix.login("core", "core")
+    val core3 = fix.login("core", "core")
+
+    val guest1 = fix.login("guest", "guest")
+    val guest2 = fix.login("guest", "guest")
+
+    sameIds(fix.revokeAgentsTokens("guest"), List(guest1, guest2))
+
+    sameIds(fix.revokeAgentsTokens("core"), List(core1, core2, core3))
+  }
+
+  test("Revoke others for this agent") {
+    val fix = new Fixture
+
+    val core1 = fix.login("core", "core")
+    val core2 = fix.login("core", "core")
+    val core3 = fix.login("core", "core")
+
+    fix.contextSource.userName = "core"
+    sameIds(fix.revokeOthers(core1), List(core2, core3))
+
+    sameIds(fix.getOwnTokens(3).filter(_.getRevoked == false), List(core1))
   }
 
 }
