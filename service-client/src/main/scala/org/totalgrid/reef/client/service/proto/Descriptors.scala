@@ -100,6 +100,24 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken]
     def id = "auth_token"
   }
+  def authFilterRequest() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Auth.AuthFilterRequest] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Auth.AuthFilterRequest): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Auth.AuthFilterRequest.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Auth.AuthFilterRequest]
+    def id = "auth_filter_request"
+  }
+  def authFilterResult() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult]
+    def id = "auth_filter_result"
+  }
+  def authFilter() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Auth.AuthFilter] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.Auth.AuthFilter): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Auth.AuthFilter.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.Auth.AuthFilter]
+    def id = "auth_filter"
+  }
   def triggerStrategy() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy.parseFrom(bytes)

@@ -119,6 +119,24 @@ object OptionalProtos {
     val revoked = optionally(_.hasRevoked, _.getRevoked)
     val issueTime = optionally(_.hasIssueTime, _.getIssueTime)
   }
+  implicit def proto2OptAuthAuthFilterRequest(a: org.totalgrid.reef.client.service.proto.Auth.AuthFilterRequest): OptAuthAuthFilterRequest = new OptAuthAuthFilterRequest(Some(a))
+  class OptAuthAuthFilterRequest(real: Option[org.totalgrid.reef.client.service.proto.Auth.AuthFilterRequest]) extends OptionalStruct(real) {
+    val action = optionally(_.hasAction, _.getAction)
+    val resource = optionally(_.hasResource, _.getResource)
+    val entity = optionally(_.getEntityList.toList.map { i => new OptModelEntity(Some(i)) })
+    val permissions = new OptAuthPermissionSet(optionally(_.hasPermissions, _.getPermissions))
+  }
+  implicit def proto2OptAuthAuthFilterResult(a: org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult): OptAuthAuthFilterResult = new OptAuthAuthFilterResult(Some(a))
+  class OptAuthAuthFilterResult(real: Option[org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult]) extends OptionalStruct(real) {
+    val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
+    val allowed = optionally(_.hasAllowed, _.getAllowed)
+    val reason = new OptAuthPermission(optionally(_.hasReason, _.getReason))
+  }
+  implicit def proto2OptAuthAuthFilter(a: org.totalgrid.reef.client.service.proto.Auth.AuthFilter): OptAuthAuthFilter = new OptAuthAuthFilter(Some(a))
+  class OptAuthAuthFilter(real: Option[org.totalgrid.reef.client.service.proto.Auth.AuthFilter]) extends OptionalStruct(real) {
+    val request = new OptAuthAuthFilterRequest(optionally(_.hasRequest, _.getRequest))
+    val results = optionally(_.getResultsList.toList.map { i => new OptAuthAuthFilterResult(Some(i)) })
+  }
   implicit def proto2OptCalculationsTriggerStrategy(a: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): OptCalculationsTriggerStrategy = new OptCalculationsTriggerStrategy(Some(a))
   class OptCalculationsTriggerStrategy(real: Option[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy]) extends OptionalStruct(real) {
     val periodMs = optionally(_.hasPeriodMs, _.getPeriodMs)

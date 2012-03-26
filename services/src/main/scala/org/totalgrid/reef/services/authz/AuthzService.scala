@@ -53,9 +53,9 @@ object SqlAuthzService {
 
     val results: List[(SqlToken, Option[SqlSet])] =
       from(authTokens, permissionSets.leftOuter)((tok, set) =>
-      where(tok.token in tokenList and tok.expirationTime.~ > now and
-        (set.map(s => s.id) in from(tokenSetJoins)(j => where(j.authTokenId === tok.id) select (j.permissionSetId))))
-        select (tok, set)).toList
+        where(tok.token in tokenList and tok.expirationTime.~ > now and
+          (set.map(s => s.id) in from(tokenSetJoins)(j => where(j.authTokenId === tok.id) select (j.permissionSetId))))
+          select (tok, set)).toList
 
     if (!results.isEmpty) {
       val agent = results.head._1.agent.value

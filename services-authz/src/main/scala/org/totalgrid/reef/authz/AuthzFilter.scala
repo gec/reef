@@ -47,8 +47,10 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
           else Denied[A](rule)
         }
       } else {
-        logger.info(service + ":" + action + " -- " + EntityHelpers.getNames(uuids.flatten.distinct).mkString("(", ",", ")"))
-        resourceFilter.resourceSpecificFiltering(applicablePermissions, payloads.zip(uuids))
+        val uuidList = uuids // Call once
+
+        logger.info(service + ":" + action + " -- " + EntityHelpers.getNames(uuidList.flatten.distinct).mkString("(", ",", ")"))
+        resourceFilter.resourceSpecificFiltering(applicablePermissions, payloads.zip(uuidList))
       }
     }
   }

@@ -46,4 +46,17 @@ object SimpleServiceBehaviors {
     def doGet(context: RequestContext, req: ServiceType): ServiceType
   }
 
+  trait SimplePost extends HasServiceType with AsyncContextRestPost {
+
+    override def postAsync(source: RequestContextSource, req: ServiceType)(callback: (Response[ServiceType]) => Unit) {
+      val response = source.transaction { context =>
+        val result = doPost(context, req)
+        Response(Envelope.Status.OK, result)
+      }
+      callback(response)
+    }
+
+    def doPost(context: RequestContext, req: ServiceType): ServiceType
+  }
+
 }

@@ -67,6 +67,25 @@
  *     optional bool          revoked         = 8;
  *     optional uint64        issue_time      = 9;
  * }
+ * 
+ * 
+ * message AuthFilterRequest {
+ *     optional string action = 1;
+ *     optional string resource = 2;
+ *     repeated org.totalgrid.reef.client.service.proto.Model.Entity entity = 3;
+ * 
+ *     optional PermissionSet permissions = 10;
+ * }
+ * message AuthFilterResult {
+ *     optional org.totalgrid.reef.client.service.proto.Model.Entity entity = 1;
+ *     optional bool allowed = 2;
+ *     optional Permission reason = 3;
+ * }
+ * message AuthFilter {
+ *     optional AuthFilterRequest request = 1;
+ *     repeated AuthFilterResult results = 2;
+ * 
+ * }
  * </pre>
  */
 package org.totalgrid.reef.client.service.protodoc.authmanagement;
