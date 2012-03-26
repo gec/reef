@@ -39,6 +39,7 @@ object ServiceBootstrap {
     agent.setName(userSettings.getUserName).setPassword(userSettings.getUserPassword)
     val auth = AuthToken.newBuilder
     auth.setAgent(agent)
+    auth.setClientVersion(Version.getClientVersion)
     auth.build
   }
 

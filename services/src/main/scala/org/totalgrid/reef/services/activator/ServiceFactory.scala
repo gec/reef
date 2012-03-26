@@ -65,8 +65,9 @@ object ServiceFactory {
 
         measStore.connect()
 
-        val client = connection.login(authToken).getRpcInterface(classOf[AllScadaService])
-        val heartbeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg, exe)
+        val client = connection.login(authToken)
+        val services = client.getRpcInterface(classOf[AllScadaService])
+        val heartbeater = new ProcessHeartbeatActor(services, appConfig.getHeartbeatCfg, exe)
         val providers = new ServiceProviders(dbConnection, connection, measStore, serviceOptions,
           new SqlAuthzService(), metricsHolder, authToken, exe)
 
@@ -74,15 +75,18 @@ object ServiceFactory {
 
         serviceContext.addCoordinator(providers.coordinators)
 
-        val services = serviceContext.attachServices(providers.services)
+        val serviceBindings = serviceContext.attachServices(providers.services)
 
-        modules.publishServices(services)
+        modules.publishServices(serviceBindings)
 
         mgr.start()
         heartbeater.start()
 
         new Cancelable {
           def cancel() = {
+
+            client.logout().await
+
             providers.coordinators.foreach { _.stopProcess() }
             mgr.stop()
             heartbeater.stop()
