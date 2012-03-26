@@ -116,6 +116,8 @@ object OptionalProtos {
     val token = optionally(_.hasToken, _.getToken)
     val expirationTime = optionally(_.hasExpirationTime, _.getExpirationTime)
     val clientVersion = optionally(_.hasClientVersion, _.getClientVersion)
+    val revoked = optionally(_.hasRevoked, _.getRevoked)
+    val issueTime = optionally(_.hasIssueTime, _.getIssueTime)
   }
   implicit def proto2OptCalculationsTriggerStrategy(a: org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy): OptCalculationsTriggerStrategy = new OptCalculationsTriggerStrategy(Some(a))
   class OptCalculationsTriggerStrategy(real: Option[org.totalgrid.reef.client.service.proto.Calculations.TriggerStrategy]) extends OptionalStruct(real) {

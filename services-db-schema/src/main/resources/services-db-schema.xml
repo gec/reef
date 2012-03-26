@@ -867,4 +867,18 @@
     <changeSet author="incremental" context="original" id="1332380500619-5">
         <dropColumn columnName="agent" tableName="UserCommandModel"/>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1332519044036-1">
+        <addColumn tableName="AuthToken">
+            <column name="issueTime" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332519044036-2">
+        <addColumn tableName="AuthToken">
+            <column name="revoked" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -73,7 +73,8 @@ object SubscriptionTools {
     val operationBuffer = new BasicOperationBuffer
   }
 
-  class MockContextSource(dbConnection: DbConnection) extends RequestContextSource with AgentAddingContextSource {
+  // TODO: merge userName setting with other mock request context
+  class MockContextSource(dbConnection: DbConnection, var userName: String = "user01") extends RequestContextSource with AgentAddingContextSource {
     private var subHandler = new QueueingEventSink
     private var auth = new QueueingAuthz
 
@@ -86,6 +87,7 @@ object SubscriptionTools {
 
     def transaction[A](f: (RequestContext) => A): A = {
       val context = new QueueingRequestContext(subHandler, auth)
+      context.set("user_name", userName)
       ServiceTransactable.doTransaction(dbConnection, context.operationBuffer, { b: OperationBuffer =>
         addUser(context)
         f(context)

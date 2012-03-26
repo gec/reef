@@ -104,6 +104,7 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
       proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(agent, { _.id })),
       proto.loginLocation.asParam(sql.loginLocation === _),
       proto.clientVersion.asParam(sql.clientVersion === _),
+      proto.revoked.asParam(sql.revoked === _),
       proto.token.asParam(sql.token === _))
   }
 
@@ -120,6 +121,8 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
     b.setId(UUIDConversions.makeId(entry))
     b.setAgent(AgentConversions.convertToProto(entry.agent.value))
     b.setExpirationTime(entry.expirationTime)
+    b.setIssueTime(entry.issueTime)
+    b.setRevoked(entry.revoked)
     b.setLoginLocation(entry.loginLocation)
     b.setClientVersion(entry.clientVersion)
     entry.permissionSets.value.foreach(ps => b.addPermissionSets(PermissionSetConversions.convertToProto(ps)))
@@ -197,7 +200,7 @@ class AuthTokenServiceModel
 
     // TODO: generate an unguessable security token
     val token = java.util.UUID.randomUUID().toString
-    val newAuthToken = table.insert(new AuthTokenModel(token, agent.id, authToken.getLoginLocation, version, expirationTime))
+    val newAuthToken = table.insert(new AuthTokenModel(token, agent.id, authToken.getLoginLocation, version, false, currentTime, expirationTime))
     // link the token to all of the permisisonsSet they have checked out access to
     permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, newAuthToken.id)))
 
@@ -218,6 +221,7 @@ class AuthTokenServiceModel
   // we are faking the delete operation, we actually want to keep the row around forever as an audit log
   override def delete(context: RequestContext, entry: AuthTokenModel): AuthTokenModel = {
 
+    entry.revoked = true
     entry.expirationTime = -1
     table.update(entry)
 
@@ -244,4 +248,14 @@ class AuthTokenService(protected val model: AuthTokenServiceModel)
   override def performCreate(context: RequestContext, model: ServiceModelType, request: ServiceType): ModelType = {
     model.createFromProto(context, request)
   }
+
+  override protected def preRead(context: RequestContext, proto: ServiceType) = {
+    if (!proto.hasAgent) {
+      // no search terms means we should use self agent
+      proto.toBuilder.setAgent(Agent.newBuilder.setName(context.agent.entityName)).build
+    } else {
+      proto
+    }
+  }
+
 }

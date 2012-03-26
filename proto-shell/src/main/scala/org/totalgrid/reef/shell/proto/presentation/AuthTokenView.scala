@@ -30,7 +30,7 @@ object AuthTokenView {
   }
 
   def authTokenHeader = {
-    "Id" :: "Agent" :: "Version" :: "PermissionSets" :: "Expires" :: Nil
+    "Id" :: "Agent" :: "Roles" :: "Revoked" :: "Issued" :: "Expires" :: "Version" :: Nil
   }
 
   private def displayTime(expirationTime: Long): String = {
@@ -40,9 +40,11 @@ object AuthTokenView {
   def tokenRow(a: AuthToken) = {
     a.getId.getValue ::
       a.getAgent.getName ::
-      a.getClientVersion ::
       a.getPermissionSetsList.toList.map { _.getName }.mkString(",") ::
+      a.getRevoked.toString ::
+      displayTime(a.getIssueTime) ::
       displayTime(a.getExpirationTime) ::
+      a.getClientVersion ::
       Nil
   }
 
@@ -51,18 +53,19 @@ object AuthTokenView {
   }
 
   def authTokenStatsHeader = {
-    "Agent" :: "Count" :: "Active" :: "Expired" :: "Versions" :: Nil
+    "Agent" :: "Count" :: "Active" :: "Revoked" :: "Oldest" :: Nil
   }
 
   def authTokenStatsRows(allTokens: List[AuthToken]): List[List[String]] = {
     allTokens.groupBy(_.getAgent.getName).map {
       case (agentName, tokens) =>
         val count = tokens.size
-        val active = tokens.count(_.getExpirationTime > System.currentTimeMillis())
-        val expired = count - active
-        val versions = tokens.map { _.getClientVersion }.distinct
+        val active = tokens.count(!_.getRevoked)
+        val revoked = count - active
+        //val versions = tokens.map { _.getClientVersion }.distinct.mkString(",")
+        val oldest = displayTime(tokens.map { _.getIssueTime }.min)
 
-        val strings = List(agentName, count, active, expired, versions.mkString(",")).map { _.toString }
+        val strings = List(agentName, count, active, revoked, oldest).map { _.toString }
 
         agentName -> strings
     }.values.toList

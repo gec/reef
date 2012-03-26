@@ -78,7 +78,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
     val agentService = new SyncService(new AgentService(modelFac.agents), contextSource)
     val permissionSetService = new SyncService(new PermissionSetService(modelFac.permissionSets), contextSource)
 
-    def loginFrom(user: String, location: String, version: String = Version.getClientVersion) = {
+    def loginFrom(user: String, location: String = "anywhere", version: String = Version.getClientVersion) = {
       login(user, user, None, None, location, version)
     }
 
@@ -101,8 +101,37 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
       authToken
     }
 
+    def revoke(authToken: AuthToken) = {
+      val revoked = authService.delete(authToken).expectOne()
+      revoked.getRevoked should equal(true)
+      revoked
+    }
+
     def permissionSets(authToken: AuthToken) = {
       authToken.getPermissionSetsList.toList.map(ps => ps.getName).sortWith((e1, e2) => (e1 compareTo e2) < 0)
+    }
+
+    def noTokens(list: List[AuthToken]): List[AuthToken] = {
+      list.map { t => if (t.hasToken) fail("token visible on get") else t }
+    }
+
+    private def agent(name: String) = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(name))
+
+    def searchByLoginLocation(login: String, count: Int) = {
+      noTokens(authService.get(agent("*").setLoginLocation(login).build).expectMany(count))
+    }
+    def searchByAgent(name: String, count: Int) = {
+      noTokens(authService.get(agent(name).build).expectMany(count))
+    }
+    def searchByVersion(name: String, count: Int) = {
+      noTokens(authService.get(agent("*").setClientVersion(name).build).expectMany(count))
+    }
+    def searchByRevoked(revoked: Boolean, count: Int) = {
+      noTokens(authService.get(agent("*").setRevoked(revoked).build).expectMany(count))
+    }
+
+    def getOwnTokens(count: Int) = {
+      noTokens(authService.get(AuthToken.newBuilder.build).expectMany(count))
     }
   }
 }
@@ -189,12 +218,17 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
     val fix = new Fixture
 
     val authToken = fix.login("core", "core")
-    val deletedToken = fix.authService.delete(authToken).expectOne()
+    authToken.getRevoked should equal(false)
 
-    deletedToken.getExpirationTime should equal(-1)
+    val deletedToken = fix.revoke(authToken)
+    deletedToken.getRevoked should equal(true)
   }
 
-  test("Multiple Logins") {
+}
+
+@RunWith(classOf[JUnitRunner])
+class AuthTokenQueryingTest extends AuthSystemTestBase {
+  test("Login Searching") {
     val fix = new Fixture
 
     val authToken_hmi1 = fix.loginFrom("core", "hmi", "version1")
@@ -204,41 +238,57 @@ class AuthTokenServiceTest extends AuthSystemTestBase {
     authToken_hmi1.getToken should not equal (authToken_hmi2.getToken)
     authToken_hmi1.getToken should not equal (authToken_mobile1.getToken)
 
-    def noTokens(list: List[AuthToken]): List[AuthToken] = {
-      list.map { t => if (t.hasToken) fail("token visible on get") else t }
+    def agentsAre(tokens: List[AuthToken], name: String) {
+      tokens.map { _.getAgent.getName }.distinct.head should equal(name)
+    }
+    def loginLocation(tokens: List[AuthToken], name: String) {
+      tokens.map { _.getLoginLocation }.distinct.head should equal(name)
     }
 
-    def searchByLoginLocation(login: String, count: Int) = {
-      noTokens(fix.authService.get(AuthToken.newBuilder.setLoginLocation(login).build).expectMany(count))
-    }
-    def searchByAgent(name: String, count: Int) = {
-      noTokens(fix.authService.get(AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(name)).build).expectMany(count))
-    }
-    def searchByVersion(name: String, count: Int) = {
-      noTokens(fix.authService.get(AuthToken.newBuilder.setClientVersion(name).build).expectMany(count))
-    }
+    fix.searchByLoginLocation("*", 3)
+    agentsAre(fix.searchByLoginLocation("hmi", 2), "core")
+    agentsAre(fix.searchByLoginLocation("mobile", 1), "guest")
+    fix.searchByLoginLocation("unknown", 0)
 
-    searchByLoginLocation("*", 3)
-    searchByLoginLocation("hmi", 2)
-    searchByLoginLocation("mobile", 1)
-    searchByLoginLocation("unknown", 0)
+    fix.searchByAgent("*", 3)
+    loginLocation(fix.searchByAgent("core", 2), "hmi")
+    loginLocation(fix.searchByAgent("guest", 1), "mobile")
+    fix.searchByAgent("unknown", 0)
 
-    searchByAgent("*", 3)
-    searchByAgent("core", 2)
-    searchByAgent("guest", 1)
-    searchByAgent("unknown", 0)
+    fix.searchByVersion("version1", 1)
+    fix.searchByVersion("version2", 1)
+    fix.searchByVersion("version3", 1)
+    fix.searchByVersion("unknown", 0)
 
-    searchByVersion("version1", 1)
-    searchByVersion("version2", 1)
-    searchByVersion("version3", 1)
-    searchByVersion("unknown", 0)
+    fix.searchByRevoked(true, 0)
+    fix.searchByRevoked(false, 3)
+
+    fix.revoke(authToken_mobile1)
+
+    agentsAre(fix.searchByRevoked(true, 1), "guest")
+    agentsAre(fix.searchByRevoked(false, 2), "core")
+  }
+
+  test("Search for own auth token") {
+    val fix = new Fixture
+
+    fix.loginFrom("core", "hmi")
+    fix.loginFrom("core", "mobile")
+    fix.loginFrom("guest", "fep")
+    fix.loginFrom("guest", "hmi")
+    fix.loginFrom("guest", "mobile")
+
+    fix.contextSource.userName = "core"
+    fix.getOwnTokens(2)
+
+    fix.contextSource.userName = "guest"
+    fix.getOwnTokens(3)
   }
 }
 
 @RunWith(classOf[JUnitRunner])
 class AuthTokenVerifierTest extends AuthSystemTestBase {
 
-  // TODO: get rid of all uses of NullRequestContext
   class AuthRequestContext extends RequestContext with HeadersContext {
 
     def client = throw new Exception

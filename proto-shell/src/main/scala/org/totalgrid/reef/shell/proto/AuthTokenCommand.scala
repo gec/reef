@@ -28,11 +28,11 @@ import org.apache.felix.gogo.commands.{ Argument, Option => GogoOption, Command 
 @Command(scope = "auth", name = "list", description = "List active auth tokens")
 class AuthTokenListCommand extends ReefCommandSupport {
 
-  @GogoOption(name = "--mine", description = "Search for our own tokens", required = false, multiValued = false)
+  @GogoOption(name = "--own", description = "Search for our own tokens", required = false, multiValued = false)
   var ownTokens: Boolean = false
 
   @GogoOption(name = "--agent", description = "Search by agent name", required = false, multiValued = false)
-  var agentName: String = null
+  var agentName: String = "*"
 
   @GogoOption(name = "--version", description = "Search by clientVersion", required = false, multiValued = false)
   var clientVersion: String = null
@@ -43,13 +43,18 @@ class AuthTokenListCommand extends ReefCommandSupport {
   @GogoOption(name = "--stat", description = "So per-agent summary", required = false, multiValued = false)
   var stats: Boolean = false
 
+  @GogoOption(name = "--revoked", description = "Include revoked tokens", required = false, multiValued = false)
+  var includeRevoked: Boolean = false
+
   override def doCommand(): Unit = {
 
     val request = AuthToken.newBuilder()
 
     Option(clientVersion).foreach(request.setClientVersion(_))
-    Option(agentName).foreach(n => request.setAgent(Agent.newBuilder.setName(n)))
-    request.setLoginLocation("*")
+    if (!ownTokens) {
+      Option(agentName).foreach(n => request.setAgent(Agent.newBuilder.setName(n)))
+    }
+    if (!includeRevoked) request.setRevoked(false)
 
     val clientOps = reefClient.getRpcInterface(classOf[ClientOperations])
 

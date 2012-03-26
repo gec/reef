@@ -63,6 +63,9 @@
  *     optional string        token           = 5;
  *     optional uint64        expiration_time = 6;
  *     optional string        client_version  = 7;
+ * 
+ *     optional bool          revoked         = 8;
+ *     optional uint64        issue_time      = 9;
  * }
  * </pre>
  */

@@ -96,6 +96,8 @@ case class AuthToken(
     val agentId: Long,
     val loginLocation: String,
     val clientVersion: String,
+    var revoked: Boolean,
+    var issueTime: Long,
     var expirationTime: Long) extends ModelWithId {
 
   // we only want to display the token _once_ when its created
