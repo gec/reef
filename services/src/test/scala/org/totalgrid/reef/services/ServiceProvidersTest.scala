@@ -35,6 +35,7 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.services.authz.NullAuthzService
 import net.agileautomata.executor4s.testing.InstantExecutor
+import org.totalgrid.reef.client.settings.util.PropertyReader
 
 /**
  * A concrete example service that always responds immediately with Success and the correct Id
@@ -77,7 +78,8 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
       val userSettings = new UserSettings("system", "system")
       val nodeSettings = new NodeSettings("node1", "network", "location")
-      val serviceOptions = ServiceOptions.fromFile("../org.totalgrid.reef.test.cfg")
+      val properties = PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg")
+      val serviceOptions = new ServiceOptions(properties)
 
       val components = ServiceBootstrap.bootstrapComponents(dbConnection, amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore

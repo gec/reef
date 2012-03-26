@@ -19,12 +19,7 @@
 package org.totalgrid.reef.services
 
 import java.util.Dictionary
-import org.totalgrid.reef.client.settings.util.{ PropertyReader, PropertyLoading }
-
-object ServiceOptions {
-
-  def fromFile(fileName: String) = new ServiceOptions(PropertyReader.readFromFile(fileName))
-}
+import org.totalgrid.reef.client.settings.util.PropertyLoading
 
 case class ServiceOptions(
     /// whether to instrument service requests at all
