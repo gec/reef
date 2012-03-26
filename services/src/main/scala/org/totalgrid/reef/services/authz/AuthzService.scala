@@ -29,6 +29,8 @@ import org.totalgrid.reef.client.service.proto.Auth.PermissionSet
 
 trait AuthzService {
 
+  def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]]
+
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]): Unit
 
   // load up the permissions sets
@@ -36,6 +38,7 @@ trait AuthzService {
 }
 
 class NullAuthzService extends AuthzService {
+  def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = Nil
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {}
   def prepare(context: RequestContext) {}
 }
@@ -72,10 +75,21 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
 
   def this() = this(AuthzFilter)
 
+  private def getContextPermissions(context: RequestContext) = {
+    context.get[List[Permission]]("permissions")
+      .getOrElse(throw new UnauthorizedException(context.get[String]("auth_error").get))
+  }
+
+  def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
+
+    val permissions = getContextPermissions(context)
+
+    filteringService.filter(permissions, componentId, action, payload, uuids)
+  }
+
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
 
-    val permissions = context.get[List[Permission]]("permissions")
-      .getOrElse(throw new UnauthorizedException(context.get[String]("auth_error").get))
+    val permissions = getContextPermissions(context)
 
     // just pass in a single boolean value, if it gets filtered we know we are not auhorized
     val filtered = filteringService.filter(permissions, componentId, action, List(true), List(uuids))

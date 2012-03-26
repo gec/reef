@@ -28,6 +28,7 @@ import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
 import java.util.UUID
 import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
 import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.authz.FilteredResult
 
 // TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
@@ -42,6 +43,15 @@ object SubscriptionTools {
     def popAuth: List[AuthRequest] = {
       val result = authQueue.toList
       authQueue.clear()
+      result
+    }
+
+    def filterRequests = contextSource.filterRequests
+    def filterResponses = contextSource.filterResponses
+
+    def popFilterRequests: List[FilterRequest[_]] = {
+      val result = filterRequests.toList
+      filterRequests.clear()
       result
     }
 
@@ -83,7 +93,10 @@ object SubscriptionTools {
       auth = new QueueingAuthz
     }
     def sink = subHandler
+
     def authQueue = auth.queue
+    def filterRequests = auth.filterRequestQueue
+    def filterResponses = auth.filterResponseQueue
 
     def transaction[A](f: (RequestContext) => A): A = {
       val context = new QueueingRequestContext(subHandler, auth)
@@ -95,10 +108,19 @@ object SubscriptionTools {
     }
   }
 
+  case class FilterRequest[A](componentId: String, action: String, payload: List[A], uuids: List[List[UUID]])
   case class AuthRequest(resource: String, action: String, entities: List[String])
   class QueueingAuthz extends AuthzService {
 
     val queue = new scala.collection.mutable.Queue[AuthRequest]
+
+    val filterRequestQueue = new scala.collection.mutable.Queue[FilterRequest[_]]
+    val filterResponseQueue = new scala.collection.mutable.Queue[List[FilteredResult[_]]]
+
+    def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
+      filterRequestQueue.enqueue(FilterRequest(componentId, action, payload, uuids))
+      filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
+    }
 
     def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
 

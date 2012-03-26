@@ -21,7 +21,9 @@ package org.totalgrid.reef.services.core
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.client.service.proto.Auth.AuthFilter
+import org.totalgrid.reef.client.service.proto.Auth.{ AuthFilterRequest, AuthFilter }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
+import org.totalgrid.reef.authz.{ Permission, WildcardMatcher, Denied }
 
 @RunWith(classOf[JUnitRunner])
 class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
@@ -32,10 +34,22 @@ class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
     val serv = new SyncService(new AuthFilterService, contextSource)
   }
 
+  def buildReq(res: String, action: String, ents: List[Entity]): AuthFilter = {
+    val b = AuthFilterRequest.newBuilder().setResource(res).setAction(action)
+    ents.foreach(b.addEntity(_))
+
+    AuthFilter.newBuilder().setRequest(b).build()
+  }
+
   test("Basic") {
     val f = new Fixture
 
-    println(f.serv.post(AuthFilter.newBuilder.build))
+    val req = buildReq("entity", "read", List(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*").build).build))
+
+    val resp = Denied(new Permission(true, List("testR"), List("TestA"), new WildcardMatcher))
+    f.filterResponses.enqueue(List(resp))
+
+    println(f.serv.post(req))
   }
 
 }
