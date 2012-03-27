@@ -34,8 +34,6 @@ object StandardAuthSeedData {
     val entityModel = new EntityServiceModel
     val agentModel = new AgentServiceModel
 
-    val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", systemPassword))
-
     val allSelector = EntitySelector.newBuilder.setStyle("*").build
 
     val all = Permission.newBuilder.setAllow(true).addVerb("*").addResource("*").addSelector(allSelector).build
@@ -45,7 +43,8 @@ object StandardAuthSeedData {
     val updatePassword = Permission.newBuilder.setAllow(true).addVerb("update").addResource("agent_password").addSelector(selfAgent).build
 
     val allRole = RoleProto.newBuilder.setName("all").addPermissions(all)
-    val guestRole = RoleProto.newBuilder.setName("read_only").addPermissions(readOnly).addPermissions(updatePassword)
+    val guestRole = RoleProto.newBuilder.setName("read_only").addPermissions(readOnly)
+    val passwordRole = RoleProto.newBuilder.setName("password_updatable").addPermissions(updatePassword)
 
     val defaultExpirationTime = 18144000000L // one month
 
@@ -58,8 +57,25 @@ object StandardAuthSeedData {
 
     val allSet = addPermissionSet(allRole)
     val readOnlySet = addPermissionSet(guestRole)
+    val passwordSet = addPermissionSet(passwordRole)
 
-    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(allSet.id, system.id))
+    def addUser(userName: String, role: PermissionSet) = addUserRoles(userName, List(role))
+    def addUserRoles(userName: String, roles: List[PermissionSet]) {
+      val user = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, userName, systemPassword))
+      roles.foreach { r => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(r.id, user.id)) }
+    }
+
+    addUser("system", allSet)
+    addUser("admin", allSet)
+    addUser("operator", allSet)
+    addUser("services", allSet)
+    addUser("core_application", allSet)
+    addUser("remote_application", allSet)
+    addUser("master_protocol_adapter", allSet)
+    addUser("slave_protocol_adapter", allSet)
+
+    addUser("guest", readOnlySet)
+    addUserRoles("user", List(readOnlySet, passwordSet))
 
     (allSet, readOnlySet)
   }

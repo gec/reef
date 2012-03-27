@@ -84,18 +84,24 @@ class PermissionSetServiceTest extends AuthSystemTestBase {
   test("PermissionSet View and Cleanup") {
     val fix = new Fixture
 
+    val nameWildcard = PermissionSet.newBuilder.setName("*").build
+    val uuidWildcard = PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
+
+    fix.permissionSetService.delete(makePermissionSet("*")).expectMany()
+    fix.permissionSetService.get(nameWildcard).expectNone()
+
     fix.permissionSetService.put(makePermissionSet("all")).expectOne()
     fix.permissionSetService.put(makePermissionSet("read_only")).expectOne()
     fix.permissionSetService.put(makePermissionSet("set3")).expectOne()
 
-    fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build).expectMany(3)
-    fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).expectMany(3)
+    fix.permissionSetService.get(nameWildcard).expectMany(3)
+    fix.permissionSetService.get(uuidWildcard).expectMany(3)
 
     fix.permissionSetService.delete(makePermissionSet("all")).expectOne()
     fix.permissionSetService.delete(makePermissionSet("read_only")).expectOne()
     fix.permissionSetService.delete(makePermissionSet("set3")).expectOne()
 
-    fix.permissionSetService.get(PermissionSet.newBuilder.setName("*").build).expectNone()
-    fix.permissionSetService.get(PermissionSet.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).expectNone()
+    fix.permissionSetService.get(nameWildcard).expectNone()
+    fix.permissionSetService.get(uuidWildcard).expectNone()
   }
 }

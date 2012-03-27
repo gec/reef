@@ -33,7 +33,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
-import org.totalgrid.reef.services.framework.RequestContext
+import org.totalgrid.reef.services.framework.{ RequestContextSource, RequestContext }
 import org.totalgrid.reef.services.{ HeadersContext, SilentRequestContext }
 import org.totalgrid.reef.client.settings.Version
 import org.totalgrid.reef.models.{ AgentPermissionSetJoin, ApplicationSchema, DatabaseUsingTestBase }
@@ -48,19 +48,24 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   def seedTesting(context: RequestContext) {
 
-    val (allSet, readOnlySet) = StandardAuthSeedData.seed(context, "system")
+    StandardAuthSeedData.seed(context, "system")
+
+    val source = new RequestContextSource {
+      def transaction[A](f: (RequestContext) => A) = f(context)
+    }
 
     val agentModel = new AgentServiceModel
+    val agentService = new AgentService(agentModel)
 
-    val core = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "core", "core"))
-    val op = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "operator", "operator"))
-    val guest = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "guest", "guest"))
+    def createAgent(name: String, password: String, roles: List[String]) {
+      val b = Agent.newBuilder.setName(name).setPassword(password)
+      roles.foreach { r => b.addPermissionSets(PermissionSet.newBuilder.setName(r).build) }
+      agentService.put(source, b.build).expectOne()
+    }
 
-    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(allSet.id, core.id))
-    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(readOnlySet.id, core.id))
-    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(allSet.id, op.id))
-    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(readOnlySet.id, op.id))
-    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(readOnlySet.id, guest.id))
+    createAgent("core", "core", List("all", "read_only"))
+    createAgent("operator", "operator", List("all", "read_only"))
+    createAgent("guest", "guest", List("read_only"))
   }
 
   override def beforeEachInTransaction() = {

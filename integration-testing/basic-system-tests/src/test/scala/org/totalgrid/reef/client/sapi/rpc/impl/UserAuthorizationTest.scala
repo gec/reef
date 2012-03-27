@@ -31,7 +31,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 class UserAuthorizationTest extends ServiceClientSuite {
 
   private def asGuestUser(name: String, password: String, permission: String = "read_only")(fun: (Client, AllScadaService) => Unit) = {
-    val agent = client.createNewAgent(name, password, List(permission)).await
+    val agent = client.createNewAgent(name, password, List(permission, "password_updatable")).await
     try {
       val guestClient = session.login(name, password).await
       fun(guestClient, guestClient.getRpcInterface(classOf[AllScadaService]))
