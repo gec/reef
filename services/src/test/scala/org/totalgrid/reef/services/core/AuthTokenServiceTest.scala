@@ -48,7 +48,7 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
 
   def seedTesting(context: RequestContext) {
 
-    val (allSet, readOnlySet) = AuthTokenService.seed(context, "system")
+    val (allSet, readOnlySet) = StandardAuthSeedData.seed(context, "system")
 
     val agentModel = new AgentServiceModel
 

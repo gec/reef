@@ -104,7 +104,7 @@ object ServiceBootstrap {
     dbConnection.transaction {
       core.EventConfigService.seed()
       core.EntityService.seed()
-      core.AuthTokenService.seed(context, systemPassword)
+      core.StandardAuthSeedData.seed(context, systemPassword)
     }
   }
 

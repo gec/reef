@@ -20,67 +20,16 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.Auth._
-import org.totalgrid.reef.client.service.proto.Events._
-import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.proto.Envelope.Status
-import org.totalgrid.reef.client.sapi.service.SyncServiceBase
-import org.totalgrid.reef.services.core.util._
 import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => RoleProto }
 
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import SquerylModel._
+import org.totalgrid.reef.services.framework.SquerylModel._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.event.{ SystemEventSink, EventType }
+import org.totalgrid.reef.event.EventType
 import org.totalgrid.reef.models.{ UUIDConversions, Agent, ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin }
-
-// Implicit squeryl list -> query conversion
-
-/**
- * static seed function to bootstrap users + permissions into the system
- * TODO: remove static user seed data
- */
-object AuthTokenService {
-  import org.totalgrid.reef.models.{ Agent, PermissionSet, AgentPermissionSetJoin }
-
-  def seed(context: RequestContext, systemPassword: String) = {
-
-    val entityModel = new EntityServiceModel
-    val agentModel = new AgentServiceModel
-
-    val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", systemPassword))
-
-    val allSelector = EntitySelector.newBuilder.setStyle("*").build
-
-    val all = Permission.newBuilder.setAllow(true).addVerb("*").addResource("*").addSelector(allSelector).build
-    val readOnly = Permission.newBuilder.setAllow(true).addVerb("read").addResource("*").addSelector(allSelector).build
-
-    val selfAgent = EntitySelector.newBuilder.setStyle("self").build
-    val updatePassword = Permission.newBuilder.setAllow(true).addVerb("update").addResource("agent_password").addSelector(selfAgent).build
-
-    val allRole = RoleProto.newBuilder.setName("all").addPermissions(all)
-    val guestRole = RoleProto.newBuilder.setName("read_only").addPermissions(readOnly).addPermissions(updatePassword)
-
-    val defaultExpirationTime = 18144000000L // one month
-
-    def addPermissionSet(proto: RoleProto.Builder) = {
-      proto.setDefaultExpirationTime(defaultExpirationTime)
-      val entity = entityModel.findOrCreate(context, proto.getName, "PermissionSet" :: Nil, None)
-      val permissionSet = new PermissionSet(entity.id, proto.build.toByteArray)
-      ApplicationSchema.permissionSets.insert(permissionSet)
-    }
-
-    val allSet = addPermissionSet(allRole)
-    val readOnlySet = addPermissionSet(guestRole)
-
-    ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(allSet.id, system.id))
-
-    (allSet, readOnlySet)
-  }
-
-}
 
 /**
  * auth token specific code for searching the sql table and converting from
