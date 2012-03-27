@@ -94,25 +94,22 @@ class AgentServiceModel
       (Nil, Nil)
     }
 
-    if ((removed.size > 0 || added.size > 0) && changingPassword) {
-      throw new BadRequestException("Cannot update password and permissions in same request, remove password or use old password")
-    }
-
-    if (changingPassword) {
+    val passwordResults = if (changingPassword) {
       context.auth.authorize(context, "agent_password", "update", List(existing.entityId))
       validatePassword(req.getPassword)
       update(context, existing.copyWithUpdatedPassword(req.getPassword), existing)
     } else {
-      if (removed.size > 0 || added.size > 0) {
-        context.auth.authorize(context, "agent_roles", "update", List(existing.entityId))
-        added.foreach { p => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(p.id, existing.id)) }
-        ApplicationSchema.agentSetJoins.deleteWhere(join => join.permissionSetId in removed.map { _.id } and join.agentId === existing.id)
+      (existing, false)
+    }
+    if (removed.size > 0 || added.size > 0) {
+      context.auth.authorize(context, "agent_roles", "update", List(existing.entityId))
+      added.foreach { p => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(p.id, existing.id)) }
+      ApplicationSchema.agentSetJoins.deleteWhere(join => join.permissionSetId in removed.map { _.id } and join.agentId === existing.id)
 
-        onUpdated(context, existing)
-        (existing, true)
-      } else {
-        (existing, false)
-      }
+      onUpdated(context, existing)
+      (existing, true)
+    } else {
+      passwordResults
     }
   }
 

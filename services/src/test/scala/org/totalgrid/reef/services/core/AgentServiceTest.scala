@@ -148,14 +148,11 @@ class AgentServiceTest extends AuthSystemTestBase {
     fix.eventCheck should equal(eventList)
   }
 
-  test("Cannot update both password and permissions") {
+  test("Can update both password and permissions") {
     val fix = new Fixture
     fix.agentService.put(makeAgent()).expectOne()
 
-    intercept[BadRequestException] {
-      fix.agentService.put(makeAgent(password = Some("newPassword"), permissionSetNames = List("read_only"))).expectOne()
-    }
-    fix.eventCheck should equal((ADDED, classOf[Entity]) :: (ADDED, classOf[Agent]) :: Nil)
+    fix.agentService.put(makeAgent(password = Some("newPassword"), permissionSetNames = List("read_only"))).expectOne()
   }
 
   test("Deleting Agent invalidates AuthTokens") {
