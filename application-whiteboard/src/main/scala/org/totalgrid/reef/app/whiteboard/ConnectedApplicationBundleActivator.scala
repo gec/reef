@@ -47,11 +47,18 @@ abstract class ConnectedApplicationBundleActivator extends ExecutorBundleActivat
 
   def bundleName = this.getClass.getSimpleName
 
+  /**
+   * list of osgi config files to read in. Should be overridden if a particular application wants to
+   * _attempt_ loading an extra config file for that application. Missing files are silently ignored so
+   * default configurations can be used until needed.
+   */
+  def propertyFiles = List("org.totalgrid.reef.amqp", "org.totalgrid.reef.user", "org.totalgrid.reef.node")
+
   def start(context: BundleContext, exe: Executor) {
 
     logger.info("Starting " + bundleName + " bundle..")
 
-    val properties = OsgiConfigReader.load(context, List("org.totalgrid.reef.amqp", "org.totalgrid.reef.user", "org.totalgrid.reef.node"))
+    val properties = OsgiConfigReader.load(context, propertyFiles)
     val brokerOptions = new AmqpSettings(properties)
     val userSettings = new UserSettings(properties)
     val nodeSettings = new NodeSettings(properties)

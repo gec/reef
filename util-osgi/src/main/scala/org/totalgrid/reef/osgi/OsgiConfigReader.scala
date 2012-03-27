@@ -19,27 +19,30 @@
 package org.totalgrid.reef.osgi
 
 import org.osgi.framework._
-import org.osgi.service.cm.ConfigurationAdmin
+import org.osgi.service.cm.{ Configuration, ConfigurationAdmin }
 
 import com.weiglewilczek.scalamodules._
 
 import java.util.{ Dictionary, Hashtable }
-import com.weiglewilczek.slf4s.Logging
 
 object OsgiConfigReader {
   import scala.collection.JavaConversions._
 
-  private def tryLoadingConfig(context: BundleContext, pid: String): Option[Dictionary[AnyRef, AnyRef]] = {
-    val config = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
+  def tryLoadingConfig(context: BundleContext, pid: String): Option[Dictionary[AnyRef, AnyRef]] = {
+    val config: Option[Configuration] = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
       service.getConfiguration(pid)
     } match {
-      case Some(x) => x
-      case None => throw new Exception("Unable to find ConfigurationAdmin service")
+      case Some(x) => Some(x)
+      case None => None
     }
 
-    Option(config.getProperties) match {
-      case None => None
-      case Some(x: Dictionary[AnyRef, AnyRef]) => Some(x)
+    // scala compiler doesn't like the untyped dictionary signature returned from the
+    // java function so we have to cast it manually
+    config.flatMap {
+      _.getProperties match {
+        case null => None
+        case x: Dictionary[_, _] => Some(x.asInstanceOf[Dictionary[AnyRef, AnyRef]])
+      }
     }
   }
 

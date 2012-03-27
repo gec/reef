@@ -34,4 +34,5 @@ class ProcessingActivator extends ConnectedApplicationBundleActivator {
     appManager.addConnectedApplication(app)
   }
 
+  override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.measproc")
 }

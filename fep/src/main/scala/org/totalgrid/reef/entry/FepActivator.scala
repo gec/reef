@@ -30,16 +30,20 @@ import org.totalgrid.reef.app._
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.app.whiteboard.ConnectedApplicationBundleActivator
 import org.totalgrid.reef.protocol.api.scada.ProtocolAdapter
+import org.totalgrid.reef.osgi.OsgiConfigReader
+import org.totalgrid.reef.client.settings.UserSettings
 
 final class FepActivator extends ConnectedApplicationBundleActivator {
 
   private var map = Map.empty[Protocol, ConnectedApplication]
   private var wrapperMap = Map.empty[ProtocolAdapter, Protocol]
 
+  override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.fep")
+
   def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
 
     context watchServices withInterface[Protocol] andHandle {
-      case AddingService(p, _) => addProtocol(p, appManager)
+      case AddingService(p, _) => addProtocol(context, p, appManager)
       case ServiceRemoved(p, _) => removeProtocol(p, appManager)
     }
 
@@ -50,7 +54,7 @@ final class FepActivator extends ConnectedApplicationBundleActivator {
       case AddingService(p, _) =>
         val wrapper = new ScadaProtocolAdapter(p)
         wrapperMap += p -> wrapper
-        addProtocol(wrapper, appManager)
+        addProtocol(context, wrapper, appManager)
       case ServiceRemoved(p, _) =>
         wrapperMap.get(p).foreach { x =>
           wrapperMap -= p
@@ -61,11 +65,16 @@ final class FepActivator extends ConnectedApplicationBundleActivator {
 
   }
 
-  private def addProtocol(p: Protocol, appManager: ConnectedApplicationManager) = map.synchronized {
+  private def addProtocol(context: BundleContext, p: Protocol, appManager: ConnectedApplicationManager) = map.synchronized {
     map.get(p) match {
       case Some(x) => logger.info("Protocol already added: " + p.name)
       case None =>
-        val app = new FepConnectedApplication(p)
+
+        // load up the protocol specific user (if configured)
+        val userProperties = OsgiConfigReader.load(context, propertyFiles ::: List("org.totalgrid.reef.protocol." + p.name))
+        val userSettings = new UserSettings(userProperties)
+
+        val app = new FepConnectedApplication(p, userSettings)
 
         appManager.addConnectedApplication(app)
 

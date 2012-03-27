@@ -47,7 +47,7 @@ object CalculatorStandaloneFep extends ShutdownHook {
     val applicationManager = new SimpleConnectedApplicationManager(exe, manager, appManagerSettings)
     applicationManager.start()
 
-    applicationManager.addConnectedApplication(new FepConnectedApplication(new CalculatorProtocol()))
+    applicationManager.addConnectedApplication(new FepConnectedApplication(new CalculatorProtocol(), userSettings))
 
     waitForShutdown {
       applicationManager.stop()

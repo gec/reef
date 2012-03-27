@@ -84,7 +84,7 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
 
     // we need to load the protocol separately for each node
     loadProtocols(properties, exe).foreach { protocol =>
-      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol))
+      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol, userSettings))
     }
 
     applicationManager.addConnectedApplication(new MetricsServiceApplication)

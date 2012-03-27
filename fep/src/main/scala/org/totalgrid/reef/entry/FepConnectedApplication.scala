@@ -24,19 +24,25 @@ import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.protocol.api.Protocol
 import org.totalgrid.reef.frontend._
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.settings.UserSettings
 
-class FepConnectedApplication(p: Protocol) extends ConnectedApplication with Logging {
+class FepConnectedApplication(p: Protocol, protocolSpecificUser: UserSettings) extends ConnectedApplication with Logging {
   def getApplicationSettings = new ApplicationSettings("FEP-" + p.name, "FEP")
 
   private var fem = Option.empty[FrontEndManager]
+  private var client = Option.empty[Client]
 
   def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
-    fem = Some(makeFepNode(appLevelClient, appConfig, List(p)))
+
+    client = Some(appLevelClient.login(protocolSpecificUser).await)
+
+    fem = Some(makeFepNode(client.get, appConfig, List(p)))
     fem.foreach { _.start() }
   }
 
   def onApplicationShutdown() = {
     fem.foreach { _.stop() }
+    client.foreach { _.logout().await }
   }
 
   def onConnectionError(msg: String) = {
