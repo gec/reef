@@ -32,6 +32,8 @@ import org.totalgrid.reef.client.settings.util.PropertyReader;
 import org.totalgrid.reef.util.EmptySyncVar;
 import org.totalgrid.reef.util.SyncVar;
 
+import java.util.Properties;
+
 @SuppressWarnings("unchecked")
 public class TestReconnectingFactory
 {
@@ -43,8 +45,9 @@ public class TestReconnectingFactory
         if ( System.getProperty( "remote-test" ) == null )
             return;
 
-        final AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../../org.totalgrid.reef.test.cfg" ) );
-        final UserSettings userSettings = new UserSettings( PropertyReader.readFromFile( "../../org.totalgrid.reef.test.cfg" ) );
+        final Properties properties = PropertyReader.readFromFile( "../../org.totalgrid.reef.test.cfg" );
+        final AmqpSettings s = new AmqpSettings( properties );
+        final UserSettings userSettings = new UserSettings( properties );
 
         ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, new ReefServices(), 100, 500 );
 

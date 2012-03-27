@@ -45,8 +45,8 @@ class ReefLoginCommand extends ReefCommandSupport {
       println("\nUse \"reef:logout\" first to logout")
     } else {
       val userSettings = if (userName == null) {
-        val user = new UserSettings(OsgiConfigReader.load(getBundleContext, "org.totalgrid.reef.user"))
-        println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file.")
+        val user = new UserSettings(OsgiConfigReader.load(getBundleContext, List("org.totalgrid.reef.user", "org.totalgrid.reef.cli")))
+        println("Attempting login with user specified in etc/org.totalgrid.reef.cli.cfg file.")
         user
       } else {
         if (password == null) {

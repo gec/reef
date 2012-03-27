@@ -41,6 +41,8 @@ class JsonBridgeActivator extends ConnectedApplicationBundleActivator {
 
   private var registrations = List.empty[ServiceRegistration]
 
+  override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.httpbridge")
+
   def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
     val bridgeOptions = OsgiConfigReader.load(context, "org.totalgrid.reef.httpbridge")
     val defaultUser = DefaultUserConfiguration.getDefaultUser(bridgeOptions)
