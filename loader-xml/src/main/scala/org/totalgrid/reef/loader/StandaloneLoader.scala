@@ -98,7 +98,7 @@ object StandaloneLoader {
     if (filename == None)
       usage
 
-    if (propertyFiles.isEmpty) propertyFiles = List("org.totalgrid.reef.amqp.cfg", "org.totalgrid.reef.user.cfg")
+    if (propertyFiles.isEmpty) propertyFiles = List("target.cfg")
 
     import scala.collection.JavaConversions._
     val props = PropertyReader.readFromFiles(propertyFiles)

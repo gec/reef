@@ -40,7 +40,7 @@ object AllBenchmarksEntryPoint {
 
   def main(args: Array[String]) {
 
-    val properties = PropertyReader.readFromFile("benchmarksTarget.cfg")
+    val properties = PropertyReader.readFromFile("target.cfg")
 
     val testOptions = PropertyReader.readFromFile("org.totalgrid.reef.benchmarks.cfg")
 

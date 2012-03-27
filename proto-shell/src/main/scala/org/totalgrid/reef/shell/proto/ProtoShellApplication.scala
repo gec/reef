@@ -38,7 +38,7 @@ object ProtoShellApplication {
   def main(args: Array[String]) = {
     System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
 
-    val properties = PropertyReader.readFromFiles(List("org.totalgrid.reef.user.cfg", "org.totalgrid.reef.amqp.cfg"))
+    val properties = PropertyReader.readFromFiles(List("target.cfg"))
 
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
