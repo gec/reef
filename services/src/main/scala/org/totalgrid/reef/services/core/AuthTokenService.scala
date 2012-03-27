@@ -116,16 +116,19 @@ class AuthTokenServiceModel
     // permissions we are asking for allow the user to request either all of their permission sets or just a subset, barf if they
     // ask for permisions they dont have
     val permissionsRequested = authToken.getPermissionSetsList.toList
-    val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(ps)).sum
-    val permissionSets = if (setQuerySize > 0) {
-      val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
-      val unavailableSets = askedForSets.diff(availableSets)
-      if (unavailableSets.size > 0) {
-        postLoginException(context, agent.entityName, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
+    val permissionSets = if (permissionsRequested.size == 1 && permissionsRequested(0).getName == "*") availableSets
+    else {
+      val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(ps)).sum
+      if (setQuerySize > 0) {
+        val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
+        val unavailableSets = askedForSets.diff(availableSets)
+        if (unavailableSets.size > 0) {
+          postLoginException(context, agent.entityName, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
+        }
+        askedForSets
+      } else {
+        availableSets
       }
-      askedForSets
-    } else {
-      availableSets
     }
 
     // allow the user to set the expiration time explicitly or use the default from the most restrictive permissionset
