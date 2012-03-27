@@ -63,8 +63,9 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
     /// current state of the StatusSnapshot
     var lastSnapShot = new SyncVar[Option[StatusSnapshot]](None: Option[StatusSnapshot])
 
+    var appConfig: ApplicationConfig = null
     /// register the application with the services handler
-    val appConfig = registerInstance()
+    registerInstance()
 
     /// use the appConfig information to setup the heartbeat publisher
     val hbeatSink = { hbeat: StatusSnapshot => processStatusService.put(hbeat).expectOne }
@@ -76,7 +77,8 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransa
       val b = ApplicationConfig.newBuilder()
       b.setUserName("proc").setInstanceName("proc01").setNetwork("any").setLocation("farm1").addCapabilites("Processing")
       b.setHeartbeatCfg(HeartbeatConfig.newBuilder.setPeriodMs(100)) // override the default period
-      applicationConfigService.put(b.build).expectOne
+      appConfig = applicationConfigService.put(b.build).expectOne
+      appConfig
     }
 
     private def subscribeSnapshotStatus() {

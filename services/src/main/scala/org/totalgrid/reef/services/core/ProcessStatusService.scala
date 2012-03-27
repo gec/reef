@@ -31,6 +31,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
+import java.util.UUID
 
 // Implicits
 import org.totalgrid.reef.client.service.proto.OptionalProtos._ // implicit proto properties
@@ -90,7 +91,12 @@ class ProcessStatusServiceModel(
     }
   }
 
-  def addApplication(context: RequestContext, app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
+  def addApplication(context: RequestContext, app: ApplicationInstance, periodMS: Int, inputId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
+
+    val processId = if (inputId == null || inputId.length() < 5) {
+      logger.info("Invalid processId " + inputId + " sent during registration, creating new random id")
+      UUID.randomUUID().toString
+    } else inputId
 
     // give the app twice as long to come online
     val firstCheck = now + periodMS * 2
