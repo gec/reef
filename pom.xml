@@ -242,6 +242,9 @@
 							<resources>
 								<resource>
 									<directory>cfg-templates</directory>
+                                    <includes>
+                                        <include>*.cfg</include>
+                                    </includes>
 								</resource>
 							</resources>
 							<overwrite>false</overwrite>
@@ -355,6 +358,9 @@
 									<resources>
 										<resource>
 											<directory>cfg-templates</directory>
+                                            <includes>
+                                                <include>*.cfg</include>
+                                            </includes>
 										</resource>
 									</resources>
 									<overwrite>true</overwrite>

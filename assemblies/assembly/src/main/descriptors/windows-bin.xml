@@ -95,15 +95,6 @@
             <lineEnding>dos</lineEnding>
             <fileMode>0644</fileMode>
         </fileSet>
-        <fileSet>
-            <directory>../../cfg-templates</directory>
-            <outputDirectory>/etc/</outputDirectory>
-            <includes>
-                <include>*.cfg</include>
-            </includes>
-            <lineEnding>dos</lineEnding>
-            <fileMode>0644</fileMode>
-        </fileSet>
     </fileSets>
 
     <files>

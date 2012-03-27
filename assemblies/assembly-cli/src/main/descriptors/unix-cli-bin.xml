@@ -96,15 +96,6 @@
             <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
         </fileSet>
-        <fileSet>
-            <directory>../../cfg-templates</directory>
-            <outputDirectory>/etc/</outputDirectory>
-            <includes>
-                <include>org.totalgrid.reef.amqp.cfg</include>
-            </includes>
-            <lineEnding>unix</lineEnding>
-            <fileMode>0644</fileMode>
-        </fileSet>
     </fileSets>
 
     <files>
