@@ -24,12 +24,20 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.service.proto.Auth.{ AuthFilterRequest, AuthFilter }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
 import org.totalgrid.reef.authz.{ Permission, WildcardMatcher, Denied }
+import java.util.UUID
+import org.totalgrid.reef.services.core.SubscriptionTools.FilterRequest
 
 @RunWith(classOf[JUnitRunner])
 class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
   class Fixture extends SubscriptionTools.SubscriptionTesting {
     def _dbConnection = dbConnection
+
+    val modelFac = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
+    val entServ = new SyncService(new EntityService(modelFac.entities), contextSource)
+
+    val entA = entServ.put(Entity.newBuilder().setName("EntA").addTypes("TypeA").build).expectOne()
+    val entB = entServ.put(Entity.newBuilder().setName("EntB").addTypes("TypeB").build).expectOne()
 
     val serv = new SyncService(new AuthFilterService, contextSource)
   }
@@ -41,15 +49,38 @@ class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
     AuthFilter.newBuilder().setRequest(b).build()
   }
 
+  import org.totalgrid.reef.models.{ Entity => EntityModel, ApplicationSchema }
+  def entSet: (List[EntityModel], List[UUID]) = {
+    import org.squeryl.PrimitiveTypeMode._
+
+    val ents = ApplicationSchema.entities.where(t => true === true).toList
+
+    (ents, ents.map(_.id))
+  }
+
   test("Basic") {
     val f = new Fixture
 
     val req = buildReq("entity", "read", List(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*").build).build))
 
-    val resp = Denied(new Permission(true, List("testR"), List("TestA"), new WildcardMatcher))
-    f.filterResponses.enqueue(List(resp))
+    val (ents, uuids) = entSet
+
+    val responses = List(Denied(new Permission(true, List("entity_fake"), List("read_fake"), new WildcardMatcher)))
+    f.filterResponses.enqueue(responses)
+
 
     println(f.serv.post(req))
+
+    val requests = f.filterRequests.toList.asInstanceOf[List[FilterRequest[EntityModel]]]
+    requests.size should equal(1)
+
+    val head = requests.head
+    head.action should equal("read")
+    head.componentId should equal("entity")
+    head.payload.filterNot(ents.contains) should equal(Nil)
+    head.uuids.size should equal(1)
+    head.uuids.head.filterNot(uuids.contains) should equal(Nil)
+
   }
 
 }

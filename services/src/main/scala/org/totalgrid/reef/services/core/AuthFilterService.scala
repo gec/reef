@@ -76,7 +76,7 @@ class AuthFilterService extends ServiceEntryPoint[AuthFilter] with SimplePost {
     val entModels = entities.map(e => entityModel.findRecords(context, e))
     val uuids = entModels.map(_.map(_.id))
 
-    val results = context.auth.filter(context, resource, action, entModels, uuids)
+    val results = entModels.flatMap(ents => context.auth.filter(context, resource, action, ents, uuids))
 
     val resultProtos = results.map {
       case Allowed(pay, perm) =>
