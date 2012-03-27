@@ -21,18 +21,18 @@ package org.totalgrid.reef.authz
 import java.util.UUID
 
 sealed trait FilteredResult[A] {
-  def result: Option[A]
+  def result: A
   def isAllowed: Boolean
   def permission: Permission
 }
 
 case class Allowed[A](a: A, permission: Permission) extends FilteredResult[A] {
   def isAllowed = true
-  def result = Some(a)
+  def result = a
 }
-case class Denied[A](permission: Permission) extends FilteredResult[A] {
+case class Denied[A](a: A, permission: Permission) extends FilteredResult[A] {
   def isAllowed = false
-  def result = Option.empty[A]
+  def result = a
 }
 
 trait AuthzFilteringService {

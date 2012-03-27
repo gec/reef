@@ -43,7 +43,7 @@ object ResourceSpecificFilter extends ResourceSpecificFiltering {
     lazy val unmatched = finalStates.filter { _.filteredResult.isEmpty }
     lazy val defaultRule = unmatchedResources(unmatched.map { _.uuids }.flatten)
 
-    finalStates.map { _.filteredResult.getOrElse(Denied[A](defaultRule)) }
+    finalStates.map { state => state.filteredResult.getOrElse(Denied[A](state.payload, defaultRule)) }
   }
 
   private def unmatchedResources(unmatchedUuids: List[UUID]) = {

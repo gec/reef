@@ -22,22 +22,17 @@ import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimplePost
 import org.totalgrid.reef.services.framework.{ RequestContext, ServiceEntryPoint }
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.service.proto.Auth.{ AuthFilterResult, AuthFilter, Permission => PermissionProto }
-import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.{ Entity => EntityModel }
 
 import org.totalgrid.reef.client.service.proto.{ OptionalProtos, Descriptors }
 import OptionalProtos._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
-import java.util.UUID
-import org.totalgrid.reef.authz.{ Permission, Denied, Allowed }
+import org.totalgrid.reef.services.authz.AuthzService
+import org.totalgrid.reef.authz.{ AuthzFilteringService, Permission }
+import org.totalgrid.reef.client.exception.{ InternalServiceException, BadRequestException }
 
 object AuthFilterService {
-
-  /*def permToProto(permission: Permission): PermissionProto = {
-    PermissionProto.newBuilder()
-      .addAllResource(permission.services)
-  }*/
 
   class NonEmptyList[A](l: List[A]) {
     def whenNonEmpty: Option[List[A]] = l match {
@@ -57,6 +52,10 @@ class AuthFilterService extends ServiceEntryPoint[AuthFilter] with SimplePost {
 
   def doPost(context: RequestContext, req: AuthFilter): AuthFilter = {
 
+    val filter: AuthzFilteringService = context.get[AuthzFilteringService](AuthzService.filterService).getOrElse {
+      throw new InternalServiceException("Filtering implementation not present")
+    }
+
     if (!req.hasRequest) {
       throw new BadRequestException("Must include request description")
     }
@@ -65,9 +64,9 @@ class AuthFilterService extends ServiceEntryPoint[AuthFilter] with SimplePost {
     }
 
     val desc = req.getRequest
-
     val action = desc.action.getOrElse("read")
     val resource = desc.resource.getOrElse("entity")
+    val permList = desc.permissions.map(Permission.fromProto(_, context.agent.entity.value.name))
 
     val entities = desc.getEntityList.toList.whenNonEmpty.getOrElse {
       List(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build)
@@ -76,13 +75,17 @@ class AuthFilterService extends ServiceEntryPoint[AuthFilter] with SimplePost {
     val entModels = entities.map(e => entityModel.findRecords(context, e))
     val uuids = entModels.map(_.map(_.id))
 
-    val results = entModels.flatMap(ents => context.auth.filter(context, resource, action, ents, uuids))
+    val results = permList match {
+      case None => entModels.flatMap(ents => context.auth.filter(context, resource, action, ents, uuids))
+      case Some(perms) => entModels.flatMap(ents => filter.filter(perms, resource, action, ents, uuids))
+    }
 
-    val resultProtos = results.map {
-      case Allowed(pay, perm) =>
-        AuthFilterResult.newBuilder().setAllowed(true).setEntity(entityModel.convertToProto(pay.asInstanceOf[EntityModel])).build
-      case Denied(perm) =>
-        AuthFilterResult.newBuilder().setAllowed(false).build
+    val resultProtos = results.map { result =>
+      AuthFilterResult.newBuilder()
+        .setAllowed(result.isAllowed)
+        .setEntity(entityModel.convertToProto(result.result.asInstanceOf[EntityModel]))
+        .setReason(result.permission.reason)
+        .build
     }
 
     AuthFilter.newBuilder()

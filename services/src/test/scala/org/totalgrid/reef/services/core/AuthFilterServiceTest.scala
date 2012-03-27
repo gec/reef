@@ -23,9 +23,10 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.service.proto.Auth.{ AuthFilterRequest, AuthFilter }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
-import org.totalgrid.reef.authz.{ Permission, WildcardMatcher, Denied }
 import java.util.UUID
 import org.totalgrid.reef.services.core.SubscriptionTools.FilterRequest
+import org.totalgrid.reef.authz.{ Allowed, Permission, WildcardMatcher, Denied }
+import scala.collection.JavaConversions._
 
 @RunWith(classOf[JUnitRunner])
 class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
@@ -58,18 +59,30 @@ class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
     (ents, ents.map(_.id))
   }
 
-  test("Basic") {
+  test("Inputs/outputs") {
     val f = new Fixture
 
     val req = buildReq("entity", "read", List(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*").build).build))
 
     val (ents, uuids) = entSet
 
-    val responses = List(Denied(new Permission(true, List("entity_fake"), List("read_fake"), new WildcardMatcher)))
+    val responses = List(Allowed(ents(0), new Permission(true, List("entity_fake"), List("read_fake"), new WildcardMatcher)),
+      Denied(ents(1), new Permission(true, List("entity_fake"), List("read_fake"), new WildcardMatcher)),
+      Allowed(ents(2), new Permission(true, List("entity_fake"), List("read_fake"), new WildcardMatcher)))
+
     f.filterResponses.enqueue(responses)
 
+    val results = f.serv.post(req).expectOne()
 
-    println(f.serv.post(req))
+    results.hasRequest should equal(false)
+    val resultList = results.getResultsList.toList
+    resultList.size should equal(3)
+    resultList(0).getAllowed should equal(true)
+    resultList(0).getEntity.getName should equal(responses(0).result.name)
+    resultList(1).getAllowed should equal(false)
+    resultList(1).getEntity.getName should equal(responses(1).result.name)
+    resultList(2).getAllowed should equal(true)
+    resultList(2).getEntity.getName should equal(responses(2).result.name)
 
     val requests = f.filterRequests.toList.asInstanceOf[List[FilterRequest[EntityModel]]]
     requests.size should equal(1)

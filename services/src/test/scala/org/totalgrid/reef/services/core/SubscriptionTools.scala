@@ -28,7 +28,7 @@ import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
 import java.util.UUID
 import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.authz.FilteredResult
+import org.totalgrid.reef.authz.{ Permission, AuthzFilteringService, FilteredResult }
 
 // TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
@@ -110,15 +110,21 @@ object SubscriptionTools {
 
   case class FilterRequest[A](componentId: String, action: String, payload: List[A], uuids: List[List[UUID]])
   case class AuthRequest(resource: String, action: String, entities: List[String])
-  class QueueingAuthz extends AuthzService {
+  class QueueingAuthz extends AuthzService with AuthzFilteringService {
 
     val queue = new scala.collection.mutable.Queue[AuthRequest]
 
     val filterRequestQueue = new scala.collection.mutable.Queue[FilterRequest[_]]
     val filterResponseQueue = new scala.collection.mutable.Queue[List[FilteredResult[_]]]
 
+    // called by (actual) services
     def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
       filterRequestQueue.enqueue(FilterRequest(componentId, action, payload, uuids))
+      filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
+    }
+    // called to "check" permissions
+    def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
+      filterRequestQueue.enqueue(FilterRequest(service, action, payloads, uuids))
       filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
     }
 
@@ -129,7 +135,10 @@ object SubscriptionTools {
       queue.enqueue(AuthRequest(componentId, action, names))
     }
 
-    def prepare(context: RequestContext) {}
+    def prepare(context: RequestContext) {
+      context.set(AuthzService.filterService, this)
+    }
+
   }
 
 }

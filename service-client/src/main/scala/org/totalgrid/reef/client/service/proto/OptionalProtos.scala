@@ -130,7 +130,7 @@ object OptionalProtos {
   class OptAuthAuthFilterResult(real: Option[org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult]) extends OptionalStruct(real) {
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
     val allowed = optionally(_.hasAllowed, _.getAllowed)
-    val reason = new OptAuthPermission(optionally(_.hasReason, _.getReason))
+    val reason = optionally(_.hasReason, _.getReason)
   }
   implicit def proto2OptAuthAuthFilter(a: org.totalgrid.reef.client.service.proto.Auth.AuthFilter): OptAuthAuthFilter = new OptAuthAuthFilter(Some(a))
   class OptAuthAuthFilter(real: Option[org.totalgrid.reef.client.service.proto.Auth.AuthFilter]) extends OptionalStruct(real) {

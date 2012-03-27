@@ -61,6 +61,8 @@ class Permission(val allow: Boolean, services: List[String], actions: List[Strin
 
   def resourceDependent = matcher.resourceDependent
 
+  def reason = matcher.toString
+
   def checkMatches[A](toBeMatched: List[SelectState[A]]): List[SelectState[A]] = {
 
     toBeMatched.map {
@@ -72,7 +74,7 @@ class Permission(val allow: Boolean, services: List[String], actions: List[Strin
             case Some(Some(true)) =>
               allow match {
                 case true => Some(Allowed[A](state.payload, this))
-                case false => Some(Denied[A](this))
+                case false => Some(Denied[A](state.payload, this))
               }
             case _ =>
               None

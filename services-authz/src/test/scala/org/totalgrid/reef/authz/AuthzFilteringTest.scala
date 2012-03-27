@@ -96,7 +96,7 @@ class AuthzFilteringTest extends AuthzTestBase {
 
     val results = allAllowed(filter.filter(accept, "service", "action", input, noUuids))
 
-    results.map { _.result.get } should equal(input)
+    results.map { _.result } should equal(input)
   }
 
   test("Uuids are not requested unless we are using a resource specific rule") {

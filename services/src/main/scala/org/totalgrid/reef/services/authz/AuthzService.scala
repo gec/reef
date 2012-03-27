@@ -27,6 +27,12 @@ import java.util.UUID
 import org.totalgrid.reef.models.{ Agent, ApplicationSchema }
 import org.totalgrid.reef.client.service.proto.Auth.PermissionSet
 
+object AuthzService {
+  def agent = "agent"
+  def permissions = "permissions"
+  def filterService = "filterService"
+  def authError = "auth_error"
+}
 trait AuthzService {
 
   def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]]
@@ -76,8 +82,8 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
   def this() = this(AuthzFilter)
 
   private def getContextPermissions(context: RequestContext) = {
-    context.get[List[Permission]]("permissions")
-      .getOrElse(throw new UnauthorizedException(context.get[String]("auth_error").get))
+    context.get[List[Permission]](AuthzService.permissions)
+      .getOrElse(throw new UnauthorizedException(context.get[String](AuthzService.authError).get))
   }
 
   def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
@@ -100,23 +106,24 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
     }
   }
 
-  def prepare(context: RequestContext) = {
+  def prepare(context: RequestContext) {
     // load the permissions by forcing an auth attempt
     loadPermissions(context)
+    context.set(AuthzService.filterService, filteringService)
   }
 
   def loadPermissions(context: RequestContext) {
 
     val authTokens = context.getHeaders.authTokens
 
-    if (authTokens.isEmpty) context.set("auth_error", "No auth tokens in envelope header")
+    if (authTokens.isEmpty) context.set(AuthzService.authError, "No auth tokens in envelope header")
     else {
 
       lookupTokens(authTokens) match {
-        case None => context.set("auth_error", "All tokens unknown or expired")
+        case None => context.set(AuthzService.authError, "All tokens unknown or expired")
         case Some(AuthLookup(agent, permSets)) =>
-          context.set("agent", agent)
-          context.set("permissions", permSets.flatMap { Permission.fromProto(_, agent.entityName) })
+          context.set(AuthzService.agent, agent)
+          context.set(AuthzService.permissions, permSets.flatMap { Permission.fromProto(_, agent.entityName) })
       }
     }
   }
