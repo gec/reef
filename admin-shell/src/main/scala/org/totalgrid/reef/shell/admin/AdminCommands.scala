@@ -29,17 +29,20 @@ import java.io.{ InputStreamReader, BufferedReader }
 import org.totalgrid.reef.models.CoreServicesSchema
 import org.totalgrid.reef.client.settings.UserSettings
 
-@Command(scope = "reef", name = "resetdb", description = "Clears and resets sql tables")
+@Command(scope = "reef", name = "resetdb", description = "Migrates the sql tables without deleting user data.")
 class ResetDatabaseCommand extends ReefCommandSupport {
 
   @GogoOption(name = "-p", description = "password for non-interactive scripting. WARNING password will be visible in command history")
-  private var password: String = null
+  private val password: String = null
 
   @GogoOption(name = "--ask-password", description = "Prompt new system password.")
-  private var askPassword: Boolean = false
+  private val askPassword: Boolean = false
 
-  @GogoOption(name = "-m", description = "Migrate database schema (rather than clearing then writing)")
-  private var useMigrations = false
+  @GogoOption(name = "--old", description = "Migrate database schema (rather than clearing then writing)")
+  private val useSquerylReset = false
+
+  @GogoOption(name = "--hard", description = "Clear the database first.")
+  private val clearFirst = false
 
   override val requiresLogin = false
 
@@ -77,14 +80,24 @@ class ResetDatabaseCommand extends ReefCommandSupport {
     mstore.connect()
 
     try {
-      CoreServicesSchema.prepareDatabase(dbConnection, true, useMigrations)
+      try {
+        CoreServicesSchema.prepareDatabase(dbConnection, clearFirst, !useSquerylReset)
+      } catch {
+        case ex: CoreServicesSchema.FirstMigrationNeededException =>
+          println("Switching to migration based database, assuming --hard onetime only")
+          CoreServicesSchema.prepareDatabase(dbConnection, true, !useSquerylReset)
+      }
+      if (clearFirst) println("Cleared and updated jvm database")
+      else println("Updated database")
       ServiceBootstrap.seed(dbConnection, systemPassword)
-      println("Cleared and updated jvm database")
+      println("Updated default agents and events")
 
-      if (mstore.reset) {
-        println("Cleared measurement store")
-      } else {
-        println("NOTE: measurement store not reset, needs to be done manually")
+      if (clearFirst) {
+        if (mstore.reset) {
+          println("Cleared measurement store")
+        } else {
+          println("NOTE: measurement store not reset, needs to be done manually")
+        }
       }
     } catch {
       case ex => println("Reset failed: " + ex.toString)
@@ -93,20 +106,3 @@ class ResetDatabaseCommand extends ReefCommandSupport {
     mstore.disconnect()
   }
 }
-
-@Command(scope = "reef", name = "migratedb", description = "Migrates the database to the current schema")
-class MigrateDatabaseCommand extends ReefCommandSupport {
-
-  override val requiresLogin = false
-
-  override def doCommand(): Unit = {
-
-    val sql = new DbInfo(OsgiConfigReader.load(getBundleContext, "org.totalgrid.reef.sql"))
-
-    val dbConnection = DbConnector.connect(sql, getBundleContext)
-
-    CoreServicesSchema.prepareDatabase(dbConnection, false, true)
-    println("Migrated database")
-  }
-}
-
