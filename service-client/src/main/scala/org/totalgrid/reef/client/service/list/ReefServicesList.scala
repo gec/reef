@@ -46,6 +46,7 @@ object ReefServicesList {
     getEntry(Descriptors.authToken),
     getEntry(Descriptors.agent),
     getEntry(Descriptors.permissionSet),
+    getEntry(Descriptors.authFilter),
 
     getEntry(Descriptors.userCommandRequest),
     getEntry(Descriptors.commandLock),

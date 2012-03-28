@@ -83,4 +83,9 @@ class Permission(val allow: Boolean, services: List[String], actions: List[Strin
         }
     }
   }
+
+  override def toString = {
+    val pre = if (allow) "Allow" else "Deny"
+    pre + " on " + services + " for " + actions + " with " + matcher.toString
+  }
 }

@@ -31,6 +31,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity }
 import org.totalgrid.reef.services.authz.AuthzService
 import org.totalgrid.reef.authz.{ AuthzFilteringService, Permission }
 import org.totalgrid.reef.client.exception.{ InternalServiceException, BadRequestException }
+import java.util.UUID
 
 object AuthFilterService {
 
@@ -72,12 +73,12 @@ class AuthFilterService extends ServiceEntryPoint[AuthFilter] with SimplePost {
       List(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build)
     }
 
-    val entModels = entities.map(e => entityModel.findRecords(context, e))
-    val uuids = entModels.map(_.map(_.id))
+    val ents: List[EntityModel] = entities.flatMap(e => entityModel.findRecords(context, e))
+    val uuids: List[List[UUID]] = ents.map(e => List(e.id))
 
     val results = permList match {
-      case None => entModels.flatMap(ents => context.auth.filter(context, resource, action, ents, uuids))
-      case Some(perms) => entModels.flatMap(ents => filter.filter(perms, resource, action, ents, uuids))
+      case None => context.auth.filter(context, resource, action, ents, uuids)
+      case Some(perms) => filter.filter(perms, resource, action, ents, uuids)
     }
 
     val resultProtos = results.map { result =>

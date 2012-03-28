@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 118 of 194 calls ported
+ * 118 of 196 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -60,6 +60,8 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   })
   // Can't encode createPermissionSet : Can't encode type: org.totalgrid.reef.client.service.proto.Auth.Permission
   // Can't encode deletePermissionSet : Can't encode type: org.totalgrid.reef.client.service.proto.Auth.PermissionSet
+  // Can't encode authFilterLookup : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
+  // Can't encode authFilterLookupWithPermissions : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Entity
   ////////////////////
   // AlarmService
   ////////////////////

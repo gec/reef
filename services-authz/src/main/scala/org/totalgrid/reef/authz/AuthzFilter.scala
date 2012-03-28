@@ -35,7 +35,7 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
     // first filter down to permissions that have right service+action
     val applicablePermissions = permissions.filter(_.applicable(service, action))
 
-    if (applicablePermissions.isEmpty) {
+    val results = if (applicablePermissions.isEmpty) {
       val defaultRule = unmatchedServiceAction(service, action)
       payloads.map { x => Denied[A](x, defaultRule) }
     } else {
@@ -53,6 +53,8 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
         resourceFilter.resourceSpecificFiltering(applicablePermissions, payloads.zip(uuidList))
       }
     }
+
+    results
   }
 
   private def unmatchedServiceAction(service: String, action: String) = {

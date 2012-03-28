@@ -19,9 +19,13 @@
 package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.service.proto.Auth;
 import org.totalgrid.reef.client.service.proto.Auth.Agent;
 import org.totalgrid.reef.client.service.proto.Auth.Permission;
 import org.totalgrid.reef.client.service.proto.Auth.PermissionSet;
+import org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult;
+import org.totalgrid.reef.client.service.proto.Auth.AuthFilterRequest;
+import org.totalgrid.reef.client.service.proto.Model.Entity;
 
 import java.util.List;
 
@@ -101,4 +105,10 @@ public interface AgentService
      * @return the deleted PermissionSet
      */
     PermissionSet deletePermissionSet( PermissionSet permission ) throws ReefServiceException;
+
+
+    List<AuthFilterResult> authFilterLookup( String action, String resource, List<Entity> entities ) throws ReefServiceException;
+
+    List<AuthFilterResult> authFilterLookupWithPermissions( String action, String resource, List<Entity> entities, PermissionSet permissionSet )
+        throws ReefServiceException;
 }

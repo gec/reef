@@ -91,8 +91,8 @@ class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
     head.action should equal("read")
     head.componentId should equal("entity")
     head.payload.filterNot(ents.contains) should equal(Nil)
-    head.uuids.size should equal(1)
-    head.uuids.head.filterNot(uuids.contains) should equal(Nil)
+    head.uuids.size should equal(3)
+    head.uuids.filterNot(uuids.map(List(_)).contains) should equal(Nil)
 
   }
 

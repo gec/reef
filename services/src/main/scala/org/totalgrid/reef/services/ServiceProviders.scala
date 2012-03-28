@@ -101,7 +101,8 @@ class ServiceProviders(
     new EventConfigService(modelFac.eventConfig),
     new CalculationConfigService(modelFac.calculations),
     new EventService(modelFac.events),
-    new AlarmService(modelFac.alarms))
+    new AlarmService(modelFac.alarms),
+    new AuthFilterService)
 
   crudAuthorizedServices ::= new BatchServiceRequestService(unauthorizedServices ::: crudAuthorizedServices)
 

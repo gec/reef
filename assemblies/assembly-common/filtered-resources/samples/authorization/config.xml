@@ -42,6 +42,9 @@
             </auth:role>
 
             <auth:role name="regional">
+                <!--<auth:allow actions="read"
+                            resources="command"
+                            selectStyle="parent" selectArguments="West East"/> -->
                 <auth:allow actions="create"
                             resources="command_lock command_lock_select command_lock_block user_command_request"
                             selectStyle="parent" selectArguments="West East"/>
