@@ -56,6 +56,7 @@ org.totalgrid.reef.shell.proto.AgentListCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsListCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsCreateCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsDeleteCommand
+org.totalgrid.reef.shell.proto.AgentPermissionsFilterCommand
 org.totalgrid.reef.shell.proto.AgentCreateCommand
 org.totalgrid.reef.shell.proto.AgentDeleteCommand
 

@@ -50,4 +50,17 @@ object AgentView {
     val denies = permissions.filter(_.getAllow == false).map { p => p.getVerbList.mkString("[", ",", "]") + " , " + p.getResourceList.mkString("[", ",", "]") }
     a.getUuid.getValue :: a.getName :: allows.mkString(";") :: denies.mkString(";") :: Nil
   }
+
+  def filterResultHeader = {
+    "Status" :: "Entity Name" :: "Reason" :: Nil
+  }
+
+  def filterResult(result: AuthFilterResult) = {
+    val str = if (result.getAllowed) "Allowed" else "Denied"
+    str :: result.getEntity.getName :: result.getReason :: Nil
+  }
+
+  def printFilterResults(results: List[AuthFilterResult]) = {
+    Table.printTable(filterResultHeader, results.map(filterResult))
+  }
 }

@@ -204,6 +204,9 @@
         <command name="agent-permissions/delete">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsDeleteCommand"/>
         </command>
+        <command name="agent-permissions/filter">
+            <action class="org.totalgrid.reef.shell.proto.AgentPermissionsFilterCommand"/>
+        </command>
         <command name="agent/create">
             <action class="org.totalgrid.reef.shell.proto.AgentCreateCommand"/>
         </command>

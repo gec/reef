@@ -25,6 +25,7 @@ import org.totalgrid.reef.shell.proto.presentation.AgentView
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Auth.Permission
 import org.totalgrid.reef.client.service.AgentService
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
 
 abstract class AgentCommandBase extends ReefCommandSupport {
   lazy val authService: AgentService = services
@@ -130,6 +131,31 @@ class AgentPermissionsDeleteCommand extends AgentCommandBase {
     val deletedPermissionSet = authService.deletePermissionSet(permissionSet)
 
     AgentView.printPermissionSets(deletedPermissionSet :: Nil)
+  }
+}
+
+@Command(scope = "agent-permissions", name = "filter", description = "Check results of PermissionSet")
+class AgentPermissionsFilterCommand extends AgentCommandBase {
+
+  @GogoOption(name = "-a", description = "Action to check filter against", required = false, multiValued = false)
+  var action: String = null
+
+  @GogoOption(name = "-r", description = "Resource to check filter against", required = false, multiValued = false)
+  var resource: String = null
+
+  @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
+  var permissionSetName: String = null
+
+  def doCommand() = {
+
+    val act = Option(action).getOrElse("read")
+    val res = Option(resource).getOrElse("entity")
+
+    val perm = authService.getPermissionSet(permissionSetName)
+
+    val results = authService.getAuthFilterResults(act, res, List(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build), perm).toList
+
+    AgentView.printFilterResults(results)
   }
 }
 
