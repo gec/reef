@@ -73,17 +73,17 @@ object EventConfigService {
   }
 
   def seed() {
-    import org.squeryl.PrimitiveTypeMode._
-    import org.totalgrid.reef.models.ApplicationSchema
+    val eventConfigs = builtInEventConfigurations()
+    val defaultEventNames = eventConfigs.keys.toList
 
-    if (ApplicationSchema.eventConfigs.Count.head == 0) {
-      // TODO: make a default event config for handling unknown events
+    val alreadyIn = from(ApplicationSchema.eventConfigs)(sql =>
+      where(sql.eventType in defaultEventNames)
+        select (sql.eventType)).toList
 
-      val ecs = builtInEventConfigurations().values
+    val needed = defaultEventNames.diff(alreadyIn)
+    val toInsert = needed.map { eventConfigs(_) }.toList
 
-      ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
-    }
-
+    ApplicationSchema.eventConfigs.insert(toInsert)
   }
 }
 

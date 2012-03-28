@@ -32,13 +32,14 @@ import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestExc
 
 object EntityService {
   def seed() {
-    import org.squeryl.PrimitiveTypeMode._
-    import org.totalgrid.reef.models.{ ApplicationSchema, EntityTypeMetaModel }
+    val alreadyIn = from(ApplicationSchema.entityTypeMetaModel)(sql =>
+      where(sql.id in allKnownTypes)
+        select (sql.id)).toList
 
-    if (ApplicationSchema.entityTypeMetaModel.Count.head == 0) {
-      val metaModels = allKnownTypes.map { new EntityTypeMetaModel(_) }
-      ApplicationSchema.entityTypeMetaModel.insert(metaModels)
-    }
+    val newTypes = allKnownTypes.diff(alreadyIn)
+
+    val metaModels = newTypes.map { new EntityTypeMetaModel(_) }
+    ApplicationSchema.entityTypeMetaModel.insert(metaModels)
   }
 
   def isNameValid(name: String) = {

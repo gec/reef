@@ -102,9 +102,7 @@ object ServiceBootstrap {
   def seed(dbConnection: DbConnection, systemPassword: String) {
     val context = new SilentRequestContext
     dbConnection.transaction {
-      core.EventConfigService.seed()
-      core.EntityService.seed()
-      core.StandardAuthSeedData.seed(context, systemPassword)
+      ServiceSeedData.seed(context, systemPassword)
     }
   }
 
