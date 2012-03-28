@@ -25,30 +25,60 @@ import liquibase.resource.ClassLoaderResourceAccessor
 import liquibase.database.{ Database, DatabaseFactory }
 
 object CoreServicesSchema {
+
+  // if we are starting migrations we need to make sure that the user knows the database is going to get
+  // reset
+  class FirstMigrationNeededException extends Exception("Can't start migrating database without clearing data first (rerun with --hard)")
+
   def prepareDatabase(dbConnection: DbConnection, clearFirst: Boolean = true, useMigrations: Boolean = false) {
     if (!useMigrations) {
       if (!clearFirst) {
         throw new IllegalArgumentException("Can't prepareDatabase without clearing data if not using migrations")
       }
+      useDb(dbConnection) { clearDatabase(_) }
+
       dbConnection.transaction {
         ApplicationSchema.reset()
       }
     } else {
       useDb(dbConnection) { database =>
 
-        if (clearFirst) database.dropDatabaseObjects(null)
+        if (clearFirst) clearDatabase(database)
 
-        upgradeDatabase(database)
+        upgradeDatabase(database, clearFirst)
       }
+    }
+  }
+
+  def clearDatabase(database: Database) {
+    // dropDatabaseObjects doesn't delete the lock table so we change the names
+    // do the delete and then change them back to make sure it gets correctly cleared out
+    val lockName = database.getDatabaseChangeLogLockTableName
+    val logName = database.getDatabaseChangeLogTableName
+    database.setDatabaseChangeLogLockTableName(lockName + "_temp")
+    database.setDatabaseChangeLogTableName(logName + "_temp")
+    database.dropDatabaseObjects(null)
+    database.setDatabaseChangeLogLockTableName(lockName)
+    database.setDatabaseChangeLogTableName(logName)
+    if (database.hasDatabaseChangeLogTable || database.hasDatabaseChangeLogLockTable) {
+      throw new Exception("Dropping db objects doesn't include change log tables")
     }
   }
 
   val SCHEMA_FILE_NAME = "services-db-schema.xml"
   val SCHEMA_CONTEXT = "original"
 
-  def upgradeDatabase(database: Database) {
+  def upgradeDatabase(database: Database, clearFirst: Boolean) {
     val resources = new ClassLoaderResourceAccessor(this.getClass.getClassLoader)
     val l = new Liquibase(SCHEMA_FILE_NAME, resources, database)
+
+    if (!clearFirst) {
+      import scala.collection.JavaConversions._
+      val unrun = l.listUnrunChangeSets(SCHEMA_CONTEXT).toList
+      if (!unrun.isEmpty && unrun.head.getId == "1327943117559-1") {
+        throw new FirstMigrationNeededException()
+      }
+    }
 
     l.update(SCHEMA_CONTEXT)
   }
