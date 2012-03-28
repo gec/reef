@@ -78,7 +78,13 @@ class AuthFilterService extends ServiceEntryPoint[AuthFilter] with SimplePost {
 
     val results = permList match {
       case None => context.auth.filter(context, resource, action, ents, uuids)
-      case Some(perms) => filter.filter(perms, resource, action, ents, uuids)
+      case Some(perms) =>
+        val lookup = filter.filter(perms, resource, action, ents, uuids)
+
+        // Filter anything we're not allowed to see
+        val visibleToMe = context.auth.filter(context, "entity", "read", ents, uuids)
+        val denyMap = visibleToMe.filterNot(_.isAllowed).groupBy(_.result.name)
+        lookup.filterNot(r => denyMap.contains(r.result.name))
     }
 
     val resultProtos = results.map { result =>

@@ -62,6 +62,10 @@
                             resources="command_lock command_lock_select command_lock_block user_command_request"
                             selectStyle="parent" selectArguments="Nuke1"/>
             </auth:role>
+
+            <auth:role name="limited_viewer">
+                <auth:allow actions="read" resources="entity" selectStyle="parent" selectArguments="West East"/>
+            </auth:role>
         </auth:roles>
 
         <auth:agents>
@@ -81,6 +85,8 @@
 
             <auth:agent name="fep_app" roles="application protocol_adapter system_viewer"/>
             <auth:agent name="hmi_app" roles="application system_viewer"/>
+
+            <auth:agent name="limited_regional_op" roles="user limited_viewer regional"/>
         </auth:agents>
     </auth:authorization>
 

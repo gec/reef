@@ -76,4 +76,15 @@ class AuthFilterTest extends AuthTestBase {
     }
   }
 
+  test("No read leak") {
+    val set = as("system") { _.getPermissionSet("regional").await }
+    as("limited_regional_op") { ops =>
+
+      val allowCheck = List("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8")
+      val denyCheck = List()
+      val result = ops.getAuthFilterResults("create", "command_lock", List(Entity.newBuilder.addTypes("Command").build()), set)
+      checkLookup(result.await, allowCheck, denyCheck)
+    }
+  }
+
 }
