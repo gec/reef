@@ -28,7 +28,6 @@ import org.totalgrid.reef.app.{ ConnectedApplication, ConnectionConsumer, Connec
 import net.agileautomata.executor4s.{ Cancelable, Executor }
 import org.totalgrid.reef.util.Lifecycle
 
-// TODO: implement retry backoff
 case class ApplicationManagerSettings(
     userSettings: UserSettings,
     nodeSettings: NodeSettings,

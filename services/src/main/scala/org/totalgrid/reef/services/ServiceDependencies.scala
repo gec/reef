@@ -82,13 +82,3 @@ class SilentRequestContext extends RequestContext with HeadersContext {
   def subHandler = new SilentServiceSubscriptionHandler
   val auth = new NullAuthzService
 }
-
-// TODO: get rid of all uses of NullRequestContext
-class NullRequestContext extends RequestContext with HeadersContext {
-
-  def client = throw new Exception
-  def eventSink = throw new Exception
-  def operationBuffer = throw new Exception
-  def subHandler = throw new Exception
-  val auth = new NullAuthzService
-}

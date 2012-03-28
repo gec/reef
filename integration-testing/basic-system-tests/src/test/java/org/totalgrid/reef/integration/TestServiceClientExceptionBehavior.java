@@ -21,6 +21,7 @@ package org.totalgrid.reef.integration;
 import org.junit.*;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.exception.ServiceIOException;
 import org.totalgrid.reef.client.exception.UnauthorizedException;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 
@@ -44,10 +45,13 @@ public class TestServiceClientExceptionBehavior extends ReefConnectionTestBase
                 helpers.getApplications();
                 fail( "Closed client should throw exception" );
             }
-            catch ( Exception ex )
+            catch ( ServiceIOException ex )
             {
-                // TODO: throw ServiceIOException if factory has been terminated
                 assertTrue( true );
+            }
+            catch ( ReefServiceException ex )
+            {
+                fail( "Exception should have been serviceIO" );
             }
         }
     }

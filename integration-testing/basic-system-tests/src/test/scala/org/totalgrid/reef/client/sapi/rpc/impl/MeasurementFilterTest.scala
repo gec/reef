@@ -45,7 +45,6 @@ class MeasurementFilterTest extends ServiceClientSuite {
   def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil).await
 
   test("Filter Deadband Test") {
-    // TODO: wait for endpoints to come online
 
     val pointName = "StaticSubstation.Line02.Current"
 

@@ -43,8 +43,7 @@ class EntityRequestTest extends ServiceClientSuite {
 
     val entities = client.getEntitiesWithTypes(List("Agent", "PermissionSet")).await
 
-    // TODO: make sure agents and permission sets get an entity
-    // entities.size should equal(allAgents.size + permissions.size)
+    entities.size should equal(allAgents.size + permissions.size)
   }
 
   test("Put with UUID") {
