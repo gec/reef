@@ -39,33 +39,39 @@ class AuthFilterTest extends AuthTestBase {
   }
 
   def checkAllowed(results: List[AuthFilterResult], allowCheck: List[String]) {
-    val (allowed, denied) = results.partition(_.getAllowed)
+    val (allowed, _) = results.partition(_.getAllowed)
     val allowedNames = allowed.map(_.getEntity.getName)
     allowedNames.filterNot(allowCheck.contains) should equal(Nil)
   }
 
   test("Parent selector") {
-    as("regional_op") { ops =>
+    as("system") { ops =>
+
+      val set = ops.getPermissionSet("regional").await
       val allowCheck = List("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8")
       val denyCheck = List("C9", "C10", "C11", "C12")
-      val result = ops.authFilterLookup("create", "command_lock", List(Entity.newBuilder.addTypes("Command").build()))
+      val result = ops.getAuthFilterResults("create", "command_lock", List(Entity.newBuilder.addTypes("Command").build()), set)
       checkLookup(result.await, allowCheck, denyCheck)
     }
   }
 
   test("Type selector") {
-    as("non_critical_op") { ops =>
+    as("system") { ops =>
+
+      val set = ops.getPermissionSet("non_critical").await
       val allowCheck = List("C2", "C3", "C6", "C7", "C10", "C11")
       val denyCheck = List("C1", "C4", "C5", "C8", "C9", "C12")
-      val result = ops.authFilterLookup("create", "command_lock", List(Entity.newBuilder.addTypes("Command").build()))
+      val result = ops.getAuthFilterResults("create", "command_lock", List(Entity.newBuilder.addTypes("Command").build()), set)
       checkLookup(result.await, allowCheck, denyCheck)
     }
   }
 
   test("Self selector") {
-    as("non_critical_op") { ops =>
+    as("system") { ops =>
+
+      val set = ops.getPermissionSet("non_critical").await
       val allowCheck = List("non_critical_op")
-      val result = ops.authFilterLookup("update", "agent_password", List(Entity.newBuilder.addTypes("Agent").build()))
+      val result = ops.getAuthFilterResults("update", "agent_password", List(Entity.newBuilder.addTypes("Agent").build()), set)
       checkAllowed(result.await, allowCheck)
     }
   }

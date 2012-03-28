@@ -107,8 +107,6 @@ public interface AgentService
     PermissionSet deletePermissionSet( PermissionSet permission ) throws ReefServiceException;
 
 
-    List<AuthFilterResult> authFilterLookup( String action, String resource, List<Entity> entities ) throws ReefServiceException;
-
-    List<AuthFilterResult> authFilterLookupWithPermissions( String action, String resource, List<Entity> entities, PermissionSet permissionSet )
+    List<AuthFilterResult> getAuthFilterResults( String action, String resource, List<Entity> entities, PermissionSet permissionSet )
         throws ReefServiceException;
 }

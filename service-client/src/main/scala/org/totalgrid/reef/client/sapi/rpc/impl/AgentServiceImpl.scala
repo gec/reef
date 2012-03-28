@@ -83,15 +83,16 @@ trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
     }
   }
 
+  /*
   def authFilterLookup(action: String, resource: String, entities: List[Entity]): Promise[List[AuthFilterResult]] = {
     ops.operation("Couldn't lookup auth filters") {
       val request = AuthFilterRequest.newBuilder().addAllEntity(entities).setAction(action).setResource(resource).build()
       val proto = AuthFilter.newBuilder().setRequest(request).build
       _.post(proto).map(_.one.map(_.getResultsList.toList))
     }
-  }
+  }*/
 
-  def authFilterLookupWithPermissions(action: String, resource: String, entities: List[Entity], permissionSet: PermissionSet): Promise[List[AuthFilterResult]] = {
+  def getAuthFilterResults(action: String, resource: String, entities: List[Entity], permissionSet: PermissionSet): Promise[List[AuthFilterResult]] = {
     ops.operation("Couldn't lookup auth filters") {
       val request = AuthFilterRequest.newBuilder().addAllEntity(entities).setAction(action).setResource(resource).setPermissions(permissionSet).build()
       val proto = AuthFilter.newBuilder().setRequest(request).build
