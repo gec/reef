@@ -18,66 +18,89 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.framework.RequestContext
-import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => RoleProto, Permission, EntitySelector }
-import org.totalgrid.reef.models.ApplicationSchema
-import org.totalgrid.reef.models.{ PermissionSet, AgentPermissionSetJoin }
+import org.totalgrid.reef.services.framework.{ RequestContextSource, RequestContext }
+import org.totalgrid.reef.client.service.proto.Auth.{ Agent, PermissionSet => RoleProto, Permission, EntitySelector }
 
 /**
  * static seed function to bootstrap users + permissions into the system
- * TODO: remove static user seed data
  */
 object StandardAuthSeedData {
 
-  def seed(context: RequestContext, systemPassword: String) = {
-
-    val entityModel = new EntityServiceModel
-    val agentModel = new AgentServiceModel
-
-    val allSelector = EntitySelector.newBuilder.setStyle("*").build
-
-    val all = Permission.newBuilder.setAllow(true).addVerb("*").addResource("*").addSelector(allSelector).build
-    val readOnly = Permission.newBuilder.setAllow(true).addVerb("read").addResource("*").addSelector(allSelector).build
-
-    val selfAgent = EntitySelector.newBuilder.setStyle("self").build
-    val updatePassword = Permission.newBuilder.setAllow(true).addVerb("update").addResource("agent_password").addSelector(selfAgent).build
-
-    val allRole = RoleProto.newBuilder.setName("all").addPermissions(all)
-    val guestRole = RoleProto.newBuilder.setName("read_only").addPermissions(readOnly)
-    val passwordRole = RoleProto.newBuilder.setName("password_updatable").addPermissions(updatePassword)
-
-    val defaultExpirationTime = 18144000000L // one month
-
-    def addPermissionSet(proto: RoleProto.Builder) = {
-      proto.setDefaultExpirationTime(defaultExpirationTime)
-      val entity = entityModel.findOrCreate(context, proto.getName, "PermissionSet" :: Nil, None)
-      val permissionSet = new PermissionSet(entity.id, proto.build.toByteArray)
-      ApplicationSchema.permissionSets.insert(permissionSet)
+  /**
+   * encapsulates the operations to create/update agents and roles. By default we don't update the password of existing
+   * agents so this seeding can be run on a live system without overwriting the current passwords
+   */
+  class AuthSeeder(context: RequestContext, updatePasswords: Boolean, defaultExpirationTime: Long = 18144000000L) {
+    private val source = new RequestContextSource {
+      def transaction[A](f: (RequestContext) => A) = f(context)
     }
 
-    val allSet = addPermissionSet(allRole)
-    val readOnlySet = addPermissionSet(guestRole)
-    val passwordSet = addPermissionSet(passwordRole)
+    private val agentService = new AgentService(new AgentServiceModel)
+    private val permissionService = new PermissionSetService(new PermissionSetServiceModel)
 
-    def addUser(userName: String, role: PermissionSet) = addUserRoles(userName, List(role))
-    def addUserRoles(userName: String, roles: List[PermissionSet]) {
-      val user = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, userName, systemPassword))
-      roles.foreach { r => ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(r.id, user.id)) }
+    def makeSelector(style: String, arguments: List[String] = Nil) = {
+      val b = EntitySelector.newBuilder.setStyle(style)
+      arguments.foreach(b.addArguments(_))
+      b.build
     }
 
-    addUser("system", allSet)
-    addUser("admin", allSet)
-    addUser("operator", allSet)
-    addUser("services", allSet)
-    addUser("core_application", allSet)
-    addUser("remote_application", allSet)
-    addUser("master_protocol_adapter", allSet)
-    addUser("slave_protocol_adapter", allSet)
+    def makePermission(allow: Boolean, verbs: List[String] = List("*"), resources: List[String] = List("*"), selectors: List[EntitySelector] = Nil) = {
+      val b = Permission.newBuilder.setAllow(true)
+      verbs.foreach(b.addVerb(_))
+      resources.foreach(b.addResource(_))
+      if (selectors.isEmpty) b.addSelector(makeSelector("*"))
+      else selectors.foreach(b.addSelector(_))
+      b.build
+    }
 
-    addUser("guest", readOnlySet)
-    addUserRoles("user", List(readOnlySet, passwordSet))
+    def addRole(name: String, permissions: List[Permission], expirationTime: Long = defaultExpirationTime): RoleProto = {
+      val b = RoleProto.newBuilder.setName(name)
+      b.setDefaultExpirationTime(expirationTime)
+      permissions.foreach(b.addPermissions(_))
+      permissionService.put(source, b.build).expectOne()
+    }
 
-    (allSet, readOnlySet)
+    def addUser(userName: String, defaultPassword: String, role: String): Agent = addUser(userName, defaultPassword, List(role))
+    def addUser(userName: String, defaultPassword: String, roles: List[String]): Agent = {
+
+      val b = Agent.newBuilder.setName(userName)
+
+      val existingAgent = agentService.get(source, Agent.newBuilder.setName(userName).build).expectMany().headOption
+      if (updatePasswords || existingAgent.isEmpty) {
+        b.setPassword(defaultPassword)
+      }
+
+      roles.foreach(r => b.addPermissionSets(RoleProto.newBuilder.setName(r).build))
+      agentService.put(source, b.build).expectOne()
+    }
+  }
+
+  def seed(context: RequestContext, systemPassword: String) {
+
+    // we don't want to update the passwords of any already existing agents
+    val seeder = new AuthSeeder(context, false)
+
+    val all = seeder.makePermission(true)
+    val readOnly = seeder.makePermission(true, List("read"))
+
+    val selfAgent = seeder.makeSelector("self")
+    val updatePassword = seeder.makePermission(true, List("update"), List("agent_password"), List(selfAgent))
+
+    val allRole = seeder.addRole("all", List(all))
+    val readOnlyRole = seeder.addRole("read_only", List(readOnly))
+    val passwordChangingRole = seeder.addRole("password_updatable", List(updatePassword))
+
+    seeder.addUser("system", systemPassword, allRole.getName)
+    seeder.addUser("admin", systemPassword, allRole.getName)
+    seeder.addUser("operator", systemPassword, allRole.getName)
+    seeder.addUser("services", systemPassword, allRole.getName)
+    seeder.addUser("core_application", systemPassword, allRole.getName)
+    seeder.addUser("remote_application", systemPassword, allRole.getName)
+    seeder.addUser("master_protocol_adapter", systemPassword, allRole.getName)
+    seeder.addUser("slave_protocol_adapter", systemPassword, allRole.getName)
+
+    seeder.addUser("guest", systemPassword, readOnlyRole.getName)
+    seeder.addUser("user", systemPassword, List(readOnlyRole.getName, passwordChangingRole.getName))
   }
 
 }

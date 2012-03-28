@@ -50,22 +50,11 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
 
     StandardAuthSeedData.seed(context, "system")
 
-    val source = new RequestContextSource {
-      def transaction[A](f: (RequestContext) => A) = f(context)
-    }
+    val seeder = new StandardAuthSeedData.AuthSeeder(context, true)
 
-    val agentModel = new AgentServiceModel
-    val agentService = new AgentService(agentModel)
-
-    def createAgent(name: String, password: String, roles: List[String]) {
-      val b = Agent.newBuilder.setName(name).setPassword(password)
-      roles.foreach { r => b.addPermissionSets(PermissionSet.newBuilder.setName(r).build) }
-      agentService.put(source, b.build).expectOne()
-    }
-
-    createAgent("core", "core", List("all", "read_only"))
-    createAgent("operator", "operator", List("all", "read_only"))
-    createAgent("guest", "guest", List("read_only"))
+    seeder.addUser("core", "core", List("all", "read_only"))
+    seeder.addUser("operator", "operator", List("all", "read_only"))
+    seeder.addUser("guest", "guest", List("read_only"))
   }
 
   override def beforeEachInTransaction() = {
@@ -156,6 +145,26 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
     def getOwnTokens(count: Int) = {
       noTokens(authService.get(AuthToken.newBuilder.build).expectMany(count))
     }
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class AuthSeederTest extends AuthSystemTestBase {
+  test("Can update user permissions without changing password") {
+    val fix = new Fixture
+    val seeder = new StandardAuthSeedData.AuthSeeder(new SilentRequestContext, false)
+
+    seeder.addUser("test-user", "test-pass", List("all"))
+
+    val token = fix.login("test-user", "test-pass")
+    token.getPermissionSets(0).getName should equal("all")
+
+    // update the user with a different default password
+    seeder.addUser("test-user", "different", List("read_only"))
+
+    // password should be original value, permission set should be updated
+    val token2 = fix.login("test-user", "test-pass")
+    token2.getPermissionSets(0).getName should equal("read_only")
   }
 }
 
