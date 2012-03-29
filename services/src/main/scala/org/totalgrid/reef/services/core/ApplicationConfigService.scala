@@ -127,7 +127,7 @@ trait ApplicationConfigConversion
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
-    entry.location != existing.location || entry.network != existing.network
+    entry.location != existing.location || entry.network != existing.network || entry.agentId != existing.agentId
   }
 
   def convertToProto(entry: ApplicationInstance): ApplicationConfig = {
