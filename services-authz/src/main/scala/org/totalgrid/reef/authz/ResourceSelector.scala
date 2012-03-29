@@ -33,7 +33,7 @@ sealed trait ResourceSelector {
 
 class WildcardMatcher extends ResourceSelector {
 
-  def includes(uuids: List[UUID]) = uuids.map { x => Some(true) }
+  def includes(uuids: List[UUID]) = if (uuids.isEmpty) List(Some(true)) else uuids.map { x => Some(true) }
 
   val allow = true
   val resourceDependent = false

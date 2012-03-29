@@ -75,6 +75,9 @@ class ResourceSelectorTest extends AuthzTestBase {
     val matcher1 = new WildcardMatcher
 
     matcher1.includes(uuids) should equal(List(Some(true), Some(true), Some(true), Some(true)))
+
+    // wildcard matcher will match an empty set as well
+    matcher1.includes(List.empty[UUID]) should equal(List(Some(true)))
   }
 
   test("EntityParentIncludes") {
