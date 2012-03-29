@@ -143,6 +143,12 @@ class AgentPermissionsFilterCommand extends AgentCommandBase {
   @GogoOption(name = "-r", description = "Resource to check filter against", required = false, multiValued = false)
   var resource: String = null
 
+  @GogoOption(name = "-t", description = "Entity type to look up", required = false, multiValued = false)
+  var entityType: String = null
+
+  @GogoOption(name = "-n", description = "Entity name to look up", required = false, multiValued = false)
+  var entityName: String = null
+
   @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
   var permissionSetName: String = null
 
@@ -153,7 +159,13 @@ class AgentPermissionsFilterCommand extends AgentCommandBase {
 
     val perm = authService.getPermissionSet(permissionSetName)
 
-    val results = authService.getAuthFilterResults(act, res, List(Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build), perm).toList
+    val ent = Option(entityName).map(Entity.newBuilder.setName(_).build).getOrElse {
+      Option(entityType).map(Entity.newBuilder.addTypes(_).build).getOrElse {
+        Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
+      }
+    }
+
+    val results = authService.getAuthFilterResults(act, res, List(ent), perm).toList
 
     AgentView.printFilterResults(results)
   }
