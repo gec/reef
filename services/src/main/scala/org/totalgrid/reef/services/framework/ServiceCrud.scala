@@ -20,6 +20,7 @@ package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.service.HasComponentId
+import org.totalgrid.reef.authz.FilteredResult
 
 trait HasCreate extends HasAllTypes with HasComponentId {
 
@@ -69,10 +70,16 @@ trait HasRead extends HasAllTypes with HasComponentId {
   }
 
   protected def performRead(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ServiceType] = {
-    val records = model.findRecords(context, request)
-    context.auth.authorize(context, componentId, "read", model.relatedEntities(records))
-    //val filtered = context.auth.filter(componentId, "read", records.map{model.relatedEntities(_)}.flatten.distinct)
-    model.sortResults(records.map(model.convertToProto(_)))
+    val records: List[ModelType] = model.findRecords(context, request)
+
+    val relatedEntities = records.map(r => model.relatedEntities(List(r)))
+    val results: List[FilteredResult[ModelType]] = context.auth.filter(context, componentId, "read", records, relatedEntities)
+
+    val filtered: List[ModelType] = results.filter(_.isAllowed).map(_.result)
+    if (filtered == Nil) {
+      context.auth.authorize(context, componentId, "read", Nil)
+    }
+    model.sortResults(filtered.map(model.convertToProto(_)))
   }
 }
 

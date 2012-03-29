@@ -44,7 +44,9 @@ trait AuthzService {
 }
 
 class NullAuthzService extends AuthzService {
-  def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = Nil
+  def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
+    payload.map(Allowed(_, new Permission(true, List(), List(), new WildcardMatcher)))
+  }
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {}
   def prepare(context: RequestContext) {}
 }

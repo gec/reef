@@ -21,6 +21,7 @@ package org.totalgrid.reef.integration.authz
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.settings.NodeSettings
+import concurrent.ops
 
 @RunWith(classOf[JUnitRunner])
 class ReadFilterTest extends AuthTestBase {
@@ -30,9 +31,9 @@ class ReadFilterTest extends AuthTestBase {
   test("See only entities we're allowed to") {
     as("limited_regional_op") { ops =>
 
-      intercept[Exception] {
-        ops.getEntities().await.map(_.getName).mkString("\n")
-      }
+      val entNames = ops.getEntities().await.map(_.getName)
+      val expected = List("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "Sub1", "Sub2", "Sub3", "Sub4", "East", "West", "limited_regional_op")
+      entNames.toSet should equal(expected.toSet)
     }
   }
 

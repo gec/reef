@@ -34,14 +34,14 @@ class AuthFilterTest extends AuthTestBase {
     val allowedNames = allowed.map(_.getEntity.getName)
     val deniedNames = denied.map(_.getEntity.getName)
 
-    allowedNames.filterNot(allowCheck.contains) should equal(Nil)
-    deniedNames.filterNot(denyCheck.contains) should equal(Nil)
+    allowedNames.toSet should equal(allowCheck.toSet)
+    deniedNames.toSet should equal(denyCheck.toSet)
   }
 
   def checkAllowed(results: List[AuthFilterResult], allowCheck: List[String]) {
     val (allowed, _) = results.partition(_.getAllowed)
     val allowedNames = allowed.map(_.getEntity.getName)
-    allowedNames.filterNot(allowCheck.contains) should equal(Nil)
+    allowedNames.toSet should equal(allowCheck.toSet)
   }
 
   test("Parent selector") {
@@ -67,9 +67,9 @@ class AuthFilterTest extends AuthTestBase {
   }
 
   test("Self selector") {
-    as("system") { ops =>
+    val set = as("system") { _.getPermissionSet("user_role").await }
+    as("non_critical_op") { ops =>
 
-      val set = ops.getPermissionSet("non_critical").await
       val allowCheck = List("non_critical_op")
       val result = ops.getAuthFilterResults("update", "agent_password", List(Entity.newBuilder.addTypes("Agent").build()), set)
       checkAllowed(result.await, allowCheck)

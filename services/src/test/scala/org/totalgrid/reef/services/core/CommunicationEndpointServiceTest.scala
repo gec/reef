@@ -327,7 +327,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     val initialConnectionState = f.connectionService.get(getConnection().build).expectOne()
     initialConnectionState.getState should equal(EndpointConnection.State.COMMS_DOWN)
     initialConnectionState.getEnabled should equal(true)
-    f.checkAuth(AuthRequest("endpoint_connection", "read", List("device")))
+    //f.checkAuth(AuthRequest("endpoint_connection", "read", List("device")))
 
     f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build)
     f.checkAuth(AuthRequest("endpoint_state", "update", List("device")))

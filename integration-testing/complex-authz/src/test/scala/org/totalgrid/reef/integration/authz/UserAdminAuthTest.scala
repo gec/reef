@@ -28,10 +28,10 @@ class UserAdminAuthTest extends AuthTestBase {
 
   test("User admin can't see live system") {
     as("user_admin") { admin =>
-      unAuthed("user_admin shouldnt see system") { admin.getCommands().await }
-      unAuthed("user_admin shouldnt see system") { admin.getCommandHistory().await }
-      unAuthed("user_admin shouldnt see system") { admin.getPoints().await }
-      unAuthed("user_admin shouldnt see system") { admin.getEndpointConnections().await }
+      unAuthed("user_admin shouldn't see system") { admin.getCommands().await }
+      unAuthed("user_admin shouldn't see system") { admin.getCommandHistory().await }
+      unAuthed("user_admin shouldn't see system") { admin.getPoints().await }
+      unAuthed("user_admin shouldn't see system") { admin.getEndpointConnections().await }
     }
   }
 

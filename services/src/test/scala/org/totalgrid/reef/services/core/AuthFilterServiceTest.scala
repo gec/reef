@@ -34,6 +34,8 @@ class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
   class Fixture extends SubscriptionTools.SubscriptionTesting {
     def _dbConnection = dbConnection
 
+    contextSource.enableFilter()
+
     val modelFac = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
     val entServ = new SyncService(new EntityService(modelFac.entities), contextSource)
 
@@ -90,9 +92,9 @@ class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
     val head = requests.head
     head.action should equal("read")
     head.componentId should equal("entity")
-    head.payload.filterNot(ents.contains) should equal(Nil)
+    head.payload.toSet should equal(ents.toSet)
     head.uuids.size should equal(3)
-    head.uuids.filterNot(uuids.map(List(_)).contains) should equal(Nil)
+    head.uuids.toSet should equal(uuids.map(List(_)).toSet)
 
   }
 

@@ -28,7 +28,7 @@ import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
 import java.util.UUID
 import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.authz.{ Permission, AuthzFilteringService, FilteredResult }
+import org.totalgrid.reef.authz._
 
 // TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
@@ -94,6 +94,8 @@ object SubscriptionTools {
     }
     def sink = subHandler
 
+    def enableFilter() { auth.filterOn = true }
+
     def authQueue = auth.queue
     def filterRequests = auth.filterRequestQueue
     def filterResponses = auth.filterResponseQueue
@@ -117,10 +119,16 @@ object SubscriptionTools {
     val filterRequestQueue = new scala.collection.mutable.Queue[FilterRequest[_]]
     val filterResponseQueue = new scala.collection.mutable.Queue[List[FilteredResult[_]]]
 
+    var filterOn = false
+
     // called by (actual) services
     def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
-      filterRequestQueue.enqueue(FilterRequest(componentId, action, payload, uuids))
-      filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
+      if (filterOn) {
+        filterRequestQueue.enqueue(FilterRequest(componentId, action, payload, uuids))
+        filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
+      } else {
+        payload.map(Allowed(_, new Permission(true, List(), List(), new WildcardMatcher)))
+      }
     }
     // called to "check" permissions
     def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
