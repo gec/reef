@@ -27,20 +27,20 @@ class UserAdminAuthTest extends AuthTestBase {
   override val modelFile = "../../assemblies/assembly-common/filtered-resources/samples/authorization/config.xml"
 
   test("User admin can't see live system") {
-    as("admin") { admin =>
-      unAuthed("admin shouldnt see system") { admin.getCommands().await }
-      unAuthed("admin shouldnt see system") { admin.getCommandHistory().await }
-      unAuthed("admin shouldnt see system") { admin.getPoints().await }
-      unAuthed("admin shouldnt see system") { admin.getEndpointConnections().await }
+    as("user_admin") { admin =>
+      unAuthed("user_admin shouldnt see system") { admin.getCommands().await }
+      unAuthed("user_admin shouldnt see system") { admin.getCommandHistory().await }
+      unAuthed("user_admin shouldnt see system") { admin.getPoints().await }
+      unAuthed("user_admin shouldnt see system") { admin.getEndpointConnections().await }
     }
   }
 
   test("User admin can create new user") {
-    as("admin") { admin =>
+    as("user_admin") { admin =>
       val agent = admin.getAgents().await.filter(_.getName == "fakeUser").headOption
       agent.foreach { admin.deleteAgent(_).await }
 
-      val fakeUser = admin.createNewAgent("fakeUser", "fakeUser", List("user")).await
+      val fakeUser = admin.createNewAgent("fakeUser", "system", List("user_role")).await
       try {
         // fake user can change own password
         as("fakeUser") { limitedUser =>

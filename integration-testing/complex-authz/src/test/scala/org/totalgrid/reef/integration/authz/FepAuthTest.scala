@@ -23,29 +23,22 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 
 @RunWith(classOf[JUnitRunner])
-class ScadaEngineerAuthTest extends AuthTestBase {
+class FepAuthTest extends AuthTestBase {
 
-  test("Scada engineer can't add users or issue commands") {
-    as("scada") { scada =>
-      unAuthed("scada cant make agents") { scada.createNewAgent("agent", "agent", List("all")).await }
+  val USER = "fep_application"
 
-      val cmd = scada.getCommands.await.head
-      unAuthed("scada cant issue commands") { scada.createCommandExecutionLock(cmd).await }
-    }
-  }
-
-  test("Scada engineer can disable/enable endpoints but not update state") {
-    as("scada") { scada =>
-      val endpointConnection = scada.getEndpointConnections().await.head
+  test("fep user can update state") {
+    as(USER) { fep =>
+      val endpointConnection = fep.getEndpointConnections().await.head
       val endpointUuid = endpointConnection.getEndpoint.getUuid
 
-      scada.disableEndpointConnection(endpointUuid).await.getEnabled should equal(false)
+      fep.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.ERROR).await
 
-      unAuthed("Engineer can't update endpoint state") {
-        scada.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.ERROR).await
+      fep.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.COMMS_UP).await
+
+      unAuthed("Fep can't update endpoint enabled") {
+        fep.disableEndpointConnection(endpointUuid).await.getEnabled should equal(false)
       }
-
-      scada.enableEndpointConnection(endpointUuid).await.getEnabled should equal(true)
     }
   }
 }

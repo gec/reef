@@ -27,17 +27,19 @@ class ApplicationAuthTest extends AuthTestBase {
 
   override val modelFile = "../../assemblies/assembly-common/filtered-resources/samples/authorization/config.xml"
 
-  test("FEP application can't see live system") {
-    as("admin") { admin =>
-      unAuthed("admin shouldnt see system") { admin.getCommands().await }
-      unAuthed("admin shouldnt see system") { admin.getCommandHistory().await }
-      unAuthed("admin shouldnt see system") { admin.getPoints().await }
-      unAuthed("admin shouldnt see system") { admin.getEndpointConnections().await }
+  val USER = "remote_application"
+
+  test("Applications can't see live system") {
+    as(USER) { admin =>
+      unAuthed(USER + " shouldnt see system") { admin.getCommands().await }
+      unAuthed(USER + " shouldnt see system") { admin.getCommandHistory().await }
+      unAuthed(USER + " shouldnt see system") { admin.getPoints().await }
+      unAuthed(USER + " shouldnt see system") { admin.getEndpointConnections().await }
     }
   }
 
-  test("Fep can register and heartbeat application") {
-    as("fep_app") { fep =>
+  test("Apps can register and heartbeat") {
+    as(USER) { fep =>
       val nodeSettings = new NodeSettings("node1", "any", "any")
       val appConfig = fep.registerApplication(nodeSettings, "fakeApplication", List("HMI")).await
 
@@ -52,7 +54,7 @@ class ApplicationAuthTest extends AuthTestBase {
   }
 
   test("Cant heartbeat or delete another users application") {
-    as("fep_app") { fep =>
+    as(USER) { fep =>
       val nodeSettings = new NodeSettings("node1", "any", "any")
       val appConfig = fep.registerApplication(nodeSettings, "fakeApplication", List("HMI")).await
 

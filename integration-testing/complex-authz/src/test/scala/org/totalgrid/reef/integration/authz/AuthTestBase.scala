@@ -21,16 +21,32 @@ package org.totalgrid.reef.integration.authz
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.exception.UnauthorizedException
+import org.totalgrid.reef.client.settings.util.PropertyReader
+import org.totalgrid.reef.client.settings.UserSettings
 
 class AuthTestBase extends ServiceClientSuite {
 
   override val modelFile = "../../assemblies/assembly-common/filtered-resources/samples/authorization/config.xml"
 
+  var userConfig = Option.empty[UserSettings]
+
+  override def beforeAll() {
+    super.beforeAll()
+
+    val props = PropertyReader.readFromFile("../../org.totalgrid.reef.test.cfg")
+    userConfig = Some(new UserSettings(props))
+
+    // update all of the agents to have the same system password
+    client.getAgents().await.foreach { a =>
+      client.setAgentPassword(a, userConfig.get.getUserPassword).await
+    }
+  }
+
   /**
    * get a new client as a particular user (assumes password == username)
    */
   def as[A](userName: String)(f: AllScadaService => A): A = {
-    val c = session.login(userName, userName).await
+    val c = session.login(userName, userConfig.get.getUserPassword).await
     val ret = f(c.getRpcInterface(classOf[AllScadaService]))
     c.logout().await
     ret

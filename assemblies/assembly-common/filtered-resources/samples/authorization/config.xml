@@ -9,38 +9,6 @@
 
     <auth:authorization>
         <auth:roles>
-
-            <auth:role name="user_admin">
-                <auth:allow actions="*" resources="agent permission_set agent_password agent_permissions"/>
-            </auth:role>
-            <auth:role name="user">
-                <auth:allow actions="update" resources="agent_password" selectStyle="self"/>
-                <auth:allow actions="read" resources="auth_token" selectStyle="self"/>
-            </auth:role>
-            <auth:role name="application">
-                <auth:allow actions="create" resources="application_config"/>
-                <auth:allow actions="update delete" resources="application_config" selectStyle="self"/>
-                <auth:allow actions="update" resources="status_snapshot" selectStyle="self"/>
-            </auth:role>
-
-            <auth:role name="protocol_adapter">
-                <auth:allow actions="update" resources="endpoint_connection endpoint_state"/>
-            </auth:role>
-
-            <auth:role name="comms_engineer">
-                <auth:allow actions="read" resources="endpoint endpoint_connection"/>
-                <auth:allow actions="update" resources="endpoint_connection endpoint_enabled"/>
-            </auth:role>
-            <auth:role name="meas_reader">
-                <auth:allow actions="read" resources="point measurement"/>
-            </auth:role>
-            <auth:role name="system_viewer">
-                <auth:allow actions="read" resources="*"/>
-            </auth:role>
-            <auth:role name="command_issuer">
-                <auth:allow actions="update delete" resources="command_lock" selectStyle="self"/>
-            </auth:role>
-
             <auth:role name="regional">
                 <auth:allow actions="create"
                             resources="command_lock command_lock_select command_lock_block user_command_request"
@@ -69,24 +37,13 @@
         </auth:roles>
 
         <auth:agents>
-            <auth:agent name="agent01" roles="comms_engineer"/>
-            <auth:agent name="agent02" roles="comms_engineer meas_reader"/>
-
             <!-- Resource specific users -->
             <auth:agent name="regional_op" roles="user system_viewer command_issuer regional"/>
             <auth:agent name="non_critical_op" roles="user system_viewer command_issuer non_critical"/>
             <auth:agent name="dlrc_app" roles="user system_viewer command_issuer dlrc application"/>
             <auth:agent name="nuke_op" roles="user system_viewer command_issuer nuke"/>
 
-            <auth:agent name="admin" roles="user user_admin"/>
-            <auth:agent name="generic_user" roles="user system_viewer"/>
-
-            <auth:agent name="scada" roles="user comms_engineer system_viewer"/>
-
-            <auth:agent name="fep_app" roles="application protocol_adapter system_viewer"/>
-            <auth:agent name="hmi_app" roles="application system_viewer"/>
-
-            <auth:agent name="limited_regional_op" roles="user limited_viewer regional"/>
+            <auth:agent name="limited_regional_op" roles="user_role limited_viewer regional"/>
         </auth:agents>
     </auth:authorization>
 

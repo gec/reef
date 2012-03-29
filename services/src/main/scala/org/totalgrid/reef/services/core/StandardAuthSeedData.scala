@@ -85,22 +85,54 @@ object StandardAuthSeedData {
 
     val selfAgent = seeder.makeSelector("self")
     val updatePassword = seeder.makePermission(true, List("update"), List("agent_password"), List(selfAgent))
+    val readSelfAgent = seeder.makePermission(true, List("read"), List("*"), List(selfAgent))
+
+    val userAdminPermission = seeder.makePermission(true, List("*"), List("agent", "agent permission_set", "agent_password", "agent_permissions"))
+    val userAdminRole = seeder.addRole("user_setup", List(userAdminPermission))
+
+    val appCreate = seeder.makePermission(true, List("create"), List("application_config"))
+    val appUpdate = seeder.makePermission(true, List("update", "delete", "read"), List("application_config"), List(selfAgent))
+    val statusUpdate = seeder.makePermission(true, List("update"), List("status_snapshot"), List(selfAgent))
+    val applicationRole = seeder.addRole("application", List(appCreate, appUpdate, statusUpdate))
+
+    val userRole = seeder.addRole("user_role", List(updatePassword, readSelfAgent))
+
+    val protocolAdapter = seeder.makePermission(true, List("read", "update"), List("endpoint_connection", "endpoint_state"))
+    val fep = seeder.makePermission(true, List("create", "update"), List("front_end_processor"))
+    val protocolRole = seeder.addRole("protocol_adapter", List(protocolAdapter, fep))
+
+    val enableEndpoints = seeder.makePermission(true, List("read", "update"), List("endpoint_connection", "endpoint_enabled"))
+    val commsEngineer = seeder.addRole("comms_engineer", List(enableEndpoints))
+
+    val systemViewerRole = seeder.addRole("system_viewer", List(readOnly))
+
+    val ownCommandUpdate = seeder.makePermission(true, List("update", "delete"), List("command_lock"), List(selfAgent))
+    val commandIssuer = seeder.addRole("command_issuer", List(ownCommandUpdate))
+
+    val commandCreator = seeder.makePermission(true, List("create"), List("command_lock", "command_lock_select", "command_lock_block", "user_command_request"), List(selfAgent))
+    val allCommands = seeder.addRole("command_creator", List(commandCreator))
 
     val allRole = seeder.addRole("all", List(all))
     val readOnlyRole = seeder.addRole("read_only", List(readOnly))
     val passwordChangingRole = seeder.addRole("password_updatable", List(updatePassword))
 
-    seeder.addUser("system", systemPassword, allRole.getName)
-    seeder.addUser("admin", systemPassword, allRole.getName)
-    seeder.addUser("operator", systemPassword, allRole.getName)
-    seeder.addUser("services", systemPassword, allRole.getName)
-    seeder.addUser("core_application", systemPassword, allRole.getName)
-    seeder.addUser("remote_application", systemPassword, allRole.getName)
-    seeder.addUser("master_protocol_adapter", systemPassword, allRole.getName)
-    seeder.addUser("slave_protocol_adapter", systemPassword, allRole.getName)
+    val standardRoles = List("user_role", "system_viewer")
 
-    seeder.addUser("guest", systemPassword, readOnlyRole.getName)
-    seeder.addUser("user", systemPassword, List(readOnlyRole.getName, passwordChangingRole.getName))
+    seeder.addUser("system", systemPassword, List("all"))
+    seeder.addUser("admin", systemPassword, List("all"))
+    seeder.addUser("user_admin", systemPassword, List("user_setup", "user"))
+    seeder.addUser("operator", systemPassword, "command_creater" :: "command_issuer" :: standardRoles)
+    seeder.addUser("services", systemPassword, List("all"))
+    seeder.addUser("scada", systemPassword, "comms_engineer" :: standardRoles)
+    seeder.addUser("core_application", systemPassword, List("all"))
+    seeder.addUser("remote_application", systemPassword, List("application"))
+    seeder.addUser("fep_application", systemPassword, List("application", "protocol_adapter"))
+    seeder.addUser("master_protocol_adapter", systemPassword, "application" :: "protocol_adapter" :: standardRoles)
+    seeder.addUser("slave_protocol_adapter", systemPassword, "application" :: "protocol_adapter" :: standardRoles)
+    seeder.addUser("hmi_app", systemPassword, "application" :: standardRoles)
+
+    seeder.addUser("guest", systemPassword, List("read_only"))
+    seeder.addUser("user", systemPassword, List("read_only", "password_updatable"))
   }
 
 }
