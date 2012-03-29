@@ -32,7 +32,7 @@ class AuthzFilteringTest extends AuthzTestBase {
     val mock = new ResourceSpecificFiltering {
       var usedResourceFilter = false
 
-      def resourceSpecificFiltering[A](applicablePermissions: List[Permission], pairs: List[(A, List[UUID])]) = {
+      def resourceSpecificFiltering[A](applicablePermissions: List[Permission], service: String, action: String, pairs: List[(A, List[UUID])]) = {
         usedResourceFilter = true
         pairs.map { x => Allowed[A](x._1, applicablePermissions.head) }
       }

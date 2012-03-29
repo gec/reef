@@ -25,12 +25,12 @@ trait ResourceSpecificFiltering {
    * each payload object is associated with a list of related resources, if any of those resources are restricted we will
    * return a denied object for each entry
    */
-  def resourceSpecificFiltering[A](applicablePermissions: List[Permission], pairs: List[(A, List[UUID])]): List[FilteredResult[A]]
+  def resourceSpecificFiltering[A](applicablePermissions: List[Permission], service: String, action: String, pairs: List[(A, List[UUID])]): List[FilteredResult[A]]
 }
 
 object ResourceSpecificFilter extends ResourceSpecificFiltering {
 
-  def resourceSpecificFiltering[A](applicablePermissions: List[Permission], pairs: List[(A, List[UUID])]): List[FilteredResult[A]] = {
+  def resourceSpecificFiltering[A](applicablePermissions: List[Permission], service: String, action: String, pairs: List[(A, List[UUID])]): List[FilteredResult[A]] = {
     val originalStates = pairs.map { case (payload, uuids) => SelectState[A](payload, uuids, None) }
 
     val finalStates = applicablePermissions.foldLeft(originalStates) {
@@ -40,15 +40,15 @@ object ResourceSpecificFilter extends ResourceSpecificFiltering {
 
     // we will only make the defaultRule with helpful (and expensive) string if something didn't match any permission
     lazy val unmatched = finalStates.filter { _.filteredResult.isEmpty }
-    lazy val defaultRule = unmatchedResources(unmatched.map { _.uuids }.flatten)
+    lazy val defaultRule = unmatchedResources(service, action, unmatched.map { _.uuids }.flatten)
 
     finalStates.map { state => state.filteredResult.getOrElse(Denied[A](state.payload, defaultRule)) }
   }
 
-  private def unmatchedResources(unmatchedUuids: List[UUID]) = {
+  private def unmatchedResources(service: String, action: String, unmatchedUuids: List[UUID]) = {
 
     lazy val unmatchNames = EntityHelpers.getNames(unmatchedUuids)
-    lazy val msg = "No permission selector matched " + unmatchNames.mkString("(", ",", ")") + ". Assuming deny *."
+    lazy val msg = "No permission matched " + service + ":" + action + " " + unmatchNames.mkString("(", ",", ")") + ". Assuming deny *."
 
     Permission.denyAllPermission(msg)
   }

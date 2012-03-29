@@ -50,7 +50,7 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
         val uuidList = uuids // Call once
 
         logger.info(service + ":" + action + " -- " + EntityHelpers.getNames(uuidList.flatten.distinct).mkString("(", ",", ")"))
-        resourceFilter.resourceSpecificFiltering(applicablePermissions, payloads.zip(uuidList))
+        resourceFilter.resourceSpecificFiltering(applicablePermissions, service, action, payloads.zip(uuidList))
       }
     }
 
