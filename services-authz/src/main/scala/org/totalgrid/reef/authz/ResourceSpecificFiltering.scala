@@ -31,7 +31,6 @@ trait ResourceSpecificFiltering {
 object ResourceSpecificFilter extends ResourceSpecificFiltering {
 
   def resourceSpecificFiltering[A](applicablePermissions: List[Permission], pairs: List[(A, List[UUID])]): List[FilteredResult[A]] = {
-
     val originalStates = pairs.map { case (payload, uuids) => SelectState[A](payload, uuids, None) }
 
     val finalStates = applicablePermissions.foldLeft(originalStates) {

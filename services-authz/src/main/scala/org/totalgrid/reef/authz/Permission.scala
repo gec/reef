@@ -70,14 +70,15 @@ class Permission(val allow: Boolean, services: List[String], actions: List[Strin
         if (state.filteredResult.isDefined) state
         else {
           val matched = matcher.includes(state.uuids)
-          val result = matched.find(_ == Some(true)) match {
-            case Some(Some(true)) =>
-              allow match {
-                case true => Some(Allowed[A](state.payload, this))
-                case false => Some(Denied[A](state.payload, this))
-              }
-            case _ =>
-              None
+
+          def getResult = allow match {
+            case true => Some(Allowed[A](state.payload, this))
+            case false => Some(Denied[A](state.payload, this))
+          }
+
+          val result = matched.forall(_ == Some(true)) match {
+            case true => getResult
+            case false => None
           }
           state.copy(filteredResult = result)
         }
