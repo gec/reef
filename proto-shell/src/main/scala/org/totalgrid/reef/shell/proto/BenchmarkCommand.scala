@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.totalgrid.reef.benchmarks.AllBenchmarksEntryPoint
+import org.totalgrid.reef.benchmarks.BenchmarksRunner
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.apache.felix.gogo.commands.{ Argument, Command }
 
@@ -32,6 +32,6 @@ class BenchmarkCommand extends ReefCommandSupport {
 
     val testOptions = PropertyReader.readFromFile(configFile)
 
-    AllBenchmarksEntryPoint.runAllTests(reefClient, testOptions)
+    BenchmarksRunner.runAllTests(reefClient, testOptions)
   }
 }

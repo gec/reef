@@ -18,31 +18,19 @@
  */
 package org.totalgrid.reef.benchmarks
 
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.benchmarks.measurements._
-import org.totalgrid.reef.benchmarks.system._
-import org.totalgrid.reef.benchmarks.endpoints.EndpointManagementBenchmark
-import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
+import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.service.list.ReefServices
-import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.loader.commons.LoaderServicesList
-
-import MeasurementCurrentValueBenchmark._
-import java.util.Properties
-import org.totalgrid.reef.metrics.client.{ MetricsMapHelpers, MetricsService, MetricsServiceList }
-
-import BenchmarkUtilities._
 
 object AllBenchmarksEntryPoint {
-
   def main(args: Array[String]) {
 
-    val properties = PropertyReader.readFromFile("target.cfg")
+    val (configFiles, benchmarkFile) = parseArgs(args.toList)
 
-    val testOptions = PropertyReader.readFromFile("org.totalgrid.reef.benchmarks.cfg")
+    val properties = PropertyReader.readFromFiles(configFiles)
+
+    val testOptions = PropertyReader.readFromFile(benchmarkFile)
 
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
@@ -54,129 +42,58 @@ object AllBenchmarksEntryPoint {
       val connection = factory.connect()
       val client = connection.login(userSettings).await
 
-      runAllTests(client, testOptions)
+      BenchmarksRunner.runAllTests(client, testOptions)
 
     } finally {
       factory.terminate()
     }
   }
 
-  def runAllTests(client: Client, properties: Properties) {
-    client.addServicesList(new LoaderServicesList())
-    client.addServicesList(new MetricsServiceList())
-    client.setHeaders(client.getHeaders.setTimeout(60000))
-    client.setHeaders(client.getHeaders.setResultLimit(10000))
-    val services = client.getRpcInterface(classOf[AllScadaService])
+  private def usage: Unit = {
 
-    val stream = Some(Console.out)
-
-    var tests = List.empty[BenchmarkTest]
-
-    val options = new SimpleOptionsHandler(properties, "org.totalgrid.reef.benchmarks")
-
-    if (options.getBool("live.enabled")) {
-      val c = options.subOptions("live")
-      val allPoints = services.getPoints().await.map { _.getName }
-
-      tests ::= new SystemStateBenchmark(c.getInt("requestAttempts"))
-      tests ::= new MeasurementStatBenchmark(takeRandom(c.getInt("measStatPoints"), allPoints))
-      tests ::= new MeasurementHistoryBenchmark(takeRandom(c.getInt("measStatPoints"), allPoints), c.getIntList("measHistorySizes"), true)
-      tests ::= new MeasurementCurrentValueBenchmark(allPoints, testSizes(allPoints.size), c.getInt("measCurrentValueAttempts"))
-
-      if (c.getBool("endpointManagementEnabled")) {
-        val protocols = c.getStringList("endpointManagementProtocols")
-        val endpointNames = protocols.map { p => services.getEndpoints().await.filter(_.getProtocol == p).map { _.getName } }.flatten
-
-        if (!endpointNames.isEmpty) {
-          tests ::= new EndpointManagementBenchmark(endpointNames, c.getInt("endpointManagementCycles"))
-        }
-      }
-    }
-
-    if (options.getBool("measthroughput.enabled")) {
-      val c = options.subOptions("measthroughput")
-
-      val concurrentEndpointNames = (1 to c.getInt("numEndpoints")).map { i => "Endpoint" + i }.toList
-      val pointsPerEndpoint = c.getInt("numPointsPerEndpoint")
-      val pointNames = concurrentEndpointNames.map { ModelCreationUtilities.getPointNames(_, pointsPerEndpoint) }.flatten
-
-      val endpointLoadingWriters = c.getInt("endpointWriters")
-      val endpointLoadingBatchSize = c.getInt("endpointBatchSize")
-
-      val totalMeasurements = c.getIntList("publishMeasTotal")
-      val publishingWriters = c.getIntList("publishMeasWriters")
-      val publishingBatchSizes = c.getIntList("publishMeasBatchSizes")
-      val subscribers = c.getIntList("subscribers")
-
-      if (c.getBool("addEndpoints")) {
-        tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint,
-          endpointLoadingWriters, endpointLoadingBatchSize, true, false)
-      }
-      totalMeasurements.foreach { measurements =>
-        publishingWriters.foreach { writers =>
-          publishingBatchSizes.foreach { batchSize =>
-            subscribers.foreach { subs =>
-              tests ::= new ConcurrentMeasurementPublishingBenchmark(concurrentEndpointNames, measurements, writers, batchSize, subs)
-            }
-          }
-        }
-      }
-      if (c.getBool("measTestReads")) {
-        tests ::= new MeasurementStatBenchmark(takeRandom(c.getInt("measStatPoints"), pointNames))
-        tests ::= new MeasurementHistoryBenchmark(takeRandom(c.getInt("measHistoryPoints"), pointNames), c.getIntList("measHistorySizes"), false)
-        tests ::= new MeasurementCurrentValueBenchmark(pointNames, testSizes(pointNames.size), c.getInt("measCurrentValueAttempts"))
-      }
-      if (c.getBool("removeEndpoints")) {
-        tests ::= new EndpointLoaderBenchmark(concurrentEndpointNames, pointsPerEndpoint,
-          endpointLoadingWriters, endpointLoadingBatchSize, false, true)
-      }
-    }
-
-    val baseName = options.getString("outputFileBaseName")
-    val metricsClient = client.getRpcInterface(classOf[MetricsService])
-
-    def runAllTests() = tests.reverse.map(_.runTest(client, stream)).flatten
-
-    val allResults = if (options.getBool("collectServerSideMetrics")) {
-      captureServerSideMetrics(metricsClient, baseName + "serverSideMetrics.csv") {
-        runAllTests()
-      }
-    } else {
-      runAllTests()
-    }
-    outputResults(allResults, baseName)
+    println("usage: AllBenchmarkEntryPoint -configFile target.cfg -c benchmarkSettings.cfg")
+    println("Last argument is benchmarks config file")
+    println("OPTIONS:")
+    println("  -configFile <userfile> Path to *.cfg file(s)")
+    println("  -c benchmark run cfg file")
+    println("")
+    java.lang.System.exit(-1)
   }
 
-  def captureServerSideMetrics[A](metricsClient: MetricsService, fileName: String)(fun: => A) = {
-    val initialSnapshot = MetricsMapHelpers.fromProto(metricsClient.getMetrics())
+  private def more(args: List[String]): List[String] = {
+    val args2 = args drop 1
+    if (args2.isEmpty)
+      usage
+    args2
+  }
+
+  import scala.collection.JavaConversions._
+  private def parseArgs(inputArgs: List[String]): (java.util.List[String], String) = {
+
+    var configFiles = List.empty[String]
+    var benchmarkFile = "assemblies/assembly-common/filtered-resources/etc/org.totalgrid.reef.benchmarks.cfg"
+
+    var args = inputArgs
     try {
-      fun
-    } finally {
-      val postTestSnapshot = MetricsMapHelpers.fromProto(metricsClient.getMetrics())
-      val differences = MetricsMapHelpers.difference(initialSnapshot, postTestSnapshot)
-
-      val output = new DelimitedFileOutput(fileName, false)
-      output.addRow(List("name", "value"))
-      stableForeach(postTestSnapshot) { (name, value) =>
-        output.addRow(List(name, value.toString))
+      while (!args.isEmpty) {
+        args.head match {
+          case "-c" =>
+            args = more(args)
+            benchmarkFile = args.head
+          case "--configFile" =>
+            args = more(args)
+            configFiles = List(args.head) ::: configFiles
+        }
+        args = args drop 1
       }
-      stableForeach(differences) { (name, value) =>
-        output.addRow(List(name + "-diff", value.toString))
-      }
-      output.close()
+    } catch {
+      case ex =>
+        printf("Exception: " + ex.toString)
+        usage
     }
+
+    if (configFiles.isEmpty) configFiles = List("target.cfg")
+
+    (configFiles, benchmarkFile)
   }
-
-  def outputResults(allResults: List[BenchmarkReading], baseName: String) {
-
-    val resultsByFileName = allResults.groupBy(_.csvName)
-
-    val histogramResults = Histogram.getHistograms(resultsByFileName)
-
-    writeHistogramCsvFiles(histogramResults, baseName + "averages")
-    writeTeamCityFile(histogramResults)
-
-    writeCsvFiles(resultsByFileName, baseName)
-  }
-
 }

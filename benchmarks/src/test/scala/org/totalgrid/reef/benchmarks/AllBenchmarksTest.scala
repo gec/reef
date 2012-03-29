@@ -36,7 +36,7 @@ class AllBenchmarksTest extends BenchmarkTestBase {
   var pointNames: List[String] = null
 
   override def afterAll() {
-    AllBenchmarksEntryPoint.outputResults(readings, "target/benchmarkrun/")
+    BenchmarksRunner.outputResults(readings, "target/benchmarkrun/")
   }
 
   test("Load Model") {
