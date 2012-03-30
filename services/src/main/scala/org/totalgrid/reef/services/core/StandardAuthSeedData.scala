@@ -87,6 +87,8 @@ object StandardAuthSeedData {
     val updatePassword = seeder.makePermission(true, List("update"), List("agent_password"), List(selfAgent))
     val readSelfAgent = seeder.makePermission(true, List("read"), List("*"), List(selfAgent))
 
+    val readAndDeleteOwnTokens = seeder.makePermission(true, List("read", "delete"), List("auth_token"), List(selfAgent))
+
     val userAdminPermission = seeder.makePermission(true, List("*"), List("agent", "agent permission_set", "agent_password", "agent_permissions"))
     val userAdminRole = seeder.addRole("user_setup", List(userAdminPermission))
 
@@ -95,7 +97,7 @@ object StandardAuthSeedData {
     val statusUpdate = seeder.makePermission(true, List("update"), List("status_snapshot"), List(selfAgent))
     val applicationRole = seeder.addRole("application", List(appCreate, appUpdate, statusUpdate))
 
-    val userRole = seeder.addRole("user_role", List(updatePassword, readSelfAgent))
+    val userRole = seeder.addRole("user_role", List(updatePassword, readSelfAgent, readAndDeleteOwnTokens))
 
     val protocolAdapter = seeder.makePermission(true, List("read", "update"), List("endpoint_connection", "endpoint_state"))
     val fep = seeder.makePermission(true, List("create", "update"), List("front_end_processor"))
@@ -132,7 +134,7 @@ object StandardAuthSeedData {
     seeder.addUser("hmi_app", systemPassword, "application" :: standardRoles)
 
     seeder.addUser("guest", systemPassword, List("read_only"))
-    seeder.addUser("user", systemPassword, List("read_only", "password_updatable"))
+    seeder.addUser("user", systemPassword, List("read_only", "user_role"))
   }
 
 }

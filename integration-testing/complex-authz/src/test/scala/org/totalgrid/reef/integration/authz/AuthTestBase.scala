@@ -45,10 +45,10 @@ class AuthTestBase extends ServiceClientSuite {
   /**
    * get a new client as a particular user (assumes password == username)
    */
-  def as[A](userName: String)(f: AllScadaService => A): A = {
+  def as[A](userName: String, logout: Boolean = true)(f: AllScadaService => A): A = {
     val c = session.login(userName, userConfig.get.getUserPassword).await
     val ret = f(c.getRpcInterface(classOf[AllScadaService]))
-    c.logout().await
+    if (logout) c.logout().await
     ret
   }
 
