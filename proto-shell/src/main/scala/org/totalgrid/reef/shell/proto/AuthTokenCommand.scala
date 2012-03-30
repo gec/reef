@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import org.totalgrid.reef.client.service.proto.Auth.{ Agent, AuthToken }
-import org.totalgrid.reef.client.service.ClientOperations
 import org.totalgrid.reef.shell.proto.presentation.AuthTokenView
 
 import scala.collection.JavaConversions._
@@ -33,7 +31,7 @@ class AuthTokenListCommand extends ReefCommandSupport {
   var ownTokens: Boolean = false
 
   @GogoOption(name = "--agent", description = "Search by agent name", required = false, multiValued = false)
-  var agentName: String = "*"
+  var agentName: String = null
 
   @GogoOption(name = "--version", description = "Search by clientVersion", required = false, multiValued = false)
   var clientVersion: String = null
@@ -49,22 +47,17 @@ class AuthTokenListCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
 
-    val request = AuthToken.newBuilder()
-
-    Option(clientVersion).foreach(request.setClientVersion(_))
-    if (!ownTokens) {
-      Option(agentName).foreach(n => request.setAgent(Agent.newBuilder.setName(n)))
+    val results = (Option(agentName), Option(clientVersion)) match {
+      case (Some(_), Some(_)) => throw new Exception("Can't search by clientVersion and agentName at same time")
+      case (Some(agent), None) => services.getLoginsByAgent(includeRevoked, agent)
+      case (None, Some(version)) => services.getLoginsByClientVersion(includeRevoked, version)
+      case _ => services.getLogins(includeRevoked)
     }
-    if (!includeRevoked) request.setRevoked(false)
-
-    val clientOps = reefClient.getRpcInterface(classOf[ClientOperations])
-
-    val results = clientOps.getMany(request.build).toList
 
     if (stats) {
-      AuthTokenView.printAuthTokenStats(results)
+      AuthTokenView.printAuthTokenStats(results.toList)
     } else {
-      AuthTokenView.printAuthTokens(results)
+      AuthTokenView.printAuthTokens(results.toList)
     }
   }
 }
@@ -83,22 +76,14 @@ class AuthTokenRevokeCommand extends ReefCommandSupport {
 
   override def doCommand(): Unit = {
 
-    val request = AuthToken.newBuilder()
-
-    request.setRevoked(false)
-
-    if (revokeOthers) {
-      // blank request means revoke all
-
-    } else {
-      if (id != null) request.setId(ReefID.newBuilder.setValue(id))
-      else if (agentName != null) request.setAgent(Agent.newBuilder.setName(agentName))
-      else throw new Exception("must use --others , --id or --agent options")
+    val results = (revokeOthers, Option(id), Option(agentName)) match {
+      case (true, None, None) => services.revokeOwnLogins().toList
+      case (false, Some(delId), None) => List(services.revokeLoginById(ReefID.newBuilder.setValue(delId).build))
+      case (false, None, Some(agent)) => services.revokeLoginByAgent(agent).toList
+      case _ => throw new Exception("must use --others , --id or --agent options")
     }
 
-    val clientOps = reefClient.getRpcInterface(classOf[ClientOperations])
-
-    AuthTokenView.printAuthTokens(clientOps.deleteMany(request.build).toList)
+    AuthTokenView.printAuthTokens(results)
   }
 }
 
