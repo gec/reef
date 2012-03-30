@@ -25,12 +25,12 @@ import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
-import org.totalgrid.reef.services.authz.{ AuthzService, AuthzServiceMetricsWrapper }
+import org.totalgrid.reef.services.metrics._
+import org.totalgrid.reef.services.authz.AuthzService
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
-import org.totalgrid.reef.services.metrics.MetricsServiceWrapper
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 import net.agileautomata.executor4s.Executor
 

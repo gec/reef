@@ -16,10 +16,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.services.authz
+package org.totalgrid.reef.services.metrics
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 import org.totalgrid.reef.services.framework.RequestContext
+import org.totalgrid.reef.services.authz.AuthzService
 import java.util.UUID
 
 class AuthzServiceMetricsWrapper(authz: AuthzService, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with AuthzService {
