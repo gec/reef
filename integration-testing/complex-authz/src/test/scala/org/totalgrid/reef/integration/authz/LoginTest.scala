@@ -53,7 +53,7 @@ class LoginTest extends AuthTestBase {
 
   val GUEST = "guest"
 
-  ignore("Guest can only see own logins") {
+  test("Guest can only see own logins") {
     as(GUEST) { guest =>
       val allLogins = guest.getLogins(true).await
 

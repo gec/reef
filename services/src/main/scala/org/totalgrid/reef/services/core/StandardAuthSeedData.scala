@@ -45,7 +45,7 @@ object StandardAuthSeedData {
     }
 
     def makePermission(allow: Boolean, verbs: List[String] = List("*"), resources: List[String] = List("*"), selectors: List[EntitySelector] = Nil) = {
-      val b = Permission.newBuilder.setAllow(true)
+      val b = Permission.newBuilder.setAllow(allow)
       verbs.foreach(b.addVerb(_))
       resources.foreach(b.addResource(_))
       if (selectors.isEmpty) b.addSelector(makeSelector("*"))
@@ -88,6 +88,9 @@ object StandardAuthSeedData {
     val readSelfAgent = seeder.makePermission(true, List("read"), List("*"), List(selfAgent))
 
     val readAndDeleteOwnTokens = seeder.makePermission(true, List("read", "delete"), List("auth_token"), List(selfAgent))
+    val denyAuthTokens = seeder.makePermission(false, List("read", "delete"), List("auth_token"))
+
+    val readOnlyRole = seeder.addRole("read_only", List(readAndDeleteOwnTokens, denyAuthTokens, readOnly))
 
     val userAdminPermission = seeder.makePermission(true, List("*"), List("agent", "agent permission_set", "agent_password", "agent_permissions"))
     val userAdminRole = seeder.addRole("user_setup", List(userAdminPermission))
@@ -115,7 +118,6 @@ object StandardAuthSeedData {
     val allCommands = seeder.addRole("command_creator", List(commandCreator))
 
     val allRole = seeder.addRole("all", List(all))
-    val readOnlyRole = seeder.addRole("read_only", List(readOnly))
     val passwordChangingRole = seeder.addRole("password_updatable", List(updatePassword))
 
     val standardRoles = List("user_role", "system_viewer")
