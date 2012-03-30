@@ -86,6 +86,20 @@ class AgentPermissionsListCommand extends AgentCommandBase {
   }
 }
 
+@Command(scope = "agent-permissions", name = "view", description = "View permission sets")
+class AgentPermissionsViewCommand extends AgentCommandBase {
+
+  @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
+  var permissionSetName: String = null
+
+  def doCommand() = {
+
+    val permission = authService.getPermissionSet(permissionSetName)
+
+    AgentView.viewPermissionSet(permission)
+  }
+}
+
 @Command(scope = "agent-permissions", name = "create", description = "Edit a permission set")
 class AgentPermissionsCreateCommand extends AgentCommandBase {
 

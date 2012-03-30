@@ -198,6 +198,9 @@
         <command name="agent-permissions/list">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsListCommand"/>
         </command>
+        <command name="agent-permissions/view">
+            <action class="org.totalgrid.reef.shell.proto.AgentPermissionsViewCommand"/>
+        </command>
         <command name="agent-permissions/create">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsCreateCommand"/>
         </command>
