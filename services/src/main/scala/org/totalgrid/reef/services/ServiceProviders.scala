@@ -25,7 +25,7 @@ import org.totalgrid.reef.services.coordinators._
 
 import org.totalgrid.reef.services.core.util.HistoryTrimmer
 
-import org.totalgrid.reef.services.authz.AuthzService
+import org.totalgrid.reef.services.authz.{ AuthzService, AuthzServiceMetricsWrapper }
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.client.sapi.client.rest.Connection
@@ -47,8 +47,10 @@ class ServiceProviders(
     authToken: String,
     executor: Executor) {
 
+  private val authService = new AuthzServiceMetricsWrapper(authzService, metricsPublisher.getStore("services.auth"))
+
   private val eventPublisher = new LocalSystemEventSink(executor)
-  private val dependencies = new ServiceDependencies(dbConnection, connection, connection, cm, eventPublisher, authToken, authzService)
+  private val dependencies = new ServiceDependencies(dbConnection, connection, connection, cm, eventPublisher, authToken, authService)
 
   private val contextSource = new DependenciesSource(dependencies)
 

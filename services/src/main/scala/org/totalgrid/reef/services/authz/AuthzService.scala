@@ -111,10 +111,11 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
   def prepare(context: RequestContext) {
     // load the permissions by forcing an auth attempt
     loadPermissions(context)
+    // TODO: evaluate different way to pass this to AuthFilterService
     context.set(AuthzService.filterService, filteringService)
   }
 
-  def loadPermissions(context: RequestContext) {
+  private def loadPermissions(context: RequestContext) {
 
     val authTokens = context.getHeaders.authTokens
 

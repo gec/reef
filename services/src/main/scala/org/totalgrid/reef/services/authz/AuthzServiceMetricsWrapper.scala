@@ -20,15 +20,34 @@ package org.totalgrid.reef.services.authz
 
 import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 import org.totalgrid.reef.services.framework.RequestContext
+import java.util.UUID
 
-class AuthServiceMetricsWrapper(auth: AuthService, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with AuthService {
-  val countHook = counterHook("Count")
-  val timerHook = timingHook("Time")
+class AuthzServiceMetricsWrapper(authz: AuthzService, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with AuthzService {
+  private val prepareCount = counterHook("PrepareCount")
+  private val prepareTime = timingHook("PrepareTime")
+  private val authCount = counterHook("AuthCount")
+  private val authTime = timingHook("AuthTime")
+  private val filterCount = counterHook("FilterCount")
+  private val filterTime = timingHook("FilterTime")
 
-  def isAuthorized(componentId: String, actionId: String, headers: RequestContext) = {
-    countHook(1)
-    timerHook {
-      auth.isAuthorized(componentId, actionId, headers)
+  override def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]) = {
+    filterCount(1)
+    filterTime {
+      authz.filter(context, componentId, action, payload, uuids)
+    }
+  }
+
+  override def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
+    authCount(1)
+    authTime {
+      authz.authorize(context, componentId, action, uuids)
+    }
+  }
+
+  override def prepare(context: RequestContext) = {
+    prepareCount(1)
+    prepareTime {
+      authz.prepare(context)
     }
   }
 }
