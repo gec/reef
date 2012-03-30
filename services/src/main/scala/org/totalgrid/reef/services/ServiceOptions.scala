@@ -29,9 +29,6 @@ case class ServiceOptions(
     /// track services separately (true => N verbs * M service; or N verbs * 1)  
     metricsSplitByService: Boolean,
 
-    /// whether we are turning on "auth checking" for all services, only optional during transitory phase
-    // val auth: Boolean,
-
     /// threshold for when a request took too long and should be logged
     slowQueryThreshold: Long,
     /// maximum # of measurements to allow in the history table

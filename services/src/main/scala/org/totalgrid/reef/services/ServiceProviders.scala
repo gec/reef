@@ -63,12 +63,9 @@ class ServiceProviders(
   private val wrappedDb = new RTDatabaseMetrics(cm, metricsPublisher.getStore("rtdatbase.rt"))
   private val wrappedHistorian = new HistorianMetrics(cm, metricsPublisher.getStore("historian.hist"))
 
-  // TODO: AuthTokenService can probably be authed service now
-  private val unauthorizedServices: List[ServiceEntryPoint[_ <: AnyRef]] = List(
+  private val serviceProviders: List[ServiceEntryPoint[_ <: AnyRef]] = List(
     new SimpleAuthRequestService(modelFac.authTokens),
-    new AuthTokenService(modelFac.authTokens))
-
-  private var crudAuthorizedServices: List[ServiceEntryPoint[_ <: AnyRef]] = List(
+    new AuthTokenService(modelFac.authTokens),
     new EntityEdgeService(modelFac.edges),
     new EntityService(modelFac.entities),
     new EntityAttributesService,
@@ -106,12 +103,10 @@ class ServiceProviders(
     new AlarmService(modelFac.alarms),
     new AuthFilterService)
 
-  crudAuthorizedServices ::= new BatchServiceRequestService(unauthorizedServices ::: crudAuthorizedServices)
+  private val allServices = (new BatchServiceRequestService(serviceProviders) :: serviceProviders)
 
-  val allServices = (unauthorizedServices ::: crudAuthorizedServices)
-
-  val metrics = new MetricsServiceWrapper(metricsPublisher, serviceConfiguration)
-  val metricWrapped = allServices.map { s => metrics.instrumentCallback(s) }
+  private val metrics = new MetricsServiceWrapper(metricsPublisher, serviceConfiguration)
+  private val metricWrapped = allServices.map { s => metrics.instrumentCallback(s) }
   val services = metricWrapped.map { s => new ServiceMiddleware(contextSource, s) }
 
   val coordinators = List(
