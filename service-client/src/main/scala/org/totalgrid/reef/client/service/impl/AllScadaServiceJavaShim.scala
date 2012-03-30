@@ -41,7 +41,8 @@ trait AllScadaServiceJavaShim
     with EndpointServiceJavaShim
     with ApplicationServiceJavaShim
     with CommunicationChannelServiceJavaShim
-    with CalculationServiceJavaShim {
+    with CalculationServiceJavaShim
+    with LoginServiceJavaShim {
 
   def service: ScalaAllScadaService
 }

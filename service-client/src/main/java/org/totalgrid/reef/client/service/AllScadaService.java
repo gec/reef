@@ -40,7 +40,8 @@ public abstract class AllScadaService implements
                                      EndpointService,
                                      ApplicationService,
                                      CommunicationChannelService,
-                                     CalculationService
+                                     CalculationService,
+                                     LoginService
 {
 
 }

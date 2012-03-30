@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 118 of 195 calls ported
+ * 125 of 202 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -551,6 +551,38 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   })
   // Can't encode searchForEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
   // Can't encode subscribeToEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
+  ////////////////////
+  // LoginService
+  ////////////////////
+  multi("getOwnLogins", classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken], args => {
+    val a0 = args.getBoolean("includeRevoked")
+    (c) => c.getOwnLogins(a0)
+  })
+  multi("revokeOwnLogins", classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken], args => { (c) =>
+    c.revokeOwnLogins()
+  })
+  multi("getLogins", classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken], args => {
+    val a0 = args.getBoolean("includeRevoked")
+    (c) => c.getLogins(a0)
+  })
+  multi("getLoginsByAgent", classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken], args => {
+    val a0 = args.getBoolean("includeRevoked")
+    val a1 = args.getString("agentName")
+    (c) => c.getLoginsByAgent(a0, a1)
+  })
+  multi("getLoginsByClientVersion", classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken], args => {
+    val a0 = args.getBoolean("includeRevoked")
+    val a1 = args.getString("clientVersion")
+    (c) => c.getLoginsByClientVersion(a0, a1)
+  })
+  single("revokeLoginById", classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken], args => {
+    val a0 = args.getId("id")
+    (c) => c.revokeLoginById(a0)
+  })
+  multi("revokeLoginByAgent", classOf[org.totalgrid.reef.client.service.proto.Auth.AuthToken], args => {
+    val a0 = args.getString("agentName")
+    (c) => c.revokeLoginByAgent(a0)
+  })
   ////////////////////
   // MeasurementOverrideService
   ////////////////////

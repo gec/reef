@@ -1961,6 +1961,125 @@
 		// Can't encode searchForEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
 		// Can't encode subscribeToEvents : Can't encode type: org.totalgrid.reef.client.service.proto.Events.EventSelect
 		////////////////////
+		// LoginService
+		////////////////////
+		/**
+		 * This service provides functions for inspecting which agents are logged in or examining the history of who
+		 * logged in when. This information is obviously sensitive and unless operating as a "high-level" user most
+		 * users will only see their own logins.
+		 *
+		 * NOTE: the "token" field on the AuthToken object will never be filled by requests to this service. That token
+		 * is only returned to the user _once_ during login and set in the headers on every request.
+		 *
+		 * Tag for api-enhancer, do not delete: 
+		*/
+		/**
+		 * Get list of logins for the agent making the request.
+		 * @param includeRevoked return only active logins (false) or all logins (true)
+		 * @return all of the current agents logins upto RESULT_LIMIT
+		*/
+		calls.getOwnLogins = function(includeRevoked) {
+			return client.apiRequest({
+				request: "getOwnLogins",
+				data: {
+					includeRevoked: includeRevoked
+				},
+				style: "MULTI",
+				resultType: "auth_token"
+			});
+		};
+		/**
+		 * Revoke all of our own tokens (except for our current one). This is similar to a "global logout". To
+		 * revoke our current login call logout() on the client
+		 * @return list of all logins that were revoked upto RESULT_LIMIT
+		*/
+		calls.revokeOwnLogins = function() {
+			return client.apiRequest({
+				request: "revokeOwnLogins",
+				style: "MULTI",
+				resultType: "auth_token"
+			});
+		};
+		/**
+		 * @param includeRevoked return only active logins (false) or all logins (true)
+		 * @return all of the logins in the system upto RESULT_LIMIT
+		*/
+		calls.getLogins = function(includeRevoked) {
+			return client.apiRequest({
+				request: "getLogins",
+				data: {
+					includeRevoked: includeRevoked
+				},
+				style: "MULTI",
+				resultType: "auth_token"
+			});
+		};
+		/**
+		 * Search for all logins by a particular user.
+		 * @param includeRevoked return only active logins (false) or all logins (true)
+		 * @param agentName name of the agent to search with, returns blank list of agent is unknown
+		 * @return all of the logins for the agent upto RESULT_LIMIT
+		*/
+		calls.getLoginsByAgent = function(includeRevoked, agentName) {
+			return client.apiRequest({
+				request: "getLoginsByAgent",
+				data: {
+					includeRevoked: includeRevoked,
+					agentName: agentName
+				},
+				style: "MULTI",
+				resultType: "auth_token"
+			});
+		};
+		/**
+		 * Search by clientVersion, useful for finding older applications that need to be updated
+		 * @param includeRevoked return only active logins (false) or all logins (true)
+		 * @param clientVersion version string to search by
+		 * @return all of the logins made with a particular client library upto RESULT_LIMIT
+		*/
+		calls.getLoginsByClientVersion = function(includeRevoked, clientVersion) {
+			return client.apiRequest({
+				request: "getLoginsByClientVersion",
+				data: {
+					includeRevoked: includeRevoked,
+					clientVersion: clientVersion
+				},
+				style: "MULTI",
+				resultType: "auth_token"
+			});
+		};
+		/**
+		 * revoke a particular login by id.
+		 * @param id id of login to revoke
+		 * @return token if it was deleted or an exception if not found/unauthorized
+		*/
+		calls.revokeLoginById = function(id) {
+			if(id.value != undefined) id = id.value;
+			return client.apiRequest({
+				request: "revokeLoginById",
+				data: {
+					id: id
+				},
+				style: "SINGLE",
+				resultType: "auth_token"
+			});
+		};
+		/**
+		 * Try to revoke all of the auth tokens for a user (useful when removing a user from the system)
+		 * @param agentName name of the agent to search with, returns blank list of agent is unknown
+		 * @return all tokens that have just been revoked
+		*/
+		calls.revokeLoginByAgent = function(agentName) {
+			return client.apiRequest({
+				request: "revokeLoginByAgent",
+				data: {
+					agentName: agentName
+				},
+				style: "MULTI",
+				resultType: "auth_token"
+			});
+		};
+		////////////////////
 		// MeasurementOverrideService
 		////////////////////
 		/**
