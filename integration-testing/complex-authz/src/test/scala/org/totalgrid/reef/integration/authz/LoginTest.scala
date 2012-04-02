@@ -55,12 +55,16 @@ class LoginTest extends AuthTestBase {
 
   test("Guest can only see own logins") {
     as(GUEST) { guest =>
+      // TODO: filtering is done after the result limit so if the most recent 100 logins are other users
+      // we dont' get any guest logins
+      guest.setHeaders(guest.getHeaders.setResultLimit(1000))
       val allLogins = guest.getLogins(true).await
 
       allAgent(GUEST, allLogins)
 
       val ownLogins = guest.getOwnLogins(true).await
-      allLogins should equal(ownLogins)
+      allAgent(GUEST, ownLogins)
+      allLogins.map{_.getId} should equal(ownLogins.map{_.getId})
     }
   }
 
@@ -86,9 +90,11 @@ class LoginTest extends AuthTestBase {
   }
 
   private def allAgent(name: String, logins: List[AuthToken]) = {
-    logins.filterNot { _.getAgent.getName == name } should equal(Nil)
+    logins.map { _.getAgent.getName }.filterNot { _ == name } should equal(Nil)
+    logins
   }
   private def allRevoked(state: Boolean, logins: List[AuthToken]) = {
-    logins.filterNot { _.getRevoked == state } should equal(Nil)
+    logins.map { _.getRevoked }.filterNot { _ == state } should equal(Nil)
+    logins
   }
 }
