@@ -57,7 +57,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
     fixture { (client, conn) =>
       val si = SomeInteger(42)
       val sub = client.subscribe(SomeIntegerTypeDescriptor) // gets us an unbound queue, doesn't listen yet
-      conn.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
+      conn.bindQueueByClass(sub.getId(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
       conn.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")
       val events = new SynchronizedList[Event[SomeInteger]]
       sub.start(events.append)
@@ -69,7 +69,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
     fixture { (client, conn) =>
       val si = SomeInteger(42)
       val sub = client.subscribe(SomeIntegerTypeDescriptor) // gets us an unbound queue, doesn't listen yet
-      conn.bindQueueByClass(sub.id(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
+      conn.bindQueueByClass(sub.getId(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
       val events = new SynchronizedList[Event[SomeInteger]]
       sub.start(events.append(_))
       conn.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")

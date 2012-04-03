@@ -64,7 +64,7 @@ class LoginTest extends AuthTestBase {
 
       val ownLogins = guest.getOwnLogins(true).await
       allAgent(GUEST, ownLogins)
-      allLogins.map{_.getId} should equal(ownLogins.map{_.getId})
+      allLogins.map { _.getId } should equal(ownLogins.map { _.getId })
     }
   }
 

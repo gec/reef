@@ -55,7 +55,7 @@ object ServiceResponseTestingHelpers {
 
     sub.start(func)
 
-    BasicRequestHeaders.empty.setSubscribeQueue(sub.id)
+    BasicRequestHeaders.empty.setSubscribeQueue(sub.getId)
 
   }
 }

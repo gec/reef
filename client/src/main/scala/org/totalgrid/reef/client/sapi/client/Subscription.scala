@@ -18,16 +18,13 @@
  */
 package org.totalgrid.reef.client.sapi.client
 
-import org.totalgrid.reef.client.SubscriptionBinding
+import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionBinding }
 
 // TODO: rationalize scala and java subscriptions
 trait Subscription[A] extends SubscriptionBinding {
-  def cancel()
 
   def start(callback: Event[A] => Unit): Subscription[A]
 
-  // TODO: rename this function to getId
-  def id(): String
 }
 
 object Subscription {
@@ -38,6 +35,6 @@ object Subscription {
    * TODO: rationalize RequestEnv and Subscription interfaces
    */
   implicit def convertSubscriptionToRequestEnv(sub: Subscription[_]): BasicRequestHeaders = {
-    BasicRequestHeaders.empty.setSubscribeQueue(sub.id)
+    BasicRequestHeaders.empty.setSubscribeQueue(sub.getId)
   }
 }

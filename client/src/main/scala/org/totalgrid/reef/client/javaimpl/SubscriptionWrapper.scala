@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, Subscription }
 class SubscriptionWrapper[A](sub: ScalaSubscription[A]) extends Subscription[A] {
   def start(callback: SubscriptionEventAcceptor[A]) = sub.start(callback.onEvent _)
 
-  def getId() = sub.id
+  def getId() = sub.getId
 
   def cancel() = sub.cancel
 }
