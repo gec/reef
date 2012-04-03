@@ -20,6 +20,8 @@ successfully they are given an "Authentication Token" that needs to be included 
 token must be well protected and only sent over secure (SSL) connections because an attacker with access to that token
 can issue requests _as_ the agent who made the token.
 
+Auth tokens are UUIDs generated with UUID.randomUUID() function which is believed to be unguessable.
+
 In the future it will be possible to delegate the authentication to external systems such as LDAP, broker level users or
 OpenId.
 

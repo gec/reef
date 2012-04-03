@@ -151,7 +151,8 @@ class AuthTokenServiceModel
       "Unknown"
     }
 
-    // TODO: generate an unguessable security token
+    // Random UUID is crypotgraphically sound and unguessable
+    // http://docs.oracle.com/javase/1.5.0/docs/api/java/util/UUID.html#randomUUID()
     val token = java.util.UUID.randomUUID().toString
     val newAuthToken = table.insert(new AuthTokenModel(token, agent.id, authToken.getLoginLocation, version, false, currentTime, expirationTime))
     // link the token to all of the permisisonsSet they have checked out access to
