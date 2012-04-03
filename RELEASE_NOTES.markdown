@@ -9,6 +9,36 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.7 - April 7, 2012
+==============
+
+Security focused release, all core applications now use different agents who have been limited to access only necessary
+resources. Resource level security is partially implemented but should not be considered production ready in
+this release. See services-authz/README.md for details on current authz features and limitations.
+
+### Major Features:
+
+* Client identifies version of code during login and logs mismatchs with server version
+* Added shell commands login:list and login:revoke to see who is logged into the system
+* "Core applications" load multiple .cfg files to allow overriding of properties (especially of user name)
+* Added a suite of standard users and roles for the core applications
+* All applications run as minimally privileged agents
+* Liquibase database generation switched to default on reef:resetdb, no more losing users + passwords
+* agent-permissions:filter shell command allows viewing which resources a role will have access to.
+* Reworked display of agent:* and agent-permissions:* shell commands to be readable.
+
+### Service/API Updates:
+
+* CommandLocks are never deleted, just marked as "inactive", provides audit log
+* Added client_version and server_version fields to SimpleAuth
+* Added revoked and issue_time to AuthToken objects
+
+### Reef Internals:
+
+* Changed handling of test .cfg files (see cfg-templates/README.md)
+* Split up integration tests into function oriented files.
+* Config file loading expects many files and silently ignores missing files
+
 Version 0.4.6 - March 8, 2012
 ==============
 
