@@ -22,7 +22,9 @@ import org.totalgrid.reef.client.settings.util.PropertyLoading;
 import org.totalgrid.reef.client.settings.util.PropertyReader;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.List;
 
 /**
  * Encapsulates the settings for an individual application node. NodeSettings are used to inform the reef
@@ -36,8 +38,7 @@ public class NodeSettings
     private String defaultNodeName;
     private String location;
 
-    // TODO: make network a list - backlog-65
-    private String network;
+    private final List<String> networks = new ArrayList<String>();
 
     /**
      * Manual nodeSettings constructor
@@ -49,7 +50,20 @@ public class NodeSettings
     {
         this.defaultNodeName = defaultNodeName;
         this.location = location;
-        this.network = network;
+        this.networks.add( network );
+    }
+
+    /**
+     * Manual nodeSettings constructor
+     * @param defaultNodeName name of the application (usually prepended onto capabilities)
+     * @param location "physical" location of the application, what computer its running on usually
+     * @param networks "names" of the network that is accessible to the application
+     */
+    public NodeSettings( String defaultNodeName, String location, List<String> networks )
+    {
+        this.defaultNodeName = defaultNodeName;
+        this.location = location;
+        this.networks.addAll( networks );
     }
 
     /**
@@ -61,7 +75,11 @@ public class NodeSettings
     {
         defaultNodeName = PropertyLoading.getString( "org.totalgrid.reef.node.name", properties );
         location = PropertyLoading.getString( "org.totalgrid.reef.node.location", properties );
-        network = PropertyLoading.getString( "org.totalgrid.reef.node.network", properties );
+        String[] nets = PropertyLoading.getString( "org.totalgrid.reef.node.network", properties ).split( "," );
+        for ( int i = 0; i < nets.length; i++ )
+        {
+            networks.add( nets[i].trim() );
+        }
     }
 
     /**
@@ -99,8 +117,8 @@ public class NodeSettings
      *
      * @return "name" of the network that is accessible to the application
      */
-    public String getNetwork()
+    public List<String> getNetworks()
     {
-        return network;
+        return new ArrayList<String>( networks );
     }
 }

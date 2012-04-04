@@ -114,7 +114,7 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     val nodeNames = PropertyLoading.getString("org.totalgrid.reef.nodeNames", properties, "node01").split(",").toList
     logger.info("Nodes: " + nodeNames)
     nodeNames.map { nodeName =>
-      new NodeSettings(nodeName, rootNodeSettings.getLocation, rootNodeSettings.getNetwork)
+      new NodeSettings(nodeName, rootNodeSettings.getLocation, rootNodeSettings.getNetworks)
     }
   }
 }
