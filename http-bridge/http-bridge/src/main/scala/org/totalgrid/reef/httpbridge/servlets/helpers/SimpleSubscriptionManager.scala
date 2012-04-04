@@ -63,7 +63,7 @@ class SimpleSubscriptionManager extends SubscriptionHandler with Logging {
   def addSubscription[A <: Message](subscription: Subscription[A]) = this.synchronized {
     // make a token for the subscription user (we'll use the one provided by qpid for now) but
     // we may change that later
-    val subToken = normalizeId(subscription.getId)
+    val subToken = subscription.getId
 
     subscriptionQueues += subToken -> new SubscriptionValueHolder(subscription)
 
@@ -71,19 +71,16 @@ class SimpleSubscriptionManager extends SubscriptionHandler with Logging {
   }
 
   def getValueHolder(id: String): SubscriptionValueHolder[_ <: Message] = this.synchronized {
-    subscriptionQueues.get(normalizeId(id)).getOrElse(
+    subscriptionQueues.get(id).getOrElse(
       throw new BadRequestException("Unknown subscription id: " + id + ", it may have already been canceled."))
   }
 
   def removeValueHolder(id: String) = this.synchronized {
-    subscriptionQueues.get(normalizeId(id)) match {
+    subscriptionQueues.get(id) match {
       case Some(holder) =>
         subscriptionQueues = subscriptionQueues - id
         holder.cancel()
       case None => // do nothing its already not in map, we have probably already deleted it
     }
   }
-
-  // TODO: fix subscription.getId() to remove double quotes
-  private def normalizeId(id: String) = id.replaceAll("\"", "")
 }
