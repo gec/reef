@@ -30,4 +30,11 @@ object EntityHelpers {
       where(sql.id in uuids)
         select (sql.name)).toList
   }
+
+  def getUuidsToNames(uuids: List[UUID]): List[(UUID, String)] = {
+
+    from(ApplicationSchema.entities)(sql =>
+      where(sql.id in uuids)
+        select (sql.id, sql.name)).toList
+  }
 }

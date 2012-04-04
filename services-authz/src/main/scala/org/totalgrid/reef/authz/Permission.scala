@@ -61,7 +61,7 @@ class Permission(val allow: Boolean, services: List[String], actions: List[Strin
 
   def resourceDependent = matcher.resourceDependent
 
-  def reason = matcher.toString
+  def reason = toString
 
   def checkMatches[A](toBeMatched: List[SelectState[A]]): List[SelectState[A]] = {
 

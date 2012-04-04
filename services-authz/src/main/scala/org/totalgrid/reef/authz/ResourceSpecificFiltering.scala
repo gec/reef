@@ -40,16 +40,22 @@ object ResourceSpecificFilter extends ResourceSpecificFiltering {
 
     // we will only make the defaultRule with helpful (and expensive) string if something didn't match any permission
     lazy val unmatched = finalStates.filter { _.filteredResult.isEmpty }
-    lazy val defaultRule = unmatchedResources(service, action, unmatched.map { _.uuids }.flatten)
+    lazy val ruleCreator = unmatchedResourceResult(service, action, unmatchedNameMap(unmatched)) _
 
-    finalStates.map { state => state.filteredResult.getOrElse(Denied[A](state.payload, defaultRule)) }
+    finalStates.map { state => state.filteredResult.getOrElse(ruleCreator(state.payload)) }
   }
 
-  private def unmatchedResources(service: String, action: String, unmatchedUuids: List[UUID]) = {
+  private def unmatchedNameMap[A](unmatched: List[SelectState[A]]): Map[A, String] = {
+    lazy val uuidsToNames = EntityHelpers.getUuidsToNames(unmatched.map { _.uuids }.flatten).toMap
+    unmatched.map { s =>
+      s.payload -> s.uuids.map { uuidsToNames.get(_) }.flatten.mkString("(", ",", ")")
+    }.toMap
+  }
 
-    lazy val unmatchNames = EntityHelpers.getNames(unmatchedUuids)
-    lazy val msg = "No permission matched " + service + ":" + action + " " + unmatchNames.mkString("(", ",", ")") + ". Assuming deny *."
+  private def unmatchedResourceResult[A](service: String, action: String, names: Map[A, String])(payload: A) = {
 
-    Permission.denyAllPermission(msg)
+    lazy val msg = "No permission matched " + service + ":" + action + " " + names.get(payload).getOrElse("--") + ". Assuming deny *."
+
+    Denied[A](payload, Permission.denyAllPermission(msg))
   }
 }

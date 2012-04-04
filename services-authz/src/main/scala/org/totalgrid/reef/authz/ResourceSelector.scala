@@ -67,7 +67,7 @@ class EntityTypeDoesntInclude(types: List[String]) extends ResourceSelector {
 
   def includes(uuids: List[UUID]) = includeMatcher.includes(uuids)
 
-  override def toString() = "entity.types doesnt include " + types.mkString("(", ",", ")")
+  override def toString() = "entity.types dont include " + types.mkString("(", ",", ")")
 }
 
 class EntityHasName(names: List[String]) extends ResourceSelector {
@@ -87,7 +87,7 @@ class EntityHasName(names: List[String]) extends ResourceSelector {
     }
   }
 
-  override def toString() = "entity.name is not " + names.mkString("(", ",", ")")
+  override def toString() = "entity.name is " + names.mkString("(", ",", ")")
 }
 
 class EntityParentIncludes(parentNames: List[String]) extends ResourceSelector {
