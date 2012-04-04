@@ -140,10 +140,9 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
   }
 
   def log(event: EventStore) {
-    // TODO: why are we building this as a list then doing mkString?
     val eventStringParts = "severity: " :: event.severity ::
       ", type: " :: event.eventType ::
-      event.entity.value.map { _.name }.getOrElse("_") ::
+      ", related: " :: event.entity.value.map { _.name }.getOrElse("_") ::
       ", user id: " :: event.userId ::
       ", rendered: " :: event.rendered :: Nil
 

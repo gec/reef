@@ -114,8 +114,6 @@ class ConfigFileServiceModel
     }
     val newEntitites = updatedEntities.diff(existingEntities)
 
-    // TODO we don't delete edges this way, currently no way to delete configFile edges
-
     newEntitites.foreach(addUserEntity(context, sql.entity.value, _))
     if (!newEntitites.isEmpty) sql.changedOwners = true
   }
