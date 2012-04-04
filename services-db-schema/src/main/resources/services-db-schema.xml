@@ -881,4 +881,23 @@
             </column>
         </addColumn>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-1">
+        <createTable tableName="ApplicationNetworkAccess">
+            <column name="network" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applicationId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ApplicationNetworkAccess_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-2">
+        <dropColumn columnName="network" tableName="ApplicationInstance"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-3">
+        <createSequence schemaName="public" sequenceName="s_ApplicationNetworkAccess_id"/>
+    </changeSet>
 </databaseChangeLog>

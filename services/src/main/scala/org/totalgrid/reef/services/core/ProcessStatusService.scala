@@ -129,7 +129,7 @@ class ProcessStatusServiceModel(
 
   def takeApplicationOffline(context: RequestContext, app: ApplicationInstance) {
     logger.debug("App " + app.instanceName + ": is being marked offline")
-    notifyModels(context, app, false, app.capabilities.value.toList.map { _.capability })
+    notifyModels(context, app, false, app.capabilities.value)
   }
 
   def notifyModels(context: RequestContext, app: ApplicationInstance, online: Boolean, capabilities: List[String]) {

@@ -84,9 +84,15 @@ trait MeasurementCoordinationQueries {
 
     val possibleFeps = e.port.value match {
       case Some(port) => {
-        from(availableFeps(e.protocol))(a =>
-          where(a.location === port.location.? or a.network === port.network.?)
-            select (a))
+        if (port.location.isDefined) {
+          from(availableFeps(e.protocol))(a =>
+            where(a.location === port.location.?)
+              select (a))
+        } else {
+          from(availableFeps(e.protocol), ApplicationSchema.networks)((a, net) =>
+            where((a.id === net.applicationId) and (net.network === port.network.?))
+              select (a))
+        }
       }
       case None => {
         availableFeps(e.protocol)

@@ -42,6 +42,7 @@ object ApplicationSchema extends Schema {
 
   val apps = table[ApplicationInstance]
   val capabilities = table[ApplicationCapability]
+  val networks = table[ApplicationNetworkAccess]
   val channelStatuses = table[ChannelStatus]
   val heartbeats = table[HeartbeatStatus]
   val protocols = table[CommunicationProtocolApplicationInstance]

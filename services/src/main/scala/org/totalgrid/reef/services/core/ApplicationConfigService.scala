@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.models.{ Agent => AgentModel, ApplicationInstance, ApplicationSchema, ApplicationCapability }
+import org.totalgrid.reef.models.{ ApplicationNetworkAccess, Agent => AgentModel, ApplicationInstance, ApplicationSchema, ApplicationCapability }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -52,7 +52,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
 
   private def createModelEntry(context: RequestContext, proto: ApplicationConfig, agent: AgentModel): ApplicationInstance = {
     val ent = entityModel.findOrCreate(context, proto.getInstanceName, "Application" :: Nil, None) //EntityQuery.findOrCreateEntity(proto.getInstanceName, "Application" :: Nil, None)
-    val a = new ApplicationInstance(ent.id, proto.getInstanceName, agent.id, proto.getLocation, proto.getNetwork)
+    val a = new ApplicationInstance(ent.id, proto.getInstanceName, agent.id, proto.getLocation)
     a.entity.value = ent
     a
   }
@@ -63,6 +63,9 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     val caps = req.getCapabilitesList.toList
     ApplicationSchema.capabilities.insert(caps.map { x => new ApplicationCapability(sql.id, x) })
 
+    val networks = getNetworks(req)
+    ApplicationSchema.networks.insert(networks.map { x => new ApplicationNetworkAccess(sql.id, x) })
+
     // TODO: make heartbeating a capability
     val time = if (req.hasHeartbeatCfg) req.getHeartbeatCfg.getPeriodMs else 60000
     procStatusModel.addApplication(context, sql, time, req.getProcessId, caps)
@@ -70,19 +73,49 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     sql
   }
 
-  override def updateFromProto(context: RequestContext, req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
-
-    val (sql, updated) = update(context, createModelEntry(context, req, context.agent), existing)
-
+  private def updateCapabilites(req: ApplicationConfig, sql: ApplicationInstance): (List[String], List[String]) = {
     val newCaps: List[String] = req.getCapabilitesList.toList
-    val oldCaps: List[String] = sql.capabilities.value.toList.map { _.capability }
+    val oldCaps: List[String] = sql.capabilities.value.toList
 
     val addedCaps = newCaps.diff(oldCaps)
     val removedCaps = oldCaps.diff(newCaps)
 
-    ApplicationSchema.capabilities.insert(addedCaps.map { x => new ApplicationCapability(sql.id, x) })
-    procStatusModel.notifyModels(context, sql, false, removedCaps)
+    ApplicationSchema.capabilities.insert(addedCaps.map { new ApplicationCapability(sql.id, _) })
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id and (c.capability in removedCaps.map { _.id }))
+
+    (addedCaps, removedCaps)
+  }
+
+  private def getNetworks(req: ApplicationConfig): List[String] = {
+    var newNetworks: List[String] = req.getNetworksList.toList
+
+    if (req.hasNetwork) newNetworks ::= req.getNetwork
+
+    newNetworks
+  }
+
+  private def updateNetworks(req: ApplicationConfig, sql: ApplicationInstance): Boolean = {
+
+    val newNetworks: List[String] = getNetworks(req)
+    val oldNetworks: List[String] = sql.networks.value.toList
+
+    val addedNetworks = newNetworks.diff(oldNetworks)
+    val removedNetworks = oldNetworks.diff(newNetworks)
+
+    ApplicationSchema.networks.insert(addedNetworks.map { new ApplicationNetworkAccess(sql.id, _) })
+    ApplicationSchema.networks.deleteWhere(c => c.applicationId === sql.id and (c.network in removedNetworks.map { _.id }))
+
+    !addedNetworks.isEmpty | !removedNetworks.isEmpty
+  }
+
+  override def updateFromProto(context: RequestContext, req: ApplicationConfig, existing: ApplicationInstance): (ApplicationInstance, Boolean) = {
+
+    var (sql, updated) = update(context, createModelEntry(context, req, context.agent), existing)
+
+    val (newCaps, removedCaps) = updateCapabilites(req, sql)
+    updated |= updateNetworks(req, sql)
+
+    procStatusModel.notifyModels(context, sql, false, removedCaps)
 
     val time = if (req.hasHeartbeatCfg) req.getHeartbeatCfg.getPeriodMs else 60000
     procStatusModel.addApplication(context, sql, time, req.getProcessId, newCaps)
@@ -117,7 +150,11 @@ trait ApplicationConfigConversion
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
-    List(proto.network.asParam(sql.network === _),
+    def networkQuery(nets: List[String]) = {
+      sql.id in from(ApplicationSchema.networks)(sql => where(sql.network in nets) select (sql.applicationId))
+    }
+    List(proto.network.asParam(net => networkQuery(List(net))),
+      proto.networks.asParam(nets => networkQuery(nets)),
       proto.location.asParam(sql.location === _))
   }
 
@@ -127,7 +164,7 @@ trait ApplicationConfigConversion
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
-    entry.location != existing.location || entry.network != existing.network || entry.agentId != existing.agentId
+    entry.location != existing.location || entry.agentId != existing.agentId
   }
 
   def convertToProto(entry: ApplicationInstance): ApplicationConfig = {
@@ -143,14 +180,16 @@ trait ApplicationConfigConversion
       .setUuid(makeUuid(entry))
       .setUserName(entry.agent.value.entityName)
       .setInstanceName(entry.instanceName)
-      .setNetwork(entry.network)
+      .setNetwork(entry.networks.value.head)
       .setLocation(entry.location)
       .setHeartbeatCfg(h)
       .setOnline(hbeat.isOnline)
       .setTimesOutAt(hbeat.timeoutAt)
       .setProcessId(hbeat.processId)
 
-    entry.capabilities.value.foreach(x => b.addCapabilites(x.capability))
+    entry.networks.value.foreach { b.addNetworks(_) }
+
+    entry.capabilities.value.foreach { b.addCapabilites(_) }
     b.build
   }
 }

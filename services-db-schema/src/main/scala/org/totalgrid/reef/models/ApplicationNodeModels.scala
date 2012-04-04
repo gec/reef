@@ -30,18 +30,26 @@ case class ApplicationCapability(
   val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
 }
 
+case class ApplicationNetworkAccess(
+    val applicationId: Long,
+    val network: String) extends ModelWithId {
+
+  val application = LazyVar(hasOne(ApplicationSchema.apps, applicationId))
+}
+
 case class ApplicationInstance(
     _entityId: UUID,
     val instanceName: String,
     val agentId: Long,
-    var location: String,
-    var network: String) extends EntityBasedModel(_entityId) {
+    var location: String) extends EntityBasedModel(_entityId) {
 
   val heartbeat = LazyVar(belongTo(ApplicationSchema.heartbeats.where(p => p.applicationId === id)))
 
-  val capabilities = LazyVar(ApplicationSchema.capabilities.where(p => p.applicationId === id))
+  val capabilities = LazyVar(ApplicationSchema.capabilities.where(p => p.applicationId === id).toList.map { _.capability })
 
   val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
+
+  var networks = LazyVar(ApplicationSchema.networks.where(p => p.applicationId === id).toList.map { _.network })
 }
 
 class HeartbeatStatus(
