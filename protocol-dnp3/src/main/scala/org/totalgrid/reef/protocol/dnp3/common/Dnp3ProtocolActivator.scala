@@ -27,7 +27,7 @@ import org.totalgrid.reef.protocol.dnp3.slave.Dnp3SlaveProtocol
 import org.totalgrid.reef.osgi.ExecutorBundleActivator
 import net.agileautomata.executor4s.Executor
 
-class Activator extends ExecutorBundleActivator {
+class Dnp3ProtocolActivator extends ExecutorBundleActivator {
 
   // to be used in the dynamic OSGi world, the library can't be loaded by the static class loader
   System.loadLibrary("dnp3java")

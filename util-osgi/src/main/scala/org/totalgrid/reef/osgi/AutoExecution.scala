@@ -22,9 +22,12 @@ import java.util.concurrent.{ ThreadFactory, Executors => JExecutors }
 import org.osgi.framework.{ BundleContext, BundleActivator }
 import net.agileautomata.executor4s._
 
+/**
+ * classes that extend this class should be a descritive name (not just activator)
+ * because that name is used for naming the executor bundle.
+ */
 trait ExecutorBundleActivator extends BundleActivator {
 
-  // TODO: rename all activator classes to have more descriptive name (not just Activator)
   private val simpleNameOfClass = this.getClass.getSimpleName
 
   def threadFactory(subName: String) = new ThreadFactory {

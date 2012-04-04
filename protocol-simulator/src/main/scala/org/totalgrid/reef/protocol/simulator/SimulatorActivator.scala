@@ -26,7 +26,7 @@ import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.osgi.ExecutorBundleActivator
 
-final class Activator extends ExecutorBundleActivator with Logging {
+final class SimulatorActivator extends ExecutorBundleActivator with Logging {
 
   def start(context: BundleContext, exe: Executor) {
 
