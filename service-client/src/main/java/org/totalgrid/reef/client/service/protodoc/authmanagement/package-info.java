@@ -79,7 +79,7 @@
  * message AuthFilterResult {
  *     optional org.totalgrid.reef.client.service.proto.Model.Entity entity = 1;
  *     optional bool allowed = 2;
- *     optional string reason = 3;
+ *     optional string  reason = 3;
  * }
  * message AuthFilter {
  *     optional AuthFilterRequest request = 1;

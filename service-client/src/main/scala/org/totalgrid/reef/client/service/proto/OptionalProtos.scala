@@ -74,6 +74,7 @@ object OptionalProtos {
     val instanceName = optionally(_.hasInstanceName, _.getInstanceName)
     val processId = optionally(_.hasProcessId, _.getProcessId)
     val network = optionally(_.hasNetwork, _.getNetwork)
+    val networks = optionally(_.getNetworksList.toList)
     val location = optionally(_.hasLocation, _.getLocation)
     val capabilites = optionally(_.getCapabilitesList.toList)
     val heartbeatCfg = new OptApplicationHeartbeatConfig(optionally(_.hasHeartbeatCfg, _.getHeartbeatCfg))
