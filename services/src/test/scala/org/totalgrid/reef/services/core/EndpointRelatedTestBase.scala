@@ -134,11 +134,11 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     var measProcMap = Map.empty[String, MockMeasProc]
 
-    def addApp(name: String, caps: List[String], network: String = "any", location: String = "any"): ApplicationConfig = {
+    def addApp(name: String, caps: List[String], networks: List[String] = List("any"), location: String = "any"): ApplicationConfig = {
       val b = ApplicationConfig.newBuilder()
       caps.foreach(b.addCapabilites)
-      b.setUserName(name).setInstanceName(name).setNetwork(network)
-        .setLocation(location)
+      b.setUserName(name).setInstanceName(name).setLocation(location)
+      networks.foreach { b.addNetworks(_) }
       val cfg = appService.put(b.build).expectOne()
       if (caps.find(_ == "Processing").isDefined) setupMockMeasProc(name, cfg)
       cfg
