@@ -29,11 +29,11 @@ object AgentView {
   }
 
   def agentHeader = {
-    "Id" :: "Name" :: "PermissionSets" :: Nil
+    "Name" :: "PermissionSets" :: Nil
   }
 
   def agentRow(a: Agent) = {
-    a.getUuid.getValue :: a.getName :: a.getPermissionSetsList.toList.map { _.getName }.mkString(",").slice(0, 50) :: Nil
+    a.getName :: a.getPermissionSetsList.toList.map { _.getName }.mkString(",").slice(0, 50) :: Nil
   }
 
   def printPermissionSets(permissions: List[PermissionSet]) = {

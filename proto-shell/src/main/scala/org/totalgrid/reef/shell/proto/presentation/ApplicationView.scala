@@ -29,7 +29,7 @@ object ApplicationView {
   }
 
   def header = {
-    "Name" :: "Online" :: "TimesOutAt" :: "Agent" :: "Location" :: "Network" :: "Capabilites" :: Nil
+    "Name" :: "Online" :: "TimesOutAt" :: "Agent" :: "Location" :: "Networks" :: "Capabilites" :: Nil
   }
 
   def row(a: ApplicationConfig) = {
@@ -38,7 +38,7 @@ object ApplicationView {
       EventView.timeString(Some(a.getTimesOutAt)) ::
       a.getUserName ::
       a.getLocation ::
-      a.getNetwork ::
+      a.getNetworksList.toList.mkString(", ") ::
       a.getCapabilitesList.toList.mkString(", ") ::
       Nil
   }
