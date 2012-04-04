@@ -47,8 +47,7 @@ class MetricsServiceWrapper(sink: IMetricsSink, serviceConfiguration: ServiceOpt
       } else {
         allHooks // use the same hook object for all of the services
       }
-      // TODO: paramterize chattyTransactionThreshold
-      new ServiceMetricsInstrumenter(endpoint, hooks, serviceConfiguration.slowQueryThreshold, 100)
+      new ServiceMetricsInstrumenter(endpoint, hooks, serviceConfiguration.slowQueryThreshold, serviceConfiguration.chattyTransactionThreshold)
     } else {
       endpoint
     }

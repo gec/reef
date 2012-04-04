@@ -31,6 +31,8 @@ case class ServiceOptions(
 
     /// threshold for when a request took too long and should be logged
     slowQueryThreshold: Long,
+    /// how many separate database requests we can make servicing a request before printing a warning
+    chattyTransactionThreshold: Int,
     /// maximum # of measurements to allow in the history table
     maxMeasurements: Long,
     /// how often to clean excess measurements from history table
@@ -41,6 +43,7 @@ case class ServiceOptions(
     PropertyLoading.getBoolean("org.totalgrid.reef.services.metricsSplitByVerb", props),
     PropertyLoading.getBoolean("org.totalgrid.reef.services.metricsSplitByService", props),
     PropertyLoading.getInt("org.totalgrid.reef.services.slowQueryThresholdMs", props),
+    PropertyLoading.getInt("org.totalgrid.reef.services.chattyTransactionThreshold", props, 100),
     PropertyLoading.getLong("org.totalgrid.reef.services.maxMeasurements", props),
     PropertyLoading.getInt("org.totalgrid.reef.services.trimPeriodMinutes", props))
 }
