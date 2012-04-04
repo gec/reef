@@ -204,7 +204,7 @@ class AuthTokenService(protected val model: AuthTokenServiceModel)
   }
 
   override protected def preRead(context: RequestContext, proto: ServiceType) = {
-    if (!proto.hasAgent) {
+    if (!proto.hasAgent && !proto.hasId) {
       // no search terms means we should use self agent
       proto.toBuilder.setAgent(Agent.newBuilder.setName(context.agent.entityName)).build
     } else {

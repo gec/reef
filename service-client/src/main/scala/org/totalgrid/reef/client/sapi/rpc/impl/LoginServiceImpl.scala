@@ -55,7 +55,7 @@ trait LoginServiceImpl extends HasAnnotatedOperations with LoginService {
   }
 
   override def revokeLoginById(id: ReefID) = ops.operation("Couldn't revoke login: " + id.getValue) {
-    _.get(AuthToken.newBuilder.setId(id).build).map(_.one)
+    _.delete(AuthToken.newBuilder.setId(id).build).map(_.one)
   }
 
   override def revokeLoginByAgent(agentName: String) = ops.operation("Couldn't revoke logins for: " + agentName) {
