@@ -28,7 +28,6 @@ trait SubscriptionHandler[A] {
   def cancel()
 }
 
-// TODO: remove all
 trait SubscriptionHandlerBase[A] extends SubscriptionHandler[A] with Cancelable { self: ServiceContext[A] =>
 
   var subscription: Option[Cancelable] = None

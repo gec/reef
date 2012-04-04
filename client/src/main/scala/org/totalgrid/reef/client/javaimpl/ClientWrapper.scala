@@ -28,7 +28,7 @@ class ClientWrapper(client: SClient) extends Client {
 
   def getHeaders = client.getHeaders
 
-  // TODO - figure out a better way to expose this
+  // TODO make client Headers mutable 0.5.x
   def setHeaders(headers: RequestHeaders) = headers match {
     case h: BasicRequestHeaders => client.setHeaders(h)
     case _ => throw new ServiceIOException("Cannot use custom header class. Must use headers returned from getHeaders")
