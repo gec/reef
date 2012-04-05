@@ -85,9 +85,7 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
       services,
       connectionContext,
       appConfig,
-      protocols.map {
-        _.name
-      }.toList,
+      protocols.map(_.name).toList ::: mgrs.keys.toList,
       5000)
   }
 }
