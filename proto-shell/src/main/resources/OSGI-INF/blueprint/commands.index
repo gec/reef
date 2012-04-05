@@ -47,6 +47,8 @@ org.totalgrid.reef.shell.proto.EndpointListCommand
 org.totalgrid.reef.shell.proto.EndpointEnableCommand
 org.totalgrid.reef.shell.proto.EndpointDisableCommand
 org.totalgrid.reef.shell.proto.ApplicationListCommand
+org.totalgrid.reef.shell.proto.ApplicationViewCommand
+org.totalgrid.reef.shell.proto.ApplicationRemoveCommand
 org.totalgrid.reef.shell.proto.ConfigFileListCommand
 org.totalgrid.reef.shell.proto.ConfigFileViewCommand
 org.totalgrid.reef.shell.proto.ConfigFileDownloadCommand

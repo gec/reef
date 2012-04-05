@@ -31,6 +31,18 @@ class ApplicationListCommand extends ReefCommandSupport {
   }
 }
 
+@Command(scope = "application", name = "view", description = "Prints detailed application information")
+class ApplicationViewCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "application name", description = "Name of the application we want to inspect.", required = true, multiValued = false)
+  var applicationName: String = null
+
+  def doCommand() = {
+    val appConfig = services.getApplicationByName(applicationName)
+    ApplicationView.printInspect(appConfig)
+  }
+}
+
 @Command(scope = "application", name = "remove", description = "Remove an application from list. If we try to remove a running application it will cause that app to restart. (experts-only!)")
 class ApplicationRemoveCommand extends ReefCommandSupport {
 
