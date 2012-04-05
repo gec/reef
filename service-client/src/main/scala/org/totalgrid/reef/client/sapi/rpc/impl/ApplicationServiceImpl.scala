@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.impl.builders.ApplicationConfigBuilder
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
-import org.totalgrid.reef.client.settings.NodeSettings
+import org.totalgrid.reef.client.settings.{ Version, NodeSettings }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 
@@ -31,7 +31,12 @@ trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationServ
 
   override def registerApplication(config: NodeSettings, instanceName: String, capabilities: List[String]) = {
     ops.operation("Failed registering application") {
-      _.put(ApplicationConfigBuilders.makeProto(config, instanceName, capabilities.toList)).map(_.one)
+      _.put(ApplicationConfigBuilders.makeProto(Version.getClientVersion, config, instanceName, capabilities.toList)).map(_.one)
+    }
+  }
+  override def registerApplication(version: String, config: NodeSettings, instanceName: String, capabilities: List[String]) = {
+    ops.operation("Failed registering application") {
+      _.put(ApplicationConfigBuilders.makeProto(version, config, instanceName, capabilities.toList)).map(_.one)
     }
   }
   override def unregisterApplication(appConfig: ApplicationConfig) = {

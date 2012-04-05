@@ -26,9 +26,10 @@ import scala.collection.JavaConversions._
 
 object ApplicationConfigBuilders {
 
-  def makeProto(config: NodeSettings, instanceName: String, caps: List[String]) = {
+  def makeProto(version: String, config: NodeSettings, instanceName: String, caps: List[String]) = {
     val b = ApplicationConfig.newBuilder()
 
+    b.setVersion(version)
     b.setInstanceName(instanceName)
     config.getNetworks.toList.foreach { b.addNetworks(_) }
     b.setLocation(config.getLocation)

@@ -42,8 +42,26 @@ public interface ApplicationService
      *                     server on what work this application will be trying to perform.
      * @return The configuration from the server, includes heartbeat settings
      * @throws ReefServiceException
+     * @deprecated applications should use registerApplication with version number, client version attached with this varient
      */
+    @Deprecated
     ApplicationConfig registerApplication( NodeSettings nodeSettings, String instanceName, List<String> capabilities ) throws ReefServiceException;
+
+    /**
+     * Register an application with capabilites on this node
+     * @param version      version number of the running application
+     * @param nodeSettings description of "where" software is running (computer name and network)
+     * @param instanceName name of this application, used to determine if a registering application is new or
+     *                     is a restart of an existing application. IMPORTANT: should use node name, using the same
+     *                     instance name for multiple versions of an application running on different nodes will cause
+     *                     undefined behavior in many cases.
+     * @param capabilities What "capabilities" an application offers, these capabilities define a contract with the
+     *                     server on what work this application will be trying to perform.
+     * @return The configuration from the server, includes heartbeat settings
+     * @throws ReefServiceException
+     */
+    ApplicationConfig registerApplication( String version, NodeSettings nodeSettings, String instanceName, List<String> capabilities )
+        throws ReefServiceException;
 
     /**
      * Unregisters the application from the system, this shouldn't be called if we expect this application be
