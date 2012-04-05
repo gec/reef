@@ -67,6 +67,16 @@ class ReefLoginCommand extends ReefCommandSupport {
   }
 }
 
+@Command(scope = "reef", name = "whoami", description = "Prints out the currently logged in user details.")
+class ReefWhoAmICommand extends ReefCommandSupport {
+
+  override val requiresLogin = false
+
+  def doCommand() {
+    println(getLoginString)
+  }
+}
+
 @Command(scope = "reef", name = "logout", description = "Logs out the current user")
 class ReefLogoutCommand extends ReefCommandSupport {
   def doCommand() = {
