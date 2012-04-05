@@ -19,14 +19,19 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
-import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.service.proto.Processing.MeasOverride
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID, Point }
 
 object MeasurementOverrideRequestBuilders {
+
+  def makePoint(uuid: ReefUUID) = Point.newBuilder.setUuid(uuid).build
+
   def makeOverride(point: Point, measurement: Measurement) = {
     MeasOverride.newBuilder.setPoint(point).setMeas(measurement).build
   }
   def makeNotInService(point: Point) = MeasOverride.newBuilder.setPoint(point).build
 
   def getByPoint(point: Point) = MeasOverride.newBuilder.setPoint(point).build
+
+  def getById(id: ReefID) = MeasOverride.newBuilder.setId(id).build
 }

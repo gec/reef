@@ -491,7 +491,8 @@ object OptionalProtos {
   }
   implicit def proto2OptMeasOverride(a: MeasOverride): OptMeasOverride = new OptMeasOverride(Some(a))
   class OptMeasOverride(real: Option[MeasOverride]) extends OptionalStruct(real) {
-    val point = new OptModelPoint(optionally(_.getPoint))
+    val id = new OptModelReefID(optionally(_.hasId, _.getId))
+    val point = new OptModelPoint(optionally(_.hasPoint, _.getPoint))
     val meas = new OptMeasurementsMeasurement(optionally(_.hasMeas, _.getMeas))
   }
   implicit def proto2OptAction(a: Action): OptAction = new OptAction(Some(a))

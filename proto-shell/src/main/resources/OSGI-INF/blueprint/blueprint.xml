@@ -105,6 +105,9 @@
         <command name="meas/override">
             <action class="org.totalgrid.reef.shell.proto.MeasOverrideCommand"/>
         </command>
+        <command name="meas/override-list">
+            <action class="org.totalgrid.reef.shell.proto.MeasOverrideListCommand"/>
+        </command>
         <command name="event/list">
             <action class="org.totalgrid.reef.shell.proto.EventListCommand"/>
         </command>

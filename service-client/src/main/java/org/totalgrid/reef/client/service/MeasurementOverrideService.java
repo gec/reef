@@ -21,8 +21,12 @@ package org.totalgrid.reef.client.service;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement;
+import org.totalgrid.reef.client.service.proto.Model.ReefID;
+import org.totalgrid.reef.client.service.proto.Model.ReefUUID;
 import org.totalgrid.reef.client.service.proto.Model.Point;
 import org.totalgrid.reef.client.service.proto.Processing.MeasOverride;
+
+import java.util.List;
 
 /**
  * SCADA systems there is the concept of a stopping the measurement stream from field and publishing another value in
@@ -49,6 +53,15 @@ public interface MeasurementOverrideService
     MeasOverride setPointOutOfService( Point point ) throws ReefServiceException;
 
     /**
+     * take a point "out of service", suppresses future measurements from "field protocol". Reads the last measurement
+     * out of the measurement store and republishes it with the OLD_DATA and OPERATOR_BLOCKED quality bits set. It is
+     * important to use this function, not trying to read the current value and change the quality in client code,
+     * because the measurement processor is the only place in the system that can do this override safely without any
+     * possibility of losing measurements.
+     */
+    MeasOverride setPointOutOfServiceByUuid( ReefUUID pointUuid ) throws ReefServiceException;
+
+    /**
      * overrides the "field protocol" measurement stream for a point. While an override is in place
      * the value on a point will not change unless the override is changed. Beware that there is no checking done to make
      * sure that the overridden measurement is "similar" to the measurements read in from the field. It is important
@@ -56,6 +69,25 @@ public interface MeasurementOverrideService
      * the SUBSTITUTED quality bit set.
      */
     MeasOverride setPointOverride( Point point, Measurement measurement ) throws ReefServiceException;
+
+    /**
+     * overrides the "field protocol" measurement stream for a point. While an override is in place
+     * the value on a point will not change unless the override is changed. Beware that there is no checking done to make
+     * sure that the overridden measurement is "similar" to the measurements read in from the field. It is important
+     * that the client code provides a sensible Measurement. The measurement processor will publish the measurement with
+     * the SUBSTITUTED quality bit set.
+     */
+    MeasOverride setPointOverrideByUuid( ReefUUID pointUuid, Measurement measurement ) throws ReefServiceException;
+
+    /**
+     * Get all of the active overrides in the system
+     */
+    List<MeasOverride> getMeasurementOverrides() throws ReefServiceException;
+
+    /**
+     * deletes a given measurement override, most recent field value will be instantly published if available
+     */
+    MeasOverride deleteMeasurementOverrideById( ReefID id ) throws ReefServiceException;
 
     /**
      * deletes a given measurement override, most recent field value will be instantly published if available

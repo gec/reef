@@ -152,9 +152,15 @@ class MeasOverrideCommand extends ReefCommandSupport {
       case ex => throw ex
     }
   }
+}
 
-  def overrideInt(point: Point, value: String) = {
-    val v = value.toInt
+@Command(scope = "meas", name = "override-list", description = "View all overridden measurements")
+class MeasOverrideListCommand extends ReefCommandSupport {
+
+  def doCommand() = {
+    var overrides = services.getMeasurementOverrides().toList
+
+    MeasView.printTable(overrides.map { _.getMeas })
   }
 }
 

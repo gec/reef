@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 125 of 203 calls ported
+ * 128 of 207 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -588,7 +588,19 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   // MeasurementOverrideService
   ////////////////////
   // Can't encode setPointOutOfService : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+  single("setPointOutOfServiceByUuid", classOf[org.totalgrid.reef.client.service.proto.Processing.MeasOverride], args => {
+    val a0 = args.getUuid("pointUuid")
+    (c) => c.setPointOutOfServiceByUuid(a0)
+  })
   // Can't encode setPointOverride : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+  // Can't encode setPointOverrideByUuid : Can't encode type: org.totalgrid.reef.client.service.proto.Measurements.Measurement
+  multi("getMeasurementOverrides", classOf[org.totalgrid.reef.client.service.proto.Processing.MeasOverride], args => { (c) =>
+    c.getMeasurementOverrides()
+  })
+  single("deleteMeasurementOverrideById", classOf[org.totalgrid.reef.client.service.proto.Processing.MeasOverride], args => {
+    val a0 = args.getId("id")
+    (c) => c.deleteMeasurementOverrideById(a0)
+  })
   // Can't encode deleteMeasurementOverride : Can't encode type: org.totalgrid.reef.client.service.proto.Processing.MeasOverride
   // Can't encode clearMeasurementOverridesOnPoint : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
   ////////////////////

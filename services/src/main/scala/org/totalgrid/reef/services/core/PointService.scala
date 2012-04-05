@@ -197,8 +197,8 @@ object PointServiceConversion extends PointServiceConversion
  * with refactored searching behaviors.
  */
 object PointTiedModel {
-  def lookupPoint(proto: PointProto): Point = {
-    Point.findByName(proto.getName).single
+  def lookupPoint(context: RequestContext, proto: PointProto): Point = {
+    PointServiceConversion.findRecord(context, proto).getOrElse(throw new BadRequestException("Point unknown: " + proto.getUuid + " - " + proto.getName))
   }
 
   /**

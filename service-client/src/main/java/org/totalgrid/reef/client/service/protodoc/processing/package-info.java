@@ -31,7 +31,8 @@
  * // send a MeasOverride without a Measurement.
  * //
  * message MeasOverride {
- *   required org.totalgrid.reef.client.service.proto.Model.Point point = 1;
+ *   optional org.totalgrid.reef.client.service.proto.Model.ReefID             id = 3;
+ *   optional org.totalgrid.reef.client.service.proto.Model.Point              point = 1;
  *   optional org.totalgrid.reef.client.service.proto.Measurements.Measurement meas = 2;
  * }
  * 

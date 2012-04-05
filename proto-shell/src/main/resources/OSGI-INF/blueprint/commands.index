@@ -25,6 +25,7 @@ org.totalgrid.reef.shell.proto.MeasDownloadCommand
 org.totalgrid.reef.shell.proto.MeasBlockCommand
 org.totalgrid.reef.shell.proto.MeasUnblockCommand
 org.totalgrid.reef.shell.proto.MeasOverrideCommand
+org.totalgrid.reef.shell.proto.MeasOverrideListCommand
 org.totalgrid.reef.shell.proto.EventListCommand
 org.totalgrid.reef.shell.proto.EventViewCommand
 org.totalgrid.reef.shell.proto.EventPublishCommand

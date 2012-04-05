@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Processing._
-import org.totalgrid.reef.models.{ ApplicationSchema, OverrideConfig }
+import org.totalgrid.reef.models.{ UUIDConversions, ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
@@ -49,7 +49,7 @@ class OverrideConfigServiceModel
     with ServiceModelSystemEventPublisher {
 
   def createModelEntry(context: RequestContext, rawProto: MeasOverride): OverrideConfig = {
-    val point = PointTiedModel.lookupPoint(rawProto.getPoint)
+    val point = PointServiceConversion.findRecord(context, rawProto.getPoint).getOrElse(throw new BadRequestException("Point unknown: " + rawProto.getPoint))
     val proto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)).build
     val over = new OverrideConfig(
       point.id,
@@ -90,8 +90,7 @@ trait OverrideConfigConversion
 
   val table = ApplicationSchema.overrides
 
-  // TODO: should sort on id for issuing order
-  def sortResults(list: List[MeasOverride]) = list.sortBy(_.getMeas.getName)
+  def sortResults(list: List[MeasOverride]) = list.sortBy(_.getId.getValue)
 
   def getRoutingKey(req: MeasOverride) = ProtoRoutingKeys.generateRoutingKey(
     req.point.endpoint.uuid.value :: req.point.name :: Nil)
@@ -102,6 +101,7 @@ trait OverrideConfigConversion
 
   def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {
     List(
+      proto.id.value.asParam(sql.id === _.toInt),
       proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
   }
 
@@ -112,6 +112,10 @@ trait OverrideConfigConversion
   }
 
   def convertToProto(sql: OverrideConfig): MeasOverride = {
-    sql.proto.value
+    val builder = sql.proto.value.toBuilder
+
+    builder.setId(UUIDConversions.makeId(sql))
+
+    builder.build
   }
 }

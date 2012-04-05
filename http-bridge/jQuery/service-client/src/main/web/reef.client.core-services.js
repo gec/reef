@@ -2096,7 +2096,50 @@
 		 * Tag for api-enhancer, do not delete: 
 		*/
 		// Can't encode setPointOutOfService : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+		/**
+		 * take a point "out of service", suppresses future measurements from "field protocol". Reads the last measurement
+		 * out of the measurement store and republishes it with the OLD_DATA and OPERATOR_BLOCKED quality bits set. It is
+		 * important to use this function, not trying to read the current value and change the quality in client code,
+		 * because the measurement processor is the only place in the system that can do this override safely without any
+		 * possibility of losing measurements.
+		*/
+		calls.setPointOutOfServiceByUuid = function(pointUuid) {
+			if(pointUuid.value != undefined) pointUuid = pointUuid.value;
+			return client.apiRequest({
+				request: "setPointOutOfServiceByUuid",
+				data: {
+					pointUuid: pointUuid
+				},
+				style: "SINGLE",
+				resultType: "meas_override"
+			});
+		};
 		// Can't encode setPointOverride : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+		// Can't encode setPointOverrideByUuid : Can't encode type: org.totalgrid.reef.client.service.proto.Measurements.Measurement
+		/**
+		 * Get all of the active overrides in the system
+		*/
+		calls.getMeasurementOverrides = function() {
+			return client.apiRequest({
+				request: "getMeasurementOverrides",
+				style: "MULTI",
+				resultType: "meas_override"
+			});
+		};
+		/**
+		 * deletes a given measurement override, most recent field value will be instantly published if available
+		*/
+		calls.deleteMeasurementOverrideById = function(id) {
+			if(id.value != undefined) id = id.value;
+			return client.apiRequest({
+				request: "deleteMeasurementOverrideById",
+				data: {
+					id: id
+				},
+				style: "SINGLE",
+				resultType: "meas_override"
+			});
+		};
 		// Can't encode deleteMeasurementOverride : Can't encode type: org.totalgrid.reef.client.service.proto.Processing.MeasOverride
 		// Can't encode clearMeasurementOverridesOnPoint : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		////////////////////
