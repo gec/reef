@@ -34,7 +34,7 @@ import org.totalgrid.reef.models.CoreServicesSchema
 import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnectedApplicationManager }
 import net.agileautomata.executor4s.testing.InstantExecutor
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
-import org.totalgrid.reef.entry.FepConnectedApplication
+import org.totalgrid.reef.frontend.FepConnectedApplication
 import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
