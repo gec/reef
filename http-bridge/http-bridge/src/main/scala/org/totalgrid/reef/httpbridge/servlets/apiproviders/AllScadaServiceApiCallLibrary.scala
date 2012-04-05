@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 125 of 202 calls ported
+ * 125 of 203 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -88,6 +88,7 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   ////////////////////
   // ApplicationService
   ////////////////////
+  // Can't encode registerApplication : Can't encode type: org.totalgrid.reef.client.settings.NodeSettings
   // Can't encode registerApplication : Can't encode type: org.totalgrid.reef.client.settings.NodeSettings
   // Can't encode unregisterApplication : Can't encode type: org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
   // Can't encode sendHeartbeat : Can't encode type: org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot

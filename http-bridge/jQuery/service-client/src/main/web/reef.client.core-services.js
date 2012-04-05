@@ -212,6 +212,7 @@
 		 * Tag for api-enhancer, do not delete: 
 		*/
 		// Can't encode registerApplication : Can't encode type: org.totalgrid.reef.client.settings.NodeSettings
+		// Can't encode registerApplication : Can't encode type: org.totalgrid.reef.client.settings.NodeSettings
 		// Can't encode unregisterApplication : Can't encode type: org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 		// Can't encode sendHeartbeat : Can't encode type: org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 		// Can't encode sendHeartbeat : Can't encode type: org.totalgrid.reef.client.service.proto.Application.ApplicationConfig

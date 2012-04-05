@@ -73,6 +73,7 @@ object OptionalProtos {
     val userName = optionally(_.hasUserName, _.getUserName)
     val instanceName = optionally(_.hasInstanceName, _.getInstanceName)
     val processId = optionally(_.hasProcessId, _.getProcessId)
+    val version = optionally(_.hasVersion, _.getVersion)
     val network = optionally(_.hasNetwork, _.getNetwork)
     val networks = optionally(_.getNetworksList.toList)
     val location = optionally(_.hasLocation, _.getLocation)
