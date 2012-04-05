@@ -41,22 +41,24 @@ final class FepActivator extends ConnectedApplicationBundleActivator {
 
   override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.fep")
 
+  private def getProtocolName(props: Map[String, Any]): Option[String] = {
+    props.get("protocol") match {
+      case None => logger.warn("Protocol bundle service does not have name property defined"); None
+      case Some(name: String) => Some(name)
+      case Some(_) => logger.warn("Protocol bundle service name is not a string"); None
+    }
+  }
+
   def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
 
     context watchServices withInterface[Protocol] andHandle {
       case AddingService(p, _) => addProtocol(context, p.name, TraitInterface(p), appManager)
-      case ServiceRemoved(p, _) => removeProtocol(p.name, TraitInterface(p), appManager)
+      case ServiceRemoved(p, _) => removeProtocol(p.name, appManager)
     }
 
     context watchServices withInterface[ProtocolManager] andHandle {
-      case AddingService(p, props) =>
-        props.get("protocol") match {
-          case None => logger.warn("Protocol bundle service does not have name property defined")
-          case Some(name: String) => addProtocol(context, name, ManagerInterface(p), appManager)
-          case Some(_) => logger.warn("Protocol bundle service name is not a string")
-        }
-      case ServiceRemoved(p, props) =>
-
+      case AddingService(p, props) => getProtocolName(props).foreach(name => addProtocol(context, name, ManagerInterface(p), appManager))
+      case ServiceRemoved(p, props) => getProtocolName(props).foreach(name => removeProtocol(name, appManager))
     }
   }
 
@@ -83,89 +85,13 @@ final class FepActivator extends ConnectedApplicationBundleActivator {
     }
   }
 
-  private def removeProtocol(protocolName: String, p: ProtocolInterface, appManager: ConnectedApplicationManager) = map.synchronized {
+  private def removeProtocol(protocolName: String, appManager: ConnectedApplicationManager) = map.synchronized {
     map.get(protocolName) match {
       case None => logger.warn("Protocol not found: " + protocolName)
-      case Some((p, app)) =>
+      case Some((_, app)) =>
         map -= protocolName
         appManager.removeConnectedApplication(app)
     }
   }
-
-  /*
-  private var map = Map.empty[Protocol, ConnectedApplication]
-  //private var wrapperMap = Map.empty[ProtocolAdapter, Protocol]
-  private var mgrMap = Map.empty[String, (ProtocolManager, ConnectedApplication)]
-
-  override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.fep")
-
-  def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
-
-    context watchServices withInterface[Protocol] andHandle {
-      case AddingService(p, _) => addProtocol(context, p, appManager)
-      case ServiceRemoved(p, _) => removeProtocol(p, appManager)
-    }
-
-    /**
-     * Produces a wrapper for Java protocol adapters, adding them just like the current Scala one is added
-     */
-    /*context watchServices withInterface[ProtocolAdapter] andHandle {
-      case AddingService(p, _) =>
-        val wrapper = new ScadaProtocolAdapter(p)
-        wrapperMap += p -> wrapper
-        addProtocol(context, wrapper, appManager)
-      case ServiceRemoved(p, _) =>
-        wrapperMap.get(p).foreach { x =>
-          wrapperMap -= p
-          removeProtocol(x, appManager)
-        }
-
-    }*/
-
-  }
-
-  private def addProtocolManager(context: BundleContext, name: String, mgr: ProtocolManager, appManager: ConnectedApplicationManager) = map.synchronized {
-    map.get(p) match {
-      case Some(x) => logger.info("Protocol already added: " + p.name)
-      case None =>
-
-        // load up the protocol specific user (if configured)
-        val userProperties = OsgiConfigReader.load(context, propertyFiles ::: List("org.totalgrid.reef.protocol." + p.name))
-        val userSettings = new UserSettings(userProperties)
-
-        val app = new FepConnectedApplication(p, userSettings)
-
-        appManager.addConnectedApplication(app)
-
-        map = map + (p -> app)
-    }
-  }
-
-  private def addProtocol(context: BundleContext, p: Protocol, appManager: ConnectedApplicationManager) = map.synchronized {
-    map.get(p) match {
-      case Some(x) => logger.info("Protocol already added: " + p.name)
-      case None =>
-
-        // load up the protocol specific user (if configured)
-        val userProperties = OsgiConfigReader.load(context, propertyFiles ::: List("org.totalgrid.reef.protocol." + p.name))
-        val userSettings = new UserSettings(userProperties)
-
-        val app = new FepConnectedApplication(p, userSettings)
-
-        appManager.addConnectedApplication(app)
-
-        map = map + (p -> app)
-    }
-  }
-
-  private def removeProtocol(p: Protocol, appManager: ConnectedApplicationManager) = map.synchronized {
-    map.get(p) match {
-      case Some(app) =>
-        map = map - p
-        appManager.removeConnectedApplication(app)
-
-      case None => logger.warn("Protocol not found: " + p.name)
-    }
-  }*/
 
 }
