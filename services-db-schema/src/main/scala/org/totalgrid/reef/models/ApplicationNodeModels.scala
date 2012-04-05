@@ -41,6 +41,7 @@ case class ApplicationInstance(
     _entityId: UUID,
     val instanceName: String,
     val agentId: Long,
+    val version: String,
     var location: String) extends EntityBasedModel(_entityId) {
 
   val heartbeat = LazyVar(belongTo(ApplicationSchema.heartbeats.where(p => p.applicationId === id)))

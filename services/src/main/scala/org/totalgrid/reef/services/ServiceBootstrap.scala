@@ -85,7 +85,7 @@ object ServiceBootstrap {
       }
     }
 
-    val config = ApplicationConfigBuilders.makeProto(appSettings, appSettings.getDefaultNodeName + "-Services", List("Services"))
+    val config = ApplicationConfigBuilders.makeProto(Version.getClientVersion, appSettings, appSettings.getDefaultNodeName + "-Services", List("Services"))
     val appConfig = applicationConfigService.put(authorizedSource, config).expectOne
 
     // the measurement batch service acts as a type of manual FEP

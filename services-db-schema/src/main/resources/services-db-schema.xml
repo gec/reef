@@ -900,4 +900,11 @@
     <changeSet author="incremental" context="original" id="1333563821868-3">
         <createSequence schemaName="public" sequenceName="s_ApplicationNetworkAccess_id"/>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1333636303890-1">
+        <addColumn tableName="ApplicationInstance">
+            <column name="version" type="VARCHAR(128)" value="unknown">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

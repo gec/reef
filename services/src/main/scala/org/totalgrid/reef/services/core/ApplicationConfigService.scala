@@ -52,7 +52,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
 
   private def createModelEntry(context: RequestContext, proto: ApplicationConfig, agent: AgentModel): ApplicationInstance = {
     val ent = entityModel.findOrCreate(context, proto.getInstanceName, "Application" :: Nil, None) //EntityQuery.findOrCreateEntity(proto.getInstanceName, "Application" :: Nil, None)
-    val a = new ApplicationInstance(ent.id, proto.getInstanceName, agent.id, proto.getLocation)
+    val a = new ApplicationInstance(ent.id, proto.getInstanceName, agent.id, proto.version.getOrElse("unknown"), proto.getLocation)
     a.entity.value = ent
     a
   }
@@ -153,7 +153,9 @@ trait ApplicationConfigConversion
     def networkQuery(nets: List[String]) = {
       sql.id in from(ApplicationSchema.networks)(sql => where(sql.network in nets) select (sql.applicationId))
     }
-    List(proto.network.asParam(net => networkQuery(List(net))),
+    List(
+      proto.version.asParam(sql.version === _),
+      proto.network.asParam(net => networkQuery(List(net))),
       proto.networks.asParam(nets => networkQuery(nets)),
       proto.location.asParam(sql.location === _))
   }
@@ -164,7 +166,7 @@ trait ApplicationConfigConversion
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
-    entry.location != existing.location || entry.agentId != existing.agentId
+    entry.location != existing.location || entry.agentId != existing.agentId || entry.version != existing.version
   }
 
   def convertToProto(entry: ApplicationInstance): ApplicationConfig = {
@@ -181,6 +183,7 @@ trait ApplicationConfigConversion
       .setUserName(entry.agent.value.entityName)
       .setInstanceName(entry.instanceName)
       .setNetwork(entry.networks.value.head)
+      .setVersion(entry.version)
       .setLocation(entry.location)
       .setHeartbeatCfg(h)
       .setOnline(hbeat.isOnline)
