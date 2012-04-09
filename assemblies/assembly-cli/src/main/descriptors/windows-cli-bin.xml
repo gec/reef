@@ -88,6 +88,16 @@
                 <include>third-party/**</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>../..</directory>
+            <outputDirectory>/</outputDirectory>
+            <lineEnding>dos</lineEnding>
+            <fileMode>0644</fileMode>
+            <includes>
+                <include>COMPATIBILITY_MATRIX.markdown</include>
+                <include>RELEASE_NOTES.markdown</include>
+            </includes>
+        </fileSet>
     </fileSets>
 
     <files>
