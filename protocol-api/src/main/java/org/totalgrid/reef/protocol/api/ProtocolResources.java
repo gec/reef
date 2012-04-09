@@ -26,25 +26,78 @@ import org.totalgrid.reef.client.service.proto.Model;
 
 import java.util.List;
 
+/**
+ * Utility methods for protocol-related operations.
+ */
 public interface ProtocolResources
 {
 
+    /**
+     * Exposes the client object associated with this resources object.
+     *
+     * @return Client object
+     */
     Client getClient();
 
+    /**
+     * Exposes the endpoint configuration associated with this resources object.
+     *
+     * @return Endpoint description
+     */
     FEP.EndpointConnection getEndpointConnection();
 
+    /**
+     * Name of the endpoint.
+     *
+     * @return Name of the endpoint
+     */
     String getEndpointName();
 
+    /**
+     * Searches ConfigFile objects associated with the endpoint by mime-type.
+     *
+     * @param mimeType Mime-type of config file to find
+     * @return ConfigFile object
+     * @throws ReefServiceException
+     */
     Model.ConfigFile getConfigFile( String mimeType ) throws ReefServiceException;
 
+    /**
+     * Publish a list of measurements to the stream associated with the endpoint.
+     *
+     * @param measurementList
+     * @throws ReefServiceException
+     */
     void publishMeasurements( List<Measurements.Measurement> measurementList ) throws ReefServiceException;
 
+    /**
+     * Update the system about the state of the endpoint.
+     *
+     * @param state New communications state
+     * @throws ReefServiceException
+     */
     void setCommsState( FEP.EndpointConnection.State state ) throws ReefServiceException;
 
+    /**
+     * Whether the endpoint has a communication channel associated with it.
+     *
+     * @return
+     */
     boolean hasCommChannel();
 
+    /**
+     * The communication channel associated with the endpoint, null if none exists.
+     *
+     * @return
+     */
     FEP.CommChannel getCommChannel();
 
+    /**
+     * Update the system about the state of the communication channel.
+     *
+     * @param state New comm channel state
+     * @throws ReefServiceException
+     */
     void setChannelState( FEP.CommChannel.State state ) throws ReefServiceException;
 
 }

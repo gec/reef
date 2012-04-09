@@ -22,12 +22,22 @@ import org.totalgrid.reef.client.Client;
 import org.totalgrid.reef.client.service.proto.FEP;
 import org.totalgrid.reef.protocol.api.impl.ProtocolEndpointResources;
 
+/**
+ * Provides an implementation of the ProtocolResources interface.
+ */
 public class ProtocolResourcesFactory
 {
     private ProtocolResourcesFactory()
     {
     }
 
+    /**
+     * Provides an implementation of the ProtocolResources interface
+     *
+     * @param client Client logged-in with permissions for the protocol
+     * @param endpointConnection Endpoint connection object for the protocol
+     * @return
+     */
     public static ProtocolResources buildResources( Client client, FEP.EndpointConnection endpointConnection )
     {
         return new ProtocolEndpointResources( client, endpointConnection );

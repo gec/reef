@@ -22,9 +22,36 @@ import org.totalgrid.reef.client.Client;
 import org.totalgrid.reef.client.service.command.CommandRequestHandler;
 import org.totalgrid.reef.client.service.proto.FEP;
 
+/**
+ * Represents an implementation of a protocol. Handed to the FEP, which uses callbacks to manage its
+ * lifecycle.
+ *
+ * Protocols are distinguished from other client applications through their interaction with the
+ * Endpoint system. The addEndpoint and removeEndpoint methods are callbacks the FEP uses to notify
+ * protocol implementations that they need to initiate or terminate communications with that endpoint.
+ * The EndpointConnection, Endpoint, and ConfigFile objects are all key to determining protocol behavior
+ * (the latter two are available from EndpointConnection).
+ *
+ * The ProtocolResourcesFactory class can be used to acquire a ProtocolResources object, which contains
+ * utility methods for performing protocol-related workflow.
+ */
 public interface ProtocolManager
 {
+    /**
+     * Called when the FEP wants to add an communications endpoint of the protocol implementation.
+     *
+     * See the ProtocolResources/ProtocolResourcesFactory for performing protocol-related operations.
+     *
+     * @param client Reef client logged in with protocol's permissions.
+     * @param endpointConnection Configuration object representing a "live" instance of an endpoint.
+     * @return Callback provided to FEP, called when a command request is directed towards this endpoint.
+     */
     CommandRequestHandler addEndpoint( Client client, FEP.EndpointConnection endpointConnection );
 
+    /**
+     * Called when FEP wants to remove a communications endpoint.
+     *
+     * @param endpointConnection Configuration object representing a "live" instance of an endpoint.
+     */
     void removeEndpoint( FEP.EndpointConnection endpointConnection );
 }
