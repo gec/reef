@@ -25,7 +25,7 @@ import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.totalgrid.reef.protocol.dnp3.xml.Slave
 import org.totalgrid.reef.util.XMLHelper
 import java.io.{ File }
-import org.totalgrid.reef.protocol.dnp3.{ FilterLevel, DNPTestHelpers }
+import org.totalgrid.reef.protocol.dnp3.{ GrpVar, FilterLevel, DNPTestHelpers }
 
 @RunWith(classOf[JUnitRunner])
 class SlaveXmlBindingTests extends FunSuite with ShouldMatchers with BeforeAndAfterAll {
@@ -46,5 +46,20 @@ class SlaveXmlBindingTests extends FunSuite with ShouldMatchers with BeforeAndAf
     slaveConfig.getDevice.getMSetpointStatus.size should equal(5)
     slaveConfig.getDevice.getMControls.size should equal(6)
     slaveConfig.getDevice.getMSetpoints.size should equal(7)
+  }
+
+  test("Overriden response types") {
+    val file = new File(getClass.getResource("/sample-slave-config-no-floats.xml").getPath)
+    val xml = XMLHelper.read(file, classOf[Slave])
+    val mapping = DNPTestHelpers.makeMappingProto(1, 0, 0, 0, 0, 0, 0)
+
+    val (slaveConfig, filterLevel) = SlaveXmlConfig.createSlaveConfig(xml, mapping)
+
+    val slave = slaveConfig.getSlave
+
+    def toGrpVar(grpVar: GrpVar) = (grpVar.getGrp, grpVar.getVar)
+
+    toGrpVar(slave.getMStaticAnalog) should equal((30, 2))
+    toGrpVar(slave.getMEventAnalog) should equal((32, 2))
   }
 }

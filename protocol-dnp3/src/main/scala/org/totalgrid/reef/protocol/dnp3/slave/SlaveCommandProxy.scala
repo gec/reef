@@ -20,7 +20,7 @@ package org.totalgrid.reef.protocol.dnp3.slave
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.client.service.proto.Model.Command
+import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.proto.Mapping.{ CommandMap, CommandType => ProtoCommandType, IndexMapping }
 import org.totalgrid.reef.protocol.dnp3._
@@ -69,15 +69,32 @@ class SlaveCommandProxy(service: CommandService, mapping: IndexMapping)
     handleCommand(Index(true, index), seq, accept) { (command, config) =>
       import SetpointEncodingType._
       obj.GetOptimalEncodingType() match {
-        case SPET_AUTO_DOUBLE | SPET_DOUBLE | SPET_FLOAT =>
-          handleCommandResult(service.executeCommandAsSetpoint(command, obj.GetValue()).await)
-        case SPET_AUTO_INT | SPET_INT16 | SPET_INT32 =>
-          handleCommandResult(service.executeCommandAsSetpoint(command, obj.GetIntValue()).await)
+        case SPET_AUTO_DOUBLE | SPET_DOUBLE | SPET_FLOAT | SPET_AUTO_INT | SPET_INT16 | SPET_INT32 =>
+          fireProxiedRequest(command, config, obj.GetValue())
         case _ =>
           logger.error("Unknown setpoint encoding type: " + obj.GetOptimalEncodingType())
           ProtoCommandStatus.FORMAT_ERROR
       }
     }
+  }
+
+  /**
+   * we need to fire the command with the correct local type which we get from the command.getType
+   */
+  private def fireProxiedRequest(command: Command, config: CommandMap, value: Double): ProtoCommandStatus = {
+
+    // We can scale the input if we are using an old style "fixed point" scaling of 100 or 1000 times the value
+    // we really want for our local command
+    val scaledValue = if (config.hasScaling) value * config.getScaling else value
+
+    command.getType match {
+      case CommandType.SETPOINT_DOUBLE => handleCommandResult(service.executeCommandAsSetpoint(command, scaledValue).await)
+      case CommandType.SETPOINT_INT => handleCommandResult(service.executeCommandAsSetpoint(command, scaledValue.toInt).await)
+      case _ =>
+        logger.error("Unhandled command type: " + command.getType)
+        ProtoCommandStatus.FORMAT_ERROR
+    }
+
   }
 
   private def proxyCommandRequest(commandMapping: CommandMap, executeCommand: (Command, CommandMap) => ProtoCommandStatus): ProtoCommandStatus = {

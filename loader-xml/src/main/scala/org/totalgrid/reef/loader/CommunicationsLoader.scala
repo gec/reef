@@ -614,6 +614,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
         case analog: Analog => MAPPING_ANALOG
         case counter: Counter => MAPPING_COUNTER
       }
+      if (point.isSetOutputScaling) builder.setScaling(point.getOutputScaling)
       builder.setType(pointType)
 
       builder
@@ -637,10 +638,14 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     logger.debug("    COMMAND " + index + " -> " + name)
 
-    Mapping.CommandMap.newBuilder
+    val b = Mapping.CommandMap.newBuilder
       .setCommandName(name)
       .setIndex(index)
       .setType(Mapping.CommandType.SETPOINT)
+
+    if (setpoint.isSetInputScaling) b.setScaling(setpoint.getInputScaling)
+
+    b
 
   }
 
