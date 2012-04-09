@@ -43,7 +43,8 @@
 				<exclude>etc/org.apache.karaf.features.cfg</exclude>
 				<exclude>etc/org.ops4j.pax.logging.cfg</exclude>
 				<exclude>etc/org.ops4j.pax.url.mvn.cfg</exclude>
-				<exclude>bin/*</exclude>
+                <exclude>demos/**</exclude>
+                <exclude>*</exclude>
 			</excludes>
 		</fileSet>
 
@@ -107,15 +108,16 @@
 			<lineEnding>unix</lineEnding>
 			<fileMode>0755</fileMode>
 		</fileSet>
-		<fileSet>
-			<directory>../</directory>
-			<outputDirectory>.</outputDirectory>
-			<includes>
-				<include>INSTALL.markdown</include>
-			</includes>
-			<lineEnding>unix</lineEnding>
-			<fileMode>0644</fileMode>
-		</fileSet>
+        <fileSet>
+            <directory>target/classes</directory>
+            <outputDirectory>/</outputDirectory>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0644</fileMode>
+            <includes>
+                <include>NOTICE</include>
+                <include>third-party/**</include>
+            </includes>
+        </fileSet>
 	</fileSets>
 
 	<files>
