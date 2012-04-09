@@ -19,7 +19,7 @@
 package org.totalgrid.reef.calc.protocol.activator
 
 import org.totalgrid.reef.app.impl.{ SimpleConnectedApplicationManager, ApplicationManagerSettings }
-import org.totalgrid.reef.entry.FepConnectedApplication
+import org.totalgrid.reef.frontend.FepConnectedApplication
 import org.totalgrid.reef.calc.protocol.CalculatorProtocol
 import org.totalgrid.reef.app.ConnectionCloseManagerEx
 import org.totalgrid.reef.client.settings.util.PropertyReader
