@@ -85,6 +85,7 @@
             <fileMode>0644</fileMode>
             <includes>
                 <include>NOTICE</include>
+                <include>CLIENT_README.markdown</include>
                 <include>third-party/**</include>
             </includes>
         </fileSet>
