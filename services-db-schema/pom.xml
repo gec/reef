@@ -93,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-osgi</artifactId>
+            <artifactId>liquibase-core</artifactId>
             <version>${liquibase.version}</version>
         </dependency>
     </dependencies>
