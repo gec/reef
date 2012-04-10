@@ -82,7 +82,7 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-fep</artifactId>
+            <artifactId>reef-standalone-fep</artifactId>
             <version>${reef.version}</version>
             <scope>test</scope>
         </dependency>

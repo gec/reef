@@ -85,6 +85,7 @@
 		<module>loader-xml</module>
 		<module>processing</module>
 		<module>fep</module>
+        <module>standalone-fep</module>
 		<module>protocol-api</module>
 		<module>protocol-simulator</module>
         <module>protocol-simulator-shell-commands</module>

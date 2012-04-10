@@ -18,41 +18,18 @@
  */
 package org.totalgrid.reef.calc.protocol.activator
 
-import org.totalgrid.reef.app.impl.{ SimpleConnectedApplicationManager, ApplicationManagerSettings }
-import org.totalgrid.reef.frontend.FepConnectedApplication
 import org.totalgrid.reef.calc.protocol.CalculatorProtocol
-import org.totalgrid.reef.app.ConnectionCloseManagerEx
 import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.client.settings.{ AmqpSettings, NodeSettings, UserSettings }
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.util.ShutdownHook
+import org.totalgrid.reef.frontend.StandaloneProtocolAdapter
 
-object CalculatorStandaloneFep extends ShutdownHook {
+object CalculatorStandaloneFep {
   def main(args: Array[String]) {
     val properties = PropertyReader.readFromFile("./standalone-node.cfg")
+    val protocol = new CalculatorProtocol()
 
-    val userSettings = new UserSettings(properties)
-    val brokerSettings = new AmqpSettings(properties)
-    val nodeSettings = new NodeSettings(properties)
+    val standalone = new StandaloneProtocolAdapter(properties, protocol)
 
-    val brokerConnection = new QpidBrokerConnectionFactory(brokerSettings)
-
-    val exe = Executors.newResizingThreadPool()
-
-    val manager = new ConnectionCloseManagerEx(brokerConnection, exe)
-    manager.start()
-
-    val appManagerSettings = new ApplicationManagerSettings(userSettings, nodeSettings)
-    val applicationManager = new SimpleConnectedApplicationManager(exe, manager, appManagerSettings)
-    applicationManager.start()
-
-    applicationManager.addConnectedApplication(new FepConnectedApplication(new CalculatorProtocol(), userSettings))
-
-    waitForShutdown {
-      applicationManager.stop()
-      manager.stop()
-      exe.terminate()
-    }
+    standalone.run()
   }
+
 }
