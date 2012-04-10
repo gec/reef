@@ -23,21 +23,26 @@ this release. See services-authz/README.md for details on current authz features
 * "Core applications" load multiple .cfg files to allow overriding of properties (especially of user name)
 * Added a suite of standard users and roles for the core applications
 * All applications run as minimally privileged agents
-* Liquibase database generation switched to default on reef:resetdb, no more losing users + passwords
+* Liquibase database generation switched to default on. reef:resetdb is no longer destructive
 * agent-permissions:filter shell command allows viewing which resources a role will have access to.
 * Reworked display of agent:* and agent-permissions:* shell commands to be readable.
+* Distributions have better licensing and include READMEs and RELEASE_NOTES
 
 ### Service/API Updates:
 
 * CommandLocks are never deleted, just marked as "inactive", provides audit log
 * Added client_version and server_version fields to SimpleAuth
 * Added revoked and issue_time to AuthToken objects
+* Applications can register their application version number and belong to multiple networks
+* Dnp3 slave can configure output types and scale outputs and control inputs for fixed point systems
 
 ### Reef Internals:
 
 * Changed handling of test .cfg files (see cfg-templates/README.md)
 * Split up integration tests into function oriented files.
 * Config file loading expects many files and silently ignores missing files
+* Subscription ids don't include double quotes in the strings
+* Services bundle won't start if the database schema is not uptodate
 
 Version 0.4.6 - March 8, 2012
 ==============
