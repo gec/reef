@@ -28,7 +28,10 @@ import java.util.List;
 
 /**
  * Defines a simple protocol interface for use with basic protocol adapters
+ *
+ * Deprecated, will be removed in 0.4.8, use ProtocolManager instead
  */
+@Deprecated
 public interface ProtocolAdapter
 {
 

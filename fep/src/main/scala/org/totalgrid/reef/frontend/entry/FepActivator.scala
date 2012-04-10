@@ -27,10 +27,9 @@ import org.totalgrid.reef.app._
 
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.app.whiteboard.ConnectedApplicationBundleActivator
-import org.totalgrid.reef.protocol.api.scada.ProtocolAdapter
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.UserSettings
-import org.totalgrid.reef.protocol.api.{ ProtocolManager, Protocol, ScadaProtocolAdapter }
+import org.totalgrid.reef.protocol.api.{ ProtocolManager, Protocol }
 import org.totalgrid.reef.frontend.{ FepConnectedApplication, ProtocolInterface }
 
 final class FepActivator extends ConnectedApplicationBundleActivator {
