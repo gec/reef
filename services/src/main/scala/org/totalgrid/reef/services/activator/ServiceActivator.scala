@@ -21,13 +21,11 @@ package org.totalgrid.reef.services.activator
 import net.agileautomata.executor4s._
 
 import org.osgi.framework.BundleContext
-import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.app.ConnectionCloseManagerEx
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSettings }
-import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
@@ -57,12 +55,6 @@ class ServiceActivator extends ExecutorBundleActivator with Logging {
     val modules = new ServiceModulesFactory {
       def getDbConnector() = dbConnection
       def getMeasStore() = MeasurementStoreFinder.getInstance(context)
-
-      def publishServices(services: Seq[AsyncService[_]]) {
-        services.foreach { x =>
-          context createService (x, "exchange" -> x.descriptor.id, interface[AsyncService[_]])
-        }
-      }
     }
 
     manager = Some(new ConnectionCloseManagerEx(brokerConfig, exe))

@@ -29,7 +29,6 @@ import org.totalgrid.reef.services.{ ServiceContext, ServiceProviders, ServiceBo
 import org.totalgrid.reef.util.LifecycleManager
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.measurementstore.MeasurementStore
-import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
@@ -42,8 +41,6 @@ trait ServiceModulesFactory {
   def getDbConnector(): DbConnection
 
   def getMeasStore(): MeasurementStore
-
-  def publishServices(services: Seq[AsyncService[_]])
 }
 
 object ServiceFactory {
@@ -75,9 +72,7 @@ object ServiceFactory {
 
         serviceContext.addCoordinator(providers.coordinators)
 
-        val serviceBindings = serviceContext.attachServices(providers.services)
-
-        modules.publishServices(serviceBindings)
+        serviceContext.attachServices(providers.services)
 
         mgr.start()
         heartbeater.start()

@@ -20,7 +20,6 @@ package org.totalgrid.reef.standalone
 
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.services.{ ServiceBootstrap, ServiceOptions }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.services.activator.{ ServiceFactory, ServiceModulesFactory }
@@ -54,7 +53,6 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
   val modules = new ServiceModulesFactory {
     def getDbConnector() = DbConnector.connect(sql)
     def getMeasStore() = measurementStore
-    def publishServices(services: Seq[AsyncService[_]]) = {}
   }
 
   if (resetFirst) {
