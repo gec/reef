@@ -20,14 +20,14 @@ package org.totalgrid.reef.util
 
 import com.weiglewilczek.slf4s.Logging
 
-object Lifecycle extends ShutdownHook {
+object Lifecycle {
 
   /**
    * Runs the specified components and blocks for a shutdown signal
    */
   def run(lc: Lifecycle)(beforeShutdownFun: => Unit): Unit = {
     lc.start()
-    waitForShutdown {
+    ShutdownHook.waitForShutdown {
       beforeShutdownFun
       lc.stop()
     }
