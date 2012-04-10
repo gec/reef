@@ -23,12 +23,14 @@ import liquibase.database.jvm.JdbcConnection
 import liquibase.Liquibase
 import liquibase.resource.ClassLoaderResourceAccessor
 import liquibase.database.{ Database, DatabaseFactory }
+import liquibase.logging.LogFactory
 
 object CoreServicesSchema {
 
   // if we are starting migrations we need to make sure that the user knows the database is going to get
   // reset
   class FirstMigrationNeededException extends Exception("Can't start migrating database without clearing data first (rerun with --hard)")
+  class MigrationNeededException extends Exception("Database has changed, cannot start services without running resetdb.")
 
   def prepareDatabase(dbConnection: DbConnection, clearFirst: Boolean = true, useMigrations: Boolean = false) {
     if (!useMigrations) {
@@ -47,6 +49,18 @@ object CoreServicesSchema {
 
         upgradeDatabase(database, clearFirst)
       }
+    }
+  }
+
+  def checkDatabase(dbConnection: DbConnection) {
+
+    useDb(dbConnection) { database =>
+      val resources = new ClassLoaderResourceAccessor(this.getClass.getClassLoader)
+      val l = new Liquibase(SCHEMA_FILE_NAME, resources, database)
+
+      import scala.collection.JavaConversions._
+      val unrun = l.listUnrunChangeSets(SCHEMA_CONTEXT).toList
+      if (!unrun.isEmpty) throw new MigrationNeededException()
     }
   }
 
@@ -84,6 +98,10 @@ object CoreServicesSchema {
   }
 
   def useDb(dbConnection: DbConnection)(fun: (Database) => Unit) {
+    // surpress the logging to stderr
+    LogFactory.setLoggingLevel("warning")
+    System.setProperty("liquibase.defaultlogger.level", "warning")
+
     dbConnection.underlyingConnection { jdbc1 =>
 
       val connection = new JdbcConnection(jdbc1)

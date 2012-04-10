@@ -31,6 +31,7 @@ import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
+import org.totalgrid.reef.models.CoreServicesSchema
 
 class ServiceActivator extends ExecutorBundleActivator with Logging {
 
@@ -49,8 +50,12 @@ class ServiceActivator extends ExecutorBundleActivator with Logging {
     val userSettings = new UserSettings(properties)
     val nodeSettings = new NodeSettings(properties)
 
+    val dbConnection = DbConnector.connect(sql, context)
+    // services won't start unless database is at right version
+    CoreServicesSchema.checkDatabase(dbConnection)
+
     val modules = new ServiceModulesFactory {
-      def getDbConnector() = DbConnector.connect(sql, context)
+      def getDbConnector() = dbConnection
       def getMeasStore() = MeasurementStoreFinder.getInstance(context)
 
       def publishServices(services: Seq[AsyncService[_]]) {
