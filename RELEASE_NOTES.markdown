@@ -9,7 +9,7 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.4.7 - April 7, 2012
+Version 0.4.7 - April 11, 2012
 ==============
 
 Security focused release, all core applications now use different agents who have been limited to access only necessary
@@ -27,6 +27,7 @@ this release. See services-authz/README.md for details on current authz features
 * agent-permissions:filter shell command allows viewing which resources a role will have access to.
 * Reworked display of agent:* and agent-permissions:* shell commands to be readable.
 * Distributions have better licensing and include READMEs and RELEASE_NOTES
+* Java compatible ProtocolManager interface for writing ProtocolAdapters
 
 ### Service/API Updates:
 
