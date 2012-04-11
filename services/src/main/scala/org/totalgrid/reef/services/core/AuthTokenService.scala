@@ -20,112 +20,16 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.Auth._
-import org.totalgrid.reef.client.service.proto.Events._
-import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.proto.Envelope.Status
-import org.totalgrid.reef.client.sapi.service.SyncServiceBase
-import org.totalgrid.reef.services.core.util._
 import org.totalgrid.reef.client.service.proto.Descriptors
 
 import scala.collection.JavaConversions._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import SquerylModel._
+import org.totalgrid.reef.services.framework.SquerylModel._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.event.{ SystemEventSink, EventType }
-import org.totalgrid.reef.models.{
-  Agent,
-  ApplicationSchema,
-  AuthToken => AuthTokenModel,
-  AuthTokenPermissionSetJoin,
-  PermissionSet => PermissionSetModel,
-  AuthPermission,
-  EventStore
-}
-
-// Implicit squeryl list -> query conversion
-
-/**
- * static seed function to bootstrap users + permissions into the system
- * TODO: remove static user seed data
- */
-object AuthTokenService {
-  import org.totalgrid.reef.models.{ Agent, AuthPermission, PermissionSet, PermissionSetJoin, AgentPermissionSetJoin }
-
-  def seedPermissionSet(context: RequestContext, entityModel: EntityServiceModel, name: String, defaultExpirationTime: Long) = {
-    val entity = entityModel.findOrCreate(context, name, "PermissionSet" :: Nil, None)
-    val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
-    permissionSet.entity.value = entity
-    permissionSet
-  }
-
-  def seed(context: RequestContext, systemPassword: String) {
-
-    val entityModel = new EntityServiceModel
-    val agentModel = new AgentServiceModel
-
-    if (ApplicationSchema.agents.Count.head == 0) {
-
-      val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", systemPassword))
-
-      val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
-      val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
-      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
-
-      val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
-
-      val timeout = 18144000000L // one month
-
-      val read_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "read_only", timeout))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
-
-      val all_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "all", timeout))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
-
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
-
-    }
-  }
-
-  def seedTesting(context: RequestContext) {
-
-    val entityModel = new EntityServiceModel
-    val agentModel = new AgentServiceModel
-
-    if (ApplicationSchema.agents.Count.head == 0) {
-
-      val system = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "system", "system"))
-
-      val core = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "core", "core"))
-      val op = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "operator", "operator"))
-      val guest = ApplicationSchema.agents.insert(agentModel.createAgentWithPassword(context, "guest", "guest"))
-
-      val get_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "get"))
-      val read_only = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "read"))
-      val update_password = ApplicationSchema.permissions.insert(new AuthPermission(true, "agent", "update"))
-
-      val all = ApplicationSchema.permissions.insert(new AuthPermission(true, "*", "*"))
-
-      val timeout = 18144000000L // one month
-
-      val read_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "read_only", timeout))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, read_only.id))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, get_only.id))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(read_set.id, update_password.id))
-
-      val all_set = ApplicationSchema.permissionSets.insert(seedPermissionSet(context, entityModel, "all", timeout))
-      ApplicationSchema.permissionSetJoins.insert(new PermissionSetJoin(all_set.id, all.id))
-
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, core.id))
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, core.id))
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, op.id))
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(read_set.id, guest.id))
-      ApplicationSchema.agentSetJoins.insert(new AgentPermissionSetJoin(all_set.id, system.id))
-    }
-  }
-}
+import org.totalgrid.reef.event.EventType
+import org.totalgrid.reef.models.{ UUIDConversions, Agent, ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin }
 
 /**
  * auth token specific code for searching the sql table and converting from
@@ -140,10 +44,17 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
     req.loginLocation :: req.agent.name :: Nil
   }
 
+  def relatedEntities(entries: List[AuthTokenModel]) = {
+    entries.map { _.agent.value.entityId }
+  }
+
   def uniqueQuery(proto: AuthToken, sql: AuthTokenModel) = {
     List(
+      proto.id.value.asParam(sql.id === _.toInt),
       proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(agent, { _.id })),
       proto.loginLocation.asParam(sql.loginLocation === _),
+      proto.clientVersion.asParam(sql.clientVersion === _),
+      proto.revoked.asParam(sql.revoked === _),
       proto.token.asParam(sql.token === _))
   }
 
@@ -157,11 +68,16 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
 
   def convertToProto(entry: AuthTokenModel): AuthToken = {
     val b = AuthToken.newBuilder
+    b.setId(UUIDConversions.makeId(entry))
     b.setAgent(AgentConversions.convertToProto(entry.agent.value))
     b.setExpirationTime(entry.expirationTime)
+    b.setIssueTime(entry.issueTime)
+    b.setRevoked(entry.revoked)
     b.setLoginLocation(entry.loginLocation)
+    b.setClientVersion(entry.clientVersion)
     entry.permissionSets.value.foreach(ps => b.addPermissionSets(PermissionSetConversions.convertToProto(ps)))
-    b.setToken(entry.token).build
+    if (entry.displayToken) b.setToken(entry.token)
+    b.build
   }
 
 }
@@ -172,76 +88,83 @@ class AuthTokenServiceModel
     with AuthTokenConversions
     with ServiceModelSystemEventPublisher {
 
-  override def createFromProto(context: RequestContext, authToken: AuthToken): AuthTokenModel =
-    {
-      logger.info("logging in agent: " + authToken.getAgent.getName)
-      val currentTime: Long = System.currentTimeMillis // need one time for authToken DB entry and posted event.
+  override def createFromProto(context: RequestContext, authToken: AuthToken): AuthTokenModel = {
+    logger.info("logging in agent: " + authToken.getAgent.getName)
+    val currentTime: Long = System.currentTimeMillis // need one time for authToken DB entry and posted event
 
-      val agentName: String = authToken.agent.name.getOrElse(postLoginException(context, Status.BAD_REQUEST, "Cannot login without setting agent name."))
-      // set the user name for systemEvent publishing
-      context.modifyHeaders(_.setUserName(agentName))
+    val agentName: String = authToken.agent.name.getOrElse(postLoginException(context, "", Status.BAD_REQUEST, "Cannot login without setting agent name."))
 
-      // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
-      val agentRecord: Option[Agent] = AgentConversions.findRecord(context, authToken.getAgent)
-      agentRecord match {
-        case None =>
-          logger.info("unable to find agent: " + authToken.getAgent)
-          postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
+    // check the password, PUNT: maybe replace this with a nonce + MD5 or something better
+    val agentRecord: Option[Agent] = AgentConversions.findRecord(context, authToken.getAgent)
+    agentRecord match {
+      case None =>
+        logger.info("unable to find agent: " + authToken.getAgent)
+        postLoginException(context, agentName, Status.UNAUTHORIZED, "Invalid agent or password")
 
-        case Some(agent) =>
-          if (!agent.checkPassword(authToken.getAgent.getPassword)) {
-            logger.debug("invalid password supplied for agent: " + authToken.getAgent.getName)
-            postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
-          }
-          processLogin(context, agent, authToken, currentTime)
-      }
+      case Some(agent) =>
+        if (!agent.checkPassword(authToken.getAgent.getPassword)) {
+          postLoginException(context, agentName, Status.UNAUTHORIZED, "Invalid agent or password")
+        }
+        context.set("agent", agent)
+        processLogin(context, agent, authToken, currentTime)
     }
+  }
 
-  def processLogin(context: RequestContext, agent: Agent, authToken: AuthToken, currentTime: Long): AuthTokenModel =
-    {
-      if (!agent.checkPassword(authToken.getAgent.getPassword)) {
-        postLoginException(context, Status.UNAUTHORIZED, "Invalid agent or password")
-      }
+  private def processLogin(context: RequestContext, agent: Agent, authToken: AuthToken, currentTime: Long): AuthTokenModel = {
 
-      val availableSets = agent.permissionSets.value.toList // permissions we can have
-      // permissions we are asking for allow the user to request either all of their permission sets or just a subset, barf if they
-      // ask for permisions they dont have
-      val permissionsRequested = authToken.getPermissionSetsList.toList
+    val availableSets = agent.permissionSets.value.toList // permissions we can have
+    // permissions we are asking for allow the user to request either all of their permission sets or just a subset, barf if they
+    // ask for permisions they dont have
+    val permissionsRequested = authToken.getPermissionSetsList.toList
+    val permissionSets = if (permissionsRequested.size == 1 && permissionsRequested(0).getName == "*") availableSets
+    else {
       val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(ps)).sum
-      val permissionSets = if (setQuerySize > 0) {
+      if (setQuerySize > 0) {
         val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
         val unavailableSets = askedForSets.diff(availableSets)
         if (unavailableSets.size > 0) {
-          postLoginException(context, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
+          postLoginException(context, agent.entityName, Status.UNAUTHORIZED, "No access to permission sets: " + unavailableSets)
         }
         askedForSets
       } else {
         availableSets
       }
-
-      // allow the user to set the expiration time explicitly or use the default from the most restrictive permissionset
-      val expirationTime = if (authToken.hasExpirationTime) {
-        val time = authToken.getExpirationTime
-        if (time <= currentTime) {
-          postLoginException(context, Status.BAD_REQUEST, "Expiration time cannot be in the past")
-        }
-        time
-      } else {
-        currentTime + permissionSets.map(ps => ps.defaultExpirationTime).min
-      }
-
-      // TODO: generate an unguessable security token
-      val token = java.util.UUID.randomUUID().toString
-      val newAuthToken = table.insert(new AuthTokenModel(token, agent.id, authToken.getLoginLocation, expirationTime))
-      // link the token to all of the permisisonsSet they have checked out access to
-      permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, newAuthToken.id)))
-
-      postSystemEvent(context, EventType.System.UserLogin, args = List("user" -> agent.entity.value.name))
-      newAuthToken
     }
 
-  def postLoginException[A](context: RequestContext, status: Status, reason: String): A = {
-    postSystemEvent(context, EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil)
+    // allow the user to set the expiration time explicitly or use the default from the most restrictive permissionset
+    val expirationTime = if (authToken.hasExpirationTime) {
+      val time = authToken.getExpirationTime
+      if (time <= currentTime) {
+        postLoginException(context, agent.entityName, Status.BAD_REQUEST, "Expiration time cannot be in the past")
+      }
+      time
+    } else {
+      // one month
+      currentTime + 18144000000L
+    }
+
+    // For now, just warn if the client version is unknown
+    val version = if (authToken.hasClientVersion) {
+      authToken.getClientVersion
+    } else {
+      logger.warn("Client attempting to login with unknown version")
+      "Unknown"
+    }
+
+    // Random UUID is crypotgraphically sound and unguessable
+    // http://docs.oracle.com/javase/1.5.0/docs/api/java/util/UUID.html#randomUUID()
+    val token = java.util.UUID.randomUUID().toString
+    val newAuthToken = table.insert(new AuthTokenModel(token, agent.id, authToken.getLoginLocation, version, false, currentTime, expirationTime))
+    // link the token to all of the permisisonsSet they have checked out access to
+    permissionSets.foreach(ps => ApplicationSchema.tokenSetJoins.insert(new AuthTokenPermissionSetJoin(ps.id, newAuthToken.id)))
+
+    postSystemEvent(context, EventType.System.UserLogin, args = List("user" -> agent.entity.value.name))
+    newAuthToken.displayToken = true
+    newAuthToken
+  }
+
+  private def postLoginException[A](context: RequestContext, userName: String, status: Status, reason: String): A = {
+    postSystemEvent(context, EventType.System.UserLoginFailure, args = "reason" -> reason :: Nil, userId = Some(userName))
     throw new BadRequestException(reason, status)
   }
 
@@ -252,11 +175,11 @@ class AuthTokenServiceModel
   // we are faking the delete operation, we actually want to keep the row around forever as an audit log
   override def delete(context: RequestContext, entry: AuthTokenModel): AuthTokenModel = {
 
+    entry.revoked = true
     entry.expirationTime = -1
     table.update(entry)
 
-    context.modifyHeaders(_.setUserName(entry.agent.value.entityName))
-    postSystemEvent(context, EventType.System.UserLogout)
+    postSystemEvent(context, EventType.System.UserLogout, userId = Some(entry.agent.value.entityName))
 
     onUpdated(context, entry)
     postDelete(context, entry)
@@ -274,4 +197,32 @@ class AuthTokenService(protected val model: AuthTokenServiceModel)
     with DeleteEnabled {
 
   override val descriptor = Descriptors.authToken
+
+  // we are overriding this to skip the auth step
+  override def performCreate(context: RequestContext, model: ServiceModelType, request: ServiceType): ModelType = {
+    model.createFromProto(context, request)
+  }
+
+  override protected def preRead(context: RequestContext, proto: ServiceType) = {
+    if (!proto.hasAgent && !proto.hasId) {
+      // no search terms means we should use self agent
+      proto.toBuilder.setAgent(Agent.newBuilder.setName(context.agent.entityName)).build
+    } else {
+      proto
+    }
+  }
+
+  override protected def performDelete(context: RequestContext, model: ServiceModelType, request: ServiceType) = {
+    val (allButActive, proto) = if (!request.hasAgent && !request.hasToken && !request.hasId) {
+      val updated = request.toBuilder.setAgent(Agent.newBuilder.setName(context.agent.entityName)).build
+      (true, updated)
+    } else {
+      (false, request)
+    }
+    val existing = model.findRecords(context, proto)
+    val filtered = if (allButActive) existing.filter(context.getHeaders.getAuthToken != _.token) else existing
+    context.auth.authorize(context, componentId, "delete", model.relatedEntities(filtered))
+    filtered.foreach(model.delete(context, _))
+    filtered
+  }
 }

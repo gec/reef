@@ -34,7 +34,7 @@ object MeasurementStoreFinder extends Logging {
    */
   def getInstance(context: BundleContext): MeasurementStore = {
 
-    val config = new OsgiConfigReader(context, "org.totalgrid.reef.mstore").getProperties
+    val config = OsgiConfigReader.load(context, "org.totalgrid.reef.mstore")
     val historian = PropertyLoading.getString("org.totalgrid.reef.mstore.historianImpl", config)
     val currentValue = PropertyLoading.getString("org.totalgrid.reef.mstore.currentValueImpl", config)
 

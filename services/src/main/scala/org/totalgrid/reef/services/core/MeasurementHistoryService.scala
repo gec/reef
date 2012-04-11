@@ -32,6 +32,8 @@ class MeasurementHistoryService(cm: Historian)
 
   val HISTORY_LIMIT = 10000
 
+  private val entityModel = new EntityServiceModel()
+
   override val descriptor = Descriptors.measurementHistory
 
   override def getSubscribeKeys(req: ServiceType): List[String] = {
@@ -44,6 +46,10 @@ class MeasurementHistoryService(cm: Historian)
   override def doGet(context: RequestContext, req: ServiceType): ServiceType = {
 
     val pointName = req.getPointName()
+
+    val entity = entityModel.findEntityByName(context, pointName).getOrElse(throw new BadRequestException("Unknown point: " + pointName))
+
+    context.auth.authorize(context, Descriptors.measurement.id, "read", List(entity.id))
 
     val keepNewest = req.getKeepNewest()
     val begin = req.getStartTime()

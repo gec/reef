@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.services.framework.SilentServiceSubscriptionHandler
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Connection }
@@ -26,6 +25,9 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.{ DependenciesRequestContext, RequestContextDependencies, ServiceDependencies }
 import org.mockito.Mockito
 import org.totalgrid.reef.persistence.squeryl.DbConnection
+import org.totalgrid.reef.services.authz.{ NullAuthzService, AuthzService }
+import org.totalgrid.reef.services.framework.{ RequestContext, SilentServiceSubscriptionHandler }
+import org.totalgrid.reef.models.Entity
 
 class ServiceDependenciesDefaults(
   dbConnection: DbConnection,
@@ -33,4 +35,5 @@ class ServiceDependenciesDefaults(
   pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
   cm: MeasurementStore = new InMemoryMeasurementStore,
   eventSink: SystemEventSink = new SilentEventSink,
-  authToken: String = "") extends ServiceDependencies(dbConnection, connection, pubs, cm, eventSink, authToken)
+  authToken: String = "",
+  auth: AuthzService = new NullAuthzService) extends ServiceDependencies(dbConnection, connection, pubs, cm, eventSink, authToken, auth)

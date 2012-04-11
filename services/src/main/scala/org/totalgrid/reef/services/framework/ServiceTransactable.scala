@@ -31,12 +31,6 @@ object ServiceTransactable {
         // transaction to be able to read a consistent state, multi model adds for example
         m.flushInTransaction
 
-        // TODO: re-enable chatty transaction logging
-        //        val stats = reef.models.CountingSession.currentSession.stats
-        //        if (stats.actions > 30) {
-        //          println("Chatty Transaction: " + stats)
-        //        }
-
         resultInner
       }
 

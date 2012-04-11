@@ -42,7 +42,7 @@ class BenchmarkTestBase extends FunSuite with BeforeAndAfterAll {
     val results = readings.groupBy(_.csvName)
     val histogramResults = Histogram.getHistograms(results)
 
-    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, baseName)
-    BenchmarkUtilities.writeCsvFiles(results, baseName + "-")
+    BenchmarkUtilities.writeHistogramCsvFiles(histogramResults, "target/benchmarkrun/" + baseName)
+    BenchmarkUtilities.writeCsvFiles(results, "target/benchmarkrun/" + baseName + "-")
   }
 }

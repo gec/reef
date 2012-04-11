@@ -25,13 +25,12 @@ import org.scalatest.matchers.ShouldMatchers
 
 import org.totalgrid.reef.test.MockitoStubbedOnly
 
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import FrontEndTestHelpers._
 import org.totalgrid.reef.protocol.api.mock.{ NullProtocol, RecordingProtocol }
 import org.totalgrid.reef.protocol.api.mock.RecordingProtocol._
 import org.mockito.{ Matchers, Mockito }
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
-import net.agileautomata.executor4s.Success
 import org.totalgrid.reef.client.sapi.client.rest.Client
 
 @RunWith(classOf[JUnitRunner])
@@ -42,7 +41,7 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
     val rawClient = Mockito.mock(classOf[Client])
     Mockito.doReturn(client).when(rawClient).getRpcInterface(classOf[FrontEndProviderServices])
     val cancelable = new MockSubscription
-    val commandBinding = new FixedPromise(Success(cancelable))
+    val commandBinding = success(cancelable)
     Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config.getEndpoint.getUuid), Matchers.any(classOf[CommandRequestHandler]))
 
     val mp = new NullProtocol("mock") with RecordingProtocol
@@ -52,7 +51,7 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
 
     cancelable.canceled should equal(false)
 
-    val connections = new FrontEndConnections(mp :: Nil, rawClient)
+    val connections = new FrontEndConnections(mp :: Nil, Map(), rawClient)
 
     connections.add(config)
 

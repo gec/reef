@@ -40,7 +40,9 @@ trait AllScadaServiceJavaShim
     with AgentServiceJavaShim
     with EndpointServiceJavaShim
     with ApplicationServiceJavaShim
-    with CommunicationChannelServiceJavaShim {
+    with CommunicationChannelServiceJavaShim
+    with CalculationServiceJavaShim
+    with LoginServiceJavaShim {
 
   def service: ScalaAllScadaService
 }

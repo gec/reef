@@ -32,13 +32,14 @@ import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestExc
 
 object EntityService {
   def seed() {
-    import org.squeryl.PrimitiveTypeMode._
-    import org.totalgrid.reef.models.{ ApplicationSchema, EntityTypeMetaModel }
+    val alreadyIn = from(ApplicationSchema.entityTypeMetaModel)(sql =>
+      where(sql.id in allKnownTypes)
+        select (sql.id)).toList
 
-    if (ApplicationSchema.entityTypeMetaModel.Count.head == 0) {
-      val metaModels = allKnownTypes.map { new EntityTypeMetaModel(_) }
-      ApplicationSchema.entityTypeMetaModel.insert(metaModels)
-    }
+    val newTypes = allKnownTypes.diff(alreadyIn)
+
+    val metaModels = newTypes.map { new EntityTypeMetaModel(_) }
+    ApplicationSchema.entityTypeMetaModel.insert(metaModels)
   }
 
   def isNameValid(name: String) = {
@@ -84,6 +85,39 @@ class EntityServiceModel
     current match {
       case None => createEntity(context, name, entityTypes, uuid)
       case Some(existing) => updateEntity(context, name, entityTypes, existing)._1
+    }
+  }
+
+  def findEntityByName(context: RequestContext, name: String): Option[Entity] = {
+    EntityQuery.returnSingleOption(table.where(t => t.name === name).toList, "Entity")
+  }
+
+  def findEntitiesByNames(context: RequestContext, names: List[String]): List[Entity] = {
+    EntityQuery.findEntities(names, List("Entity")).toList
+  }
+
+  def removeTypes(context: RequestContext, entity: Entity, entityTypes: List[String]): Entity = {
+
+    val removeTypes = entity.types.value.intersect(entityTypes)
+
+    if (!removeTypes.isEmpty) {
+      val ent = removeTypesFromEntity(entity, removeTypes)
+      onUpdated(context, ent)
+      ent
+    } else {
+      entity
+    }
+  }
+
+  def addTypes(context: RequestContext, entity: Entity, entityTypes: List[String]): Entity = {
+    val additionalTypes = entityTypes.diff(entity.types.value)
+
+    if (!additionalTypes.isEmpty) {
+      val ent = addTypesToEntity(entity, additionalTypes)
+      onUpdated(context, ent)
+      ent
+    } else {
+      entity
     }
   }
 
@@ -170,6 +204,15 @@ class EntityServiceModel
     }
   }
 
+  private def removeTypesFromEntity(ent: Entity, types: List[String]) = {
+    if (types.isEmpty) {
+      ent
+    } else {
+      ApplicationSchema.entityTypes.deleteWhere(sql => (sql.entityId === ent.id) and (sql.entType in types))
+      table.lookup(ent.id).get
+    }
+  }
+
   private def addEntityTypes(types: List[String]) {
     val customTypes = types.filter(t => EntityService.allKnownTypes.find(t == _).isDefined)
     if (!customTypes.isEmpty) {
@@ -181,6 +224,10 @@ class EntityServiceModel
 
   def sortResults(list: List[EntityProto]): List[EntityProto] = {
     list.sortWith { (a, b) => a.getName.toLowerCase.compareTo(b.getName.toLowerCase) < 0 }
+  }
+
+  override def relatedEntities(models: List[Entity]) = {
+    models.map { _.id }
   }
 
   def getRoutingKey(req: EntityProto): String = ProtoRoutingKeys.generateRoutingKey {

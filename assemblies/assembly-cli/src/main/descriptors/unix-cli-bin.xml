@@ -38,11 +38,13 @@
             <outputDirectory>.</outputDirectory>
             <excludes>
                 <exclude>etc/startup.properties</exclude>
+                <exclude>etc/users.properties</exclude>
                 <exclude>etc/custom.properties</exclude>
                 <exclude>etc/org.apache.karaf.features.cfg</exclude>
                 <exclude>etc/org.ops4j.pax.logging.cfg</exclude>
                 <exclude>etc/org.ops4j.pax.url.mvn.cfg</exclude>
-                <exclude>bin/*</exclude>
+                <exclude>demos/**</exclude>
+                <exclude>*</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -57,10 +59,16 @@
         <fileSet>
             <directory>target/reef-cli-repo</directory>
             <outputDirectory>system</outputDirectory>
+            <excludes>
+                <exclude>org/apache/karaf/**/*</exclude>
+            </excludes>
         </fileSet>
         <fileSet>
             <directory>target/system-repo</directory>
             <outputDirectory>system</outputDirectory>
+            <excludes>
+                <exclude>org/apache/karaf/**/*</exclude>
+            </excludes>
         </fileSet>
 
         <fileSet>
@@ -82,22 +90,25 @@
             <fileMode>0644</fileMode>
         </fileSet>
         <fileSet>
-            <directory>../</directory>
-            <outputDirectory>.</outputDirectory>
-            <includes>
-                <include>INSTALL.markdown</include>
-            </includes>
+            <directory>target/classes</directory>
+            <outputDirectory>/</outputDirectory>
             <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
+            <includes>
+                <include>NOTICE</include>
+                <include>CLIENT_README.markdown</include>
+                <include>third-party/**</include>
+            </includes>
         </fileSet>
         <fileSet>
-            <directory>../../cfg-templates</directory>
-            <outputDirectory>/etc/</outputDirectory>
-            <includes>
-                <include>org.totalgrid.reef.amqp.cfg</include>
-            </includes>
+            <directory>../..</directory>
+            <outputDirectory>/</outputDirectory>
             <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>
+            <includes>
+                <include>COMPATIBILITY_MATRIX.markdown</include>
+                <include>RELEASE_NOTES.markdown</include>
+            </includes>
         </fileSet>
     </fileSets>
 

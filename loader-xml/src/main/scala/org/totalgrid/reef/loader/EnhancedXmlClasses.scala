@@ -64,6 +64,9 @@ object EnhancedEquipmentElements {
     def getTransform = withClass(parts, classOf[Transform])
     def getSetpoint = withClass(parts, classOf[Setpoint])
     def getInfo = one(parts, classOf[common.Info])
+
+    import org.totalgrid.reef.loader.calculations.Calculation
+    def getCalculation = withClass(parts, classOf[Calculation])
   }
 
   class EnhancedCommand(pt: Command) {

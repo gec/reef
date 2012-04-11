@@ -20,13 +20,11 @@ package org.totalgrid.reef.standalone
 
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.services.{ ServiceBootstrap, ServiceOptions }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.services.activator.{ ServiceFactory, ServiceModulesFactory }
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
-import org.totalgrid.reef.shell.proto.ProtoShellApplication
 import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderServicesList }
 import org.totalgrid.reef.client.settings.util.{ PropertyLoading, PropertyReader }
@@ -35,7 +33,8 @@ import org.totalgrid.reef.models.CoreServicesSchema
 import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnectedApplicationManager }
 import net.agileautomata.executor4s.testing.InstantExecutor
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
-import org.totalgrid.reef.entry.FepConnectedApplication
+import org.totalgrid.reef.frontend.FepConnectedApplication
+import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
@@ -54,7 +53,6 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
   val modules = new ServiceModulesFactory {
     def getDbConnector() = DbConnector.connect(sql)
     def getMeasStore() = measurementStore
-    def publishServices(services: Seq[AsyncService[_]]) = {}
   }
 
   if (resetFirst) {
@@ -84,8 +82,10 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
 
     // we need to load the protocol separately for each node
     loadProtocols(properties, exe).foreach { protocol =>
-      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol))
+      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol, userSettings))
     }
+
+    applicationManager.addConnectedApplication(new MetricsServiceApplication)
   }
 
   def connection() = {
@@ -93,12 +93,6 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     clientConnection.addServicesList(new ReefServices)
     clientConnection.addServicesList(new LoaderServicesList)
     clientConnection
-  }
-
-  def runTerminal() {
-
-    System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
-    ProtoShellApplication.runTerminal(connection(), userSettings, brokerConnection.toString(), NullCancelable)
   }
 
   def loadModel(modelFile: String) {
@@ -118,7 +112,7 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     val nodeNames = PropertyLoading.getString("org.totalgrid.reef.nodeNames", properties, "node01").split(",").toList
     logger.info("Nodes: " + nodeNames)
     nodeNames.map { nodeName =>
-      new NodeSettings(nodeName, rootNodeSettings.getLocation, rootNodeSettings.getNetwork)
+      new NodeSettings(nodeName, rootNodeSettings.getLocation, rootNodeSettings.getNetworks)
     }
   }
 }

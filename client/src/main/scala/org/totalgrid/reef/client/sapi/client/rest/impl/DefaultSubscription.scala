@@ -30,8 +30,7 @@ import com.weiglewilczek.slf4s.Logging
  */
 final class DefaultSubscription[A](subscription: BrokerSubscription, executor: Executor, deserialize: Array[Byte] => A) extends Subscription[A] with Logging {
 
-  override def id() = subscription.getQueue
-  override def getId() = id()
+  override def getId() = subscription.getQueue
   override def cancel() = subscription.close()
 
   override def start(callback: Event[A] => Unit): Subscription[A] = {

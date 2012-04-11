@@ -22,10 +22,11 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Auth._
-import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 
 import org.totalgrid.reef.client.sapi.rpc.AgentService
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
+import org.totalgrid.reef.client.sapi.client.Promise
 
 trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
   override def getAgentByName(name: String) = ops.operation("Couldn't get agent with name: " + name) {
@@ -65,14 +66,37 @@ trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
   }
 
   override def deleteAgent(agent: Agent) = {
-    ops.operation("Couldn't delete agent with name: " + agent.name + " uuid: " + agent.uuid) {
+    ops.operation("Couldn't delete agent with name: " + agent.name + " uuid: " + agent.uuid.value) {
       _.delete(agent).map(_.one)
     }
   }
 
   override def setAgentPassword(agent: Agent, newPassword: String) = {
-    ops.operation("Couldn't change password for agent name: " + agent.name + " uuid: " + agent.uuid) {
+    ops.operation("Couldn't change password for agent name: " + agent.name + " uuid: " + agent.uuid.value) {
       _.put(agent.toBuilder.setPassword(newPassword).build).map(_.one)
+    }
+  }
+
+  override def setAgentPassword(name: String, newPassword: String) = {
+    ops.operation("Couldn't change password for agent name: " + name) {
+      _.put(Agent.newBuilder.setName(name).setPassword(newPassword).build).map(_.one)
+    }
+  }
+
+  /*
+  def authFilterLookup(action: String, resource: String, entities: List[Entity]): Promise[List[AuthFilterResult]] = {
+    ops.operation("Couldn't lookup auth filters") {
+      val request = AuthFilterRequest.newBuilder().addAllEntity(entities).setAction(action).setResource(resource).build()
+      val proto = AuthFilter.newBuilder().setRequest(request).build
+      _.post(proto).map(_.one.map(_.getResultsList.toList))
+    }
+  }*/
+
+  def getAuthFilterResults(action: String, resource: String, entities: List[Entity], permissionSet: PermissionSet): Promise[List[AuthFilterResult]] = {
+    ops.operation("Couldn't lookup auth filters") {
+      val request = AuthFilterRequest.newBuilder().addAllEntity(entities).setAction(action).setResource(resource).setPermissions(permissionSet).build()
+      val proto = AuthFilter.newBuilder().setRequest(request).build
+      _.post(proto).map(_.one.map(_.getResultsList.toList))
     }
   }
 }

@@ -58,7 +58,7 @@ class RestLevelServletTest extends BaseServletTest {
 
     service.doPost(request, response)
 
-    response.getStatus should equal(400)
+    response.getStatus should equal(401)
     response.getErrorMessage should include(AUTH_HEADER)
   }
 

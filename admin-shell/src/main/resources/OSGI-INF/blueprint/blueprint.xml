@@ -24,12 +24,6 @@
         <command name="reef/resetdb">
             <action class="org.totalgrid.reef.shell.admin.ResetDatabaseCommand"/>
         </command>
-        <command name="reef/migratedb">
-            <action class="org.totalgrid.reef.shell.admin.MigrateDatabaseCommand"/>
-        </command>
-        <!--<command name="reef/local-login">-->
-            <!--<action class="org.totalgrid.reef.shell.admin.ReefLocalLoginCommand"/>-->
-        <!--</command>-->
     </command-bundle>
 
 </blueprint>

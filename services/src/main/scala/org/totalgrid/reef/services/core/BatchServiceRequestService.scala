@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 import org.totalgrid.reef.services.framework._
 
 class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
-    extends ServiceEntryPoint[BatchServiceRequest] with AuthorizesCreate {
+    extends ServiceEntryPoint[BatchServiceRequest] {
 
   private val serviceMap: Map[String, ServiceEntryPoint[_ <: AnyRef]] = services.map { x => x.descriptor.id() -> x }.toMap
 

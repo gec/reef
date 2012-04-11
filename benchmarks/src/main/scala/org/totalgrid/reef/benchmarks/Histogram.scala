@@ -57,9 +57,8 @@ object Histogram {
 
   def getHistograms(resultsByFileName: Map[String, List[BenchmarkReading]]): List[Histogram] = {
 
-    resultsByFileName.map {
-      case (csvName, results) =>
-        getHistograms(csvName, results)
+    BenchmarkUtilities.stableMap(resultsByFileName) { (csvName, results) =>
+      getHistograms(csvName, results)
     }.toList.flatten
   }
 

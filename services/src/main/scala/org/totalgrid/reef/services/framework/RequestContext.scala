@@ -21,7 +21,10 @@ package org.totalgrid.reef.services.framework
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Client }
-import org.totalgrid.reef.models.AuthPermission
+import org.totalgrid.reef.services.authz.AuthzService
+import scala.collection.mutable
+import org.totalgrid.reef.models.Agent
+import org.totalgrid.reef.client.exception.UnauthorizedException
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models
@@ -62,16 +65,29 @@ trait RequestContext {
    */
   def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders
 
-  /**
-   * permissions only need to be loaded once per request, they are stored in the context for future
-   * authorization or filtering work
-   */
-  def getPermissions: Option[List[AuthPermission]]
+  // per-request store for cached objects
+  private lazy val requestObjects = mutable.Map.empty[String, Object]
 
   /**
-   * store the list of permissions on the context
+   * store a value in the per request store
    */
-  def setPermissions(permissions: List[AuthPermission])
+  def set(key: String, value: Object) = requestObjects.put(key, value)
+
+  /**
+   * pull a value out of the store and cast it to a particular class
+   */
+  def get[A](key: String) = requestObjects.get(key).map { _.asInstanceOf[A] }
+
+  /**
+   * auth service
+   */
+  def auth: AuthzService
+
+  /**
+   * get agent associated with this request or throw an unauthorized exception
+   * if not authorized
+   */
+  def agent: Agent = get[Agent]("agent").getOrElse(throw new UnauthorizedException("Not logged in"))
 }
 
 /**
@@ -91,6 +107,7 @@ class RequestContextSourceWithHeaders(contextSource: RequestContextSource, heade
   def transaction[A](f: (RequestContext) => A) = {
     contextSource.transaction { context =>
       context.modifyHeaders(_.merge(headers))
+      context.auth.prepare(context)
       f(context)
     }
   }

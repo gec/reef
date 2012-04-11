@@ -43,9 +43,8 @@ class BatchServiceRequestServiceTest extends DatabaseUsingTestBaseNoTransaction 
     CoreServicesSchema.prepareDatabase(dbConnection)
   }
 
-  val env = BasicRequestHeaders.empty.setUserName("user")
   val deps = new ServiceDependenciesDefaults(dbConnection)
-  val contextSource = new MockRequestContextSource(deps, env)
+  val contextSource = new MockRequestContextSource(deps)
 
   val modelFac = new ModelFactories(deps)
   val services = List(
@@ -93,7 +92,7 @@ class BatchServiceRequestServiceTest extends DatabaseUsingTestBaseNoTransaction 
 
     val uuid = UUID.randomUUID().toString
 
-    val request1 = RestHelpers.buildServiceRequest(verb, usr, descriptor, uuid, env)
+    val request1 = RestHelpers.buildServiceRequest(verb, usr, descriptor, uuid, BasicRequestHeaders.empty)
 
     SelfIdentityingServiceRequest.newBuilder.setExchange(descriptor.id).setRequest(request1).build
   }

@@ -45,8 +45,8 @@ class ReefLoginCommand extends ReefCommandSupport {
       println("\nUse \"reef:logout\" first to logout")
     } else {
       val userSettings = if (userName == null) {
-        val user = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
-        println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file.")
+        val user = new UserSettings(OsgiConfigReader.load(getBundleContext, List("org.totalgrid.reef.user", "org.totalgrid.reef.cli")))
+        println("Attempting login with user specified in etc/org.totalgrid.reef.cli.cfg file.")
         user
       } else {
         if (password == null) {
@@ -60,10 +60,20 @@ class ReefLoginCommand extends ReefCommandSupport {
         new UserSettings(userName, password)
       }
 
-      val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
+      val connectionInfo = new AmqpSettings(OsgiConfigReader.load(getBundleContext, "org.totalgrid.reef.amqp"))
 
       ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings, handleDisconnect)
     }
+  }
+}
+
+@Command(scope = "reef", name = "whoami", description = "Prints out the currently logged in user details.")
+class ReefWhoAmICommand extends ReefCommandSupport {
+
+  override val requiresLogin = false
+
+  def doCommand() {
+    println(getLoginString)
   }
 }
 
@@ -72,7 +82,8 @@ class ReefLogoutCommand extends ReefCommandSupport {
   def doCommand() = {
     try {
       this.get("authToken") match {
-        case Some(token) => //services.deleteAuthorizationToken(token) // TODO: reenable ability to actually delete it
+        case Some(token) =>
+          reefClient.logout().await
         case None =>
       }
     } catch {

@@ -24,11 +24,13 @@
 					 targetNamespace="equipment.loader.reef.totalgrid.org"
 					 xmlns="equipment.loader.reef.totalgrid.org"
 					 xmlns:common="common.loader.reef.totalgrid.org"
+                     xmlns:calc="calculations.loader.reef.totalgrid.org"
 					 elementFormDefault="qualified"
 					 xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 					 jaxb:version="1.0">
 
 	<xs:import namespace="common.loader.reef.totalgrid.org" schemaLocation="common.xsd"/>
+    <xs:import namespace="calculations.loader.reef.totalgrid.org" schemaLocation="calculations.xsd"/>
 
 	<xs:annotation>
 		<xs:documentation>
@@ -490,6 +492,7 @@ value will be classified as Abnormal.-->
             <xs:element ref="filter"/>
 			<xs:element ref="type"/>
 			<xs:element ref="common:info"/>
+            <xs:element ref="calc:calculation"/>
 		</xs:choice>
 		<xs:attribute name="name" type="xs:string" use="required"/>
 		<xs:attribute name="displayName" type="xs:string"/>

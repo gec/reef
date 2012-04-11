@@ -26,11 +26,20 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
-import net.agileautomata.executor4s.{ Failure, Success }
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.service.proto.Measurements
 import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCallLibrary
+import org.totalgrid.reef.httpbridge.servlets.helpers.SubscriptionHandler
+import com.google.protobuf.Message
+import org.totalgrid.reef.client.Subscription
+
+class NullSubscriptionHandler extends SubscriptionHandler {
+  def addSubscription[A <: Message](subscription: Subscription[A]) = {
+    subscription.cancel()
+    ""
+  }
+}
 
 @RunWith(classOf[JUnitRunner])
 class ApiServletTest extends BaseServletTest {
@@ -43,7 +52,7 @@ class ApiServletTest extends BaseServletTest {
 
   override def beforeEach() {
     super.beforeEach()
-    service = new ApiServlet(connection, new AllScadaServiceApiCallLibrary)
+    service = new ApiServlet(connection, new AllScadaServiceApiCallLibrary, new NullSubscriptionHandler)
     client = Mockito.mock(classOf[Client], new MockitoStubbedOnly())
     services = Mockito.mock(classOf[AllScadaService], new MockitoStubbedOnly())
 
@@ -95,7 +104,7 @@ class ApiServletTest extends BaseServletTest {
 
     request.addParameter("pointName", measName)
 
-    val promise = new FixedPromise[Measurement](Failure(new BadRequestException("no measurement")))
+    val promise = failure(new BadRequestException("no measurement"))
     Mockito.doReturn(promise).when(services).getMeasurementByName(Matchers.eq(measName))
 
     service.doGet(request, response)
@@ -110,7 +119,7 @@ class ApiServletTest extends BaseServletTest {
 
     request.addParameter("pointName", measName)
 
-    val promise = new FixedPromise(Success(meas))
+    val promise = success(meas)
     Mockito.doReturn(promise).when(services).getMeasurementByName(Matchers.eq(measName))
 
     service.doGet(request, response)
@@ -125,7 +134,7 @@ class ApiServletTest extends BaseServletTest {
 
     request.addParameter("pointNames", List(measName, measName).toArray)
 
-    val promise = new FixedPromise(Success(List(meas, meas)))
+    val promise = success(List(meas, meas))
     Mockito.doReturn(promise).when(services).getMeasurementsByNames(Matchers.eq(List(measName, measName)))
 
     service.doGet(request, response)

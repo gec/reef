@@ -19,33 +19,29 @@
 package org.totalgrid.reef.models
 
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandLock => AccessProto }
+
+import org.totalgrid.reef.util.LazyVar
 import org.squeryl.PrimitiveTypeMode._
 
 // Related to UserCommandRequest proto
 case class UserCommandModel(
     val commandId: Long,
+    val lockId: Long,
     val corrolationId: String,
-    val agent: String,
     var status: Int,
     val expireTime: Long,
     val commandProto: Array[Byte],
     val errorMessage: Option[String]) extends ModelWithId {
 
   def command = hasOne(ApplicationSchema.commands, commandId)
+
+  val lock = LazyVar(hasOne(ApplicationSchema.commandAccess, lockId))
+  val agent = LazyVar(lock.value.agent.value)
 }
 
 object CommandLockModel {
   private val blockInt = AccessProto.AccessMode.BLOCKED.getNumber
 
-  def activeSelectsForCommands(ids: List[Long]) = {
-    val joinTable = ApplicationSchema.commandToBlocks
-    val table = ApplicationSchema.commandAccess
-
-    from(joinTable, table)((join, acc) =>
-      where(join.commandId in ids and
-        join.accessId === acc.id and (acc.access === blockInt or acc.expireTime.isNull or acc.expireTime > System.currentTimeMillis))
-        select (acc)).distinct
-  }
   def selectsForCommands(ids: List[Long]) = {
     val joinTable = ApplicationSchema.commandToBlocks
     val table = ApplicationSchema.commandAccess
@@ -59,7 +55,9 @@ object CommandLockModel {
   def activeSelect(selectId: Option[Long]): Option[CommandLockModel] = {
     selectId.flatMap { id =>
       val select = from(ApplicationSchema.commandAccess)(acc =>
-        where((acc.id === id) and (acc.access === blockInt or acc.expireTime.isNull or acc.expireTime > System.currentTimeMillis))
+        where((acc.id === id) and
+          (acc.deleted === false) and
+          (acc.access === blockInt or acc.expireTime.isNull or acc.expireTime > System.currentTimeMillis))
           select (acc)).toList
       select match {
         case List(a) => Some(a)
@@ -73,22 +71,17 @@ object CommandLockModel {
 case class CommandLockModel(
     val access: Int,
     val expireTime: Option[Long],
-    val agent: Option[String]) extends ModelWithId {
-  def this() = this(0, Some(0), Some(""))
-
-  def isActive = {
-    access == AccessProto.AccessMode.BLOCKED.getNumber ||
-      (expireTime match {
-        case None => true
-        case Some(time) => time > System.currentTimeMillis
-      })
-  }
+    val agentId: Long,
+    var deleted: Boolean) extends ModelWithId {
+  def this() = this(0, Some(0), 0, false)
 
   def commands: List[Command] = {
     from(ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((join, cmd) =>
       where(join.accessId === id and join.commandId === cmd.id)
         select (cmd)).toList
   }
+
+  val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
 }
 
 case class CommandBlockJoin(

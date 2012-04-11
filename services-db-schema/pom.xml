@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.4</version>
+        <version>0.4.7</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-services-db-schema</artifactId>
@@ -93,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-osgi</artifactId>
+            <artifactId>liquibase-core</artifactId>
             <version>${liquibase.version}</version>
         </dependency>
     </dependencies>

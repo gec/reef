@@ -19,9 +19,13 @@
 package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.service.proto.Auth;
 import org.totalgrid.reef.client.service.proto.Auth.Agent;
 import org.totalgrid.reef.client.service.proto.Auth.Permission;
 import org.totalgrid.reef.client.service.proto.Auth.PermissionSet;
+import org.totalgrid.reef.client.service.proto.Auth.AuthFilterResult;
+import org.totalgrid.reef.client.service.proto.Auth.AuthFilterRequest;
+import org.totalgrid.reef.client.service.proto.Model.Entity;
 
 import java.util.List;
 
@@ -71,6 +75,14 @@ public interface AgentService
     Agent setAgentPassword( Agent agent, String newPassword ) throws ReefServiceException;
 
     /**
+     * Updates the agent password
+     *
+     * @param name        name of the agent to update
+     * @param newPassword the new password, must obey systems password rules
+     */
+    Agent setAgentPassword( String name, String newPassword ) throws ReefServiceException;
+
+    /**
      * @return list of all of the possible permission sets
      */
     List<PermissionSet> getPermissionSets() throws ReefServiceException;
@@ -93,4 +105,8 @@ public interface AgentService
      * @return the deleted PermissionSet
      */
     PermissionSet deletePermissionSet( PermissionSet permission ) throws ReefServiceException;
+
+
+    List<AuthFilterResult> getAuthFilterResults( String action, String resource, List<Entity> entities, PermissionSet permissionSet )
+        throws ReefServiceException;
 }

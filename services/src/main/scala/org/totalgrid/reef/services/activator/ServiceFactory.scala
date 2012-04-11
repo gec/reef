@@ -29,7 +29,6 @@ import org.totalgrid.reef.services.{ ServiceContext, ServiceProviders, ServiceBo
 import org.totalgrid.reef.util.LifecycleManager
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.measurementstore.MeasurementStore
-import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
@@ -42,8 +41,6 @@ trait ServiceModulesFactory {
   def getDbConnector(): DbConnection
 
   def getMeasStore(): MeasurementStore
-
-  def publishServices(services: Seq[AsyncService[_]])
 }
 
 object ServiceFactory {
@@ -65,24 +62,26 @@ object ServiceFactory {
 
         measStore.connect()
 
-        val client = connection.login(authToken).getRpcInterface(classOf[AllScadaService])
-        val heartbeater = new ProcessHeartbeatActor(client, appConfig.getHeartbeatCfg, exe)
+        val client = connection.login(authToken)
+        val services = client.getRpcInterface(classOf[AllScadaService])
+        val heartbeater = new ProcessHeartbeatActor(services, appConfig.getHeartbeatCfg, exe)
         val providers = new ServiceProviders(dbConnection, connection, measStore, serviceOptions,
-          SqlAuthzService, metricsHolder, authToken, exe)
+          new SqlAuthzService(), metricsHolder, authToken, exe)
 
         val serviceContext = new ServiceContext(connection, exe)
 
         serviceContext.addCoordinator(providers.coordinators)
 
-        val services = serviceContext.attachServices(providers.services)
-
-        modules.publishServices(services)
+        serviceContext.attachServices(providers.services)
 
         mgr.start()
         heartbeater.start()
 
         new Cancelable {
           def cancel() = {
+
+            client.logout().await
+
             providers.coordinators.foreach { _.stopProcess() }
             mgr.stop()
             heartbeater.stop()

@@ -27,16 +27,18 @@ import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.ReefServiceException
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.services.Version
 
 class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
     extends ServiceEntryPoint[AuthRequest] with Logging {
   override val descriptor = BuiltInDescriptors.authRequest()
 
   override def postAsync(contextSource: RequestContextSource, req: AuthRequest)(callback: (Response[AuthRequest]) => Unit) {
-    val proto = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(req.getName).setPassword(req.getPassword)).build
-    val authTokenRecord = contextSource.transaction { model.createFromProto(_, proto) }
-
-    callback(Response(Envelope.Status.OK, req.toBuilder.setToken(authTokenRecord.token).build))
+    val builder = AuthToken.newBuilder.setAgent(Agent.newBuilder.setName(req.getName).setPassword(req.getPassword))
+    if (req.hasClientVersion) builder.setClientVersion(req.getClientVersion)
+    val authTokenRecord = contextSource.transaction { model.createFromProto(_, builder.build()) }
+    val response = req.toBuilder.setToken(authTokenRecord.token).setServerVersion(Version.getClientVersion).build()
+    callback(Response(Envelope.Status.OK, response))
   }
 
   override def deleteAsync(source: RequestContextSource, req: AuthRequest)(callback: (Response[AuthRequest]) => Unit) {

@@ -65,8 +65,8 @@ object StandaloneLoader {
     var benchmark = false
     var dryRun = false
     var ignoreWarnings = false
-    var qpidFile = "org.totalgrid.reef.amqp.cfg"
-    var userFile = "org.totalgrid.reef.user.cfg"
+
+    var propertyFiles = List.empty[String]
 
     try {
 
@@ -82,12 +82,9 @@ object StandaloneLoader {
             ignoreWarnings = true
           case "-dryRun" =>
             dryRun = true
-          case "-u" =>
+          case "--configFile" =>
             args = more(args)
-            userFile = args.head
-          case "-a" =>
-            args = more(args)
-            qpidFile = args.head
+            propertyFiles = List(args.head) ::: propertyFiles
         }
         args = args drop 1
       }
@@ -101,8 +98,13 @@ object StandaloneLoader {
     if (filename == None)
       usage
 
-    val qpidConfig = new AmqpSettings(PropertyReader.readFromFile(qpidFile))
-    val userConfig = new UserSettings(PropertyReader.readFromFile(userFile))
+    if (propertyFiles.isEmpty) propertyFiles = List("target.cfg")
+
+    import scala.collection.JavaConversions._
+    val props = PropertyReader.readFromFiles(propertyFiles)
+
+    val qpidConfig = new AmqpSettings(props)
+    val userConfig = new UserSettings(props)
 
     run(qpidConfig, userConfig, filename.get, benchmark, dryRun, ignoreWarnings)
   }
@@ -133,8 +135,7 @@ object StandaloneLoader {
     println("                     configuration file to be simulated.")
     println("  -dryRun            Only validate the file, dont upload to server")
     println("  -ignoreWarnings    Ignore warnings")
-    println("  -u <userfile>      Path to o.t.r.user.cfg file")
-    println("  -a <amqpFile>      Path to o.t.r.amqp.cfg file")
+    println("  -configFile <userfile> Path to *.cfg file(s)")
     println("")
     java.lang.System.exit(-1)
   }

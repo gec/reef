@@ -190,18 +190,22 @@ object SquerylModel {
   }
   implicit def makeAsParam[A](o: Option[A]): FilterStars[A] = new FilterStars(o)
 
-  class ListFilterStars[A](list: List[A]) {
+  class ListFilterStars[A](list: Option[List[A]]) {
     def asParam(f: List[A] => LogicalBoolean): Option[LogicalBoolean] = {
       list match {
-        case List() => None
-        case List("*") => SquerylModel.WILDCARD
-        case _ => Some(f(list))
+        case None => None
+        case Some(List()) => None
+        case Some(List("*")) => SquerylModel.WILDCARD
+        case Some(l) => Some(f(l))
       }
     }
   }
-  implicit def makeListAsParam1[A](list: List[A]): ListFilterStars[A] = new ListFilterStars(list)
+  implicit def makeListAsParam1[A](list: List[A]): ListFilterStars[A] = new ListFilterStars(Some(list))
   import scala.collection.JavaConversions._
-  implicit def makeListAsParam2[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(javaList.toList)
+  implicit def makeListAsParam2[A](javaList: java.util.List[A]): ListFilterStars[A] = new ListFilterStars(Some(javaList.toList))
+
+  implicit def makeListAsParam3[A](list: Option[List[A]]): ListFilterStars[A] = new ListFilterStars(list)
+  implicit def makeListAsParam4[A](javaList: Option[java.util.List[A]]): ListFilterStars[A] = new ListFilterStars(javaList.map { _.toList })
 
   def routingOption[A, R](jList: java.util.List[A])(f: List[A] => List[R]): List[R] = {
     import scala.collection.JavaConversions._

@@ -25,6 +25,7 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.httpbridge.servlets._
 import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCallLibrary
 import org.totalgrid.reef.client.settings.util.PropertyReader
+import org.totalgrid.reef.httpbridge.servlets.helpers._
 
 object JettyLauncher {
   def main(args: Array[String]) {
@@ -53,12 +54,15 @@ object JettyLauncher {
 
     val server = new Server(8886)
 
+    val subscriptionHolder = new SimpleSubscriptionManager
+
     val context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS | ServletContextHandler.NO_SECURITY)
     context.setContextPath("/")
     context.addServlet(new ServletHolder(new RestLevelServlet(managedConnection, builderLocator)), "/rest/*")
     context.addServlet(new ServletHolder(new ConverterServlet(builderLocator)), "/convert/*")
     context.addServlet(new ServletHolder(new LoginServlet(managedConnection)), "/login/*")
-    context.addServlet(new ServletHolder(new ApiServlet(managedConnection, new AllScadaServiceApiCallLibrary)), "/api/*")
+    context.addServlet(new ServletHolder(new ApiServlet(managedConnection, new AllScadaServiceApiCallLibrary, subscriptionHolder)), "/api/*")
+    context.addServlet(new ServletHolder(new SubscriptionServlet(subscriptionHolder)), "/subscribe/*")
 
     server.setHandler(context)
 

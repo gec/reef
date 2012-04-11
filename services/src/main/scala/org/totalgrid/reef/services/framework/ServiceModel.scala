@@ -22,6 +22,7 @@ import com.google.protobuf.GeneratedMessage
 
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
+import java.util.UUID
 
 /**
  * Interface for generic use of models by simple REST services
@@ -67,6 +68,12 @@ trait ServiceModel[MessageType, ModelType]
    * into a stable and sensible order.
    */
   def sortResults(list: List[MessageType]): List[MessageType]
+
+  /**
+   * gets the entities associated with the resource so we can get any necessary
+   * authorization checks.
+   */
+  def relatedEntities(entries: List[ModelType]): List[UUID]
 }
 
 /**

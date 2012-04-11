@@ -82,6 +82,10 @@ trait FrontEndProcessorConversion
     req.uuid.value :: Nil
   }
 
+  def relatedEntities(entries: List[ApplicationInstance]) = {
+    entries.map { _.entityId }
+  }
+
   def searchQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
     val protocol = if (proto.getProtocolsCount == 1) Some(proto.getProtocols(1)) else None
     protocol.map(p => sql.id in from(ApplicationSchema.protocols)(t => where(t.protocol === p) select (&(t.applicationId)))) ::

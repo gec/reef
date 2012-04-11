@@ -149,7 +149,7 @@ class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncService
     val entity = Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
     val entAttr = EntityAttributes.newBuilder.setEntity(entity).build
 
-    val results = service.get(entAttr).expectMany(2)
+    val results = service.get(entAttr).expectMany(3)
 
     results.foreach { result =>
       if (result.getEntity.getName == "ent01") {

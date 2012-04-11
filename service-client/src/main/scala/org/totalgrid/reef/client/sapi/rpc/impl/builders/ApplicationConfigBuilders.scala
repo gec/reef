@@ -22,13 +22,16 @@ import org.totalgrid.reef.client.settings.NodeSettings
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import java.util.UUID
 
+import scala.collection.JavaConversions._
+
 object ApplicationConfigBuilders {
 
-  def makeProto(config: NodeSettings, instanceName: String, caps: List[String]) = {
+  def makeProto(version: String, config: NodeSettings, instanceName: String, caps: List[String]) = {
     val b = ApplicationConfig.newBuilder()
 
+    b.setVersion(version)
     b.setInstanceName(instanceName)
-    b.setNetwork(config.getNetwork)
+    config.getNetworks.toList.foreach { b.addNetworks(_) }
     b.setLocation(config.getLocation)
     caps.foreach(b.addCapabilites(_))
     b.setProcessId(UUID.randomUUID().toString)

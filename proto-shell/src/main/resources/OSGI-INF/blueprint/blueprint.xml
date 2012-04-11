@@ -48,8 +48,14 @@
         <command name="reef/login">
             <action class="org.totalgrid.reef.shell.proto.ReefLoginCommand"/>
         </command>
+        <command name="reef/whoami">
+            <action class="org.totalgrid.reef.shell.proto.ReefWhoAmICommand"/>
+        </command>
         <command name="reef/logout">
             <action class="org.totalgrid.reef.shell.proto.ReefLogoutCommand"/>
+        </command>
+        <command name="reef/benchmark">
+            <action class="org.totalgrid.reef.shell.proto.BenchmarkCommand"/>
         </command>
         <command name="reef/headers">
             <action class="org.totalgrid.reef.shell.proto.ReefHeadersCommand"/>
@@ -75,6 +81,9 @@
         <command name="meas/from">
             <action class="org.totalgrid.reef.shell.proto.MeasFromCommand"/>
         </command>
+        <command name="meas/view">
+            <action class="org.totalgrid.reef.shell.proto.MeasViewCommand"/>
+        </command>
         <command name="meas/endpoint">
             <action class="org.totalgrid.reef.shell.proto.MeasFromEndpointCommand"/>
         </command>
@@ -95,6 +104,9 @@
         </command>
         <command name="meas/override">
             <action class="org.totalgrid.reef.shell.proto.MeasOverrideCommand"/>
+        </command>
+        <command name="meas/override-list">
+            <action class="org.totalgrid.reef.shell.proto.MeasOverrideListCommand"/>
         </command>
         <command name="event/list">
             <action class="org.totalgrid.reef.shell.proto.EventListCommand"/>
@@ -168,6 +180,9 @@
         <command name="application/list">
             <action class="org.totalgrid.reef.shell.proto.ApplicationListCommand"/>
         </command>
+        <command name="application/view">
+            <action class="org.totalgrid.reef.shell.proto.ApplicationViewCommand"/>
+        </command>
         <command name="application/remove">
             <action class="org.totalgrid.reef.shell.proto.ApplicationRemoveCommand"/>
         </command>
@@ -192,11 +207,17 @@
         <command name="agent-permissions/list">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsListCommand"/>
         </command>
+        <command name="agent-permissions/view">
+            <action class="org.totalgrid.reef.shell.proto.AgentPermissionsViewCommand"/>
+        </command>
         <command name="agent-permissions/create">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsCreateCommand"/>
         </command>
         <command name="agent-permissions/delete">
             <action class="org.totalgrid.reef.shell.proto.AgentPermissionsDeleteCommand"/>
+        </command>
+        <command name="agent-permissions/filter">
+            <action class="org.totalgrid.reef.shell.proto.AgentPermissionsFilterCommand"/>
         </command>
         <command name="agent/create">
             <action class="org.totalgrid.reef.shell.proto.AgentCreateCommand"/>
@@ -224,6 +245,18 @@
         </command>
         <command name="metrics/throughput">
             <action class="org.totalgrid.reef.shell.proto.MetricsThroughput"/>
+        </command>
+        <command name="calculation/list">
+            <action class="org.totalgrid.reef.shell.proto.CalculationListCommand"/>
+        </command>
+        <command name="calculation/view">
+            <action class="org.totalgrid.reef.shell.proto.CalculationViewCommand"/>
+        </command>
+        <command name="login/list">
+            <action class="org.totalgrid.reef.shell.proto.AuthTokenListCommand"/>
+        </command>
+        <command name="login/revoke">
+            <action class="org.totalgrid.reef.shell.proto.AuthTokenRevokeCommand"/>
         </command>
     </command-bundle>
 

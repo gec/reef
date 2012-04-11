@@ -6,7 +6,7 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4.4</version>
+	<version>0.4.7</version>
 
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,7 +15,7 @@
         <slf4s.version>1.0.6</slf4s.version>
         <scalamodules.version>2.0.3</scalamodules.version>
         <qpid.version>0.10</qpid.version>
-		<reef.version>0.4.4</reef.version>
+		<reef.version>0.4.7</reef.version>
         <squeryl.version>0.9.5-RC1</squeryl.version>
         <cglib.version>2.2</cglib.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
@@ -48,6 +48,8 @@
         <backport-util-concurrent.version>2.2</backport-util-concurrent.version>
         <geronimo-jms_1.1_spec.version>1.0</geronimo-jms_1.1_spec.version>
         <liquibase.version>2.0.4-OSGI</liquibase.version>
+
+        <main.basedir>../</main.basedir>
     </properties>
 
 	<modules>
@@ -76,17 +78,22 @@
         <module>application-whiteboard</module>
 		<module>proto-shell</module>
         <module>http-bridge/http-bridge</module>
-        <module>http-bridge/js-service-client</module>
+        <module>http-bridge/jQuery</module>
+        <module>calculations/calculations-library</module>
+        <module>calculations/protocol-calculator</module>
 		<module>loader-common</module>
 		<module>loader-xml</module>
 		<module>processing</module>
 		<module>fep</module>
+        <module>standalone-fep</module>
 		<module>protocol-api</module>
 		<module>protocol-simulator</module>
+        <module>protocol-simulator-shell-commands</module>
 		<module>default-simulator</module>
 		<module>example-simulator</module>
 		<module>protocol-dnp3</module>
         <module>services-db-schema</module>
+        <module>services-authz</module>
 		<module>services</module>
 		<module>admin-shell</module>
         <module>standalone-node</module>
@@ -236,6 +243,9 @@
 							<resources>
 								<resource>
 									<directory>cfg-templates</directory>
+                                    <includes>
+                                        <include>*.cfg</include>
+                                    </includes>
 								</resource>
 							</resources>
 							<overwrite>false</overwrite>
@@ -306,7 +316,7 @@
 						<include>**/*.java</include>
 						<include>**/*.xml</include>
 					</includes>
-					<configFile>${project.basedir}/../CodeFormat.xml</configFile>
+					<configFile>${main.basedir}/CodeFormat.xml</configFile>
 					<lineEnding>LF</lineEnding>
 				</configuration>
 			</plugin>
@@ -349,6 +359,9 @@
 									<resources>
 										<resource>
 											<directory>cfg-templates</directory>
+                                            <includes>
+                                                <include>*.cfg</include>
+                                            </includes>
 										</resource>
 									</resources>
 									<overwrite>true</overwrite>

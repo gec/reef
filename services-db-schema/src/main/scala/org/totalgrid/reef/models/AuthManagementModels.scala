@@ -21,6 +21,8 @@ package org.totalgrid.reef.models
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.util.LazyVar
 import java.util.UUID
+import org.totalgrid.reef.client.service.proto.Auth.{ PermissionSet => PermissionSetProto }
+import org.squeryl.annotations.Transient
 
 /**
  * Helpers for handling the implementation of salted password and encoded passwords
@@ -65,6 +67,8 @@ class Agent(
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.agentSetJoins)(p => where(p.agentId === id) select (&(p.permissionSetId)))))
   val authTokens = LazyVar(ApplicationSchema.authTokens.where(au => au.agentId === id))
 
+  val applications = LazyVar(ApplicationSchema.apps.where(au => au.agentId === id))
+
   def checkPassword(password: String): Boolean = {
     import SaltedPasswordHelper._
     dec64(digest) == calcDigest(dec64(salt), password)
@@ -80,29 +84,29 @@ class Agent(
   }
 }
 
-case class AuthPermission(
-    val allow: Boolean,
-    val resource: String,
-    val verb: String) extends ModelWithId {
-}
-
 case class PermissionSet(
     _entityId: UUID,
-    val defaultExpirationTime: Long) extends EntityBasedModel(_entityId) {
+    var protoData: Array[Byte]) extends EntityBasedModel(_entityId) {
 
-  val permissions = LazyVar(ApplicationSchema.permissions.where(ps => ps.id in from(ApplicationSchema.permissionSetJoins)(p => where(p.permissionSetId === id) select (&(p.permissionId)))))
+  def proto = PermissionSetProto.parseFrom(protoData)
 }
 
 case class AuthToken(
     val token: String,
     val agentId: Long,
     val loginLocation: String,
+    val clientVersion: String,
+    var revoked: Boolean,
+    var issueTime: Long,
     var expirationTime: Long) extends ModelWithId {
+
+  // we only want to display the token _once_ when its created
+  @Transient
+  var displayToken = false
 
   val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
   val permissionSets = LazyVar(ApplicationSchema.permissionSets.where(ps => ps.id in from(ApplicationSchema.tokenSetJoins)(p => where(p.authTokenId === id) select (&(p.permissionSetId)))))
 }
 
 case class AgentPermissionSetJoin(val permissionSetId: Long, val agentId: Long)
-case class PermissionSetJoin(val permissionSetId: Long, val permissionId: Long)
 case class AuthTokenPermissionSetJoin(val permissionSetId: Long, val authTokenId: Long)

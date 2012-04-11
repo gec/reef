@@ -59,7 +59,7 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
 
       val basicReturnType = scalaTypeString(m.returnType)
 
-      val returnType = if ((m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List") "Option[" + basicReturnType + "]"
+      val returnType = if (isReturnOptional(m)) "Option[" + basicReturnType + "]"
       else basicReturnType
 
       msg += ": Promise[" + returnType + "]"

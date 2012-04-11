@@ -262,6 +262,12 @@ public interface CommandService
     List<CommandLock> getCommandLocks() throws ReefServiceException;
 
     /**
+     * Get a list of all command locks in system, including deleted locks that are no
+     * longer active.
+     */
+    List<CommandLock> getCommandLocksIncludingDeleted() throws ReefServiceException;
+
+    /**
      * Get a command lock by UUID
      * @param id the id of the command to lock
      * @throws ReefServiceException if an error occurs

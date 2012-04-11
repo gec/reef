@@ -73,17 +73,17 @@ object EventConfigService {
   }
 
   def seed() {
-    import org.squeryl.PrimitiveTypeMode._
-    import org.totalgrid.reef.models.ApplicationSchema
+    val eventConfigs = builtInEventConfigurations()
+    val defaultEventNames = eventConfigs.keys.toList
 
-    if (ApplicationSchema.eventConfigs.Count.head == 0) {
-      // TODO: make a default event config for handling unknown events
+    val alreadyIn = from(ApplicationSchema.eventConfigs)(sql =>
+      where(sql.eventType in defaultEventNames)
+        select (sql.eventType)).toList
 
-      val ecs = builtInEventConfigurations().values
+    val needed = defaultEventNames.diff(alreadyIn)
+    val toInsert = needed.map { eventConfigs(_) }.toList
 
-      ecs.foreach(ApplicationSchema.eventConfigs.insert(_))
-    }
-
+    ApplicationSchema.eventConfigs.insert(toInsert)
   }
 }
 
@@ -102,7 +102,6 @@ class EventConfigService(protected val model: EventConfigServiceModel)
 
   override protected def preUpdate(context: RequestContext, request: EventConfig, existing: EventConfigStore): EventConfig = {
     populateProto(context, request)
-    // TODO: should we re-render all events with the same event type?
   }
 
   private def populateProto(context: RequestContext, proto: EventConfig): EventConfig = {
@@ -181,6 +180,10 @@ trait EventConfigConversion
 
   def getRoutingKey(req: EventConfig) = ProtoRoutingKeys.generateRoutingKey {
     req.eventType :: Nil
+  }
+
+  def relatedEntities(entries: List[EventConfigStore]) = {
+    Nil
   }
 
   def searchQuery(proto: EventConfig, sql: EventConfigStore) = {

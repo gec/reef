@@ -45,12 +45,15 @@ class MeasPipelinePump(procFun: Measurement => Unit, flushCache: () => Unit)
     batchProcessed(1)
   }
 
-  private def deBatch[A](b: MeasurementBatch)(f: Measurement => A) = {
+  private def deBatch[A](batch: MeasurementBatch)(f: Measurement => A) = {
     import scala.collection.JavaConversions._
 
-    b.getMeasList.toList.foreach { m =>
-      if (m.hasTime) f(m)
-      else f(Measurement.newBuilder(m).setTime(b.getWallTime).build)
+    val now = System.currentTimeMillis()
+    batch.getMeasList.toList.foreach { m =>
+      val b = m.toBuilder
+      if (!m.hasSystemTime) b.setSystemTime(now)
+      if (!m.hasTime) b.setTime(batch.getWallTime)
+      f(b.build)
     }
   }
 }

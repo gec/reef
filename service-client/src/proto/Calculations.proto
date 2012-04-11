@@ -1,0 +1,77 @@
+
+package org.totalgrid.reef.client.service.proto.Calculations;
+
+import "Model.proto";
+import "Measurements.proto";
+
+option java_package = "org.totalgrid.reef.client.service.proto";
+option java_outer_classname = "Calculations";
+
+
+// only one trigger strategy may be set
+message TriggerStrategy{
+    optional uint64       period_ms  = 1;
+    optional bool         update_any = 3;
+}
+
+// if 'from' or 'to' is set this is a time based range, other wise it is a samples range
+// limit can be set for all types
+message MeasurementRange{
+    optional  bool        since_last = 4;
+    optional  uint64      from_ms = 1;
+    optional  uint64      to_ms   = 2;
+    optional  uint32      limit   = 3;
+}
+
+message SingleMeasurement{
+    enum MeasurementStrategy{
+        MOST_RECENT = 1;
+    }
+    optional MeasurementStrategy  strategy = 1;
+}
+
+message CalculationInput{
+
+    optional org.totalgrid.reef.client.service.proto.Model.Point             point         = 1;
+    optional string            variable_name = 2;
+    optional MeasurementRange  range         = 3;
+    optional SingleMeasurement single        = 4;
+}
+
+message InputQuality{
+    enum Strategy{
+        ONLY_WHEN_ALL_OK       = 1;
+        REMOVE_BAD_AND_CALC    = 2;
+    }
+    optional Strategy strategy        = 1;
+}
+
+message OutputQuality{
+    enum Strategy{
+        WORST_QUALITY = 1;
+        ALWAYS_OK     = 2;
+    }
+    optional Strategy strategy        = 1;
+}
+
+message OutputTime{
+    enum Strategy{
+        MOST_RECENT     = 1;
+    }
+    optional Strategy strategy        = 1;
+}
+
+message Calculation{
+    optional org.totalgrid.reef.client.service.proto.Model.ReefUUID          uuid               = 9;
+    optional org.totalgrid.reef.client.service.proto.Model.Point             output_point       = 1;
+    optional bool              accumulate         = 2;
+
+    optional TriggerStrategy   triggering         = 3;
+    repeated CalculationInput  calc_inputs        = 4;
+
+    optional InputQuality      triggering_quality = 5;
+    optional OutputQuality     quality_output     = 6;
+    optional OutputTime        time_output        = 7;
+
+    optional string            formula            = 8;
+}

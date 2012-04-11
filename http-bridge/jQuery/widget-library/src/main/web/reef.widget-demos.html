@@ -1,0 +1,71 @@
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <script language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" ></script>
+        <script language="javascript" src="../../../../service-client/src/main/web/reef.client.js"></script>
+        <script language="javascript" src="../../../../service-client/src/main/web/reef.client.core-services.js"></script>
+        <script language="javascript" src="./reef.widget.measurement.js"></script>
+        <link rel="stylesheet" type="text/css" href="./reef.widget.measurement.css" media="screen" />
+        <script language="javascript" src="./reef.widget.endpoint.js"></script>
+        <link rel="stylesheet" type="text/css" href="./reef.widget.endpoint.css" media="screen" />
+
+        <title>Javascript Widget Demos</title>
+    </head>
+
+    <body>
+
+        <div id="data_div" style="width:500px;" ></div>
+        <div id="endpoint_div" style="width:500px;" ></div>
+        <div id="error_div" style="width:500px;" ></div>
+
+        <script type="text/javascript">
+        $(document).ready(function(){
+            var client = $.reefClient({
+                'server'     : 'http://127.0.0.1:8886',
+                'error_div'  : $('#error_div'),
+                'auto_login' : {
+                    'name' : 'system', 'password' : 'system'
+                }
+            });
+
+            // get some points and make a "current value" display with just those points
+            client.getPoints().done(function(points){
+                var pointNames = $.map(points.slice(-4), function(point){return point.name});
+                if(pointNames.length > 0){
+                    $('#data_div').displayMeasurements({
+                        'client'     : client,
+                        'point_names' : pointNames,
+                        'polling' : {'enabled' : false, 'period' : 1000}
+                    });
+                }
+            });
+
+            $('#endpoint_div').displayEndpoints({
+                'client'     : client
+            });
+        });
+        </script>
+    </body>
+</html>

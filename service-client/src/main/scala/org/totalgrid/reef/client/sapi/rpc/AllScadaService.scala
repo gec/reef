@@ -36,3 +36,5 @@ trait AllScadaService
   with EndpointService
   with ApplicationService
   with CommunicationChannelService
+  with CalculationService
+  with LoginService

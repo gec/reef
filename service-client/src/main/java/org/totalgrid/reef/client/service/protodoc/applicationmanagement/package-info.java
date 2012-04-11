@@ -39,7 +39,10 @@
  *     optional string instance_name = 3; // name of this processing, should be unique per system
  *     optional string process_id    = 9; // a process identifier that shows when the containg process goes down
  *                                        // NOTE: does not need to be process id, a random number is suffecient
+ *     optional string version       = 13; // version number of application
+ *     // TODO: network field is deprecated, use networks. remove network field in 0.5.x
  *     optional string network       = 4; // the network name should indicate what ip addresses are reachable
+ *     repeated string networks      = 12; // the network name should indicate what ip addresses are reachable
  *     optional string location      = 5; // usually machine name, so we know what serial ports are attached
  *     repeated string capabilites   = 6; // List of capabilites offered by the node, FEP, Services, MeasProc, etc.
  *     optional HeartbeatConfig      heartbeat_cfg = 7;

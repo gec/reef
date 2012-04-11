@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-assemblies</artifactId>
-        <version>0.4.4</version>
+        <version>0.4.7</version>
         <relativePath>../</relativePath>
     </parent>
     <artifactId>totalgrid-reef-cli</artifactId>
@@ -148,8 +148,6 @@
                                     <features>
                                         <feature>reef-system-preload</feature>
                                     </features>
-                                    <!-- intentionally wrong to stop including enterprise descriptors -->
-                                    <karafVersion>9.9.9</karafVersion>
                                     <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
                                     <repository>target/system-repo</repository>
                                 </configuration>
@@ -167,8 +165,6 @@
                                     <features>
                                         <feature>reef-remote-shell</feature>
                                     </features>
-                                    <!-- intentionally wrong to stop including enterprise descriptors -->
-                                    <karafVersion>9.9.9</karafVersion>
                                     <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
                                     <repository>target/reef-cli-repo</repository>
                                 </configuration>
@@ -311,8 +307,6 @@
                                     <features>
                                         <feature>reef-system-preload</feature>
                                     </features>
-                                    <!-- intentionally wrong to stop including enterprise descriptors -->
-                                    <karafVersion>9.9.9</karafVersion>
                                     <includeMvnBasedDescriptors>true</includeMvnBasedDescriptors>
                                     <repository>target/system-repo</repository>
                                 </configuration>

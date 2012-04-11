@@ -41,7 +41,8 @@ trait AllScadaServiceAsyncJavaShim
     with AgentServiceAsyncJavaShim
     with EndpointServiceAsyncJavaShim
     with ApplicationServiceAsyncJavaShim
-    with CommunicationChannelServiceAsyncJavaShim {
+    with CommunicationChannelServiceAsyncJavaShim
+    with CalculationServiceAsyncJavaShim {
 
   def service: ScalaAllScadaService
 }

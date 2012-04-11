@@ -124,7 +124,7 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
     // in the case of the "thunked events" or "server generated events" we are not creating the event
     // in a standard request/response cycle so we dont have access to the username via the headers
     val userId = if (!request.hasUserId) {
-      context.getHeaders.userName.getOrElse(throw new BadRequestException("invalid event: " + request + ", UserName must be logged in user"))
+      context.agent.entityName
     } else {
       request.getUserId
     }
@@ -140,10 +140,9 @@ class EventServiceModel(eventConfig: EventConfigServiceModel, alarmServiceModel:
   }
 
   def log(event: EventStore) {
-    // TODO: why are we building this as a list then doing mkString?
     val eventStringParts = "severity: " :: event.severity ::
       ", type: " :: event.eventType ::
-      event.entity.value.map { _.name }.getOrElse("_") ::
+      ", related: " :: event.entity.value.map { _.name }.getOrElse("_") ::
       ", user id: " :: event.userId ::
       ", rendered: " :: event.rendered :: Nil
 
@@ -160,6 +159,10 @@ trait EventConversion
 
   // we've already sorted with the getOrdering we needed to reterive from the database
   def sortResults(list: List[Event]) = list
+
+  def relatedEntities(entries: List[EventStore]) = {
+    entries.map { _.entityId }.flatten
+  }
 
   // Derive a AMQP routing key from a proto. Used by post?
   def getRoutingKey(req: Event) = ProtoRoutingKeys.generateRoutingKey {

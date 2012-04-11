@@ -32,12 +32,16 @@ import org.totalgrid.reef.client.settings.util.PropertyReader
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.service.list.ReefServices
 
+import scala.collection.JavaConversions._
+
 object ProtoShellApplication {
   def main(args: Array[String]) = {
     System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
 
-    val userSettings = new UserSettings(PropertyReader.readFromFile("org.totalgrid.reef.user.cfg"))
-    val connectionInfo = new AmqpSettings(PropertyReader.readFromFile("org.totalgrid.reef.amqp.cfg"))
+    val properties = PropertyReader.readFromFiles(List("target.cfg"))
+
+    val userSettings = new UserSettings(properties)
+    val connectionInfo = new AmqpSettings(properties)
 
     val factory = new ReefFactory(connectionInfo, new ReefServices)
 

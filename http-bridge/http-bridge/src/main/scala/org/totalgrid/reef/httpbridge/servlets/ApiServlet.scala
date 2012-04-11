@@ -20,15 +20,15 @@ package org.totalgrid.reef.httpbridge.servlets
 
 import javax.servlet.http.{ HttpServletResponse, HttpServletRequest }
 import org.totalgrid.reef.httpbridge.ManagedConnection
-import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.httpbridge.servlets.helpers.argumentsources.ParameterArgumentSource
 import org.totalgrid.reef.httpbridge.servlets.helpers._
+import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
 
 /**
  * Proxies calls from the client, and prepares the apporiate ArgumentSource based on the method and
  * headers. This will allow us to provide these Apis for consumption using a number of techniques.
  */
-class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider) extends ClientUsingServletBase(connection) {
+class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider, subscriptionHandler: SubscriptionHandler) extends ClientUsingServletBase(connection) {
 
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse) = handleErrors(resp) {
     val argumentSource = new ParameterArgumentSource(req)
@@ -50,15 +50,27 @@ class ApiServlet(connection: ManagedConnection, apiCallProvider: ApiCallProvider
     val function = Option(req.getPathInfo).getOrElse("").stripPrefix("/")
     val apiCall = apiCallProvider.prepareApiCall(function, argumentSource)
 
-    if (apiCall.isEmpty) throw new BadRequestException("Unknown function: " + function)
-
     val client = connection.getAuthenticatedClient(authToken)
     client.setHeaders(headers.setAuthToken(authToken))
 
-    apiCall.get match {
-      case SingleResultApiCall(func) => printSingleOutput(req, resp, func(client).await)
-      case OptionalResultApiCall(func) => printOutput(req, resp, func(client).await.toList)
-      case MultiResultApiCall(func) => printOutput(req, resp, func(client).await)
+    apiCall match {
+      case SingleResultApiCall(func) =>
+        resp.setHeader(RETURN_STYLE, "SINGLE")
+        printSingleOutput(req, resp, func(client).await)
+      case OptionalResultApiCall(func) =>
+        resp.setHeader(RETURN_STYLE, "SINGLE")
+        printOutput(req, resp, func(client).await.toList)
+      case MultiResultApiCall(func) =>
+        resp.setHeader(RETURN_STYLE, "MULTI")
+        printOutput(req, resp, func(client).await)
+      case SubscriptionResultApiCall(func) =>
+        resp.setHeader(RETURN_STYLE, "MULTI")
+        val subResult = func(client).await
+        val subToken = subscriptionHandler.addSubscription(subResult.getSubscription)
+        // we are "tunneling" the subscription token out through one of the "simple response headers"
+        // until the CORS support for expose Headers is up to snuff.
+        resp.setHeader("Pragma", subToken)
+        printOutput(req, resp, subResult.getResult)
     }
 
     resp.setStatus(200)

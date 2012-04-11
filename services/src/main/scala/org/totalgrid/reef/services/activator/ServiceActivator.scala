@@ -21,16 +21,15 @@ package org.totalgrid.reef.services.activator
 import net.agileautomata.executor4s._
 
 import org.osgi.framework.BundleContext
-import com.weiglewilczek.scalamodules._
 
 import org.totalgrid.reef.services._
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 import org.totalgrid.reef.app.ConnectionCloseManagerEx
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings, NodeSettings }
-import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.measurementstore.MeasurementStoreFinder
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.osgi.{ ExecutorBundleActivator, OsgiConfigReader }
+import org.totalgrid.reef.models.CoreServicesSchema
 
 class ServiceActivator extends ExecutorBundleActivator with Logging {
 
@@ -40,21 +39,22 @@ class ServiceActivator extends ExecutorBundleActivator with Logging {
 
     logger.info("Starting Service bundle..")
 
-    val brokerConfig = new AmqpSettings(OsgiConfigReader(context, "org.totalgrid.reef.amqp").getProperties)
-    val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
-    val options = new ServiceOptions(OsgiConfigReader(context, "org.totalgrid.reef.services").getProperties)
-    val userSettings = new UserSettings(OsgiConfigReader(context, "org.totalgrid.reef.user").getProperties)
-    val nodeSettings = new NodeSettings(OsgiConfigReader(context, "org.totalgrid.reef.node").getProperties)
+    val fileEndings = List("amqp", "user", "node", "sql", "services")
+    val properties = OsgiConfigReader.load(context, fileEndings.map { "org.totalgrid.reef." + _ })
+
+    val brokerConfig = new AmqpSettings(properties)
+    val sql = new DbInfo(properties)
+    val options = new ServiceOptions(properties)
+    val userSettings = new UserSettings(properties)
+    val nodeSettings = new NodeSettings(properties)
+
+    val dbConnection = DbConnector.connect(sql, context)
+    // services won't start unless database is at right version
+    CoreServicesSchema.checkDatabase(dbConnection)
 
     val modules = new ServiceModulesFactory {
-      def getDbConnector() = DbConnector.connect(sql, context)
+      def getDbConnector() = dbConnection
       def getMeasStore() = MeasurementStoreFinder.getInstance(context)
-
-      def publishServices(services: Seq[AsyncService[_]]) {
-        services.foreach { x =>
-          context createService (x, "exchange" -> x.descriptor.id, interface[AsyncService[_]])
-        }
-      }
     }
 
     manager = Some(new ConnectionCloseManagerEx(brokerConfig, exe))

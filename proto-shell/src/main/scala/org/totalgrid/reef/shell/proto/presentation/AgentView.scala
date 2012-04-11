@@ -29,11 +29,11 @@ object AgentView {
   }
 
   def agentHeader = {
-    "Id" :: "Name" :: "PermissionSets" :: Nil
+    "Name" :: "PermissionSets" :: Nil
   }
 
   def agentRow(a: Agent) = {
-    a.getUuid.getValue :: a.getName :: a.getPermissionSetsList.toList.map { _.getName }.mkString(",") :: Nil
+    a.getName :: a.getPermissionSetsList.toList.map { _.getName }.mkString(",").slice(0, 50) :: Nil
   }
 
   def printPermissionSets(permissions: List[PermissionSet]) = {
@@ -41,13 +41,52 @@ object AgentView {
   }
 
   def permissionSetHeader = {
-    "Id" :: "Name" :: "Allows" :: "Denies" :: Nil
+    "Name" :: "Allows" :: "Denies" :: Nil
   }
 
   def permissionSetRow(a: PermissionSet) = {
     val permissions = a.getPermissionsList.toList
-    val allows = permissions.filter(_.getAllow == true).map { p => p.getVerb + "," + p.getResource }
-    val denies = permissions.filter(_.getAllow == false).map { p => p.getVerb + "," + p.getResource }
-    a.getUuid.getValue :: a.getName :: allows.mkString(";") :: denies.mkString(";") :: Nil
+    val allows = permissions.filter(_.getAllow == true).size
+    val denies = permissions.filter(_.getAllow == false).size
+    a.getName :: allows.toString :: denies.toString :: Nil
+  }
+
+  def viewPermissionSet(a: PermissionSet) = {
+
+    val permissions = a.getPermissionsList.toList
+
+    Table.printTable(permissionHeader, permissions.map(permissionRow(_)))
+  }
+
+  def permissionHeader = {
+    "Allow" :: "Actions" :: "Resources" :: "Selectors" :: Nil
+  }
+
+  def permissionRow(a: Permission): List[String] = {
+    a.getAllow.toString ::
+      a.getVerbList.toList.mkString(",") ::
+      a.getResourceList.toList.mkString(",") ::
+      a.getSelectorList.toList.map { selectorString(_) }.mkString(",") ::
+      Nil
+  }
+
+  def selectorString(a: EntitySelector): String = {
+    val args = a.getArgumentsList.toList
+    val argString = if (args.isEmpty) ""
+    else args.mkString("(", ",", ")")
+    a.getStyle + argString
+  }
+
+  def filterResultHeader = {
+    "Status" :: "Entity Name" :: "Reason" :: Nil
+  }
+
+  def filterResult(result: AuthFilterResult) = {
+    val str = if (result.getAllowed) "Allowed" else "Denied"
+    str :: result.getEntity.getName :: result.getReason :: Nil
+  }
+
+  def printFilterResults(results: List[AuthFilterResult]) = {
+    Table.printTable(filterResultHeader, results.map(filterResult))
   }
 }

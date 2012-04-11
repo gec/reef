@@ -120,7 +120,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * behaviors.
    */
   def uniqueQuerySize(req: MessageType): Int = {
-    // TODO: HACK, this construction allows us to get a "free" instance of T to use to construct the list of query parameters
+    // TODO: remove uniqueQuerySize and searchQuerySize functions
     // we are searching for, in some cases we need to know if they are searching for something in paticular or if they
     // searched for "*" (this would be the same as searching for nothing)
     from(table)(sql => where(return uniqueQuery(req, sql).flatten.size) select (sql))

@@ -4,11 +4,11 @@
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
  * work for additional information regarding copyright ownership. Green Energy
- * Corp licenses this file to you under the GNU Affero General Public License
- * Version 3.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * http://www.gnu.org/licenses/agpl.html
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -48,7 +48,7 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
     private ApplicationSettings applicationSettings;
 
     private volatile Connection connection = null;
-    private volatile boolean started = false;
+    private volatile boolean shutdown = false;
     private List<ApplicationConnectionListener> listeners = new LinkedList<ApplicationConnectionListener>();
 
     public ApplicationConnectionManagerImpl( AmqpSettings amqpSettings, UserSettings userSettings, NodeSettings nodeSettings, String instanceName,
@@ -69,7 +69,7 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
     public synchronized void onApplicationStartup( Application.ApplicationConfig appConfig,
         org.totalgrid.reef.client.sapi.client.rest.Connection newConnection, Client scalaClient )
     {
-        connection = new ConnectionWrapper( newConnection );
+        connection = new ConnectionWrapper( newConnection, executor );
 
         notifyListeners( true );
     }
@@ -91,7 +91,9 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
 
     public void start()
     {
-        started = true;
+        if ( shutdown )
+            throw new IllegalArgumentException( "Manager cannot be restarted." );
+
         connectionManager.start();
         applicationManager.start();
 
@@ -100,8 +102,7 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
 
     public void stop()
     {
-        started = false;
-        connection = null;
+        shutdown = true;
 
         applicationManager.removeConnectedApplication( this );
 
@@ -111,19 +112,19 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
         executor.terminate();
     }
 
-    public boolean isConnected()
+    public synchronized boolean isConnected()
     {
-        return started && connection != null;
+        return !shutdown && connection != null;
     }
 
     public boolean isShutdown()
     {
-        return !started;
+        return shutdown;
     }
 
     public synchronized Connection getConnection() throws ReefServiceException
     {
-        if ( connection == null )
+        if ( !isConnected() )
             throw new ServiceIOException( "Not connected to reef" );
         return connection;
     }
@@ -132,7 +133,7 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
     {
         listeners.remove( listener );
         listeners.add( listener );
-        listener.onConnectionStatusChanged( connection == null );
+        listener.onConnectionStatusChanged( isConnected() );
     }
 
     public synchronized void removeConnectionListener( ApplicationConnectionListener listener )

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration version="1.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="configuration.loader.reef.totalgrid.org"
+               xmlns:auth="authorization.loader.reef.totalgrid.org"
+               xmlns:equip="equipment.loader.reef.totalgrid.org"
+               xmlns:comm="communications.loader.reef.totalgrid.org"
+               xmlns:common="common.loader.reef.totalgrid.org">
+
+    <auth:authorization>
+        <auth:roles>
+            <auth:role name="regional">
+                <auth:allow actions="create"
+                            resources="command_lock command_lock_select command_lock_block user_command_request"
+                            selectStyle="parent" selectArguments="West East"/>
+            </auth:role>
+            <auth:role name="non_critical">
+                <auth:deny actions="create"
+                           resources="command_lock command_lock_select command_lock_block user_command_request"
+                           selectStyle="type" selectArguments="Critical"/>
+                <auth:allow actions="create" resources="command_lock command_lock_select command_lock_block user_command_request"/>
+            </auth:role>
+            <auth:role name="dlrc">
+                <auth:allow actions="create"
+                            resources="command_lock command_lock_select command_lock_block user_command_request"
+                            selectStyle="type" selectArguments="DLRC"/>
+            </auth:role>
+            <auth:role name="nuke">
+                <auth:allow actions="create"
+                            resources="command_lock command_lock_select command_lock_block user_command_request"
+                            selectStyle="parent" selectArguments="Nuke1"/>
+            </auth:role>
+
+            <auth:role name="limited_viewer">
+                <auth:allow actions="read" resources="entity" selectStyle="parent" selectArguments="West East"/>
+            </auth:role>
+        </auth:roles>
+
+        <auth:agents>
+            <!-- Resource specific users -->
+            <auth:agent name="regional_op" roles="user system_viewer command_issuer regional"/>
+            <auth:agent name="non_critical_op" roles="user system_viewer command_issuer non_critical"/>
+            <auth:agent name="dlrc_app" roles="user system_viewer command_issuer dlrc application"/>
+            <auth:agent name="nuke_op" roles="user system_viewer command_issuer nuke"/>
+
+            <auth:agent name="limited_regional_op" roles="user_role limited_viewer regional"/>
+        </auth:agents>
+    </auth:authorization>
+
+    <equip:equipmentModel>
+
+        <equip:equipment name="Sub1" addParentNames="false">
+            <equip:control name="C1">
+                <equip:type name="DLRC"/>
+                <equip:type name="Critical"/>
+            </equip:control>
+            <equip:control name="C2">
+                <equip:type name="DLRC"/>
+            </equip:control>
+        </equip:equipment>
+        <equip:equipment name="Sub2" addParentNames="false">
+            <equip:control name="C3">
+                <equip:type name="DLRC"/>
+            </equip:control>
+            <equip:control name="C4">
+                <equip:type name="Critical"/>
+            </equip:control>
+        </equip:equipment>
+        <equip:equipment name="Sub3" addParentNames="false">
+            <equip:control name="C5">
+                <equip:type name="DLRC"/>
+                <equip:type name="Critical"/>
+            </equip:control>
+            <equip:control name="C6"/>
+        </equip:equipment>
+        <equip:equipment name="Sub4" addParentNames="false">
+            <equip:control name="C7">
+                <equip:type name="DLRC"/>
+
+            </equip:control>
+            <equip:control name="C8">
+                <equip:type name="Critical"/>
+            </equip:control>
+        </equip:equipment>
+
+        <equip:equipment name="Nuke1" addParentNames="false">
+            <equip:control name="C9">
+                <equip:type name="Critical"/>
+            </equip:control>
+            <equip:control name="C10">
+                <equip:type name="DLRC"/>
+            </equip:control>
+            <equip:control name="C11">
+                <equip:type name="DLRC"/>
+            </equip:control>
+            <equip:control name="C12">
+                <equip:type name="Critical"/>
+            </equip:control>
+        </equip:equipment>
+        <equip:equipment name="West" addParentNames="false">
+            <equip:equipment name="Sub1"/>
+            <equip:equipment name="Sub2"/>
+        </equip:equipment>
+
+        <equip:equipment name="East" addParentNames="false">
+            <equip:equipment name="Sub3"/>
+            <equip:equipment name="Sub4"/>
+        </equip:equipment>
+
+        <equip:equipment name="Regions" addParentNames="false">
+            <equip:type name="Root"/>
+            <equip:equipment name="West"/>
+            <equip:equipment name="East"/>
+            <equip:equipment name="Nuke1"/>
+        </equip:equipment>
+    </equip:equipmentModel>
+    <comm:communicationsModel>
+
+        <comm:endpoint name="AuthEndpoint">
+            <comm:protocol name="benchmark">
+                <comm:simOptions delay="5000"/>
+            </comm:protocol>
+
+            <comm:equipment name="All" addParentNames="false">
+                <comm:control name="C1"/>
+                <comm:control name="C2"/>
+                <comm:control name="C3"/>
+                <comm:control name="C4"/>
+                <comm:control name="C5"/>
+                <comm:control name="C6"/>
+                <comm:control name="C7"/>
+                <comm:control name="C8"/>
+                <comm:control name="C9"/>
+                <comm:control name="C10"/>
+                <comm:control name="C11"/>
+                <comm:control name="C12"/>
+            </comm:equipment>
+        </comm:endpoint>
+    </comm:communicationsModel>
+</configuration>

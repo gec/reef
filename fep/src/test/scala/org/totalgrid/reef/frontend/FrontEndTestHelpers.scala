@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.service.proto.FEP.{ CommEndpointRouting, Endpoint, CommChannel, EndpointConnection }
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.app.SubscriptionHandler
-import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, Subscription, SubscriptionResult }
+import org.totalgrid.reef.client.SubscriptionResult
 
 object FrontEndTestHelpers {
 
@@ -52,26 +52,4 @@ object FrontEndTestHelpers {
       canceled = true
     }
   }
-
-  class MockSubscription[A](val id: String = "queue") extends Subscription[A] {
-    def getId = id
-    var canceled = false
-    var acceptor = Option.empty[SubscriptionEventAcceptor[A]]
-    def start(acc: SubscriptionEventAcceptor[A]) {
-      acceptor = Some(acc)
-      this
-    }
-
-    def cancel() = canceled = true
-  }
-
-  class MockSubscriptionResult[A](result: List[A], val mockSub: MockSubscription[A]) extends SubscriptionResult[List[A], A] {
-
-    def getResult = result
-    def getSubscription = mockSub
-
-    def this(one: A) = this(one :: Nil, new MockSubscription[A]())
-    def this(many: List[A]) = this(many, new MockSubscription[A]())
-  }
-
 }

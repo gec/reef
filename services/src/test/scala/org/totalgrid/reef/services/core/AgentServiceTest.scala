@@ -32,6 +32,7 @@ import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 @RunWith(classOf[JUnitRunner])
 class AgentServiceTest extends AuthSystemTestBase {
+  import SubscriptionTools._
 
   def makeAgent(name: String = "Nate", password: Option[String] = Some("password"), permissionSetNames: List[String] = List("all")) = {
     val b = Agent.newBuilder.setName(name)
@@ -77,9 +78,13 @@ class AgentServiceTest extends AuthSystemTestBase {
 
     val agent = fix.agentService.put(makeAgent()).expectOne()
 
+    fix.popAuth should equal(List(AuthRequest("agent", "create", List("Nate"))))
+
     fix.login("Nate", "password")
 
     val deleted = fix.agentService.delete(agent).expectOne()
+
+    fix.popAuth should equal(List(AuthRequest("agent", "delete", List("Nate"))))
 
     intercept[BadRequestException] {
       fix.login("Nate", "password")
@@ -98,10 +103,12 @@ class AgentServiceTest extends AuthSystemTestBase {
     val fix = new Fixture
 
     val agent1 = fix.agentService.put(makeAgent()).expectOne()
+    fix.popAuth should equal(List(AuthRequest("agent", "create", List("Nate"))))
 
     fix.login("Nate", "password")
 
     val agent2 = fix.agentService.put(makeAgent(password = Some("newPassword"))).expectOne()
+    fix.popAuth should equal(List(AuthRequest("agent_password", "update", List("Nate"))))
 
     intercept[BadRequestException] {
       fix.login("Nate", "password")
@@ -122,12 +129,15 @@ class AgentServiceTest extends AuthSystemTestBase {
 
     val agent1 = fix.agentService.put(makeAgent(permissionSetNames = List("read_only"))).expectOne()
     agent1.getPermissionSets(0).getName should equal("read_only")
+    fix.popAuth should equal(List(AuthRequest("agent", "create", List("Nate"))))
 
     val agent2 = fix.agentService.put(makeAgent(permissionSetNames = List("all"))).expectOne()
     agent2.getPermissionSets(0).getName should equal("all")
+    fix.popAuth should equal(List(AuthRequest("agent_roles", "update", List("Nate"))))
 
     val agent3 = fix.agentService.put(makeAgent(permissionSetNames = List("all", "read_only"))).expectOne()
     agent3.getPermissionSetsList.toList.map { _.getName }.sorted should equal(List("all", "read_only"))
+    fix.popAuth should equal(List(AuthRequest("agent_roles", "update", List("Nate"))))
 
     val eventList = List(
       (ADDED, classOf[Entity]),
@@ -138,14 +148,11 @@ class AgentServiceTest extends AuthSystemTestBase {
     fix.eventCheck should equal(eventList)
   }
 
-  test("Cannot update both password and permissions") {
+  test("Can update both password and permissions") {
     val fix = new Fixture
     fix.agentService.put(makeAgent()).expectOne()
 
-    intercept[BadRequestException] {
-      fix.agentService.put(makeAgent(password = Some("newPassword"), permissionSetNames = List("read_only"))).expectOne()
-    }
-    fix.eventCheck should equal((ADDED, classOf[Entity]) :: (ADDED, classOf[Agent]) :: Nil)
+    fix.agentService.put(makeAgent(password = Some("newPassword"), permissionSetNames = List("read_only"))).expectOne()
   }
 
   test("Deleting Agent invalidates AuthTokens") {

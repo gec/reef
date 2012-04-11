@@ -31,6 +31,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
+import java.util.UUID
 
 // Implicits
 import org.totalgrid.reef.client.service.proto.OptionalProtos._ // implicit proto properties
@@ -90,7 +91,12 @@ class ProcessStatusServiceModel(
     }
   }
 
-  def addApplication(context: RequestContext, app: ApplicationInstance, periodMS: Int, processId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
+  def addApplication(context: RequestContext, app: ApplicationInstance, periodMS: Int, inputId: String, capabilities: List[String], now: Long = System.currentTimeMillis) {
+
+    val processId = if (inputId == null || inputId.length() < 5) {
+      logger.info("Invalid processId " + inputId + " sent during registration, creating new random id")
+      UUID.randomUUID().toString
+    } else inputId
 
     // give the app twice as long to come online
     val firstCheck = now + periodMS * 2
@@ -123,7 +129,7 @@ class ProcessStatusServiceModel(
 
   def takeApplicationOffline(context: RequestContext, app: ApplicationInstance) {
     logger.debug("App " + app.instanceName + ": is being marked offline")
-    notifyModels(context, app, false, app.capabilities.value.toList.map { _.capability })
+    notifyModels(context, app, false, app.capabilities.value)
   }
 
   def notifyModels(context: RequestContext, app: ApplicationInstance, online: Boolean, capabilities: List[String]) {
@@ -144,6 +150,10 @@ trait ProcessStatusConversion
 
   def getRoutingKey(req: StatusSnapshot) = ProtoRoutingKeys.generateRoutingKey {
     req.instanceName :: Nil
+  }
+
+  def relatedEntities(models: List[HeartbeatStatus]) = {
+    models.map { _.application.value.agent.value.entityId }
   }
 
   def searchQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {

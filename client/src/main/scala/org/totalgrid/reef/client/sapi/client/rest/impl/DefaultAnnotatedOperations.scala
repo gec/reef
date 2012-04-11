@@ -20,7 +20,8 @@ package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import net.agileautomata.executor4s._
 
-import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
+import java.util.concurrent.RejectedExecutionException
+import org.totalgrid.reef.client.exception.{ ServiceIOException, InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client.types.TypeDescriptor
 
 import org.totalgrid.reef.client.sapi.client.{ Subscription, Promise }
@@ -65,6 +66,8 @@ object DefaultAnnotatedOperations {
       case npe: NullPointerException =>
         definedFuture[Result[A]](exe, Failure(new InternalClientError("Null pointer error while making request. " +
           "Check that all parameters are not null.", npe)))
+      case rje: RejectedExecutionException =>
+        definedFuture[Result[A]](exe, Failure(new ServiceIOException("Underlying connection executor has been closed or disconnected", rje)))
       case rse: ReefServiceException =>
         definedFuture[Result[A]](exe, Failure(rse))
       case ex: Exception =>
@@ -92,7 +95,7 @@ final class DefaultAnnotatedOperations(restOps: RestOperations, exe: Executor) e
   def operation[A](err: => String)(fun: RestOperations => Future[Result[A]]): Promise[A] =
     safeOperation(err, exe) { fun(restOps) }
 
-  // TODO - it's probably possible to make SubscriptionResult only polymorphic in one type
+  // TODO - it's probably possible to make SubscriptionResult only polymorphic in one type 0.5.x
   def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]] = {
     val future: Future[Result[SubscriptionResult[A, B]]] = try {
       val sub = restOps.subscribe(desc)

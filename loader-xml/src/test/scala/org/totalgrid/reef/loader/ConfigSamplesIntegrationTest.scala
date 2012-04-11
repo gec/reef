@@ -28,8 +28,9 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
 
   val samplesPath = "../" + "assemblies/assembly-common/filtered-resources/samples/"
 
+  val BATCH_SIZE = 25
   private def loadFile(fileName: String, numExpected: Int) = {
-    val (loader, valid) = LoadManager.prepareModelCache(fileName, false, 25)
+    val (loader, valid) = LoadManager.prepareModelCache(fileName, false, BATCH_SIZE)
     valid should equal(true)
     loader.size should equal(numExpected)
   }
@@ -51,6 +52,18 @@ class ConfigSamplesIntegrationTest extends FunSuite with ShouldMatchers {
   }
 
   test("dnp3-sample") {
-    loadFile("../" + "protocol-dnp3/src/test/resources/sample-model.xml", 75)
+    loadFile("../" + "protocol-dnp3/src/test/resources/sample-model.xml", 91)
+  }
+
+  test("samples/calculations") {
+    loadFile(samplesPath + "calculations/config.xml", 167)
+  }
+
+  test("samples/authz") {
+    // TODO: fix auth sample counter when file stabilizes
+    // we don't care about how many entries are in auth file as long as it valid
+    val fileName = samplesPath + "authorization/config.xml"
+    val (loader, valid) = LoadManager.prepareModelCache(fileName, false, BATCH_SIZE)
+    valid should equal(true)
   }
 }

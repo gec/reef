@@ -34,6 +34,7 @@ import net.agileautomata.executor4s.{ Executor, Cancelable }
 import net.agileautomata.executor4s.testing.MockExecutorService
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
+import org.totalgrid.reef.calc.protocol.CalculatorProtocol
 
 object NullCancelable extends Cancelable {
   def cancel() {}
@@ -58,8 +59,10 @@ object ImplLookup extends Logging {
         System.loadLibrary("dnp3java")
         System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
         new Dnp3SlaveProtocol with AddRemoveValidation
+      case "calculator" =>
+        new CalculatorProtocol()
     }
-    val protocolNames = PropertyLoading.getString("org.totalgrid.reef.protocols", properties, "benchmark,dnp3,dnp3-slave")
+    val protocolNames = PropertyLoading.getString("org.totalgrid.reef.protocols", properties, "benchmark,dnp3,dnp3-slave,calculator")
     protocolNames.split(",").toList.map { getProtocolImpl(_) }
   }
 

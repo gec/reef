@@ -50,7 +50,7 @@ object CommandView {
       ("Status:" :: resp.getStatus.toString :: Nil) ::
       ("Message:" :: resp.getErrorMessage :: Nil) :: Nil
 
-    Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
+    Table.renderRows(rows, " ")
   }
   def commandResponse(resp: CommandResult) = {
 
@@ -58,7 +58,7 @@ object CommandView {
 
     val rows = ("Status:" :: resp.getStatus.toString :: msgEntries) :: Nil
 
-    Table.justifyColumns(rows).foreach(line => println(line.mkString(" ")))
+    Table.renderRows(rows, " ")
   }
 
   def removeBlockResponse(removed: List[CommandLock]) = {
@@ -76,11 +76,12 @@ object CommandView {
     val first = commands.headOption.map { _.name }.flatten.toString
     val tail = commands.tail
 
-    val rows: List[List[String]] = ("ID:" :: "[" + acc.getId.getValue + "]" :: Nil) ::
+    val rows: List[List[String]] = ("ID:" :: acc.getId.getValue :: Nil) ::
       ("Mode:" :: acc.getAccess.toString :: Nil) ::
       ("User:" :: acc.getUser :: Nil) ::
       ("Expires:" :: timeString(acc) :: Nil) ::
-      ("Commands:" :: first :: Nil) :: Nil
+      ("Deleted:" :: acc.getDeleted.toString :: Nil) :: Nil
+    ("Commands:" :: first :: Nil) :: Nil
 
     val cmdRows = tail.map(cmd => ("" :: cmd.name.toString :: Nil))
 
@@ -90,13 +91,13 @@ object CommandView {
   def timeString(acc: CommandLock) = new java.util.Date(acc.getExpireTime).toString
 
   def accessHeader = {
-    "Id" :: "Mode" :: "User" :: "Commands" :: "Expire Time" :: Nil
+    "Id" :: "Mode" :: "User" :: "Commands" :: "Expire Time" :: "Deleted?" :: Nil
   }
 
   def accessRow(acc: CommandLock): List[String] = {
     val commands = commandsEllipsis(acc.getCommandsList.toList)
     val time = new java.util.Date(acc.getExpireTime).toString
-    "[" + acc.getId.getValue + "]" :: acc.getAccess.toString :: acc.getUser :: commands :: time :: Nil
+    acc.getId.getValue :: acc.getAccess.toString :: acc.getUser :: commands :: time :: acc.getDeleted.toString :: Nil
   }
 
   def commandsEllipsis(names: List[Command]) = {
@@ -116,7 +117,11 @@ object CommandView {
   }
 
   def historyHeader = {
-    "Id" :: "Command" :: "Status" :: "Message" :: "User" :: "Type" :: Nil
+    "Id" :: "Command" :: "Status" :: "Message" :: "User" :: "Type" :: "Value" :: Nil
+  }
+
+  private def commandValueString(cr: OptCommandsCommandRequest) = {
+    cr.intVal.map { _.toString }.orElse(cr.doubleVal.map { _.toString }).orElse(cr.stringVal).getOrElse("")
   }
 
   def historyRow(a: UserCommandRequest) = {
@@ -125,7 +130,8 @@ object CommandView {
       a.status.map { _.toString }.getOrElse("unknown") ::
       a.errorMessage.getOrElse("") ::
       a.user.getOrElse("unknown") ::
-      a.commandRequest._type.toString ::
+      a.commandRequest._type.map { _.toString }.getOrElse("unknown") ::
+      commandValueString(a.commandRequest) ::
       Nil
   }
 }

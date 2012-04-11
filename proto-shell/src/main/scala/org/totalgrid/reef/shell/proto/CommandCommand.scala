@@ -84,12 +84,16 @@ class AccessCommand extends ReefCommandSupport {
   @Argument(index = 0, name = "id", description = "Command Access id", required = false, multiValued = false)
   private var id: String = null
 
+  @GogoOption(name = "-d", description = "Include inactive locks", required = false, multiValued = false)
+  var includeInactive: Boolean = false
+
   def doCommand() = {
     Option(id) match {
       case Some(id) =>
         CommandView.accessInspect(services.getCommandLockById(ReefID.newBuilder.setValue(id).build))
       case None =>
-        CommandView.printAccessTable(services.getCommandLocks().toList)
+        val locks = if (includeInactive) services.getCommandLocksIncludingDeleted() else services.getCommandLocks()
+        CommandView.printAccessTable(locks.toList)
     }
   }
 }

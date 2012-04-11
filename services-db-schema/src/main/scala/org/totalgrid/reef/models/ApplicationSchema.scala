@@ -42,6 +42,7 @@ object ApplicationSchema extends Schema {
 
   val apps = table[ApplicationInstance]
   val capabilities = table[ApplicationCapability]
+  val networks = table[ApplicationNetworkAccess]
   val channelStatuses = table[ChannelStatus]
   val heartbeats = table[HeartbeatStatus]
   val protocols = table[CommunicationProtocolApplicationInstance]
@@ -77,14 +78,14 @@ object ApplicationSchema extends Schema {
     s.eventId is (indexed)))
 
   val agents = table[Agent]
-  val permissions = table[AuthPermission]
   val permissionSets = table[PermissionSet]
-  val permissionSetJoins = table[PermissionSetJoin]
   val authTokens = table[AuthToken]
 
   on(authTokens)(s => declare(s.token is (indexed), s.expirationTime is (indexed)))
   val tokenSetJoins = table[AuthTokenPermissionSetJoin]
   val agentSetJoins = table[AgentPermissionSetJoin]
+
+  val calculations = table[CalculationConfig]
 
   def reset() = {
     drop // its protected for some reason

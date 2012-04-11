@@ -25,20 +25,26 @@ import org.totalgrid.reef.util.Table
 
 object ApplicationView {
   def printTable(apps: List[ApplicationConfig]) = {
-    Table.printTable(header, apps.map(row(_)))
+    Table.printTable(header.take(6), apps.map(row(_).take(6)))
   }
 
   def header = {
-    "Name" :: "Online" :: "TimesOutAt" :: "Location" :: "Network" :: "Capabilites" :: Nil
+    "Name" :: "Version" :: "Online" :: "TimesOutAt" :: "Agent" :: "Capabilites" :: "Location" :: "Networks" :: Nil
   }
 
   def row(a: ApplicationConfig) = {
     a.getInstanceName ::
+      a.getVersion ::
       a.getOnline.toString ::
-      new java.util.Date(a.getTimesOutAt).toString ::
-      a.getLocation ::
-      a.getNetwork ::
+      EventView.timeString(Some(a.getTimesOutAt)) ::
+      a.getUserName ::
       a.getCapabilitesList.toList.mkString(", ") ::
+      a.getLocation ::
+      a.getNetworksList.toList.mkString(", ") ::
       Nil
+  }
+
+  def printInspect(app: ApplicationConfig) = {
+    Table.printTable(List("Prop", "Value"), header.zip(row(app)).map { e => List(e._1, e._2) })
   }
 }

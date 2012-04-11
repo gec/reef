@@ -33,8 +33,9 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.services.authz.NullAuthService
+import org.totalgrid.reef.services.authz.NullAuthzService
 import net.agileautomata.executor4s.testing.InstantExecutor
+import org.totalgrid.reef.client.settings.util.PropertyReader
 
 /**
  * A concrete example service that always responds immediately with Success and the correct Id
@@ -77,7 +78,8 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
 
       val userSettings = new UserSettings("system", "system")
       val nodeSettings = new NodeSettings("node1", "network", "location")
-      val serviceOptions = ServiceOptions.fromFile("../org.totalgrid.reef.test.cfg")
+      val properties = PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg")
+      val serviceOptions = new ServiceOptions(properties)
 
       val components = ServiceBootstrap.bootstrapComponents(dbConnection, amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore
@@ -85,7 +87,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
       val metrics = MetricsSink.getInstance("test")
 
       val provider = new ServiceProviders(dbConnection, amqp, measStore, serviceOptions,
-        NullAuthService, metrics, "", new InstantExecutor())
+        new NullAuthzService, metrics, "", new InstantExecutor())
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

@@ -98,7 +98,7 @@ class MeasurementProcessorResourcesTest extends DatabaseUsingTestBase with SyncS
 
     val s = sync(new OverrideConfigService(new OverrideConfigServiceModel))
 
-    val headers = BasicRequestHeaders.empty.setUserName("user")
+    val headers = BasicRequestHeaders.empty
 
     // first NIS the points
     s.put(MeasOverride.newBuilder.setPoint(makePoint("meas01")).build, headers).expectOne

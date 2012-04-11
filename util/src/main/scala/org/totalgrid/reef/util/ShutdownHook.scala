@@ -21,25 +21,25 @@ package org.totalgrid.reef.util
 /**
  * provides a mechanism for entry points to gracefully shutdown by calling a generic handler
  */
-trait ShutdownHook {
-
-  /**
-   *  Waits until a shutdown condition occurs (i.e. signal) and then calls the provided hook.
-   *
-   *   @param	hook	Shutdown callback
-   */
-  def waitForShutdown(hook: => Unit) = {
-    addShutdownHook(hook)
-    synchronized { wait }
+object ShutdownHook {
+  def waitForShutdown(runnable: Runnable) {
+    addShutdownHook(runnable)
   }
 
-  private def addShutdownHook(hook: => Unit) {
-    Runtime.getRuntime.addShutdownHook(new Thread {
-      override def run() {
-        hook
-        synchronized { notifyAll() }
-      }
+  def waitForShutdown(hook: => Unit) = {
+    addShutdownHook(new Runnable {
+      def run() { hook }
     })
   }
 
+  private def addShutdownHook(runnable: Runnable) {
+    val sync = new Object
+    Runtime.getRuntime.addShutdownHook(new Thread {
+      override def run() {
+        runnable.run()
+        sync.synchronized { sync.notifyAll() }
+      }
+    })
+    sync.synchronized { sync.wait() }
+  }
 }

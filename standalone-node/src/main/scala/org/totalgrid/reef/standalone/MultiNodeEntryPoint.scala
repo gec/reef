@@ -19,19 +19,20 @@
 package org.totalgrid.reef.standalone
 
 import net.agileautomata.executor4s._
+import org.totalgrid.reef.util.ShutdownHook
 
 object MultiNodeEntryPoint {
 
   def main(args: Array[String]) = {
     val exe = Executors.newResizingThreadPool(5.minutes)
-    val system = new IntegratedSystem(exe, "standalone-node.cfg", true)
+    val system = new IntegratedSystem(exe, "standalone-node.cfg", false)
 
     try {
       system.start()
 
-      system.runTerminal()
-
-      system.stop()
+      ShutdownHook.waitForShutdown {
+        system.stop()
+      }
     } finally {
       exe.terminate()
     }

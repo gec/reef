@@ -20,11 +20,17 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
-import org.totalgrid.reef.services.{ PermissionsContext, HeadersContext }
+import org.totalgrid.reef.services.HeadersContext
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.persistence.squeryl.DbConnection
+import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
+import java.util.UUID
+import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
+import org.squeryl.PrimitiveTypeMode._
+import org.totalgrid.reef.authz._
 
+// TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
 
   trait SubscriptionTesting {
@@ -32,6 +38,22 @@ object SubscriptionTools {
     def _dbConnection: DbConnection
 
     val contextSource = new MockContextSource(_dbConnection)
+
+    def authQueue = contextSource.authQueue
+    def popAuth: List[AuthRequest] = {
+      val result = authQueue.toList
+      authQueue.clear()
+      result
+    }
+
+    def filterRequests = contextSource.filterRequests
+    def filterResponses = contextSource.filterResponses
+
+    def popFilterRequests: List[FilterRequest[_]] = {
+      val result = filterRequests.toList
+      filterRequests.clear()
+      result
+    }
 
     def events = contextSource.sink.events
 
@@ -55,29 +77,76 @@ object SubscriptionTools {
     def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
   }
 
-  class QueueingRequestContext(val subHandler: SubscriptionHandler) extends RequestContext with HeadersContext with PermissionsContext {
+  class QueueingRequestContext(val subHandler: SubscriptionHandler, val auth: AuthzService) extends RequestContext with HeadersContext {
     def client = throw new Exception("Asked for client in silent request context")
     val eventSink = new SilentEventSink
     val operationBuffer = new BasicOperationBuffer
-    //val subHandler = new QueueingEventSink
   }
 
-  class MockContextSource(dbConnection: DbConnection) extends RequestContextSource {
+  // TODO: merge userName setting with other mock request context
+  class MockContextSource(dbConnection: DbConnection, var userName: String = "user01") extends RequestContextSource with AgentAddingContextSource {
     private var subHandler = new QueueingEventSink
-    private def makeContext = {
-      val context = new QueueingRequestContext(subHandler)
-      context.modifyHeaders(_.setUserName("user"))
-      context
-    }
+    private var auth = new QueueingAuthz
 
     def reset() {
       subHandler = new QueueingEventSink
+      auth = new QueueingAuthz
     }
     def sink = subHandler
 
+    def enableFilter() { auth.filterOn = true }
+
+    def authQueue = auth.queue
+    def filterRequests = auth.filterRequestQueue
+    def filterResponses = auth.filterResponseQueue
+
     def transaction[A](f: (RequestContext) => A): A = {
-      val context = makeContext
-      ServiceTransactable.doTransaction(dbConnection, context.operationBuffer, { b: OperationBuffer => f(context) })
+      val context = new QueueingRequestContext(subHandler, auth)
+      context.set("user_name", userName)
+      ServiceTransactable.doTransaction(dbConnection, context.operationBuffer, { b: OperationBuffer =>
+        addUser(context)
+        f(context)
+      })
     }
   }
+
+  case class FilterRequest[A](componentId: String, action: String, payload: List[A], uuids: List[List[UUID]])
+  case class AuthRequest(resource: String, action: String, entities: List[String])
+  class QueueingAuthz extends AuthzService with AuthzFilteringService {
+
+    val queue = new scala.collection.mutable.Queue[AuthRequest]
+
+    val filterRequestQueue = new scala.collection.mutable.Queue[FilterRequest[_]]
+    val filterResponseQueue = new scala.collection.mutable.Queue[List[FilteredResult[_]]]
+
+    var filterOn = false
+
+    // called by (actual) services
+    def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
+      if (filterOn) {
+        filterRequestQueue.enqueue(FilterRequest(componentId, action, payload, uuids))
+        filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
+      } else {
+        payload.map(Allowed(_, new Permission(true, List(), List(), new WildcardMatcher)))
+      }
+    }
+    // called to "check" permissions
+    def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
+      filterRequestQueue.enqueue(FilterRequest(service, action, payloads, uuids))
+      filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
+    }
+
+    def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
+
+      val names = uuids.map { ApplicationSchema.entities.lookup(_).get.name }
+
+      queue.enqueue(AuthRequest(componentId, action, names))
+    }
+
+    def prepare(context: RequestContext) {
+      context.set(AuthzService.filterService, this)
+    }
+
+  }
+
 }

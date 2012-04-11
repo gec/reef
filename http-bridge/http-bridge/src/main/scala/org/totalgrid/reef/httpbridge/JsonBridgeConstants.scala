@@ -28,9 +28,7 @@ object JsonBridgeConstants {
   val VERB_HEADER = "REEF_VERB"
   val TIMEOUT_HEADER = "TIMEOUT_MILLIS"
   val RESULT_LIMIT_HEADER = "RESULT_LIMIT"
-
-  // all custom headers (used for CORS support)
-  val CUSTOM_HEADERS = List(AUTH_HEADER, VERB_HEADER, TIMEOUT_HEADER, RESULT_LIMIT_HEADER)
+  val RETURN_STYLE = "REEF_RETURN_STYLE"
 
   // GET /login parameters
   val NAME_PARAMETER = "name"
@@ -48,4 +46,7 @@ object JsonBridgeConstants {
   val VALID_FORMATS = List(JSON_FORMAT, PROTOBUF_FORMAT)
 
   val TEXT_FORMAT = "text/plain"
+
+  // all custom headers (used for CORS support)
+  val CUSTOM_HEADERS = List(AUTH_HEADER, VERB_HEADER, TIMEOUT_HEADER, RESULT_LIMIT_HEADER, RETURN_STYLE, CONTENT_TYPE_HEADER)
 }

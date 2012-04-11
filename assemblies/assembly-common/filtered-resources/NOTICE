@@ -1,0 +1,98 @@
+Totalgrid Reef
+Copyright 2012 Green Energy Corp
+
+I. Included Software
+
+This product includes the scala runtime library developed by
+EPFL and Lausanne (http://www.scala-lang.org).
+Licensed under Scala License (BSD Like)
+License and Copyright is included third-party/scala.
+
+This product includes the Karaf OSGi framework developed at
+The Apache Software Foundation (http://www.apache.org).
+Licensed under the Apache License 2.0.
+License and Copyright is included in third-party/karaf.
+
+This product includes the Qpid AMQP client developed at
+The Apache Software Foundation (http://www.apache.org).
+Licensed under the Apache License 2.0.
+License and Copyright is included in third-party/qpid.
+
+This product includes the Google Protobuf Java runtime library developed at
+The Apache Software Foundation (http://code.google.com/p/protobuf).
+Licensed under the New BSD License.
+License and Copyright is included in third-party/protobuf.
+
+This product includes the Liquibase library developed at
+Liquibase.org (http://www.liquibase.org).
+Licensed under the Apache License 2.0.
+
+This product includes the Scalamodules and slf4s libraries developed by
+Github user weiglewilczek (https://github.com/weiglewilczek/scalamodules and https://github.com/weiglewilczek/slf4s).
+Licensed under the Apache License 2.0.
+
+This product includes the executor4s library developed by
+Github user jadamcrain (https://github.com/jadamcrain/nio4s).
+Licensed under the Apache License 2.0.
+
+This product includes the commons-pool, commons-dbcp and commons-codec libraries developed by
+The Apache Software Foundation (http://commons.apache.org).
+Licensed under the Apache License 2.0.
+
+This product includes the postgresql database driver developed by
+PostgreSQL Global Development Group (http://jdbc.postgresql.org).
+Licensed under the BSD License.
+License and Copyright is included in third-party/postgresql.
+
+This product includes the ORM driver Squeryl developed by
+Maxime Lévesque (https://github.com/max-l/Squeryl)
+Licensed under the Apache License 2.0.
+
+This product includes the Protobuf Java Format library developed at
+Orbitz World Wide (http://code.google.com/p/protobuf-java-format)
+Licensed under the New BSD License.
+License and Copyright is included in third-party/protobuf-java-format.
+
+This product includes the Jackson JSON parser developed by
+Tatu Saloranta (http://jackson.codehaus.org)
+Licensed under the Apache License 2.0.
+
+II. License Summary
+
+Modules developed for Reef are released _either_ under the Apache License 2.0 or AGPLv3 license. Modules
+not listed below should be assumed to be AGPLv3 unless source headers are Apache License 2.0.
+
+This product as a whole is licensed under the AGPLv3.
+
+Reef Client and API libraries are licensed under the Apache License 2.0:
+ - reef-application-whiteboard
+ - reef-broker
+ - reef-client
+ - reef-client-common
+ - reef-measurementstore-api
+ - reef-metrics
+ - reef-metrics-client
+ - reef-persistence-api
+ - reef-protocol-api
+ - reef-qpid-broker
+ - reef-service-client
+ - reef-util
+ - reef-util-osgi
+
+Reef Service Providers, Applications and Protocols are licensed under the AGPLv3 License:
+ - reef-calculations-library
+ - reef-default-simulator
+ - reef-fep
+ - reef-loader-commons
+ - reef-loader-xml
+ - reef-measurementstore-squeryl
+ - reef-memory-broker
+ - reef-metrics-service
+ - reef-persistence-postgresql
+ - reef-processing
+ - reef-protocol-calculator
+ - reef-protocol-dnp3
+ - reef-protocol-simulator
+ - reef-services
+ - reef-services-authz
+ - reef-services-db-schema

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration version="1.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="configuration.loader.reef.totalgrid.org"
+               xmlns:equip="equipment.loader.reef.totalgrid.org"
+               xmlns:comm="communications.loader.reef.totalgrid.org"
+               xmlns:common="common.loader.reef.totalgrid.org"
+               xmlns:calc="calculations.loader.reef.totalgrid.org">
+
+    <actionModel>
+        <!-- We use a blank action set just to define the high/low values for the simulator-->
+        <actionSet name="Nil">
+            <high/>
+        </actionSet>
+
+    </actionModel>
+
+    <equip:equipmentModel>
+        <equip:profiles>
+            <equip:equipmentProfile name="Line">
+
+
+                <equip:analog name="Voltage" unit="V">
+                    <equip:range actionSet="Nil" low="118" high="122" deadband="1"/>
+                </equip:analog>
+                <equip:analog name="Current" unit="A">
+                    <equip:range actionSet="Nil" low="0" high="4" deadband="1"/>
+                </equip:analog>
+
+                <equip:analog name="Power" unit="W">
+                    <calc:calculation>
+                        <calc:inputs>
+                            <calc:single pointName="Current" variable="A"/>
+                            <calc:single pointName="Voltage" variable="B"/>
+                        </calc:inputs>
+                        <calc:formula>A * B</calc:formula>
+                    </calc:calculation>
+                </equip:analog>
+
+                <equip:analog name="Energy" unit="kWH">
+                    <calc:calculation>
+                        <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
+                        <calc:inputs>
+                            <calc:multi pointName="Power" variable="PINT" sinceLastPublish="true" />
+                        </calc:inputs>
+                        <calc:formula>INTEGRATE(PINT) * 0.001 * (1/3600000.0)</calc:formula>
+                        <calc:output accumulate="true" />
+                    </calc:calculation>
+                </equip:analog>
+            </equip:equipmentProfile>
+
+            <equip:equipmentProfile name="Microgrid">
+
+                <equip:equipment name="Input">
+                    <equip:equipmentProfile name="Line"/>
+                </equip:equipment>
+                <equip:equipment name="Output">
+                    <equip:equipmentProfile name="Line"/>
+                </equip:equipment>
+
+                <equip:counter name="GroundFaults" unit="count"/>
+
+                <equip:status name="Controllable" unit="status"/>
+
+                <equip:analog name="ChargeLoad" unit="W">
+                    <calc:calculation>
+                        <calc:inputs>
+                            <calc:single pointName="Input.Power" variable="A"/>
+                            <calc:single pointName="Output.Power" variable="B"/>
+                        </calc:inputs>
+                        <calc:formula>A - B</calc:formula>
+                    </calc:calculation>
+                </equip:analog>
+
+                <equip:analog name="StoredEnergy" unit="kWH">
+                    <calc:calculation>
+                        <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC"/>
+                        <calc:inputs>
+                            <calc:multi pointName="ChargeLoad" variable="A" sinceLastPublish="true"/>
+                        </calc:inputs>
+                        <calc:formula>INTEGRATE(A) * 0.001 * (1/3600000.0)</calc:formula>
+                        <calc:output accumulate="true" />
+                    </calc:calculation>
+                </equip:analog>
+
+                <equip:analog name="LoadRatio" unit="%">
+                    <calc:calculation>
+                        <calc:inputs>
+                            <calc:single pointName="Input.Power" variable="A"/>
+                            <calc:single pointName="Output.Power" variable="B"/>
+                        </calc:inputs>
+                        <calc:formula>A / B</calc:formula>
+                    </calc:calculation>
+                </equip:analog>
+            </equip:equipmentProfile>
+        </equip:profiles>
+        <equip:equipment name="Microgrid1">
+            <equip:equipmentProfile name="Microgrid"/>
+
+        </equip:equipment>
+
+        <equip:equipment name="Microgrid2">
+            <equip:equipmentProfile name="Microgrid"/>
+
+        </equip:equipment>
+
+
+        <equip:equipment name="System">
+            <equip:analog name="AverageStoredEnergy" unit="kWH">
+                <calc:calculation>
+                    <calc:inputs>
+                        <calc:single pointName="Microgrid1.StoredEnergy" variable="A" addParentNames="false"/>
+                        <calc:single pointName="Microgrid2.StoredEnergy" variable="B" addParentNames="false"/>
+                    </calc:inputs>
+                    <calc:formula>AVERAGE(A,B)</calc:formula>
+                </calc:calculation>
+            </equip:analog>
+
+            <equip:counter name="ControllableMicrogrids" unit="count">
+                <calc:calculation>
+                    <calc:inputs>
+                        <calc:single pointName="Microgrid1.Controllable" variable="A" addParentNames="false"/>
+                        <calc:single pointName="Microgrid2.Controllable" variable="B" addParentNames="false"/>
+                    </calc:inputs>
+                    <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
+                    <calc:formula>COUNT(A,B)</calc:formula>
+                    <calc:output>
+                        <calc:outputQuality strategy="ALWAYS_OK" />
+                    </calc:output>
+                </calc:calculation>
+            </equip:counter>
+
+            <equip:status name="AllControllable" unit="status">
+                <calc:calculation>
+                    <calc:inputs>
+                        <calc:single pointName="Microgrid1.Controllable" variable="A" addParentNames="false"/>
+                        <calc:single pointName="Microgrid2.Controllable" variable="B" addParentNames="false"/>
+                    </calc:inputs>
+                    <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
+                    <calc:formula>AND(A,B)</calc:formula>
+                </calc:calculation>
+            </equip:status>
+
+            <equip:counter name="TotalGroundFaults" unit="count">
+                <calc:calculation>
+                    <calc:inputs>
+                        <calc:single pointName="Microgrid1.GroundFaults" variable="A" addParentNames="false"/>
+                        <calc:single pointName="Microgrid2.GroundFaults" variable="B" addParentNames="false"/>
+                    </calc:inputs>
+                    <calc:triggering inputQualityStrategy="REMOVE_BAD_AND_CALC" />
+                    <calc:formula>A + B</calc:formula>
+                </calc:calculation>
+            </equip:counter>
+        </equip:equipment>
+
+    <equip:equipment name="Calculator" addParentNames="false">
+        <equip:type name="Root" />
+        <equip:equipment name="System" />
+        <equip:equipment name="Microgrid1" />
+        <equip:equipment name="Microgrid2" />
+    </equip:equipment>
+
+    </equip:equipmentModel>
+
+
+    <comm:communicationsModel>
+        <!-- We split the points in the model across alot of endpoints so we can disable different endpoints
+             and verify that the bad qualities are correctly propagated through the calculations -->
+        <comm:endpoint name="CurrentInputSimulator">
+            <comm:protocol name="benchmark">
+                <comm:simOptions delay="1000"/>
+            </comm:protocol>
+
+            <comm:equipment name="" addParentNames="false">
+                <comm:analog name="Microgrid1.Input.Current" unit="A"/>
+                <comm:analog name="Microgrid2.Input.Current" unit="A"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+        <comm:endpoint name="VoltageInputSimulator">
+            <comm:protocol name="benchmark">
+                <comm:simOptions delay="2000"/>
+            </comm:protocol>
+
+            <comm:equipment name="" addParentNames="false">
+                <comm:analog name="Microgrid1.Input.Voltage" unit="V"/>
+                <comm:analog name="Microgrid2.Input.Voltage" unit="V"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+        <comm:endpoint name="CurrentOutputSimulator">
+            <comm:protocol name="benchmark">
+                <comm:simOptions delay="3000"/>
+            </comm:protocol>
+
+            <comm:equipment name="" addParentNames="false">
+                <comm:analog name="Microgrid1.Output.Current" unit="A"/>
+                <comm:analog name="Microgrid2.Output.Current" unit="A"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+        <comm:endpoint name="VoltageOutputSimulator">
+            <comm:protocol name="benchmark">
+                <comm:simOptions delay="4000"/>
+            </comm:protocol>
+
+            <comm:equipment name="" addParentNames="false">
+                <comm:analog name="Microgrid1.Output.Voltage" unit="V"/>
+                <comm:analog name="Microgrid2.Output.Voltage" unit="V"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+        <comm:endpoint name="ControllableSimulator">
+            <comm:protocol name="benchmark">
+                <comm:simOptions delay="5000"/>
+            </comm:protocol>
+
+            <comm:equipment name="" addParentNames="false">
+                <comm:status name="Microgrid1.Controllable" unit="status"/>
+                <comm:status name="Microgrid2.Controllable" unit="status"/>
+                <comm:counter name="Microgrid1.GroundFaults" unit="count"/>
+                <comm:counter name="Microgrid2.GroundFaults" unit="count"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+        <!-- We also split up the calculations so we can make sure we handle more than one calculation endpoint -->
+
+        <comm:endpoint name="Microgrid1Calculator">
+            <comm:protocol name="calculator"/>
+
+            <comm:equipment name="Microgrid1">
+                <comm:equipment name="Input">
+                    <comm:analog name="Energy" unit="kWH"/>
+                    <comm:analog name="Power" unit="W"/>
+                </comm:equipment>
+                <comm:equipment name="Output">
+                    <comm:analog name="Energy" unit="kWH"/>
+                    <comm:analog name="Power" unit="W"/>
+                </comm:equipment>
+                <comm:analog name="ChargeLoad" unit="W"/>
+                <comm:analog name="StoredEnergy" unit="kWH"/>
+                <comm:analog name="LoadRatio" unit="%"/>
+            </comm:equipment>
+
+        </comm:endpoint>
+
+        <comm:endpoint name="Microgrid2Calculator">
+            <comm:protocol name="calculator"/>
+
+            <comm:equipment name="Microgrid2">
+                <comm:equipment name="Input">
+                    <comm:analog name="Energy" unit="kWH"/>
+                    <comm:analog name="Power" unit="W"/>
+                </comm:equipment>
+                <comm:equipment name="Output">
+                    <comm:analog name="Energy" unit="kWH"/>
+                    <comm:analog name="Power" unit="W"/>
+                </comm:equipment>
+                <comm:analog name="ChargeLoad" unit="W"/>
+                <comm:analog name="StoredEnergy" unit="kWH"/>
+                <comm:analog name="LoadRatio" unit="%"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+        <comm:endpoint name="SystemCalculator">
+            <comm:protocol name="calculator"/>
+
+            <comm:equipment name="System">
+                <comm:analog name="AverageStoredEnergy" unit="kWH"/>
+                <comm:counter name="ControllableMicrogrids" unit="count"/>
+                <comm:status name="AllControllable" unit="status"/>
+                <comm:counter name="TotalGroundFaults" unit="count"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+    </comm:communicationsModel>
+
+</configuration>

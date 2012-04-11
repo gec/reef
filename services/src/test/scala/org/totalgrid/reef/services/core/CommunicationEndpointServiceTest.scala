@@ -21,6 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 
 import org.totalgrid.reef.services._
+import core.SubscriptionTools.AuthRequest
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore }
 
 import com.google.protobuf.ByteString
@@ -57,9 +58,10 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     val pointService = new SyncService(new PointService(modelFac.points), contextSource)
     val commandService = new SyncService(new CommandService(modelFac.cmds), contextSource)
     val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
-  }
 
-  val headers = BasicRequestHeaders.empty.setUserName("user")
+    def checkAuth(auth: AuthRequest) { this.popAuth should equal(List(auth)) }
+    def checkAuth(auths: List[AuthRequest]) { this.popAuth should equal(auths) }
+  }
 
   def getEndpoint(name: String = "device", protocol: String = "benchmark") = {
     Endpoint.newBuilder().setProtocol(protocol).setName(name)
@@ -213,15 +215,15 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // cannot delete endpoint because it is "enabled" and "online", would confuse Feps
-    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build, headers)
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build)
     intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // cannot delete endpoint because even though it has been disabled it is still "online"
-    f.connectionService.put(getConnection(enabled = Some(false)).build, headers)
+    f.connectionService.put(getConnection(enabled = Some(false)).build)
     intercept[BadRequestException] { f.endpointService.delete(endpoint) }
 
     // we can now delete because endpoint is "disabled" and "offline"
-    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build, headers)
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build)
     f.endpointService.delete(endpoint).expectOne(Status.DELETED)
   }
 
@@ -243,7 +245,7 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     //intercept[BadRequestException] { configFileService.delete(configFile) }
 
     // we can now delete because endpoint is "disabled" and "offline"
-    f.connectionService.put(getConnection(enabled = Some(false)).build, headers)
+    f.connectionService.put(getConnection(enabled = Some(false)).build)
 
     // now remove endpoint "unlocking" other resources
     f.endpointService.delete(endpoint).expectOne(Status.DELETED)
@@ -309,4 +311,51 @@ class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
     returned.getOwnerships.getPointsCount should equal(1)
     returned.getOwnerships.getCommandsCount should equal(1)
   }
+
+  test("Endpoint auth requests") {
+    val f = new Fixture
+    val point = f.pointService.put(getPoint().build).expectOne()
+    val command = f.commandService.put(getCommand().build).expectOne()
+    val configFile = f.configFileService.put(getConfigFile().build).expectOne()
+    val port = f.portService.put(getIPPort().build).expectOne()
+
+    f.popAuth // don't care about setup objects
+
+    val endpoint = f.endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
+    f.checkAuth(AuthRequest("endpoint", "create", List("device")))
+
+    val initialConnectionState = f.connectionService.get(getConnection().build).expectOne()
+    initialConnectionState.getState should equal(EndpointConnection.State.COMMS_DOWN)
+    initialConnectionState.getEnabled should equal(true)
+    //f.checkAuth(AuthRequest("endpoint_connection", "read", List("device")))
+
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_UP)).build)
+    f.checkAuth(AuthRequest("endpoint_state", "update", List("device")))
+
+    f.connectionService.put(getConnection(enabled = Some(false)).build)
+    f.checkAuth(AuthRequest("endpoint_enabled", "update", List("device")))
+
+    f.connectionService.put(getConnection(state = Some(EndpointConnection.State.COMMS_DOWN)).build)
+    f.checkAuth(AuthRequest("endpoint_state", "update", List("device")))
+
+    f.endpointService.delete(endpoint).expectOne(Status.DELETED)
+    f.checkAuth(AuthRequest("endpoint", "delete", List("device")))
+  }
+
+  test("Endpoint auth no change") {
+    val f = new Fixture
+    val point = f.pointService.put(getPoint().build).expectOne()
+    val command = f.commandService.put(getCommand().build).expectOne()
+    val configFile = f.configFileService.put(getConfigFile().build).expectOne()
+    val port = f.portService.put(getIPPort().build).expectOne()
+
+    f.popAuth // don't care about setup objects
+
+    val endpoint = f.endpointService.put(makeEndpoint(Some(port), Some(configFile))).expectOne()
+    f.checkAuth(AuthRequest("endpoint", "create", List("device")))
+
+    f.connectionService.put(getConnection().build)
+    f.checkAuth(AuthRequest("endpoint_connection", "update", List("device")))
+  }
+
 }

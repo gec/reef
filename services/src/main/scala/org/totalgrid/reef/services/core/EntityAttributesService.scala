@@ -35,18 +35,20 @@ import java.util.UUID
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.framework.SquerylModel._
 
-class EntityAttributesService extends ServiceEntryPoint[AttrProto] with AuthorizesEverything {
+class EntityAttributesService extends ServiceEntryPoint[AttrProto] {
   import EntityAttributesService._
 
   override val descriptor = Descriptors.entityAttributes
 
   override def getAsync(source: RequestContextSource, req: AttrProto)(callback: (Response[AttrProto]) => Unit) {
     callback(source.transaction { context =>
-      authorizeRead(context, req)
-
       if (!req.hasEntity) throw new BadRequestException("Must specify Entity in request.")
 
-      Response(Status.OK, queryEntities(req.getEntity))
+      val entitiesWithAttributes = queryEntities(req.getEntity)
+
+      context.auth.authorize(context, componentId, "read", entitiesWithAttributes.map { _._1.id })
+
+      Response(Status.OK, resultToProto(entitiesWithAttributes))
     })
   }
 
@@ -61,7 +63,7 @@ object EntityAttributesService {
     ApplicationSchema.entityAttributes.deleteWhere(t => t.entityId === entityId)
   }
 
-  def queryEntities(proto: EntityProto): List[AttrProto] = {
+  def queryEntities(proto: EntityProto): List[(Entity, Option[AttrModel])] = {
     val join = if (proto.hasUuid && proto.getUuid.getValue == "*") {
       allJoin
     } else if (proto.hasUuid) {
@@ -75,6 +77,10 @@ object EntityAttributesService {
     if (join.isEmpty)
       throw new BadRequestException("No entities match request.")
 
+    join
+  }
+
+  def resultToProto(join: List[(Entity, Option[AttrModel])]): List[AttrProto] = {
     val pairs = join.groupBy { case (ent, attr) => ent }.toList
 
     pairs.map {

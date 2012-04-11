@@ -33,21 +33,31 @@ trait GeneratorFunctions {
 
     val classFile = new File(packageDir, className + fileEnding)
 
-    if (!classFile.exists || sourceFile.lastModified > classFile.lastModified) {
-      println("Genenerating: " + classFile.getAbsolutePath)
-      val stream = new PrintStream(new FileOutputStream(classFile))
+    writeFileIfNewer(classFile, sourceFile.lastModified) { stream =>
       func(stream, javaPackage)
-      stream.close
-    } else {
-      println("Skipping: " + classFile.getAbsolutePath)
     }
   }
 
-  def commentString(commentText: String): String = {
-    val strippedText = commentText.replaceAllLiterally("!api-definition!", "")
-    "/**\n" + strippedText.lines.toList.map { " *" + _ }.mkString("\n") + "\n*/"
+  def writeFileIfNewer(outputFile: File, shouldBeNewerThan: Long)(func: (PrintStream) => Unit) {
+    if (!outputFile.exists || shouldBeNewerThan > outputFile.lastModified) {
+      println("Genenerating: " + outputFile.getAbsolutePath)
+      val stream = new PrintStream(new FileOutputStream(outputFile))
+      func(stream)
+      stream.close
+    } else {
+      println("Skipping: " + outputFile.getAbsolutePath)
+    }
   }
 
+  def commentString(commentText: String, numTabs: Int = 0): String = {
+    val tabs = (1 to numTabs).map { i => "\t" }.mkString("")
+    val strippedText = commentText.replaceAllLiterally("!api-definition!", "")
+    tabs + "/**\n" + strippedText.lines.toList.map { tabs + " *" + _ }.mkString("\n") + "\n" + tabs + "*/"
+  }
+
+  /**
+   * get the type as a printable String => Measurement or List<Things>
+   */
   def typeString(ptype: Type): String = {
     if (ptype.asParameterizedType() != null) {
 
@@ -58,6 +68,9 @@ trait GeneratorFunctions {
     }
   }
 
+  /**
+   * get the type parameter (if it exists) and render it as [Type] or <Type>
+   */
   def typeAnnotation(m: MethodDoc, java: Boolean): String = {
     val typ = m.typeParameters().toList.headOption
     val typAnnotation = typ.map { t =>
@@ -104,5 +117,17 @@ trait GeneratorFunctions {
       val simpleType = ptype.simpleTypeName()
       map.get(simpleType).getOrElse(simpleType)
     }
+  }
+
+  def isReturnOptional(m: MethodDoc) = {
+    (m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List"
+  }
+
+  def isReturnList(m: MethodDoc) = {
+    m.returnType.simpleTypeName == "List"
+  }
+
+  def isReturnSubscription(m: MethodDoc) = {
+    m.returnType.simpleTypeName == "SubscriptionResult"
   }
 }

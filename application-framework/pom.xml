@@ -6,14 +6,15 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.4</version>
+        <version>0.4.7</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
     <licenses>
         <license>
-            <name>AGPLv3</name>
-            <url>http://www.gnu.org/licenses/agpl-3.0.txt</url>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
 
@@ -45,7 +46,7 @@
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
-                    <header>../AGPL_FILE_HEADER</header>
+                    <header>../APACHE_FILE_HEADER</header>
                 </configuration>
             </plugin>
         </plugins>
@@ -67,6 +68,13 @@
             <artifactId>reef-test-util</artifactId>
             <version>${reef.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-client</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
         </dependency>
     </dependencies>
 </project>

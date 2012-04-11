@@ -98,19 +98,31 @@ object MeasView {
   }
 
   def timeString(m: Measurement): String = {
-    new java.util.Date(m.getTime).toString
+    (if (m.hasIsDeviceTime && m.getIsDeviceTime) "~" else "") + new java.util.Date(m.getTime).toString
+  }
+  def systemTimeString(m: Measurement): String = {
+    if (m.hasSystemTime) new java.util.Date(m.getSystemTime).toString
+    else "--"
+  }
+
+  def offset(m: Measurement): String = {
+    if (m.hasSystemTime) (m.getSystemTime - m.getTime).toString
+    else "--"
   }
 
   def header = {
-    "Name" :: "Value" :: "Type" :: "Unit" :: "Q" :: "Time" :: Nil
+    "Name" :: "Value" :: "Type" :: "Unit" :: "Q" :: "Time" :: "Off" :: Nil
   }
   def row(m: Measurement): List[String] = {
     val (value, typ) = valueAndType(m)
-    m.getName :: value.toString :: typ :: unit(m) :: shortQuality(m) :: timeString(m) :: Nil
+    m.getName :: value.toString :: typ :: unit(m) :: shortQuality(m) :: timeString(m) :: offset(m) :: Nil
   }
 
   def printTable(list: List[Measurement]) = {
-    Table.printTable(header, list.sortBy(_.getName).map(row(_)))
+    Table.printTable(header, list.map(row(_)))
+  }
+  def printMeasRow(meas: Measurement, widths: List[Int]) {
+    Table.renderTableRow(row(meas), widths)
   }
 
   /**
@@ -143,10 +155,11 @@ object MeasView {
         ("Type" :: typ :: Nil) ::
         ("Unit" :: unit(m) :: Nil) ::
         ("Quality" :: longQuality(m) :: Nil) ::
-        ("Time" :: timeString(m) :: Nil) :: Nil
+        ("IsDeviceTime" :: (if (m.hasIsDeviceTime && m.getIsDeviceTime) "true" else "false") :: Nil) ::
+        ("Time" :: timeString(m) :: Nil) ::
+        ("SystemTime" :: systemTimeString(m) :: Nil) :: Nil
 
-    val justLines = Table.justifyColumns(lines)
-    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+    Table.renderRows(lines, " | ")
   }
 
   def printStats(s: MeasurementStatistics) = {
@@ -156,7 +169,6 @@ object MeasView {
         ("Count" :: s.count.getOrElse("[disabled]").toString :: Nil) ::
         ("Oldest Time" :: s.oldestTime.map(new java.util.Date(_).toString).getOrElse("[disabled]") :: Nil) :: Nil
 
-    val justLines = Table.justifyColumns(lines)
-    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+    Table.renderRows(lines, " | ")
   }
 }

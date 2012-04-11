@@ -48,7 +48,11 @@ object QpidChannelOperations extends Logging {
       if (session.isClosing) throw new ChannelClosedException
 
       val starIndex = queueNameTemplate.indexOf("*")
-      val queue = if (starIndex != -1) queueNameTemplate.patch(starIndex, session.getName.toString, 1) else queueNameTemplate
+      val queue = if (starIndex != -1) {
+        // session.getName.toString returns the uuid surrounded by double quotes for some reason
+        val sessionName = session.getName.toString.replaceAll("\"", "")
+        queueNameTemplate.patch(starIndex, sessionName, 1)
+      } else queueNameTemplate
       var l = List.empty[Option]
       if (autoDelete) l ::= Option.AUTO_DELETE
       if (exclusive) l ::= Option.EXCLUSIVE

@@ -18,12 +18,10 @@
  */
 package org.totalgrid.reef.services
 
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-
 import org.totalgrid.reef.client.service.proto.FEP.FrontEndProcessor
 import org.totalgrid.reef.client.service.proto.Auth.{ AuthToken, Agent }
 
-import org.totalgrid.reef.services.framework.RequestContextSourceWithHeaders
+import org.totalgrid.reef.services.framework.{ RequestContext, RequestContextSource }
 import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.ApplicationConfigBuilders
@@ -32,6 +30,7 @@ import org.totalgrid.reef.client.service.list.ReefServicesList
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.persistence.squeryl.DbConnection
+import org.totalgrid.reef.services.authz.SqlAuthzService
 
 object ServiceBootstrap {
 
@@ -40,6 +39,7 @@ object ServiceBootstrap {
     agent.setName(userSettings.getUserName).setPassword(userSettings.getUserPassword)
     val auth = AuthToken.newBuilder
     auth.setAgent(agent)
+    auth.setClientVersion(Version.getClientVersion)
     auth.build
   }
 
@@ -60,29 +60,38 @@ object ServiceBootstrap {
    * repeating that setup logic somewhere else
    */
   def bootstrapComponents(dbConnection: DbConnection, connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
-    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink)
+    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink, new SqlAuthzService())
 
     // define the events exchanges before "logging in" which will generate some events
     defineEventExchanges(connection)
-    val headers = BasicRequestHeaders.empty.setUserName(systemUser.getUserName)
 
-    val contextSource = new RequestContextSourceWithHeaders(new DependenciesSource(dependencies), headers)
+    val contextSource = new DependenciesSource(dependencies)
     val modelFac = new ModelFactories(new InMemoryMeasurementStore, contextSource)
     val applicationConfigService = new ApplicationConfigService(modelFac.appConfig)
+    val fepService = new FrontEndProcessorService(modelFac.fep)
     val authService = new AuthTokenService(modelFac.authTokens)
 
     val login = buildLogin(systemUser)
     val authToken = authService.put(contextSource, login).expectOne
 
-    val config = ApplicationConfigBuilders.makeProto(appSettings, appSettings.getDefaultNodeName + "-Services", List("Services"))
-    val appConfig = applicationConfigService.put(contextSource, config).expectOne
+    // since we aren't using the full service middleware we need to manually do the auth step
+    val authorizedSource = new RequestContextSource {
+      def transaction[A](f: (RequestContext) => A) = {
+        contextSource.transaction { context =>
+          context.modifyHeaders(_.setAuthToken(authToken.getToken))
+          (new SqlAuthzService()).prepare(context)
+          f(context)
+        }
+      }
+    }
+
+    val config = ApplicationConfigBuilders.makeProto(Version.getClientVersion, appSettings, appSettings.getDefaultNodeName + "-Services", List("Services"))
+    val appConfig = applicationConfigService.put(authorizedSource, config).expectOne
 
     // the measurement batch service acts as a type of manual FEP
-    val msg = FrontEndProcessor.newBuilder
-    msg.setAppConfig(appConfig)
-    msg.addProtocols("null")
-    val fepService = new FrontEndProcessorService(modelFac.fep)
-    fepService.put(contextSource, msg.build)
+    val fepConfig = FrontEndProcessor.newBuilder.setAppConfig(appConfig).addProtocols("null").build
+
+    fepService.put(authorizedSource, fepConfig)
 
     (appConfig, authToken.getToken)
   }
@@ -93,9 +102,7 @@ object ServiceBootstrap {
   def seed(dbConnection: DbConnection, systemPassword: String) {
     val context = new SilentRequestContext
     dbConnection.transaction {
-      core.EventConfigService.seed()
-      core.EntityService.seed()
-      core.AuthTokenService.seed(context, systemPassword)
+      ServiceSeedData.seed(context, systemPassword)
     }
   }
 

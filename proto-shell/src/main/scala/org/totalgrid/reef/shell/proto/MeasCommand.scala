@@ -152,14 +152,42 @@ class MeasOverrideCommand extends ReefCommandSupport {
       case ex => throw ex
     }
   }
+}
 
-  def overrideInt(point: Point, value: String) = {
-    val v = value.toInt
+@Command(scope = "meas", name = "override-list", description = "View all overridden measurements")
+class MeasOverrideListCommand extends ReefCommandSupport {
+
+  def doCommand() = {
+    var overrides = services.getMeasurementOverrides().toList
+
+    MeasView.printTable(overrides.map { _.getMeas })
+  }
+}
+
+/**
+ * provides -w (watch) flag for measurement commands
+ */
+abstract class MeasViewBaseCommand extends ReefCommandSupport {
+
+  @GogoOption(name = "-w", description = "Watch measurement updates and continuously display new values coming in. Press cntrl-c to stop.", required = false, multiValued = false)
+  var watch: Boolean = false
+
+  protected def displayMeasurements(pointNames: List[String]) {
+    if (!watch) {
+      val meas = services.getMeasurementsByNames(pointNames).toList
+      MeasView.printTable(meas)
+    } else {
+      val subResult = services.subscribeToMeasurementsByNames(pointNames)
+      val widths = MeasView.printTable(subResult.getResult.toList)
+      runSubscription(subResult.getSubscription) { event =>
+        MeasView.printMeasRow(event.getValue, widths)
+      }
+    }
   }
 }
 
 @Command(scope = "meas", name = "from", description = "Prints measurements under an entity.")
-class MeasFromCommand extends ReefCommandSupport {
+class MeasFromCommand extends MeasViewBaseCommand {
 
   @Argument(index = 0, name = "parentId", description = "Parent entity name.", required = true, multiValued = false)
   var parentName: String = null
@@ -167,14 +195,31 @@ class MeasFromCommand extends ReefCommandSupport {
   def doCommand(): Unit = {
 
     val entity = services.getEntityByName(parentName)
-    val pointEntites = services.getEntityRelatedChildrenOfType(entity.getUuid, "owns", "Point")
+    val pointNames = services.getEntityRelatedChildrenOfType(entity.getUuid, "owns", "Point").toList.map { _.getName }
 
-    MeasView.printTable(services.getMeasurementsByNames(pointEntites.map { _.getName }).toList)
+    displayMeasurements(pointNames)
+  }
+}
+
+@Command(scope = "meas", name = "view", description = "Prints a user specified list of measurements")
+class MeasViewCommand extends MeasViewBaseCommand {
+
+  @Argument(index = 0, name = "Point names", description = "Names of all of the points we want to display", required = true, multiValued = true)
+  var pointNames: java.util.List[String] = null
+
+  def doCommand(): Unit = {
+
+    val names = pointNames.toList match {
+      case List("*") => services.getPoints.toList.map { _.getName }
+      case _ => pointNames.toList
+    }
+
+    displayMeasurements(names)
   }
 }
 
 @Command(scope = "meas", name = "endpoint", description = "Prints measurements under an endpoint.")
-class MeasFromEndpointCommand extends ReefCommandSupport {
+class MeasFromEndpointCommand extends MeasViewBaseCommand {
 
   @Argument(index = 0, name = "endpointName", description = "Endpoint name.", required = true, multiValued = false)
   var endpointName: String = null
@@ -182,9 +227,9 @@ class MeasFromEndpointCommand extends ReefCommandSupport {
   def doCommand(): Unit = {
 
     val endpoint = services.getEndpointByName(endpointName)
-    val points = services.getPointsBelongingToEndpoint(endpoint.getUuid)
+    val pointNames = services.getPointsBelongingToEndpoint(endpoint.getUuid).toList.map { _.getName }
 
-    MeasView.printTable(services.getMeasurementsByPoints(points).toList)
+    displayMeasurements(pointNames)
   }
 }
 
@@ -215,7 +260,7 @@ class MeasStatCommand extends ReefCommandSupport {
   }
 }
 
-@Command(scope = "meas", name = "download", description = "Download all measurements for a point to CSV file.")
+@Command(scope = "meas", name = "download", description = "Download all measurements for a point to CSV file.\n Ex: meas:download -s \"2012-02-10 00:00\" PV.csv LV.Line_PV.kW_tot")
 class MeasDownloadCommand extends ReefCommandSupport {
 
   @Argument(index = 0, name = "fileName", description = "Absolute filename to write csv file.", required = true, multiValued = false)

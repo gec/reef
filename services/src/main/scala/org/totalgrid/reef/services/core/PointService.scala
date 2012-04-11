@@ -62,6 +62,7 @@ class PointService(protected val model: PointServiceModel)
 
 class PointServiceModel(triggerModel: TriggerSetServiceModel,
   overrideModel: OverrideConfigServiceModel,
+  calculationModel: CalculationConfigServiceModel,
   val measurementStore: MeasurementStore)
     extends SquerylServiceModel[Long, PointProto, Point]
     with EventedServiceModel[PointProto, Point]
@@ -114,6 +115,7 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
 
     entry.triggers.value.foreach { t => triggerModel.delete(context, t) }
     entry.overrides.value.foreach { o => overrideModel.delete(context, o) }
+    entry.calculations.value.foreach { c => calculationModel.delete(context, c) }
 
     removePointMeasurements(entry :: Nil, context)
 
@@ -139,6 +141,10 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
       req.entity.uuid.value ::
       req.abnormal :: // this subscribes the users to all points that have their abnormal field changed
       Nil
+  }
+
+  def relatedEntities(models: List[Point]) = {
+    models.map { _.entityId }
   }
 
   /**
@@ -191,8 +197,8 @@ object PointServiceConversion extends PointServiceConversion
  * with refactored searching behaviors.
  */
 object PointTiedModel {
-  def lookupPoint(proto: PointProto): Point = {
-    Point.findByName(proto.getName).single
+  def lookupPoint(context: RequestContext, proto: PointProto): Point = {
+    PointServiceConversion.findRecord(context, proto).getOrElse(throw new BadRequestException("Point unknown: " + proto.getUuid + " - " + proto.getName))
   }
 
   /**
@@ -200,7 +206,7 @@ object PointTiedModel {
    */
   def populatedPointProto(point: Point): PointProto.Builder = {
     val pb = PointProto.newBuilder
-    pb.setName(point.entityName).setUuid(makeUuid(point))
+    pb.setName(point.entityName).setUuid(makeUuid(point)).setUnit(point.unit)
     pb.setEntity(EntityQuery.entityToProto(point.entity.value))
     point.logicalNode.value.foreach(p => pb.setEndpoint(EntityQuery.entityToProto(p)))
     pb

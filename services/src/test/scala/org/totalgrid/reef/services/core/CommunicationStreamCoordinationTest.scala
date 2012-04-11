@@ -173,9 +173,9 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       val coord = new CoordinatorFixture(amqp)
 
       val meas = coord.addMeasProc("meas")
-      val fepNetALocA = coord.addProtocols(coord.addApp("fepNetALocA", List("FEP"), "netA", "locA"), List("dnp3", "benchmark"))
-      val fepNetBLocA = coord.addProtocols(coord.addApp("fepNetBLocA", List("FEP"), "netB", "locA"), List("dnp3", "benchmark"))
-      val fepNetBLocB = coord.addProtocols(coord.addApp("fepNetBLocB", List("FEP"), "netB", "locB"), List("dnp3", "benchmark"))
+      val fepNetALocA = coord.addProtocols(coord.addApp("fepNetALocA", List("FEP"), List("netA"), "locA"), List("dnp3", "benchmark"))
+      val fepNetBLocA = coord.addProtocols(coord.addApp("fepNetBLocA", List("FEP"), List("netB"), "locA"), List("dnp3", "benchmark"))
+      val fepNetBLocB = coord.addProtocols(coord.addApp("fepNetBLocB", List("FEP"), List("netB"), "locB"), List("dnp3", "benchmark"))
 
       val serialLocA1 = coord.addDnp3Device("serialLocA1", None, Some("locA"))
       val serialLocA2 = coord.addDnp3Device("serialLocA2", None, Some("locA"))
@@ -196,6 +196,22 @@ class CommunicationStreamCoordinationTest extends EndpointRelatedTestBase {
       coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepNetBLocA).build).expectMany(2 + 1), false, Some(fepNetBLocA), true)
       coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(fepNetBLocB).build).expectMany(1 + 1), false, Some(fepNetBLocB), true)
 
+    }
+  }
+
+  test("FEPS can have multiple networks") {
+    ConnectionFixture.mock() { amqp =>
+      val coord = new CoordinatorFixture(amqp)
+
+      coord.addMeasProc("meas")
+      val multiNetworkFep = coord.addProtocols(coord.addApp("fepNetALocA", List("FEP"), List("netA", "netB"), "locA"), List("dnp3", "benchmark"))
+
+      coord.addDnp3Device("ipNetA1", Some("netA"), None)
+      coord.addDnp3Device("ipNetA2", Some("netA"), None)
+      coord.addDnp3Device("ipNetB1", Some("netB"), None)
+      coord.addDnp3Device("ipNetB2", Some("netB"), None)
+
+      coord.checkFeps(coord.frontEndConnection.get(EndpointConnection.newBuilder.setFrontEnd(multiNetworkFep).build).expectMany(4), false, Some(multiNetworkFep), true)
     }
   }
 

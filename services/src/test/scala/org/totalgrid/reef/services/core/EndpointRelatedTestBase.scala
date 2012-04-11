@@ -111,10 +111,9 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     val rtDb = new InMemoryMeasurementStore()
     val eventSink = new CountingEventSink
-    val headers = BasicRequestHeaders.empty.setUserName("user")
 
     val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp, rtDb, eventSink)
-    val contextSource = new MockRequestContextSource(deps, headers)
+    val contextSource = new MockRequestContextSource(deps)
 
     val modelFac = new ModelFactories(deps)
 
@@ -135,11 +134,11 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
 
     var measProcMap = Map.empty[String, MockMeasProc]
 
-    def addApp(name: String, caps: List[String], network: String = "any", location: String = "any"): ApplicationConfig = {
+    def addApp(name: String, caps: List[String], networks: List[String] = List("any"), location: String = "any"): ApplicationConfig = {
       val b = ApplicationConfig.newBuilder()
       caps.foreach(b.addCapabilites)
-      b.setUserName(name).setInstanceName(name).setNetwork(network)
-        .setLocation(location)
+      b.setUserName(name).setInstanceName(name).setLocation(location)
+      networks.foreach { b.addNetworks(_) }
       val cfg = appService.put(b.build).expectOne()
       if (caps.find(_ == "Processing").isDefined) setupMockMeasProc(name, cfg)
       cfg
@@ -269,13 +268,13 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Loggin
     }
 
     def setEndpointEnabled(ce: EndpointConnection, enabled: Boolean) = {
-      val ret = frontEndConnection.put(ce.toBuilder.setEnabled(enabled).build, headers).expectOne()
+      val ret = frontEndConnection.put(ce.toBuilder.setEnabled(enabled).build).expectOne()
       ret.getEnabled should equal(enabled)
       ret
     }
 
     def setEndpointState(ce: EndpointConnection, state: EndpointConnection.State) = {
-      val ret = frontEndConnection.put(ce.toBuilder.setState(state).build, headers).expectOne()
+      val ret = frontEndConnection.put(ce.toBuilder.setState(state).build).expectOne()
       ret.getState should equal(state)
       ret
     }

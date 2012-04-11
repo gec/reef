@@ -105,6 +105,10 @@ trait FrontEndPortConversion
       req.serial.location :: Nil
   }
 
+  def relatedEntities(entries: List[FrontEndPort]) = {
+    Nil
+  }
+
   def searchQuery(proto: ChannelProto, sql: FrontEndPort) = {
     Nil
   }

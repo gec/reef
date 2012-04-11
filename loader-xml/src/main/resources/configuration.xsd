@@ -23,12 +23,14 @@
 					 xmlns:equ="equipment.loader.reef.totalgrid.org"
 					 xmlns:com="communications.loader.reef.totalgrid.org"
 					 xmlns:common="common.loader.reef.totalgrid.org"
+                     xmlns:auth="authorization.loader.reef.totalgrid.org"
 					 xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 					 targetNamespace="configuration.loader.reef.totalgrid.org"
 					 elementFormDefault="unqualified" jaxb:version="1.0">
 	<xs:import namespace="equipment.loader.reef.totalgrid.org" schemaLocation="equipment.xsd"/>
 	<xs:import namespace="communications.loader.reef.totalgrid.org" schemaLocation="communications.xsd"/>
 	<xs:import namespace="common.loader.reef.totalgrid.org" schemaLocation="common.xsd"/>
+    <xs:import namespace="authorization.loader.reef.totalgrid.org" schemaLocation="authorization.xsd"/>
 
 	<!-- Reef configuration XSD -->
 
@@ -738,6 +740,7 @@
 				<xs:element ref="actionModel" minOccurs="0"/>
 				<xs:element ref="equ:equipmentModel" minOccurs="0"/>
 				<xs:element ref="com:communicationsModel" minOccurs="0"/>
+                <xs:element ref="auth:authorization" minOccurs="0"/>
 			</xs:all>
 			<xs:attribute name="version" use="required">
 				<xs:simpleType>

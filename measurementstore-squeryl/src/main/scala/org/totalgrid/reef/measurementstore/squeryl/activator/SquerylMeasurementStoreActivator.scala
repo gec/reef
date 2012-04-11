@@ -31,7 +31,7 @@ class SquerylMeasurementStoreActivator extends BundleActivator {
 
     // initialize the connection, expecting that the DbConnector is already registered
     def connectFunction() = {
-      val sql = new DbInfo(OsgiConfigReader(context, "org.totalgrid.reef.sql").getProperties)
+      val sql = new DbInfo(OsgiConfigReader.load(context, "org.totalgrid.reef.sql"))
       DbConnector.connect(sql, context)
     }
     val historianMeasurementStore = MeasurementStoreProvider(new SqlMeasurementStore(connectFunction _, true))

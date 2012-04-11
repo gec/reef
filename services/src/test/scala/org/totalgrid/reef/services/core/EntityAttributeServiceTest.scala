@@ -37,7 +37,6 @@ class EntityAttributeServiceTest extends DatabaseUsingTestBase {
 
     val dependencies = new ServiceDependenciesDefaults(dbConnection)
     val factories = new ModelFactories(dependencies)
-    val headers = BasicRequestHeaders.empty.setUserName("user")
 
     val s = new SyncService(new EntityAttributeService(factories.attributes), contextSource)
 

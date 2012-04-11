@@ -98,6 +98,10 @@ trait EntityAttributeConversion extends UniqueAndSearchQueryable[AttrProto, Attr
       Nil
   }
 
+  def relatedEntities(entries: List[AttrModel]) = {
+    entries.map { _.entityId }
+  }
+
   def isModified(entry: AttrModel, existing: AttrModel): Boolean = {
     entry.boolVal != existing.boolVal ||
       entry.doubleVal != existing.doubleVal ||

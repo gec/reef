@@ -19,12 +19,7 @@
 package org.totalgrid.reef.services
 
 import java.util.Dictionary
-import org.totalgrid.reef.client.settings.util.{ PropertyReader, PropertyLoading }
-
-object ServiceOptions {
-
-  def fromFile(fileName: String) = new ServiceOptions(PropertyReader.readFromFile(fileName))
-}
+import org.totalgrid.reef.client.settings.util.PropertyLoading
 
 case class ServiceOptions(
     /// whether to instrument service requests at all
@@ -34,11 +29,10 @@ case class ServiceOptions(
     /// track services separately (true => N verbs * M service; or N verbs * 1)  
     metricsSplitByService: Boolean,
 
-    /// whether we are turning on "auth checking" for all services, only optional during transitory phase
-    // val auth: Boolean,
-
     /// threshold for when a request took too long and should be logged
     slowQueryThreshold: Long,
+    /// how many separate database requests we can make servicing a request before printing a warning
+    chattyTransactionThreshold: Int,
     /// maximum # of measurements to allow in the history table
     maxMeasurements: Long,
     /// how often to clean excess measurements from history table
@@ -49,6 +43,7 @@ case class ServiceOptions(
     PropertyLoading.getBoolean("org.totalgrid.reef.services.metricsSplitByVerb", props),
     PropertyLoading.getBoolean("org.totalgrid.reef.services.metricsSplitByService", props),
     PropertyLoading.getInt("org.totalgrid.reef.services.slowQueryThresholdMs", props),
+    PropertyLoading.getInt("org.totalgrid.reef.services.chattyTransactionThreshold", props, 100),
     PropertyLoading.getLong("org.totalgrid.reef.services.maxMeasurements", props),
     PropertyLoading.getInt("org.totalgrid.reef.services.trimPeriodMinutes", props))
 }

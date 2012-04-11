@@ -9,6 +9,72 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.7 - April 11, 2012
+==============
+
+Security focused release, all core applications now use different agents who have been limited to access only necessary
+resources. Resource level security is partially implemented but should not be considered production ready in
+this release. See services-authz/README.md for details on current authz features and limitations.
+
+### Major Features:
+
+* Client identifies version of code during login and logs mismatchs with server version
+* Added shell commands login:list and login:revoke to see who is logged into the system
+* "Core applications" load multiple .cfg files to allow overriding of properties (especially of user name)
+* Added a suite of standard users and roles for the core applications
+* All applications run as minimally privileged agents
+* Liquibase database generation switched to default on. reef:resetdb is no longer destructive
+* agent-permissions:filter shell command allows viewing which resources a role will have access to.
+* Reworked display of agent:* and agent-permissions:* shell commands to be readable.
+* Distributions have better licensing and include READMEs and RELEASE_NOTES
+* Java compatible ProtocolManager interface for writing ProtocolAdapters
+
+### Service/API Updates:
+
+* CommandLocks are never deleted, just marked as "inactive", provides audit log
+* Added client_version and server_version fields to SimpleAuth
+* Added revoked and issue_time to AuthToken objects
+* Applications can register their application version number and belong to multiple networks
+* Dnp3 slave can configure output types and scale outputs and control inputs for fixed point systems
+
+### Reef Internals:
+
+* Changed handling of test .cfg files (see cfg-templates/README.md)
+* Split up integration tests into function oriented files.
+* Config file loading expects many files and silently ignores missing files
+* Subscription ids don't include double quotes in the strings
+* Services bundle won't start if the database schema is not uptodate
+
+Version 0.4.6 - March 8, 2012
+==============
+
+Release is focused on the new calculator protocol and some minor bug fixes.
+
+### Major Features:
+
+* Initial implementation of "calculator" protocol (see /calculator/README.markdown)
+* jQuery client files are now served at /jquery-libs/reef.client.js and /jquery-libs/reef.client.core-services.js
+
+### Service/API Updates:
+
+* EntityEdges are available through EntityService (and edges got distance field).
+
+### Bug Fixes:
+
+* sim:config command can select individual endpoints again
+* fixed accidental logouts with multiple protocols sharing an FEP
+
+Version 0.4.5 - February 21, 2012
+==============
+
+This focus is primarily related to the http-bridge and jQuery client.
+
+### Major Features:
+
+* Implemented jQuery based client that handles most of the AllScadaService calls including limited
+  subscription support. (74 of 179)
+* It is now possible to implement a service in java (before it required scala)
+
 Version 0.4.4 - February 10, 2012
 ==============
 

@@ -139,7 +139,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     fixture(true) { c =>
       val events = new SynchronizedList[Int]
       val sub = c.subscribe(SomeIntegerTypeDescriptor)
-      c.bindQueueByClass(sub.id(), "#", classOf[SomeInteger])
+      c.bindQueueByClass(sub.getId(), "#", classOf[SomeInteger])
       sub.start(e => events.append(e.value.num))
 
       val range = 0 to 1500

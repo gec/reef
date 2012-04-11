@@ -114,8 +114,6 @@ class ConfigFileServiceModel
     }
     val newEntitites = updatedEntities.diff(existingEntities)
 
-    // TODO we don't delete edges this way, currently no way to delete configFile edges
-
     newEntitites.foreach(addUserEntity(context, sql.entity.value, _))
     if (!newEntitites.isEmpty) sql.changedOwners = true
   }
@@ -131,6 +129,10 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
 
   def getRoutingKey(configFileProto: ConfigProto) = ProtoRoutingKeys.generateRoutingKey {
     configFileProto.uuid.value :: configFileProto.name :: configFileProto.mimeType :: Nil
+  }
+
+  def relatedEntities(entries: List[ConfigFile]) = {
+    entries.map { cf => cf.entityId :: cf.owners.value.map { _.id } }.flatten
   }
 
   def searchQuery(proto: ConfigProto, sql: ConfigFile) = {

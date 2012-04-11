@@ -8,6 +8,7 @@ org.totalgrid.reef.shell.proto.AccessCommand
 org.totalgrid.reef.shell.proto.AccessBlockCommand
 org.totalgrid.reef.shell.proto.AccessRemoveCommand
 org.totalgrid.reef.shell.proto.ReefLoginCommand
+org.totalgrid.reef.shell.proto.ReefWhoAmICommand
 org.totalgrid.reef.shell.proto.ReefLogoutCommand
 org.totalgrid.reef.shell.proto.ReefHeadersCommand
 org.totalgrid.reef.shell.proto.EntityTypeCommand
@@ -17,12 +18,14 @@ org.totalgrid.reef.shell.proto.EntityTreeCommand
 org.totalgrid.reef.shell.proto.EntityRelationsCommand
 org.totalgrid.reef.shell.proto.MeasListCommand
 org.totalgrid.reef.shell.proto.MeasFromCommand
+org.totalgrid.reef.shell.proto.MeasViewCommand
 org.totalgrid.reef.shell.proto.MeasFromEndpointCommand
 org.totalgrid.reef.shell.proto.MeasHistCommand
 org.totalgrid.reef.shell.proto.MeasDownloadCommand
 org.totalgrid.reef.shell.proto.MeasBlockCommand
 org.totalgrid.reef.shell.proto.MeasUnblockCommand
 org.totalgrid.reef.shell.proto.MeasOverrideCommand
+org.totalgrid.reef.shell.proto.MeasOverrideListCommand
 org.totalgrid.reef.shell.proto.EventListCommand
 org.totalgrid.reef.shell.proto.EventViewCommand
 org.totalgrid.reef.shell.proto.EventPublishCommand
@@ -46,6 +49,8 @@ org.totalgrid.reef.shell.proto.EndpointListCommand
 org.totalgrid.reef.shell.proto.EndpointEnableCommand
 org.totalgrid.reef.shell.proto.EndpointDisableCommand
 org.totalgrid.reef.shell.proto.ApplicationListCommand
+org.totalgrid.reef.shell.proto.ApplicationViewCommand
+org.totalgrid.reef.shell.proto.ApplicationRemoveCommand
 org.totalgrid.reef.shell.proto.ConfigFileListCommand
 org.totalgrid.reef.shell.proto.ConfigFileViewCommand
 org.totalgrid.reef.shell.proto.ConfigFileDownloadCommand
@@ -53,9 +58,17 @@ org.totalgrid.reef.shell.proto.ConfigFileUploadCommand
 org.totalgrid.reef.shell.proto.AgentSetPasswordCommand
 org.totalgrid.reef.shell.proto.AgentListCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsListCommand
+org.totalgrid.reef.shell.proto.AgentPermissionsViewCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsCreateCommand
 org.totalgrid.reef.shell.proto.AgentPermissionsDeleteCommand
+org.totalgrid.reef.shell.proto.AgentPermissionsFilterCommand
 org.totalgrid.reef.shell.proto.AgentCreateCommand
 org.totalgrid.reef.shell.proto.AgentDeleteCommand
+
+org.totalgrid.reef.shell.proto.CalculationListCommand
+org.totalgrid.reef.shell.proto.CalculationViewCommand
+
+org.totalgrid.reef.shell.proto.AuthTokenListCommand
+org.totalgrid.reef.shell.proto.AuthTokenRevokeCommand
 
 org.apache.karaf.shell.commands.LogoutAction

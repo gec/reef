@@ -46,6 +46,7 @@ object ReefServicesList {
     getEntry(Descriptors.authToken),
     getEntry(Descriptors.agent),
     getEntry(Descriptors.permissionSet),
+    getEntry(Descriptors.authFilter),
 
     getEntry(Descriptors.userCommandRequest),
     getEntry(Descriptors.commandLock),
@@ -59,6 +60,7 @@ object ReefServicesList {
     getEntry(Descriptors.entityEdge),
     getEntry(Descriptors.entityAttributes),
     getEntry(Descriptors.entityAttribute),
+    getEntry(Descriptors.calculation),
     // TODO: we only need this here to get event publishing to work
     getEntry(Descriptors.measurement))
 

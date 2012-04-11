@@ -33,7 +33,8 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Descriptors
 
-class CommandLockService(protected val model: CommandLockServiceModel)
+// checktimeouts is disabled during testing only
+class CommandLockService(protected val model: CommandLockServiceModel, checkTimeouts: Boolean = true)
     extends SyncModeledServiceBase[AccessProto, AccessModel, CommandLockServiceModel]
     with GetEnabled
     with SubscribeEnabled
@@ -61,12 +62,13 @@ class CommandLockService(protected val model: CommandLockServiceModel)
       // Set expire time to default or else use proto as-is
       if (!proto.hasExpireTime) AccessProto.newBuilder(proto).setExpireTime(defaultSelectTime).build
       else {
-        if (proto.getExpireTime != -1 && proto.getExpireTime <= 0) throw new BadRequestException("Must specify positive timeout or -1 for no timeout.")
+        if (checkTimeouts && proto.getExpireTime != -1 && proto.getExpireTime <= 0) throw new BadRequestException("Must specify positive timeout or -1 for no timeout.")
         proto
       }
     } else proto
   }
 
+  // overriden to avoid auth checks
   final override protected def performDelete(context: RequestContext, model: ServiceModelType, req: ServiceType): List[AccessModel] = {
     val existing = model.findRecords(context, req)
     existing.foreach(model.removeAccess(context, _))

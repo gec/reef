@@ -13,11 +13,18 @@ message Agent{
     repeated PermissionSet permission_sets = 4;
 }
 
+message EntitySelector{
+    //optional org.totalgrid.reef.client.service.proto.Model.ReefID  id      = 1;
+    optional string  style     = 2;
+    repeated string  arguments = 3;
+}
+
 message Permission{
     optional org.totalgrid.reef.client.service.proto.Model.ReefID  id      = 1;
     optional bool    allow    = 2;
-    optional string  resource = 3;
-    optional string  verb     = 4;
+    repeated string  resource = 3;
+    repeated string  verb     = 4;
+    repeated EntitySelector  selector = 5;
 }
 
 message PermissionSet{
@@ -34,4 +41,26 @@ message AuthToken{
     repeated PermissionSet permission_sets = 4;
     optional string        token           = 5;
     optional uint64        expiration_time = 6;
+    optional string        client_version  = 7;
+
+    optional bool          revoked         = 8;
+    optional uint64        issue_time      = 9;
+}
+
+
+message AuthFilterRequest {
+    optional string action = 1;
+    optional string resource = 2;
+    repeated org.totalgrid.reef.client.service.proto.Model.Entity entity = 3;
+
+    optional PermissionSet permissions = 10;
+}
+message AuthFilterResult {
+    optional org.totalgrid.reef.client.service.proto.Model.Entity entity = 1;
+    optional bool allowed = 2;
+    optional string  reason = 3;
+}
+message AuthFilter {
+    optional AuthFilterRequest request = 1;
+    repeated AuthFilterResult results = 2;
 }

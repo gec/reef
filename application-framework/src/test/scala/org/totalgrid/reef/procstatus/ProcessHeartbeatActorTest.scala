@@ -4,11 +4,11 @@
  * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
  * work for additional information regarding copyright ownership. Green Energy
- * Corp licenses this file to you under the GNU Affero General Public License
- * Version 3.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.gnu.org/licenses/agpl.html
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -30,7 +30,7 @@ import org.mockito.{ ArgumentCaptor, Mockito }
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
+import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 
 @RunWith(classOf[JUnitRunner])
 class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
@@ -47,7 +47,7 @@ class ProcessHeartbeatActorTest extends FunSuite with ShouldMatchers {
   test("Heartbeats are sent") {
     val services = Mockito.mock(classOf[ApplicationService])
     val argument = ArgumentCaptor.forClass(classOf[StatusSnapshot])
-    val promise = new FixedPromise(Success(StatusSnapshot.getDefaultInstance))
+    val promise = success(StatusSnapshot.getDefaultInstance)
     Mockito.when(services.sendHeartbeat(argument.capture())).thenReturn(promise)
 
     val mockExecutor = new MockExecutor

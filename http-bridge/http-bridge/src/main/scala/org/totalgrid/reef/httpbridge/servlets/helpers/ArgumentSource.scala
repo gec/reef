@@ -18,9 +18,10 @@
  */
 package org.totalgrid.reef.httpbridge.servlets.helpers
 
-import com.google.protobuf.Message
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.exception.BadRequestException
+import com.google.protobuf.{ ByteString, Message }
+import org.totalgrid.reef.client.service.entity.EntityRelation
 
 /**
  * An argument source gets the "typed" class for named paramters. These arguments
@@ -51,25 +52,32 @@ trait ArgumentSourceHelpers { self: ArgumentSource =>
   val IntClass = classOf[java.lang.Integer]
   val MessageClass = classOf[Message]
   val LongClass = classOf[java.lang.Long]
+  val DoubleClass = classOf[java.lang.Double]
   val ReefUuidClass = classOf[ReefUUID]
   val ReefIdClass = classOf[ReefID]
+  val EntityRelationClass = classOf[EntityRelation]
   val BooleanClass = classOf[java.lang.Boolean]
+  //val ByteStringClass = classOf[ByteString]
 
-  def getInt(name: String) = require(name, findInt(name))
-  def getLong(name: String) = require(name, findLong(name))
-  def getBoolean(name: String) = require(name, findBoolean(name))
+  // TODO: enable typed protobuf argument parsing
+
+  def getInt(name: String) = require(name, findArgument(name, IntClass))
+  def getLong(name: String) = require(name, findArgument(name, LongClass))
+  def getBoolean(name: String) = require(name, findArgument(name, BooleanClass))
+  def getDouble(name: String) = require(name, findArgument(name, DoubleClass))
   def getString(name: String) = require(name, findArgument(name, StringClass))
   def getUuid(name: String) = require(name, findArgument(name, ReefUuidClass))
-
-  def findInt(name: String) = findArgument(name, IntClass).map { _.intValue }
-  def findLong(name: String) = findArgument(name, LongClass).map { _.longValue }
-  def findBoolean(name: String) = findArgument(name, BooleanClass).map { _.booleanValue }
-  def findString(name: String) = require(name, findArgument(name, StringClass))
+  def getEntityRelation(name: String) = require(name, findArgument(name, EntityRelationClass))
+  def getId(name: String) = require(name, findArgument(name, ReefIdClass))
+  //def getByteArray(name: String) = require(name, findArgument(name, ByteStringClass)).toByteArray
 
   def getInts(name: String) = require(name, findArguments(name, IntClass))
   def getLongs(name: String) = require(name, findArguments(name, LongClass))
   def getBooleans(name: String) = require(name, findArguments(name, BooleanClass))
+  def getDoubles(name: String) = require(name, findArguments(name, DoubleClass))
   def getStrings(name: String) = require(name, findArguments(name, StringClass))
+  def getUuids(name: String) = require(name, findArguments(name, ReefUuidClass))
+  def getEntityRelations(name: String) = require(name, findArguments(name, EntityRelationClass))
 
   def require[A](name: String, result: Option[A]): A = {
     result.getOrElse(throw new BadRequestException("Missing required argument: " + name))

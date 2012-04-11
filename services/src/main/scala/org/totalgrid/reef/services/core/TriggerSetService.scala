@@ -53,6 +53,10 @@ trait TriggerSetConversion
     req.point.endpoint.uuid.value :: req.point.name :: Nil
   }
 
+  def relatedEntities(models: List[TriggerSet]) = {
+    models.map { _.point.value.entityId }
+  }
+
   def uniqueQuery(proto: TriggerProto, sql: TriggerSet) = {
     List(proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
   }
@@ -68,7 +72,7 @@ trait TriggerSetConversion
   }
 
   def createModelEntry(context: RequestContext, rawProto: TriggerProto): TriggerSet = {
-    val point = PointTiedModel.lookupPoint(rawProto.getPoint)
+    val point = PointTiedModel.lookupPoint(context, rawProto.getPoint)
     val proto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)).build
     new TriggerSet(
       point.id,

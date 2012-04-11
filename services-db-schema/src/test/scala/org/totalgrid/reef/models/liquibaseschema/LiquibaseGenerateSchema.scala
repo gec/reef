@@ -50,7 +50,7 @@ class LiquibaseGenerateSchema extends FunSuite {
 
     println("Generating standard squeryl schema in standard database")
     useDb(dbConnection) { referenceDb =>
-      referenceDb.dropDatabaseObjects(null)
+      clearDatabase(referenceDb)
     }
     dbConnection.transaction {
       ApplicationSchema.reset()
@@ -64,10 +64,10 @@ class LiquibaseGenerateSchema extends FunSuite {
       useDb(dbConnection2) { targetDb =>
 
         println("Clearing target database")
-        targetDb.dropDatabaseObjects(null)
+        clearDatabase(targetDb)
 
         println("Running current migrations")
-        upgradeDatabase(targetDb)
+        upgradeDatabase(targetDb, true)
 
         println("Checking databases have same schema")
         if (doDiff(referenceDb, targetDb)) {

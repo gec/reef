@@ -29,7 +29,7 @@ trait ActiveModel {
     table.lookup(id) match {
       case Some(s) => s
       case None =>
-        throw new ActiveModelException("Missing id: " + id + " in " + table)
+        throw new ActiveModelException("Missing id: " + id + " in " + table.name)
     }
   }
   def mayHaveOne[A <: KeyedEntity[Long]](table: Table[A], optId: Option[Long]): Option[A] = {
@@ -44,7 +44,7 @@ trait ActiveModel {
     table.lookup(id) match {
       case Some(s) => s
       case None =>
-        throw new ActiveModelException("Missing id: " + id + " in " + table)
+        throw new ActiveModelException("Missing id: " + id + " in " + table.name)
     }
   }
   def mayHaveOneByUuid[A <: KeyedEntity[UUID]](table: Table[A], optId: Option[UUID]): Option[A] = {
@@ -58,7 +58,7 @@ trait ActiveModel {
     table.where(_.entityId === id).headOption match {
       case Some(s) => s
       case None =>
-        throw new ActiveModelException("Missing id: " + id + " in " + table)
+        throw new ActiveModelException("Missing id: " + id + " in " + table.name)
     }
   }
 

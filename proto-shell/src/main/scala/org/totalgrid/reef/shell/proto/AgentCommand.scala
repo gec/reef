@@ -25,6 +25,7 @@ import org.totalgrid.reef.shell.proto.presentation.AgentView
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Auth.Permission
 import org.totalgrid.reef.client.service.AgentService
+import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
 
 abstract class AgentCommandBase extends ReefCommandSupport {
   lazy val authService: AgentService = services
@@ -85,6 +86,20 @@ class AgentPermissionsListCommand extends AgentCommandBase {
   }
 }
 
+@Command(scope = "agent-permissions", name = "view", description = "View permission sets")
+class AgentPermissionsViewCommand extends AgentCommandBase {
+
+  @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
+  var permissionSetName: String = null
+
+  def doCommand() = {
+
+    val permission = authService.getPermissionSet(permissionSetName)
+
+    AgentView.viewPermissionSet(permission)
+  }
+}
+
 @Command(scope = "agent-permissions", name = "create", description = "Edit a permission set")
 class AgentPermissionsCreateCommand extends AgentCommandBase {
 
@@ -112,7 +127,7 @@ class AgentPermissionsCreateCommand extends AgentCommandBase {
     Option(qualifiers).map { _.toList }.getOrElse(Nil).map { qualifier =>
       val parts = qualifier.split(',')
       if (parts.size != 2) throw new Exception("Qualifer should be of form \"[OPERATION],[RESOURCE]\". " + qualifier + " not valid.")
-      Permission.newBuilder.setAllow(allow).setVerb(parts(0)).setResource(parts(1)).build
+      Permission.newBuilder.setAllow(allow).addVerb(parts(0)).addResource(parts(1)).build
     }
   }
 }
@@ -130,6 +145,43 @@ class AgentPermissionsDeleteCommand extends AgentCommandBase {
     val deletedPermissionSet = authService.deletePermissionSet(permissionSet)
 
     AgentView.printPermissionSets(deletedPermissionSet :: Nil)
+  }
+}
+
+@Command(scope = "agent-permissions", name = "filter", description = "Check results of PermissionSet")
+class AgentPermissionsFilterCommand extends AgentCommandBase {
+
+  @GogoOption(name = "-a", description = "Action to check filter against", required = false, multiValued = false)
+  var action: String = null
+
+  @GogoOption(name = "-r", description = "Resource to check filter against", required = false, multiValued = false)
+  var resource: String = null
+
+  @GogoOption(name = "-t", description = "Entity type to look up", required = false, multiValued = false)
+  var entityType: String = null
+
+  @GogoOption(name = "-n", description = "Entity name to look up", required = false, multiValued = false)
+  var entityName: String = null
+
+  @Argument(index = 0, name = "permissionSetName", description = "Descriptive name for a permission", required = true, multiValued = false)
+  var permissionSetName: String = null
+
+  def doCommand() = {
+
+    val act = Option(action).getOrElse("read")
+    val res = Option(resource).getOrElse("entity")
+
+    val perm = authService.getPermissionSet(permissionSetName)
+
+    val ent = Option(entityName).map(Entity.newBuilder.setName(_).build).getOrElse {
+      Option(entityType).map(Entity.newBuilder.addTypes(_).build).getOrElse {
+        Entity.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build
+      }
+    }
+
+    val results = authService.getAuthFilterResults(act, res, List(ent), perm).toList
+
+    AgentView.printFilterResults(results)
   }
 }
 

@@ -83,13 +83,12 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
   override def postDelete(context: RequestContext, entry: Command) {
 
-    val selects = entry.selectHistory.value
     val commandHistory = entry.commandHistory.value
 
-    logger.info("Deleting Command: " + entry.entityName + " selects: " + selects.size + " history: " + commandHistory.size)
+    logger.info("Deleting Command: " + entry.entityName + " history: " + commandHistory.size)
 
-    selects.foreach(s => commandSelectModel.removeAccess(context, s))
     commandHistory.foreach(s => commandHistoryModel.delete(context, s))
+    commandSelectModel.unlinkLocks(context, entry)
 
     entityModel.delete(context, entry.entity.value)
   }
@@ -120,6 +119,10 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     req.uuid.value :: req.name :: req.entity.uuid.value :: Nil
   }
 
+  def relatedEntities(entries: List[Command]) = {
+    entries.map { _.entityId }
+  }
+
   def uniqueQuery(proto: CommandProto, sql: Command) = {
 
     val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))
@@ -132,7 +135,7 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def isModified(entry: Command, existing: Command) = {
-    entry.lastSelectId != existing.lastSelectId || entry.displayName != existing.displayName
+    entry.lastSelectId != existing.lastSelectId || entry.displayName != existing.displayName || entry.commandType != existing.commandType
   }
 
   def convertToProto(sql: Command): CommandProto = {

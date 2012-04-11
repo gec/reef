@@ -19,6 +19,7 @@
 package org.totalgrid.reef.protocol.api.scada;
 
 
+import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.service.proto.FEP;
 import org.totalgrid.reef.client.service.proto.Model;
 import org.totalgrid.reef.protocol.api.CommandHandler;
@@ -27,7 +28,10 @@ import java.util.List;
 
 /**
  * Defines a simple protocol interface for use with basic protocol adapters
+ *
+ * Deprecated, will be removed in 0.4.8, use ProtocolManager instead
  */
+@Deprecated
 public interface ProtocolAdapter
 {
 
@@ -37,6 +41,7 @@ public interface ProtocolAdapter
     String name();
 
     /**
+     * Tells the protocol to begin communication with an Endpoint
      *
      * @param endpoint Unique name of the endpoint
      * @param channel Configuration object that identifies and describes the communication channel
@@ -44,12 +49,13 @@ public interface ProtocolAdapter
      * @param resources Feedback publishers for updating measurements and state of the system
      * @return   A command handler object
      */
-    CommandHandler addEndpoint( String endpoint, FEP.CommChannel channel, List<Model.ConfigFile> config, Resources resources );
+    CommandHandler addEndpoint( String endpoint, FEP.CommChannel channel, List<Model.ConfigFile> config, Resources resources )
+        throws ReefServiceException;
 
     /**
-     *
+     * Synchronously stop communication with an endpoint
      * @param endpoint
      */
-    void removeEndpoint( String endpoint );
+    void removeEndpoint( String endpoint ) throws ReefServiceException;
 
 }

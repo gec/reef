@@ -28,9 +28,9 @@ import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
-import org.totalgrid.reef.client.ConnectionCloseListener
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.metrics.client.MetricsServiceList
+import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, SubscriptionEvent, Subscription, ConnectionCloseListener }
 
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
@@ -136,8 +136,8 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
   }
 
   protected def getLoginString = isLoggedIn match {
-    case true => "Logged in as User: " + this.get("user").get + " on Reef Node: " + this.get("context").get
-    case false => "Not logged in to a Reef Node."
+    case true => "Logged in as user: " + this.get("user").get + " on server: " + this.get("context").get
+    case false => "Not logged in."
   }
 
   protected def isLoggedIn = this.session.get("user") match {
@@ -175,9 +175,11 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
       if (requiresLogin && !isLoggedIn) {
         println("You must be logged into Reef before you can run this command.")
         try {
-          val userSettings = new UserSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.user").getProperties)
-          val connectionInfo = new AmqpSettings(new OsgiConfigReader(getBundleContext, "org.totalgrid.reef.amqp").getProperties)
-          println("Attempting login with user specified in etc/org.totalgrid.reef.user.cfg file: " + userSettings.getUserName)
+
+          val properties = OsgiConfigReader.load(getBundleContext, List("org.totalgrid.reef.user", "org.totalgrid.reef.amqp", "org.totalgrid.reef.cli"))
+          val userSettings = new UserSettings(properties)
+          val connectionInfo = new AmqpSettings(properties)
+          println("Attempting login with user specified in etc/org.totalgrid.reef.cli.cfg file: " + userSettings.getUserName)
           ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings, handleDisconnect)
           doCommand()
         } catch {
@@ -197,4 +199,22 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
 
   protected def doCommand(): Unit
 
+  /**
+   * starts a subscription, calling back the function with each event and waits until users presses control-c
+   * and then cancels the subscription for us
+   */
+  def runSubscription[A](subscription: Subscription[A])(fun: SubscriptionEvent[A] => Unit) {
+    subscription.start(new SubscriptionEventAcceptor[A] {
+      def onEvent(event: SubscriptionEvent[A]) {
+        fun(event)
+      }
+    })
+    try {
+      // sleep foreverish
+      Thread.sleep(1000000)
+    } catch {
+      case i: InterruptedException =>
+    }
+    subscription.cancel()
+  }
 }

@@ -29,6 +29,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile }
 import org.totalgrid.reef.protocol.dnp3.master.{ MasterXmlConfig }
 import org.totalgrid.reef.protocol.dnp3.xml.Slave.SlaveConfig.{ TimeIINTask, UnsolDefaults }
 import org.totalgrid.reef.protocol.dnp3.xml._
+import org.totalgrid.reef.protocol.dnp3.xml.{ GrpVar => GrpVarXml }
 import org.totalgrid.reef.protocol.dnp3.{ GrpVar, CommandModes, ClassMask, ControlRecord, PointRecord, EventPointRecord, DeadbandPointRecord, DeviceTemplate, PointClass, EventMaxConfig, SlaveConfig => DnpSlaveConfig, FilterLevel, SlaveStackConfig }
 
 object SlaveXmlConfig {
@@ -98,13 +99,29 @@ object SlaveXmlConfig {
     cfg.setMUnsolPackDelay(xml.getUnsolDefaults.getPackDelayMS)
     cfg.setMUnsolRetryDelay(xml.getUnsolDefaults.getRetryMS)
 
-    // TODO: make slave config configure default event types?
-
     // use double by default
     cfg.setMEventAnalog(new GrpVar(32, 8))
     cfg.setMStaticAnalog(new GrpVar(30, 6))
 
+    Option(xml.getStaticRsp).foreach { configureStaticResponses(_, cfg) }
+    Option(xml.getEventRsp).foreach { configureEventResponses(_, cfg) }
+
     cfg
+  }
+
+  private def grpVar(xml: GrpVarXml) = new GrpVar(xml.getGrp, xml.getVar)
+
+  private def configureStaticResponses(xml: StaticRsp, cfg: DnpSlaveConfig) = {
+    Option(xml.getAnalogGrpVar).foreach { x => cfg.setMStaticAnalog(grpVar(x)) }
+    Option(xml.getBinaryGrpVar).foreach { x => cfg.setMStaticBinary(grpVar(x)) }
+    Option(xml.getCounterGrpVar).foreach { x => cfg.setMStaticCounter(grpVar(x)) }
+    Option(xml.getSetpointStatusGrpVar).foreach { x => cfg.setMStaticSetpointStatus(grpVar(x)) }
+  }
+
+  private def configureEventResponses(xml: EventRsp, cfg: DnpSlaveConfig) = {
+    Option(xml.getAnalogGrpVar).foreach { x => cfg.setMEventAnalog(grpVar(x)) }
+    Option(xml.getBinaryGrpVar).foreach { x => cfg.setMEventBinary(grpVar(x)) }
+    Option(xml.getCounterGrpVar).foreach { x => cfg.setMEventCounter(grpVar(x)) }
   }
 
   private def configureEvents(xml: SlaveConfig) = {

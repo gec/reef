@@ -27,6 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.services.SilentRequestContext
 
 class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
   var begin: Long = -1
@@ -64,6 +65,7 @@ class MeasurementHistoryServiceTest extends DatabaseUsingTestBase with SyncServi
   }
 
   test("History Service defaults are sensible") {
+    (new EntityServiceModel).findOrCreate(new SilentRequestContext, "meas1", List("Point"), None)
     val points = Map("meas1" -> List(getMeas("meas1", 0, 1), getMeas("meas1", 1, 1)))
     val historian = new FakeHistorian(points)
     val service = sync(new MeasurementHistoryService(historian))

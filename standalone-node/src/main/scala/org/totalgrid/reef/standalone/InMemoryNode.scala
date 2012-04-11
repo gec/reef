@@ -29,7 +29,7 @@ object InMemoryNode {
 
   lazy val connection = systemOption.get.connection()
   lazy val javaConnectionFactory = new ConnectionFactory {
-    lazy val javaConnection = new ConnectionWrapper(connection)
+    lazy val javaConnection = new ConnectionWrapper(connection, exeOption.get)
     def connect() = javaConnection
 
     def terminate() {}
@@ -41,6 +41,9 @@ object InMemoryNode {
   private var delayedShutdown = Option.empty[Timer]
   private var exeOption = Option.empty[ExecutorService]
 
+  def initialize(configFile: String, resetFirst: Boolean): Boolean = {
+    initialize(configFile, resetFirst, None)
+  }
   def initialize(configFile: String, resetFirst: Boolean, fileName: String): Boolean = {
     initialize(configFile, resetFirst, Some(fileName))
   }
@@ -55,6 +58,9 @@ object InMemoryNode {
       system.start()
 
       fileName.foreach { system.loadModel(_) }
+
+      // long enough for the endpoints to start coming online
+      Thread.sleep(2000)
 
       true
     } else {

@@ -146,12 +146,7 @@ trait AlarmConversion
     entry.state != existing.state
   }
 
-  // TODO: remove createModelEntry in alarm service
-  def createModelEntry(proto: Alarm): AlarmModel = {
-    new AlarmModel(
-      proto.getState.getNumber,
-      proto.getEvent.getId.getValue.toLong)
-  }
+  def createModelEntry(proto: Alarm): AlarmModel = throw new Exception("wrong interface")
 
   def convertToProto(entry: AlarmModel): Alarm = {
     convertToProto(entry, entry.event.value)
@@ -184,6 +179,10 @@ trait AlarmQueries {
 
   def uniqueQuery(proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
     (proto.id.value.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
+  }
+
+  def relatedEntities(entries: List[AlarmModel]) = {
+    entries.map { _.event.value.entityId }.flatten
   }
 
   def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {

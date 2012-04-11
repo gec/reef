@@ -24,7 +24,6 @@ import com.sun.javadoc.ClassDoc
 import java.io.{ PrintStream, File }
 
 /**
- * TODO: finish java shim for futures
  *
  * currently the implicts to convert to java objects can't see into the Promises to know to
  * change the type in a map

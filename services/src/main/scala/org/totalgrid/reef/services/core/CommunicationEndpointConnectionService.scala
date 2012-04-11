@@ -51,6 +51,10 @@ class CommunicationEndpointConnectionService(protected val model: CommunicationE
 
   // we will manually merge by checking to see what fields are set and using exclusive acccess blocks
   override def merge(context: RequestContext, req: ConnProto, current: FrontEndAssignment) = req
+
+  override protected def performUpdate(context: RequestContext, model: ServiceModelType, request: ServiceType, existing: ModelType): (ModelType, Boolean) = {
+    model.updateFromProto(context, request, existing)
+  }
 }
 
 import org.totalgrid.reef.services.coordinators._
@@ -91,7 +95,7 @@ class CommunicationEndpointConnectionServiceModel
     def isSame(entry: FrontEndAssignment) = entry.enabled == currentlyEnabled && entry.state == currentState
 
     if (proto.hasEnabled && proto.getEnabled != currentlyEnabled) {
-
+      context.auth.authorize(context, "endpoint_enabled", "update", List(endpoint.entityId))
       exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
         val code = if (currentlyEnabled) EventType.Scada.CommEndpointDisabled else EventType.Scada.CommEndpointEnabled
         eventFunc(code)
@@ -99,6 +103,7 @@ class CommunicationEndpointConnectionServiceModel
         toBeUpdated.copy(enabled = proto.getEnabled)
       }
     } else if (proto.hasState && proto.getState.getNumber != currentState) {
+      context.auth.authorize(context, "endpoint_state", "update", List(endpoint.entityId))
       val newState = proto.getState.getNumber
       val online = newState == ConnProto.State.COMMS_UP.getNumber
       exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
@@ -111,6 +116,10 @@ class CommunicationEndpointConnectionServiceModel
         }
       }
     } else {
+      // If we don't do an auth check AT ALL, this is a sneaky way to read without permissions
+      // TODO: magic string
+      context.auth.authorize(context, "endpoint_connection", "update", List(endpoint.entityId))
+
       // state and enabled weren't altered, return NOT_MODIFIED
       (existing, false)
     }
@@ -134,6 +143,10 @@ trait CommunicationEndpointConnectionConversion
 
   def getRoutingKey(req: ConnProto) = ProtoRoutingKeys.generateRoutingKey {
     req.frontEnd.uuid.value :: req.id.value :: req.endpoint.uuid.value :: req.endpoint.name :: Nil
+  }
+
+  def relatedEntities(entries: List[FrontEndAssignment]) = {
+    entries.map { _.endpoint.value.map { _.entityId } }.flatten
   }
 
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {

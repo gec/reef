@@ -785,4 +785,126 @@
     <changeSet author="incremental" context="original" id="1328639639036-5">
         <dropTable tableName="Foo"/>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1330050395895-1">
+        <createTable tableName="CalculationConfig">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CalculationConfig_pkey"/>
+            </column>
+            <column name="protoData" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+            <column name="outputPointId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1330050395895-2">
+        <createSequence schemaName="public" sequenceName="s_CalculationConfig_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331138724917-1">
+        <addColumn tableName="AuthToken">
+            <column name="clientVersion" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-1">
+        <addColumn tableName="PermissionSet">
+            <column name="protoData" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-2">
+        <dropColumn columnName="defaultExpirationTime" tableName="PermissionSet"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-3">
+        <dropSequence schemaName="public" sequenceName="s_AuthPermission_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-4">
+        <dropTable tableName="AuthPermission"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-5">
+        <dropTable tableName="PermissionSetJoin"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331837983992-1">
+        <addColumn tableName="ApplicationInstance">
+            <column name="agentId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331837983992-2">
+        <dropColumn columnName="userName" tableName="ApplicationInstance"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-1">
+        <addColumn tableName="CommandLockModel">
+            <column name="agentId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-2">
+        <addColumn tableName="CommandLockModel">
+            <column name="deleted" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-3">
+        <addColumn tableName="UserCommandModel">
+            <column name="lockId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-4">
+        <dropColumn columnName="agent" tableName="CommandLockModel"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-5">
+        <dropColumn columnName="agent" tableName="UserCommandModel"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332519044036-1">
+        <addColumn tableName="AuthToken">
+            <column name="issueTime" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332519044036-2">
+        <addColumn tableName="AuthToken">
+            <column name="revoked" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-1">
+        <createTable tableName="ApplicationNetworkAccess">
+            <column name="network" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applicationId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ApplicationNetworkAccess_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-2">
+        <dropColumn columnName="network" tableName="ApplicationInstance"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-3">
+        <createSequence schemaName="public" sequenceName="s_ApplicationNetworkAccess_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333636303890-1">
+        <addColumn tableName="ApplicationInstance">
+            <column name="version" type="VARCHAR(128)" value="unknown">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

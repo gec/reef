@@ -18,39 +18,62 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.service.proto.Processing.MeasOverride
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementOverrideRequestBuilders
+import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementOverrideRequestBuilders._
 
 import org.totalgrid.reef.client.sapi.rpc.MeasurementOverrideService
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID, Point }
 
 trait MeasurementOverrideServiceImpl extends HasAnnotatedOperations with MeasurementOverrideService {
 
   override def setPointOutOfService(point: Point) = {
     ops.operation("Couldn't set point uuid:" + point.uuid + " name: " + point.name + " out of service") {
-      _.put(MeasurementOverrideRequestBuilders.makeNotInService(point)).map(_.one)
+      _.put(makeNotInService(point)).map(_.one)
     }
   }
 
   override def setPointOverride(point: Point, measurement: Measurement) = {
     ops.operation("Couldn't override point uuid:" + point.uuid + " name: " + point.name + " to: " + measurement) {
-      _.put(MeasurementOverrideRequestBuilders.makeOverride(point, measurement)).map(_.one)
+      _.put(makeOverride(point, measurement)).map(_.one)
+    }
+  }
+
+  override def setPointOutOfServiceByUuid(pointUuid: ReefUUID) = {
+    ops.operation("Couldn't set point uuid:" + pointUuid + " out of service") {
+      _.put(makeNotInService(makePoint(pointUuid))).map(_.one)
+    }
+  }
+
+  override def setPointOverrideByUuid(pointUuid: ReefUUID, measurement: Measurement) = {
+    ops.operation("Couldn't override point uuid:" + pointUuid + " to: " + measurement) {
+      _.put(makeOverride(makePoint(pointUuid), measurement)).map(_.one)
+    }
+  }
+
+  override def getMeasurementOverrides() = {
+    ops.operation("Couldn't get all overrides") {
+      _.get(getById(ReefID.newBuilder.setValue("*").build)).map(_.many)
     }
   }
 
   override def deleteMeasurementOverride(measOverride: MeasOverride) = {
-    // TODO: measurementOverride needs id - backlog-63
     ops.operation("Couldn't delete measurementOverride: " + measOverride.meas + " on: " + measOverride.point) {
       _.delete(measOverride).map(_.one)
     }
   }
 
+  override def deleteMeasurementOverrideById(id: ReefID) = {
+    ops.operation("Couldn't delete measurementOverride: " + id.value) {
+      _.delete(getById(id)).map(_.one)
+    }
+  }
+
   override def clearMeasurementOverridesOnPoint(point: Point) = {
     ops.operation("Couldn't clear measurementOverrides on point uuid: " + point.uuid + " name: " + point.name) {
-      _.delete(MeasurementOverrideRequestBuilders.getByPoint(point)).map { _.oneOrNone }
+      _.delete(getByPoint(point)).map { _.oneOrNone }
     }
   }
 

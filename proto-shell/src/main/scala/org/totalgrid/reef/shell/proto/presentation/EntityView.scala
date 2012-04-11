@@ -32,17 +32,12 @@ object EntityView {
         ("types" :: "(" + ent.getTypesList.toList.mkString(", ") + ")" :: Nil) ::
         Nil
 
-    Table.justifyColumns(lines).foreach(line => println(line.mkString(" | ")))
+    Table.renderRows(lines, " | ")
   }
 
   def printList(ents: List[Entity]) = {
-    println("Found: " + ents.length)
-    val lines = ents.map(EntityView.toLine(_))
-    val justified = Table.justifyColumns(lines)
 
-    val rowLength = Table.rowLength(justified.head) + 2
-    println("".padTo(rowLength, "-").mkString)
-    justified.foreach(line => println(line.mkString(" ")))
+    Table.printTable("Name" :: "Types" :: Nil, ents.map { toLine(_) })
   }
 
   def toLine(ent: Entity): List[String] = {
@@ -64,10 +59,8 @@ object EntityView {
       }
     }
 
-    val justChildren = Table.justifyColumns(childLines)
-
     val rootLine = "+" :: toLine(root)
-    (rootLine :: justChildren).foreach(line => println(margin + line.mkString(" ")))
+    Table.renderRows(rootLine :: childLines, " ")
   }
 
   def printTreeRecursively(root: Entity) {
@@ -99,9 +92,7 @@ object EntityView {
       "|--" :: toLine(ent)
     }
 
-    val justChildren = Table.justifyColumns(childLines)
-
     val rootLine = "+" :: toLine(root)
-    (rootLine :: justChildren).foreach(line => println(margin + line.mkString(" ")))
+    Table.renderRows(rootLine :: childLines, " ")
   }
 }

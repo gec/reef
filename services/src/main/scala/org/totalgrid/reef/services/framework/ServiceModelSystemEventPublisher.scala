@@ -64,12 +64,18 @@ trait SystemEventCreator {
  */
 trait ServiceModelSystemEventPublisher extends SystemEventCreator {
 
-  def postSystemEvent(context: RequestContext, eventType: EventType, entity: Option[Entity] = None, args: List[(String, Any)] = Nil, deviceTime: Option[Long] = None) {
+  def postSystemEvent(
+    context: RequestContext,
+    eventType: EventType,
+    entity: Option[Entity] = None,
+    args: List[(String, Any)] = Nil,
+    deviceTime: Option[Long] = None,
+    userId: Option[String] = None) {
 
     // TODO: put name of services instance handling request on RequestContext, attach to events
     val b = createSystemEvent(eventType, "services", entity, None, args, deviceTime)
 
-    b.setUserId(context.getHeaders.userName.getOrElse(throw new InternalServiceException("No user during event generation")))
+    b.setUserId(userId.getOrElse(context.agent.entityName))
     b.setTime(System.currentTimeMillis())
 
     context.eventSink.publishSystemEvent(b.build)

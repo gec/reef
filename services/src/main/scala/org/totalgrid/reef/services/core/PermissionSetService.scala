@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models._
-
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Descriptors
@@ -31,6 +29,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
+import org.totalgrid.reef.models._
 
 class PermissionSetService(protected val model: PermissionSetServiceModel)
     extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
@@ -46,9 +45,9 @@ class PermissionSetServiceModel
 
   val entityModel = new EntityServiceModel
 
-  private def createSet(context: RequestContext, name: String, defaultExpirationTime: Long) = {
-    val entity = entityModel.findOrCreate(context, name, "PermissionSet" :: Nil, None)
-    val permissionSet = new PermissionSet(entity.id, defaultExpirationTime)
+  private def createSet(context: RequestContext, proto: PermissionSetProto) = {
+    val entity = entityModel.findOrCreate(context, proto.getName, "PermissionSet" :: Nil, None)
+    val permissionSet = new PermissionSet(entity.id, proto.toByteArray)
     permissionSet.entity.value = entity
     permissionSet
   }
@@ -58,57 +57,33 @@ class PermissionSetServiceModel
     if (!req.hasName) throw new BadRequestException("Must include name and password when creating a PermissionSet.")
     if (req.getPermissionsCount == 0) throw new BadRequestException("Must specify atleast 1 Permission when creating a PermissionSet.")
 
-    val expirationTime = if (req.hasDefaultExpirationTime) {
+    val proto = if (req.hasDefaultExpirationTime) {
       if (req.getDefaultExpirationTime < 0) throw new BadRequestException("DefaultExpirationTime must be greater than 0 milliseconds: " + req.getDefaultExpirationTime)
-      req.getDefaultExpirationTime
+      req
     } else {
-      18144000000L // one month
+      req.toBuilder.setDefaultExpirationTime(18144000000L).build // one month
     }
 
-    val permissionSet = create(context, createSet(context, req.getName, expirationTime))
-
-    createPermissions(context, req, permissionSet)
+    val permissionSet = create(context, createSet(context, proto))
 
     permissionSet
-  }
-
-  def createPermissions(context: RequestContext, req: PermissionSetProto, existing: PermissionSet) = {
-    val permissions = req.getPermissionsList.toList.map { p => ApplicationSchema.permissions.insert(PermissionConversions.createModelEntry(p)) }
-    val joins = permissions.map { p => new PermissionSetJoin(existing.id, p.id) }
-    ApplicationSchema.permissionSetJoins.insert(joins)
   }
 
   override def updateFromProto(context: RequestContext, req: PermissionSetProto, existing: PermissionSet) = {
 
     if (req.getPermissionsCount == 0) throw new BadRequestException("Must specify atleast 1 Permission when updating a PermissionSet.")
 
-    // TODO: add a find all function to UniqueAndSearchQueryable
-    val requestedPermissions = req.getPermissionsList.toList.map(PermissionConversions.findRecords(context, _)).flatten
-    val currentPermissions = existing.permissions.value.toList
+    val previousProto = existing.proto
 
-    val updated = if (requestedPermissions != currentPermissions) {
-      createPermissions(context, req, existing)
-      ApplicationSchema.permissionSetJoins.deleteWhere(_.permissionId in currentPermissions.map { _.id })
-      ApplicationSchema.permissions.deleteWhere(_.id in currentPermissions.map { _.id })
-      true
+    if (previousProto != req) {
+      update(context, existing.copy(protoData = req.toByteArray), existing)
     } else {
-      false
-    }
-
-    if (req.hasDefaultExpirationTime && req.getDefaultExpirationTime != existing.defaultExpirationTime) {
-      update(context, existing.copy(defaultExpirationTime = req.getDefaultExpirationTime), existing)
-    } else {
-      if (updated) {
-        onUpdated(context, existing)
-      }
-      (existing, updated)
+      (existing, false)
     }
   }
 
   override def preDelete(context: RequestContext, existing: PermissionSet) {
-    val currentPermissions = existing.permissions.value.toList
-    ApplicationSchema.permissionSetJoins.deleteWhere(_.permissionSetId === existing.id)
-    ApplicationSchema.permissions.deleteWhere(_.id in currentPermissions.map { _.id })
+    // TODO: delete roles links
   }
 
   override def postDelete(context: RequestContext, existing: PermissionSet) {
@@ -124,6 +99,10 @@ trait PermissionSetConversions
 
   def sortResults(list: List[PermissionSetProto]) = list.sortBy(_.getName)
 
+  def relatedEntities(entries: List[PermissionSet]) = {
+    Nil
+  }
+
   def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("PermissionSet")))
     List(
@@ -137,51 +116,10 @@ trait PermissionSetConversions
   }
 
   def isModified(existing: PermissionSet, updated: PermissionSet): Boolean =
-    existing.defaultExpirationTime != updated.defaultExpirationTime
+    existing.protoData != updated.protoData
 
   def convertToProto(entry: PermissionSet): PermissionSetProto = {
-    val b = PermissionSetProto.newBuilder.setUuid(makeUuid(entry))
-    b.setName(entry.entityName)
-    b.setDefaultExpirationTime(entry.defaultExpirationTime)
-    entry.permissions.value.foreach(p => b.addPermissions(PermissionConversions.convertToProto(p)))
-    b.build
+    entry.proto.toBuilder.build
   }
 }
 object PermissionSetConversions extends PermissionSetConversions
-
-trait PermissionConversions
-    extends UniqueAndSearchQueryable[Permission, AuthPermission] {
-
-  val table = ApplicationSchema.permissions
-
-  def convertToProto(entry: AuthPermission): Permission = {
-    val b = Permission.newBuilder.setId(makeId(entry))
-    b.setAllow(entry.allow)
-    b.setResource(entry.resource)
-    b.setVerb(entry.verb)
-    b.build
-  }
-
-  def uniqueQuery(proto: Permission, sql: AuthPermission) = {
-    // should be id
-    List(
-      proto.id.value.asParam(sql.id === _.toInt))
-  }
-
-  def searchQuery(proto: Permission, sql: AuthPermission) = {
-    List(
-      proto.allow.asParam(sql.allow === _),
-      proto.resource.asParam(sql.resource === _),
-      proto.verb.asParam(sql.verb === _))
-  }
-
-  def createModelEntry(proto: Permission): AuthPermission = {
-    if (!proto.hasAllow || !proto.hasResource || !proto.hasVerb) throw new BadRequestException("Permissions must have allow, resource and verb specified.")
-    val normalizedVerb = proto.getVerb.toString.toLowerCase
-    normalizedVerb match {
-      case "*" | "get" | "put" | "post" | "delete" | "read" | "create" | "update" => new AuthPermission(proto.getAllow, proto.getResource, normalizedVerb)
-      case _ => throw new BadRequestException(proto.getVerb + " is not one of the valid operations: read,create,update,delete,*")
-    }
-  }
-}
-object PermissionConversions extends PermissionConversions

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.httpbridge.servlets.helpers
 
 import org.totalgrid.reef.httpbridge.ManagedConnection
-import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.exception.{ UnauthorizedException, BadRequestException }
 import javax.servlet.http.HttpServletRequest
 import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
@@ -36,7 +36,7 @@ class ClientUsingServletBase(connection: ManagedConnection) extends ServletBase 
     val combinedOption = Option(req.getHeader(AUTH_HEADER))
       .orElse(Option(req.getParameter(AUTH_HEADER)))
       .orElse(connection.getSharedBridgeAuthToken())
-    combinedOption.getOrElse(throw new BadRequestException("Must include " + AUTH_HEADER + " in headers or URL parameters. No default user available on bridge."))
+    combinedOption.getOrElse(throw new UnauthorizedException("Must include " + AUTH_HEADER + " in headers or URL parameters. No default user available on bridge."))
   }
 
   def getReefRequestHeaders(req: HttpServletRequest): BasicRequestHeaders = {

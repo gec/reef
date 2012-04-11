@@ -29,6 +29,7 @@ import org.totalgrid.reef.httpbridge.servlets._
 import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCallLibrary
 import org.totalgrid.reef.app.whiteboard.ConnectedApplicationBundleActivator
 import org.totalgrid.reef.app.{ ConnectedApplicationManager, ConnectionProvider }
+import org.totalgrid.reef.httpbridge.servlets.helpers._
 
 /**
  * We use the "whiteboard" style of servlet registration and let the pax extender
@@ -40,8 +41,10 @@ class JsonBridgeActivator extends ConnectedApplicationBundleActivator {
 
   private var registrations = List.empty[ServiceRegistration]
 
+  override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.httpbridge")
+
   def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
-    val bridgeOptions = OsgiConfigReader(context, "org.totalgrid.reef.httpbridge").getProperties
+    val bridgeOptions = OsgiConfigReader.load(context, "org.totalgrid.reef.httpbridge")
     val defaultUser = DefaultUserConfiguration.getDefaultUser(bridgeOptions)
 
     val managedConnection = new ConnectedApplicationManagedConnection(defaultUser)
@@ -49,15 +52,18 @@ class JsonBridgeActivator extends ConnectedApplicationBundleActivator {
     appManager.addConnectedApplication(managedConnection)
 
     val builderLocator = new BuilderLocator(new ReefServices)
+    val subscriptionHandler = new SimpleSubscriptionManager()
     val bridge = new RestLevelServlet(managedConnection, builderLocator)
     val login = new LoginServlet(managedConnection)
     val converter = new ConverterServlet(builderLocator)
-    val apiBridge = new ApiServlet(managedConnection, new AllScadaServiceApiCallLibrary)
+    val apiBridge = new ApiServlet(managedConnection, new AllScadaServiceApiCallLibrary, subscriptionHandler)
+    val subHandler = new SubscriptionServlet(subscriptionHandler)
 
     registrations ::= context.createService(bridge, List("alias" -> "/rest").toMap, interface[Servlet])
     registrations ::= context.createService(login, List("alias" -> "/login").toMap, interface[Servlet])
     registrations ::= context.createService(converter, List("alias" -> "/convert").toMap, interface[Servlet])
     registrations ::= context.createService(apiBridge, List("alias" -> "/api").toMap, interface[Servlet])
+    registrations ::= context.createService(subHandler, List("alias" -> "/subscribe").toMap, interface[Servlet])
   }
 
   override def stopApplication() = {

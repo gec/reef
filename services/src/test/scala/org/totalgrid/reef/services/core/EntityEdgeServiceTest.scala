@@ -45,12 +45,13 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
       .setRelationship(rel)
       .build
   }
-  def buildEdge(parent: Option[String], child: Option[String], rel: Option[String]) = {
+  def buildEdge(parent: Option[String], child: Option[String], rel: Option[String], distance: Option[Int] = None) = {
     val b = EntityEdgeProto.newBuilder()
 
     parent.foreach(par => b.setParent(EntityProto.newBuilder().setName(par)))
     child.foreach(ch => b.setChild(EntityProto.newBuilder().setName(ch)))
     rel.foreach(relate => b.setRelationship(relate))
+    distance.foreach(d => b.setDistance(d))
 
     b.build
   }
@@ -62,7 +63,7 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
     val edge = buildEdge("Reg", "Sub", "owns")
 
     val result = service.put(edge).expectOne(Status.CREATED)
-
+    result.getDistance should equal(1)
     result.getRelationship should equal("owns")
     result.getParent.getUuid.getValue should equal(reg.id.toString)
     result.getChild.getUuid.getValue should equal(sub.id.toString)
@@ -101,6 +102,23 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
       intercept[BadRequestException] {
         service.put(edge)
       }
+    }
+  }
+
+  test("Put with illegal distance") {
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+
+    val edge = buildEdge("Reg", "Sub", "owns").toBuilder.setDistance(5).build
+
+    intercept[BadRequestException] {
+      service.put(edge)
+    }
+
+    val edge2 = buildEdge("Reg", "Sub", "owns").toBuilder.setDistance(-1).build
+
+    intercept[BadRequestException] {
+      service.put(edge2)
     }
   }
 
@@ -272,6 +290,28 @@ class EntityEdgeServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
 
     val depthGot = results.find(r => r.getChild.getUuid.getValue == dev.id.toString)
     depthGot should not equal (None)
+
+    service.get(buildEdge(None, None, None, Some(1))).expectMany(2)
+
+    service.get(buildEdge(None, None, None, Some(2))).expectMany(1)
+  }
+
+  test("Get all") {
+    val reg = EntityTestSeed.addEntity("Reg", "Region" :: "EquipmentGroup" :: Nil)
+    val sub = EntityTestSeed.addEntity("Sub", "Substation" :: "EquipmentGroup" :: Nil)
+    val dev = EntityTestSeed.addEntity("Bkr", "Breaker" :: "Equipment" :: Nil)
+    service.put(buildEdge("Reg", "Sub", "owns")).expectOne(Status.CREATED)
+    service.put(buildEdge("Sub", "Bkr", "owns")).expectOne(Status.CREATED)
+
+    val allResults = service.get(buildEdge(None, None, Some("owns"))).expectMany(3)
+
+    service.get(buildEdge(None, None, Some("*"))).expectMany() should equal(allResults)
+    service.get(buildEdge(None, Some("*"), None, None)).expectMany() should equal(allResults)
+    service.get(buildEdge(Some("*"), None, None, None)).expectMany() should equal(allResults)
+
+    intercept[BadRequestException] {
+      service.get(buildEdge(None, None, None, None)).expectMany()
+    }
   }
 
   test("Get wrong parent") {

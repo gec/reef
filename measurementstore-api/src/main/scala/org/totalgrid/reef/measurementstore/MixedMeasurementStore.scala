@@ -36,8 +36,6 @@ class MixedMeasurementStore(exeSource: => ExecutorService, historian: Measuremen
 
   override val supportsOutOfOrderInsertion = historian.supportsOutOfOrderInsertion && realtime.supportsOutOfOrderInsertion
 
-  // TODO: use executor to run operations on historian and realtime in parallel
-
   var executor = Option.empty[ExecutorService]
   def exe: Executor = executor.getOrElse(throw new RuntimeException("Not connected to mixed measurment store"))
 

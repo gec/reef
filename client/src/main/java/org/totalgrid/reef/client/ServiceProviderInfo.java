@@ -18,6 +18,8 @@
  */
 package org.totalgrid.reef.client;
 
+import org.totalgrid.reef.client.internal.ProviderFactory;
+
 import java.util.List;
 
 /**
@@ -30,7 +32,7 @@ public interface ServiceProviderInfo
     /**
      * @return factory class that provides the implementation of the listed interfaces
      */
-    ServiceProviderFactory getFactory();
+    ProviderFactory getFactory();
 
     /**
      * @return list of all interfaces implemented by this provider.

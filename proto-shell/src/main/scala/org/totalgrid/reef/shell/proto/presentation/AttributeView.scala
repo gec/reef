@@ -30,8 +30,7 @@ object AttributeView {
     println(EntityView.toLine(attr.getEntity).mkString(" "))
     println("")
     if (attr.getAttributesCount > 0) {
-      Table.justifyColumns(attr.getAttributesList.toList.map(toLine(_)))
-        .foreach(line => println(line.mkString(": ")))
+      Table.renderRows(attr.getAttributesList.toList.map(toLine(_)), ": ")
     } else {
       println("(No attributes)")
     }

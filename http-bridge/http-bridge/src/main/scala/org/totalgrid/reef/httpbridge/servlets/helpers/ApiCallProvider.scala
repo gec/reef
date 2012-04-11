@@ -21,6 +21,8 @@ package org.totalgrid.reef.httpbridge.servlets.helpers
 import com.google.protobuf.Message
 import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.SubscriptionResult
 
 /**
  * ApiCall and its implementations are used to encapsulate an action we can take with a Client
@@ -31,13 +33,92 @@ sealed trait ApiCall
 case class SingleResultApiCall[A <: Message](executeFunction: (Client) => Promise[A]) extends ApiCall
 case class OptionalResultApiCall[A <: Message](executeFunction: (Client) => Promise[Option[A]]) extends ApiCall
 case class MultiResultApiCall[A <: Message](executeFunction: (Client) => Promise[List[A]]) extends ApiCall
+case class SubscriptionResultApiCall[A <: Message](executeFunction: (Client) => Promise[SubscriptionResult[List[A], A]]) extends ApiCall
+
+case class PreparableApiCall[A <: Message](resultClass: Class[A], prepareFunction: (ArgumentSource) => ApiCall)
 
 /**
  * a container for looking up and preparing an ApiCall. It will parse the arguments
- * and be 100% ready to be sent to the server if this method returns not None
+ * and be 100% ready to be sent to the server if this method returns without throwing an exception
  */
 trait ApiCallProvider {
-  def prepareApiCall(function: String, args: ArgumentSource): Option[ApiCall]
+  def prepareApiCall(function: String, args: ArgumentSource): ApiCall
+}
+
+/**
+ * Each function name may have more than one overload implementation. We calculate
+ * a score for each overload (from most specific to least specific) and sort them
+ * so we try the most specific overloads first when choosing which one to call.
+ *
+ * This works well, the only case it doesn't handle well is if there are two overloads
+ * with different names that are both being requested:
+ *   get(name : String)
+ *   get(score : Int)
+ *
+ * If the user has set both arguments "?name=SearchName&score=100", we will choose the more
+ * specific overload (in this case the integer overload).
+ *
+ * TODO: add "no extra settings" function and state tracking to the ArgumentSource interface
+ */
+trait ApiCallLookup extends ApiCallProvider {
+  /**
+   * map of function names -> functions with their "overload score"
+   */
+  private var apiCalls = Map.empty[String, List[(Long, PreparableApiCall[_])]]
+
+  /**
+   * called by the ApiCallLibraries to populate the list of available apis
+   */
+  protected def addCall[A <: Message](name: String, c: PreparableApiCall[A]) {
+
+    val overloadScore = ArgumentUtilites.calculateOverloadScore(c)
+
+    apiCalls.get(name) match {
+      case None => apiCalls += name -> List((overloadScore, c))
+      case Some(existingMethods) =>
+        apiCalls += name -> ((overloadScore, c) :: existingMethods).sortWith(_._1 > _._1)
+    }
+  }
+
+  def prepareApiCall(function: String, args: ArgumentSource): ApiCall = {
+    apiCalls.get(function) match {
+      case None => throw new BadRequestException("Unknown function: " + function)
+      case Some(possibleFunctions) =>
+        possibleFunctions match {
+          case List((_, oneOption)) => handleSingleFunction(function, args, oneOption)
+          case _ => handleOverloadedFunction(function, args, possibleFunctions.map { _._2 })
+        }
+    }
+  }
+
+  private def handleSingleFunction(function: String, args: ArgumentSource, oneOption: PreparableApiCall[_]) = {
+    try {
+      oneOption.prepareFunction(args)
+    } catch {
+      case bre: BadRequestException =>
+        throw new BadRequestException("Error parsing " + function + " : " +
+          bre.getMessage + " valid arguments are: " + ArgumentUtilites.argumentsAsString(oneOption))
+    }
+  }
+
+  private def handleOverloadedFunction(function: String, args: ArgumentSource, possibleFunctions: List[PreparableApiCall[_]]) = {
+    possibleFunctions.find(overloadHasMatchingArgs(_, args)) match {
+      case Some(validOverload) => validOverload.prepareFunction(args)
+      case None =>
+        val validArguments = possibleFunctions.map { ArgumentUtilites.argumentsAsString(_) }.mkString(", ")
+        throw new BadRequestException("None of the overloads of " + function + " matched your arguments. Valid argument sets are: " + validArguments)
+    }
+  }
+
+  private def overloadHasMatchingArgs(preparer: PreparableApiCall[_], args: ArgumentSource) = {
+    try {
+      preparer.prepareFunction(args)
+      true
+    } catch {
+      case bre: BadRequestException =>
+        false
+    }
+  }
 }
 
 /**
@@ -48,7 +129,7 @@ trait ApiCallProvider {
  * arguments. We also require that the binding define the return class, this is not needed by the
  * type system, but it is useful to make the functions fully self describing.
  */
-trait ApiCallLibrary[ServiceClass] extends ApiCallProvider {
+trait ApiCallLibrary[ServiceClass] extends ApiCallLookup {
 
   /**
    * each api library can define which service interfaces they want (AllScadaService, LoaderService, etc)
@@ -56,40 +137,31 @@ trait ApiCallLibrary[ServiceClass] extends ApiCallProvider {
   def serviceClass: Class[ServiceClass]
 
   /**
-   * map that gets populated by the calls to single, optional and multi
-   */
-  private var apiCalls = Map.empty[String, PreparableApiCall[_]]
-
-  /**
    * define a binding for a function that returns 1 resultClass object or throws exception
    */
   protected def single[A <: Message](name: String, resultClass: Class[A], prepareFunction: (ArgumentSource) => ((ServiceClass) => Promise[A])) = {
     val preparer = (args: ArgumentSource) => singleCall(prepareFunction(args))
-    apiCalls += name -> PreparableApiCall(resultClass, preparer)
+    addCall(name, PreparableApiCall(resultClass, preparer))
   }
   /**
    * define a binding for a function that returns 0 or 1 resultClass object or throws exception
    */
   protected def optional[A <: Message](name: String, resultClass: Class[A], prepareFunction: (ArgumentSource) => ((ServiceClass) => Promise[Option[A]])) = {
     val preparer = (args: ArgumentSource) => optionalCall(prepareFunction(args))
-    apiCalls += name -> PreparableApiCall(resultClass, preparer)
+    addCall(name, PreparableApiCall(resultClass, preparer))
   }
   /**
    * define a binding for a function that a list of resultClass object or throws exception
    */
   protected def multi[A <: Message](name: String, resultClass: Class[A], prepareFunction: (ArgumentSource) => ((ServiceClass) => Promise[List[A]])) = {
     val preparer = (args: ArgumentSource) => multiCall(prepareFunction(args))
-    apiCalls += name -> PreparableApiCall(resultClass, preparer)
+    addCall(name, PreparableApiCall(resultClass, preparer))
   }
 
-  /**
-   * implement ApiCallProvider interface
-   */
-  def prepareApiCall(function: String, args: ArgumentSource): Option[ApiCall] = {
-    apiCalls.get(function).map(_.prepareFunction(args))
+  protected def subscription[A <: Message](name: String, resultClass: Class[A], prepareFunction: (ArgumentSource) => ((ServiceClass) => Promise[SubscriptionResult[List[A], A]])) = {
+    val preparer = (args: ArgumentSource) => subscriptionCall(prepareFunction(args))
+    addCall(name, PreparableApiCall(resultClass, preparer))
   }
-
-  private case class PreparableApiCall[A <: Message](resultClass: Class[A], prepareFunction: (ArgumentSource) => ApiCall)
 
   /**
    * these helper functions allow us to keep the ApiCall interface "ServicesList" agnostic
@@ -103,5 +175,8 @@ trait ApiCallLibrary[ServiceClass] extends ApiCallProvider {
   }
   private def multiCall[A <: Message](executeFunction: (ServiceClass) => Promise[List[A]]) = {
     MultiResultApiCall(c => executeFunction(c.getRpcInterface(serviceClass)))
+  }
+  private def subscriptionCall[A <: Message](executeFunction: (ServiceClass) => Promise[SubscriptionResult[List[A], A]]) = {
+    SubscriptionResultApiCall(c => executeFunction(c.getRpcInterface(serviceClass)))
   }
 }
