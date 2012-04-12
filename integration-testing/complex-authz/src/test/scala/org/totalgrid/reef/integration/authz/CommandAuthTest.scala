@@ -20,7 +20,7 @@ package org.totalgrid.reef.integration.authz
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.service.entity.EntityRelation
 
 import scala.collection.JavaConversions._
@@ -32,25 +32,25 @@ class CommandAuthTest extends AuthTestBase {
 
   test("Regional ops can view commands and command history") {
     as("regional_op") { regionalOp =>
-      regionalOp.getCommands().await
+      regionalOp.getCommands()
 
-      regionalOp.getCommandHistory().await
+      regionalOp.getCommandHistory()
     }
   }
 
   test("Regional_op cant delete dlrc lock") {
     as("dlrc_app") { dlrc =>
       as("regional_op") { regionalOp =>
-        val dlrcCommandName = dlrc.getEntitiesWithType("DLRC").await.map { _.getName }.head
-        val cmd = dlrc.getCommandByName(dlrcCommandName).await
+        val dlrcCommandName = dlrc.getEntitiesWithType("DLRC").map { _.getName }.head
+        val cmd = dlrc.getCommandByName(dlrcCommandName)
 
-        val lock = dlrc.createCommandDenialLock(List(cmd)).await
+        val lock = dlrc.createCommandDenialLock(List(cmd))
         try {
           unAuthed("regionalOp cant delete dlrc lock") {
-            regionalOp.deleteCommandLock(lock).await
+            regionalOp.deleteCommandLock(lock)
           }
         } finally {
-          dlrc.deleteCommandLock(lock).await
+          dlrc.deleteCommandLock(lock)
         }
       }
     }
@@ -61,10 +61,10 @@ class CommandAuthTest extends AuthTestBase {
 
       val parents = List("West", "East")
       val relation = new EntityRelation("owns", List("Command"), true)
-      val allowedCommands = regionalOp.getEntityRelationsForParentsByName(parents, List(relation)).await
+      val allowedCommands = regionalOp.getEntityRelationsForParentsByName(parents, List(relation))
         .map { _.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten }.flatten.map { _.getName }
 
-      val allCommands = regionalOp.getCommands().await.map { _.getName }
+      val allCommands = regionalOp.getCommands().map { _.getName }
       val invalidCommands = allCommands.diff(allowedCommands)
 
       allowedCommands.sorted should equal(List("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8"))
@@ -79,8 +79,8 @@ class CommandAuthTest extends AuthTestBase {
   test("Test dlrc app can only execute dlrc commands") {
     as("dlrc_app") { dlrc =>
 
-      val dlrcCommands = dlrc.getEntitiesWithType("DLRC").await.map { _.getName }
-      val commands = dlrc.getCommands().await.map { _.getName }.diff(dlrcCommands)
+      val dlrcCommands = dlrc.getEntitiesWithType("DLRC").map { _.getName }
+      val commands = dlrc.getCommands().map { _.getName }.diff(dlrcCommands)
 
       executeCommands(dlrc, dlrcCommands)
 
@@ -101,12 +101,12 @@ class CommandAuthTest extends AuthTestBase {
   }
 
   private def executeCommand(service: AllScadaService, cmdName: String) {
-    val cmd = service.getCommandByName(cmdName).await
-    val lock = service.createCommandExecutionLock(cmd).await
+    val cmd = service.getCommandByName(cmdName)
+    val lock = service.createCommandExecutionLock(cmd)
     try {
-      service.executeCommandAsControl(cmd).await
+      service.executeCommandAsControl(cmd)
     } finally {
-      service.deleteCommandLock(lock).await
+      service.deleteCommandLock(lock)
     }
   }
 }

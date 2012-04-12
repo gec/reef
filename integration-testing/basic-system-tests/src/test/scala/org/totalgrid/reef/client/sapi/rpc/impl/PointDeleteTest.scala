@@ -48,19 +48,19 @@ class PointDeleteTest extends ServiceClientSuite {
     val putEndpoint = Endpoint.newBuilder.setName("TestEndpoint").setProtocol("null").setOwnerships(owner).build
     val endpoint = loaderServices.addEndpoint(putEndpoint).await
 
-    var connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await
+    var connection = client.getEndpointConnectionByUuid(endpoint.getUuid)
 
     var count = 0
     while (connection.getRouting.getServiceRoutingKey == "" && count < 5) {
       println("Waiting for meas processor to come online.")
       Thread.sleep(100)
       count += 1
-      client.enableEndpointConnection(endpoint.getUuid).await
-      connection = client.getEndpointConnectionByUuid(endpoint.getUuid).await
+      client.enableEndpointConnection(endpoint.getUuid)
+      connection = client.getEndpointConnectionByUuid(endpoint.getUuid)
     }
     connection.getRouting.getServiceRoutingKey should not equal ("")
 
-    client.disableEndpointConnection(endpoint.getUuid).await
+    client.disableEndpointConnection(endpoint.getUuid)
     loaderServices.delete(endpoint).await
 
     (0 to numberOfPoints).foreach { i => loaderServices.delete(points.get(i).toBuilder.clearEndpoint.build).await }

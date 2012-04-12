@@ -31,12 +31,12 @@ class MeasurementSnapshotTest extends ServiceClientSuite {
 
     intercept[BadRequestException] {
       // "If we ask for the current value of a measurement that should return error code.")
-      client.getMeasurementsByNames("UnknownPoint" :: Nil).await
+      client.getMeasurementsByNames("UnknownPoint" :: Nil)
     }
 
     intercept[ExpectationException] {
       // "Asking for a non-existant point fails localy because we don't get the one we asked for.")
-      client.getPointByName("UnknownPoint").await
+      client.getPointByName("UnknownPoint")
     }
   }
 }

@@ -28,33 +28,33 @@ class UserAdminAuthTest extends AuthTestBase {
 
   test("User admin can't see live system") {
     as("user_admin") { admin =>
-      unAuthed("user_admin shouldn't see system") { admin.getCommands().await }
-      unAuthed("user_admin shouldn't see system") { admin.getCommandHistory().await }
-      unAuthed("user_admin shouldn't see system") { admin.getPoints().await }
-      unAuthed("user_admin shouldn't see system") { admin.getEndpointConnections().await }
+      unAuthed("user_admin shouldn't see system") { admin.getCommands() }
+      unAuthed("user_admin shouldn't see system") { admin.getCommandHistory() }
+      unAuthed("user_admin shouldn't see system") { admin.getPoints() }
+      unAuthed("user_admin shouldn't see system") { admin.getEndpointConnections() }
     }
   }
 
   test("User admin can create new user") {
     as("user_admin") { admin =>
-      val agent = admin.getAgents().await.filter(_.getName == "fakeUser").headOption
-      agent.foreach { admin.deleteAgent(_).await }
+      val agent = admin.getAgents().filter(_.getName == "fakeUser").headOption
+      agent.foreach { admin.deleteAgent(_) }
 
-      val fakeUser = admin.createNewAgent("fakeUser", "system", List("user_role")).await
+      val fakeUser = admin.createNewAgent("fakeUser", "system", List("user_role"))
       try {
         // fake user can change own password
         as("fakeUser") { limitedUser =>
-          limitedUser.setAgentPassword("fakeUser", "password").await
+          limitedUser.setAgentPassword("fakeUser", "password")
 
           unAuthed("Cannot update admin user password") {
-            limitedUser.setAgentPassword("admin", "password").await
+            limitedUser.setAgentPassword("admin", "password")
           }
         }
         unAuthed("Password should have been changed") {
           as("fakeUser") { _ => }
         }
       } finally {
-        admin.deleteAgent(fakeUser).await
+        admin.deleteAgent(fakeUser)
       }
     }
   }

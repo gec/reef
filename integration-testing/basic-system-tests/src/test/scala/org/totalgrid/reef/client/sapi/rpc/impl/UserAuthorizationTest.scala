@@ -25,19 +25,31 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.client.exception.UnauthorizedException
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.sync.AllScadaService
+import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AllScadaServiceAsync }
 
 @RunWith(classOf[JUnitRunner])
 class UserAuthorizationTest extends ServiceClientSuite {
 
   private def asGuestUser(name: String, password: String, permission: String = "read_only")(fun: (Client, AllScadaService) => Unit) = {
-    val agent = client.createNewAgent(name, password, List(permission, "password_updatable")).await
+    val agent = client.createNewAgent(name, password, List(permission, "password_updatable"))
     try {
       val guestClient = session.login(name, password).await
       fun(guestClient, guestClient.getRpcInterface(classOf[AllScadaService]))
       guestClient.logout().await
     } finally {
-      client.deleteAgent(agent).await
+      client.deleteAgent(agent)
+    }
+  }
+
+  private def asGuestUserAsync(name: String, password: String, permission: String = "read_only")(fun: (Client, AllScadaServiceAsync) => Unit) = {
+    val agent = client.createNewAgent(name, password, List(permission, "password_updatable"))
+    try {
+      val guestClient = session.login(name, password).await
+      fun(guestClient, guestClient.getRpcInterface(classOf[AllScadaServiceAsync]))
+      guestClient.logout().await
+    } finally {
+      client.deleteAgent(agent)
     }
   }
 
@@ -54,7 +66,7 @@ class UserAuthorizationTest extends ServiceClientSuite {
       guestClient.logout().await
 
       intercept[UnauthorizedException] {
-        guestServices.getAgents().await
+        guestServices.getAgents()
       }
     }
   }
@@ -63,11 +75,11 @@ class UserAuthorizationTest extends ServiceClientSuite {
 
     asGuestUser("test-agent", "test-password") { (guestClient, guestServices) =>
       // make sure we can see the commands in the system
-      val commands = guestServices.getCommands().await
+      val commands = guestServices.getCommands()
 
       // but can't create locks or executions
       intercept[UnauthorizedException] {
-        guestServices.createCommandExecutionLock(commands.head :: Nil).await
+        guestServices.createCommandExecutionLock(commands.head :: Nil)
       }
     }
 
@@ -75,11 +87,11 @@ class UserAuthorizationTest extends ServiceClientSuite {
 
   test("Batch services enforces same permissions") {
 
-    asGuestUser("test-agent", "test-password") { (guestClient, guestServices) =>
+    asGuestUserAsync("test-agent", "test-password") { (guestClient, guestServices) =>
       // test that we can use batch service to do allowed operations
       guestServices.startBatchRequests()
       val commandPromise = guestServices.getCommands()
-      guestServices.flushBatchRequests().await
+      guestServices.flushBatchRequests()
 
       val commands = commandPromise.await
 
@@ -99,30 +111,30 @@ class UserAuthorizationTest extends ServiceClientSuite {
     val password = "test-password3"
     asGuestUser(userName, password) { (guestClient, guestServices) =>
 
-      val agent = guestServices.getAgentByName(userName).await
+      val agent = guestServices.getAgentByName(userName)
 
       // change password
-      guestServices.setAgentPassword(agent, password + password).await
+      guestServices.setAgentPassword(agent, password + password)
 
       // get a new auth token with new password
       val newClient = guestClient.login(userName, password + password).await
 
       // change password back
-      newClient.getRpcInterface(classOf[AllScadaService]).setAgentPassword(agent, password).await
+      newClient.getRpcInterface(classOf[AllScadaService]).setAgentPassword(agent, password)
 
       newClient.logout().await
 
       // show that we can't create a new agent
-      val permissionSets = guestServices.getPermissionSets.await
+      val permissionSets = guestServices.getPermissionSets()
       val errorMessage = intercept[UnauthorizedException] {
-        guestServices.createNewAgent("newUser", "newUser", permissionSets.map { _.getName }).await
+        guestServices.createNewAgent("newUser", "newUser", permissionSets.map { _.getName })
       }.getMessage
       errorMessage should include("agent")
       errorMessage should include("create")
 
       // or delete one
       val errorMessage2 = intercept[UnauthorizedException] {
-        guestServices.deleteAgent(agent).await
+        guestServices.deleteAgent(agent)
       }.getMessage
       println(errorMessage2)
       errorMessage2 should include("agent")
@@ -135,9 +147,9 @@ class UserAuthorizationTest extends ServiceClientSuite {
     val password = "test-password5"
     asGuestUser(userName, password) { (guestClient, guestServices) =>
       // show that we can't create a new agent
-      val permissionSets = guestServices.getPermissionSets.await
+      val permissionSets = guestServices.getPermissionSets()
       intercept[UnauthorizedException] {
-        guestServices.createNewAgent(userName, password, permissionSets.map { _.getName }).await
+        guestServices.createNewAgent(userName, password, permissionSets.map { _.getName })
       }
     }
   }
@@ -146,9 +158,9 @@ class UserAuthorizationTest extends ServiceClientSuite {
     // need attributes for agent updates
     asGuestUser("test-agent4", "test-password4") { (guestClient, guestServices) =>
       asGuestUser("test-agent2", "test-password2") { (_, _) =>
-        val agent = guestServices.getAgentByName("test-agent2").await
+        val agent = guestServices.getAgentByName("test-agent2")
         intercept[UnauthorizedException] {
-          guestServices.setAgentPassword(agent, "changed-password2").await
+          guestServices.setAgentPassword(agent, "changed-password2")
         }
       }
     }

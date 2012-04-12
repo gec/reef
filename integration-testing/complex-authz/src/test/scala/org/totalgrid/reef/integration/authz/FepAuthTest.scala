@@ -29,15 +29,15 @@ class FepAuthTest extends AuthTestBase {
 
   test("fep user can update state") {
     as(USER) { fep =>
-      val endpointConnection = fep.getEndpointConnections().await.head
+      val endpointConnection = fep.getEndpointConnections().head
       val endpointUuid = endpointConnection.getEndpoint.getUuid
 
-      fep.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.ERROR).await
+      fep.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.ERROR)
 
-      fep.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.COMMS_UP).await
+      fep.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.COMMS_UP)
 
       unAuthed("Fep can't update endpoint enabled") {
-        fep.disableEndpointConnection(endpointUuid).await.getEnabled should equal(false)
+        fep.disableEndpointConnection(endpointUuid).getEnabled should equal(false)
       }
     }
   }

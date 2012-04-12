@@ -76,7 +76,7 @@ class ModelSetup extends ServiceClientSuite {
   }
 
   test("Wait for Endpoints online") {
-    val result = client.subscribeToEndpointConnections().await
+    val result = client.subscribeToEndpointConnections()
 
     val map = new EndpointConnectionStateMap(result)
 

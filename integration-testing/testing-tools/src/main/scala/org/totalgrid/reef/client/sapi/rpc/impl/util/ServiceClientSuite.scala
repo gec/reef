@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl.util
 
 import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }

@@ -47,43 +47,43 @@ class AuthFilterTest extends AuthTestBase {
   test("Parent selector") {
     as("system") { ops =>
 
-      val set = ops.getPermissionSet("regional").await
+      val set = ops.getPermissionSet("regional")
       val allowCheck = List("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8")
       val denyCheck = List("C9", "C10", "C11", "C12")
       val result = ops.getAuthFilterResults("create", "command_lock", List(Entity.newBuilder.addTypes("Command").build()), set)
-      checkLookup(result.await, allowCheck, denyCheck)
+      checkLookup(result, allowCheck, denyCheck)
     }
   }
 
   test("Type selector") {
     as("system") { ops =>
 
-      val set = ops.getPermissionSet("non_critical").await
+      val set = ops.getPermissionSet("non_critical")
       val allowCheck = List("C2", "C3", "C6", "C7", "C10", "C11")
       val denyCheck = List("C1", "C4", "C5", "C8", "C9", "C12")
       val result = ops.getAuthFilterResults("create", "command_lock", List(Entity.newBuilder.addTypes("Command").build()), set)
-      checkLookup(result.await, allowCheck, denyCheck)
+      checkLookup(result, allowCheck, denyCheck)
     }
   }
 
   test("Self selector") {
-    val set = as("system") { _.getPermissionSet("user_role").await }
+    val set = as("system") { _.getPermissionSet("user_role") }
     as("non_critical_op") { ops =>
 
       val allowCheck = List("non_critical_op")
       val result = ops.getAuthFilterResults("update", "agent_password", List(Entity.newBuilder.addTypes("Agent").build()), set)
-      checkAllowed(result.await, allowCheck)
+      checkAllowed(result, allowCheck)
     }
   }
 
   test("No read leak") {
-    val set = as("system") { _.getPermissionSet("regional").await }
+    val set = as("system") { _.getPermissionSet("regional") }
     as("limited_regional_op") { ops =>
 
       val allowCheck = List("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8")
       val denyCheck = List()
       val result = ops.getAuthFilterResults("create", "command_lock", List(Entity.newBuilder.addTypes("Command").build()), set)
-      checkLookup(result.await, allowCheck, denyCheck)
+      checkLookup(result, allowCheck, denyCheck)
     }
   }
 

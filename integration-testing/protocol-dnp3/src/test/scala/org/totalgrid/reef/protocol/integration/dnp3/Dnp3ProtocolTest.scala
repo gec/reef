@@ -34,11 +34,11 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
   override val modelFile = "../../protocol-dnp3/src/test/resources/sample-model.xml"
 
   test("Cycle endpoints") {
-    val endpoints = client.getEndpoints().await.toList
+    val endpoints = client.getEndpoints().toList
 
     endpoints.isEmpty should equal(false)
 
-    val result = client.subscribeToEndpointConnections().await
+    val result = client.subscribeToEndpointConnections()
 
     val map = new EndpointConnectionStateMap(result)
 
@@ -48,13 +48,13 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
     (1 to 5).foreach { i =>
 
       val start = System.currentTimeMillis()
-      endpoints.foreach { e => client.disableEndpointConnection(e.getUuid).await }
+      endpoints.foreach { e => client.disableEndpointConnection(e.getUuid) }
 
       map.checkAllState(false, COMMS_DOWN)
       val disabled = System.currentTimeMillis()
       println("Disabled to COMMS_DOWN in: " + (disabled - start))
 
-      endpoints.foreach { e => client.enableEndpointConnection(e.getUuid).await }
+      endpoints.foreach { e => client.enableEndpointConnection(e.getUuid) }
 
       map.checkAllState(true, COMMS_UP)
       val enabled = System.currentTimeMillis()
@@ -66,21 +66,21 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
   }
 
   test("Issue Commands") {
-    val endpoint = client.getEndpointByName("DNPInput").await
-    val commands = client.getCommandsBelongingToEndpoint(endpoint.getUuid).await.toList
+    val endpoint = client.getEndpointByName("DNPInput")
+    val commands = client.getCommandsBelongingToEndpoint(endpoint.getUuid).toList
 
-    val lock = client.createCommandExecutionLock(commands).await
+    val lock = client.createCommandExecutionLock(commands)
     try {
       commands.foreach { cmd =>
         cmd.getType match {
-          case CommandType.CONTROL => client.executeCommandAsControl(cmd).await
-          case CommandType.SETPOINT_DOUBLE => client.executeCommandAsSetpoint(cmd, 55.55).await
-          case CommandType.SETPOINT_INT => client.executeCommandAsSetpoint(cmd, 100).await
-          case CommandType.SETPOINT_STRING => client.executeCommandAsSetpoint(cmd, "TestString").await
+          case CommandType.CONTROL => client.executeCommandAsControl(cmd)
+          case CommandType.SETPOINT_DOUBLE => client.executeCommandAsSetpoint(cmd, 55.55)
+          case CommandType.SETPOINT_INT => client.executeCommandAsSetpoint(cmd, 100)
+          case CommandType.SETPOINT_STRING => client.executeCommandAsSetpoint(cmd, "TestString")
         }
       }
     } finally {
-      client.deleteCommandLock(lock).await
+      client.deleteCommandLock(lock)
     }
   }
 
@@ -89,7 +89,7 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
 
     val syncVars = names.map { _ -> new SyncVar(List.empty[Measurement]) }.toMap
 
-    val subResult = client.subscribeToMeasurementsByNames(names).await
+    val subResult = client.subscribeToMeasurementsByNames(names)
     subResult.getSubscription.start(new SubscriptionEventAcceptor[Measurement] {
       def onEvent(event: SubscriptionEvent[Measurement]) {
         val m = event.getValue

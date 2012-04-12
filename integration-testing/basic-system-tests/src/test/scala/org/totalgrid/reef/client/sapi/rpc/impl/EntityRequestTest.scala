@@ -30,18 +30,18 @@ class EntityRequestTest extends ServiceClientSuite {
 
   test("Simple gets") {
 
-    val allEntities = client.getEntities().await
+    val allEntities = client.getEntities()
     val targetUuid = allEntities.head.getUuid
 
-    client.getEntityByUuid(targetUuid).await should equal(allEntities.head)
+    client.getEntityByUuid(targetUuid) should equal(allEntities.head)
   }
 
   test("Get by types") {
 
-    val allAgents = client.getAgents().await
-    val permissions = client.getPermissionSets().await
+    val allAgents = client.getAgents()
+    val permissions = client.getPermissionSets()
 
-    val entities = client.getEntitiesWithTypes(List("Agent", "PermissionSet")).await
+    val entities = client.getEntitiesWithTypes(List("Agent", "PermissionSet"))
 
     entities.size should equal(allAgents.size + permissions.size)
   }
@@ -51,7 +51,7 @@ class EntityRequestTest extends ServiceClientSuite {
     val loaderServices = session.getRpcInterface(classOf[LoaderServices])
 
     loaderServices.findEntityByName("MagicTestObject").await.foreach { e =>
-      loaderServices.delete(e).await
+      loaderServices.delete(e)
     }
 
     val uuid = UUID.randomUUID.toString

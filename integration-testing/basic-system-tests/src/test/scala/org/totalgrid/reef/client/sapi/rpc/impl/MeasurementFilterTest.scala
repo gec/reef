@@ -42,22 +42,22 @@ class MeasurementFilterTest extends ServiceClientSuite {
     m.build
   }
 
-  def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil).await
+  def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil)
 
   test("Filter Deadband Test") {
 
     val pointName = "StaticSubstation.Line02.Current"
 
-    //println(session.get(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName(pointName)).build).await.expectOne())
+    //println(session.get(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName(pointName)).build).expectOne())
 
     putMeas(makeAnalog(pointName, 14))
-    client.getMeasurementByName(pointName).await.getDoubleVal should equal(14)
+    client.getMeasurementByName(pointName).getDoubleVal should equal(14)
 
     putMeas(makeAnalog(pointName, 14.2))
-    client.getMeasurementByName(pointName).await.getDoubleVal should equal(14)
+    client.getMeasurementByName(pointName).getDoubleVal should equal(14)
 
     putMeas(makeAnalog(pointName, 14.6))
-    client.getMeasurementByName(pointName).await.getDoubleVal should equal(14.6)
+    client.getMeasurementByName(pointName).getDoubleVal should equal(14.6)
   }
 
   test("Filter Endpoint Reset") {
@@ -65,25 +65,25 @@ class MeasurementFilterTest extends ServiceClientSuite {
     val pointName = "StaticSubstation.Line02.Current"
 
     putMeas(makeAnalog(pointName, 15.3))
-    client.getMeasurementByName(pointName).await.getDoubleVal should equal(15.3)
+    client.getMeasurementByName(pointName).getDoubleVal should equal(15.3)
 
     putMeas(makeAnalog(pointName, 15.2))
-    client.getMeasurementByName(pointName).await.getDoubleVal should equal(15.3)
+    client.getMeasurementByName(pointName).getDoubleVal should equal(15.3)
     putMeas(makeAnalog(pointName, 15.2))
-    client.getMeasurementByName(pointName).await.getDoubleVal should equal(15.3)
+    client.getMeasurementByName(pointName).getDoubleVal should equal(15.3)
 
-    val endSub = client.subscribeToEndpointConnections().await
+    val endSub = client.subscribeToEndpointConnections()
     val states = new EndpointConnectionStateMap(endSub)
 
-    val uuid = client.getEndpointByName("StaticEndpoint").await.getUuid
+    val uuid = client.getEndpointByName("StaticEndpoint").getUuid
 
-    client.disableEndpointConnection(uuid).await
+    client.disableEndpointConnection(uuid)
     states.checkState(uuid, false, State.COMMS_DOWN)
 
-    client.enableEndpointConnection(uuid).await
+    client.enableEndpointConnection(uuid)
     states.checkState(uuid, true, State.COMMS_UP)
 
-    client.getMeasurementByName(pointName).await.getDoubleVal should equal(15.0)
+    client.getMeasurementByName(pointName).getDoubleVal should equal(15.0)
 
   }
 

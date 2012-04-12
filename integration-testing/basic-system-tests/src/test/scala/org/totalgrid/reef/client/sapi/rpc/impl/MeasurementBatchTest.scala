@@ -29,13 +29,13 @@ import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 @RunWith(classOf[JUnitRunner])
 class MeasurementBatchTest extends ServiceClientSuite {
 
-  def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil).await
-  def putAll(m: List[Measurement]) = client.publishMeasurements(m).await
+  def putMeas(m: Measurement) = client.publishMeasurements(m :: Nil)
+  def putAll(m: List[Measurement]) = client.publishMeasurements(m)
 
   test("Simple puts") {
     val pointName = "StaticSubstation.Line02.Current"
     // read the current value so we can edit it
-    val original = client.getMeasurementByName(pointName).await
+    val original = client.getMeasurementByName(pointName)
 
     // double the value and post it
     val updated = original.toBuilder.setDoubleVal(original.getDoubleVal * 2).setTime(System.currentTimeMillis).build
@@ -46,7 +46,7 @@ class MeasurementBatchTest extends ServiceClientSuite {
 
   test("Multi put") {
     val names = List("StaticSubstation.Line02.Current", "StaticSubstation.Breaker02.Bkr", "StaticSubstation.Breaker02.Tripped")
-    val originals = client.getMeasurementsByNames(names).await
+    val originals = client.getMeasurementsByNames(names)
 
     val updated = updateMeasurements(originals.toList, System.currentTimeMillis())
 

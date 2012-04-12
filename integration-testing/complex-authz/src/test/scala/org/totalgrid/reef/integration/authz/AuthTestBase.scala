@@ -19,7 +19,7 @@
 package org.totalgrid.reef.integration.authz
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.exception.UnauthorizedException
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.UserSettings
@@ -37,8 +37,8 @@ class AuthTestBase extends ServiceClientSuite {
     userConfig = Some(new UserSettings(props))
 
     // update all of the agents to have the same system password
-    client.getAgents().await.foreach { a =>
-      client.setAgentPassword(a, userConfig.get.getUserPassword).await
+    client.getAgents().foreach { a =>
+      client.setAgentPassword(a, userConfig.get.getUserPassword)
     }
   }
 
@@ -48,7 +48,7 @@ class AuthTestBase extends ServiceClientSuite {
   def as[A](userName: String, logout: Boolean = true)(f: AllScadaService => A): A = {
     val c = session.login(userName, userConfig.get.getUserPassword).await
     val ret = f(c.getRpcInterface(classOf[AllScadaService]))
-    if (logout) c.logout().await
+    if (logout) c.logout()
     ret
   }
 

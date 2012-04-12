@@ -27,25 +27,25 @@ class ScadaEngineerAuthTest extends AuthTestBase {
 
   test("Scada engineer can't add users or issue commands") {
     as("scada") { scada =>
-      unAuthed("scada cant make agents") { scada.createNewAgent("agent", "agent", List("all")).await }
+      unAuthed("scada cant make agents") { scada.createNewAgent("agent", "agent", List("all")) }
 
-      val cmd = scada.getCommands.await.head
-      unAuthed("scada cant issue commands") { scada.createCommandExecutionLock(cmd).await }
+      val cmd = scada.getCommands().head
+      unAuthed("scada cant issue commands") { scada.createCommandExecutionLock(cmd) }
     }
   }
 
   test("Scada engineer can disable/enable endpoints but not update state") {
     as("scada") { scada =>
-      val endpointConnection = scada.getEndpointConnections().await.head
+      val endpointConnection = scada.getEndpointConnections().head
       val endpointUuid = endpointConnection.getEndpoint.getUuid
 
-      scada.disableEndpointConnection(endpointUuid).await.getEnabled should equal(false)
+      scada.disableEndpointConnection(endpointUuid).getEnabled should equal(false)
 
       unAuthed("Engineer can't update endpoint state") {
-        scada.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.ERROR).await
+        scada.alterEndpointConnectionState(endpointConnection.getId, EndpointConnection.State.ERROR)
       }
 
-      scada.enableEndpointConnection(endpointUuid).await.getEnabled should equal(true)
+      scada.enableEndpointConnection(endpointUuid).getEnabled should equal(true)
     }
   }
 }
