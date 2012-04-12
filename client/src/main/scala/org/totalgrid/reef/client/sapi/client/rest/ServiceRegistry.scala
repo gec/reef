@@ -20,7 +20,6 @@ package org.totalgrid.reef.client.sapi.client.rest
 
 import org.totalgrid.reef.client.types.ServiceTypeInformation
 import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList }
-import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList }
 
 trait ServiceRegistry {
 

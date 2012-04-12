@@ -29,20 +29,36 @@ class ClientWrapper(client: SClient) extends Client {
   def getHeaders = client.getHeaders
 
   // TODO make client Headers mutable 0.5.x
-  def setHeaders(headers: RequestHeaders) = headers match {
-    case h: BasicRequestHeaders => client.setHeaders(h)
-    case _ => throw new ServiceIOException("Cannot use custom header class. Must use headers returned from getHeaders")
+  def setHeaders(headers: RequestHeaders) {
+    headers match {
+      case h: BasicRequestHeaders => client.setHeaders(h)
+      case _ => throw new ServiceIOException("Cannot use custom header class. Must use headers returned from getHeaders")
+    }
   }
 
-  def addRequestSpy(spy: RequestSpy) = client.addRequestSpy(spy)
+  def addRequestSpy(spy: RequestSpy) {
+    client.addRequestSpy(spy)
+  }
 
-  def removeRequestSpy(spy: RequestSpy) = client.removeRequestSpy(spy)
+  def removeRequestSpy(spy: RequestSpy) {
+    client.removeRequestSpy(spy)
+  }
 
-  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.addSubscriptionCreationListener(listener)
-  def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.removeSubscriptionCreationListener(listener)
+  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) {
+    client.addSubscriptionCreationListener(listener)
+  }
+
+  def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) {
+    client.removeSubscriptionCreationListener(listener)
+  }
 
   def getService[A](klass: Class[A]) = client.getRpcInterface(klass)
-  def addServiceProvider(info: ServiceProviderInfo) = client.addRpcProvider(info)
 
-  def logout() = client.logout().await
+  def addServiceProvider(info: ServiceProviderInfo) {
+    client.addRpcProvider(info)
+  }
+
+  def logout() {
+    client.logout().await
+  }
 }

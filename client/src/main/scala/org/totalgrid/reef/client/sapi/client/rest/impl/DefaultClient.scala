@@ -26,7 +26,6 @@ import org.totalgrid.reef.client.sapi.service.AsyncService
 
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList, Routable }
-import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo }
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.client.javaimpl.ClientWrapper
 
