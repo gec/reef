@@ -25,6 +25,7 @@ import org.totalgrid.reef.broker._
 import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.exception.ServiceIOException
+import net.agileautomata.commons.testing.SynchronizedList
 
 @RunWith(classOf[JUnitRunner])
 class QpidBrokerConnectionTest extends BrokerConnectionTestBase {
@@ -70,6 +71,45 @@ class QpidBrokerConnectionTest extends BrokerConnectionTestBase {
     val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, 30, true, "src/test/resources/trust-store.jks", "jjjjjjj")
     val ex = intercept[ServiceIOException](fixture(config) { conn => })
     ex.getMessage should include("SSLReceiver")
+  }
+
+  test("Test Broker TTL") {
+
+    // short TTL for testing (default is 5 seconds)
+    val TTL = 100
+
+    val config = new AmqpSettings(defaults.getHost, defaults.getPort, defaults.getUser, defaults.getPassword, defaults.getVirtualHost, 30, TTL, false, null, null, null, null)
+    fixture(config) { broker =>
+
+      val queue = broker.declareQueue("*", false, false)
+      broker.declareExchange("test")
+      broker.bindQueue(queue, "test", "hi", false)
+
+      // publish some messages we expect to timeout
+      broker.publish("test", "hi", "Old message should have expired".getBytes, None)
+      broker.publish("test", "hi", "Other old message should have expired".getBytes, None)
+
+      // sleep for double the TTL time to make sure qpid has had time to kill the messages
+      Thread.sleep(TTL * 2)
+
+      // publish some measurements that we will subscribe to before they expire
+      val okMessages = List("Recent message should be delivered", "Other Recent message should be delivered")
+      okMessages.foreach { msg =>
+        broker.publish("test", "hi", msg.getBytes, None)
+        Thread.sleep(TTL / 4)
+      }
+
+      val list = new SynchronizedList[String]
+      val consumer = new BrokerMessageConsumer {
+        def onMessage(msg: BrokerMessage) = list.append(new String(msg.bytes))
+      }
+      val sub = broker.listen(queue).start(consumer)
+
+      // check that we only get the 2 recent message, not the older ones.
+      list shouldBecome okMessages within (defaultTimeout)
+
+      sub.close()
+    }
   }
 }
 

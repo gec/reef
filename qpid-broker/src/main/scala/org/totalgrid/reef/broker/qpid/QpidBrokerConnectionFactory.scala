@@ -76,7 +76,7 @@ class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnection
     try {
       QpidBrokerConnectionFactory.loadssl(config)
       val conn = new Connection
-      val broker = new QpidBrokerConnection(conn)
+      val broker = new QpidBrokerConnection(conn, config.getTtlMilliseconds())
       conn.connect(makeSettings)
       broker
     } catch {

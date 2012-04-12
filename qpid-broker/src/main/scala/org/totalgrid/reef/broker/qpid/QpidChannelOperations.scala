@@ -98,12 +98,13 @@ object QpidChannelOperations extends Logging {
     }
   }
 
-  def publish(session: Session, exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[BrokerDestination]) = {
+  def publish(session: Session, exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[BrokerDestination], ttlMilliseconds: Int) = {
     rewrap("publishing to exchange: " + exchange + " key: " + key + " replyTo: " + replyTo) {
       if (session.isClosing) throw new ChannelClosedException
       val dev_props = new DeliveryProperties
       val msg_props = new MessageProperties
       dev_props.setRoutingKey(key)
+      if (ttlMilliseconds > 0) dev_props.setTtl(ttlMilliseconds)
       replyTo.foreach(r => msg_props.setReplyTo(new ReplyTo(r.exchange, r.key)))
       val hdr = new Header(dev_props, msg_props)
       session.messageTransfer(exchange, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, hdr, b)
