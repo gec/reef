@@ -101,7 +101,8 @@ class ServiceProviders(
     new CalculationConfigService(modelFac.calculations),
     new EventService(modelFac.events),
     new AlarmService(modelFac.alarms),
-    new AuthFilterService)
+    new AuthFilterService,
+    new CommandHandlerBindingService)
 
   private val allServices = (new BatchServiceRequestService(serviceProviders) :: serviceProviders)
 
