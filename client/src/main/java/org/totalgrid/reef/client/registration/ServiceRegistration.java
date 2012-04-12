@@ -47,4 +47,6 @@ public interface ServiceRegistration
      * @return Handle to manage the lifecycle of the binding.
      */
     <T> SubscriptionBinding bindService( Service service, TypeDescriptor<T> descriptor, Routable destination, boolean competing );
+
+    // TODO: add lateBindService and bindServiceQueue functions
 }

@@ -185,4 +185,14 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     conn.declareExchange(info.getEventExchange)
   }
 
+  override def lateBindService[A](service: AsyncService[A], exe: Executor): SubscriptionBinding = {
+    val sub = new DefaultServiceBinding[A](conn, conn.listen(), exe)
+    sub.start(service)
+    sub
+  }
+
+  override def bindServiceQueue[A](subQueue: String, key: String, klass: Class[A]): Unit = {
+    val info = getServiceInfo(klass)
+    conn.bindQueue(subQueue, info.getDescriptor.id, key)
+  }
 }

@@ -48,6 +48,11 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
     notifySubscriptionCreated(conn.bindService(service, dispatcher, destination, competing))
   }
   final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
+
+  final override def lateBindService[A](service: AsyncService[A], dispatcher: Executor) =
+    notifySubscriptionCreated(conn.lateBindService(service, dispatcher))
+  final override def bindServiceQueue[A](subQueue: String, key: String, klass: Class[A]) = conn.bindServiceQueue(subQueue, key, klass)
+
   final override def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) = conn.publishEvent(typ, value, key)
   final override def declareEventExchange(klass: Class[_]) = conn.declareEventExchange(klass)
 

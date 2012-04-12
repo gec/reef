@@ -27,8 +27,8 @@ import net.agileautomata.commons.testing._
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.client.{ SubscriptionCreationListener, SubscriptionBinding, AnyNodeDestination }
-import org.totalgrid.reef.client.sapi.client.{ Promise, SuccessResponse, Response }
+import org.totalgrid.reef.client.{ AddressableDestination, SubscriptionCreationListener, SubscriptionBinding, AnyNodeDestination }
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Promise, SuccessResponse, Response }
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.rest.fixture._
 
@@ -212,6 +212,19 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
       c.attempt {
         testFlatmapSuccess(c)
       }.await
+    }
+  }
+
+  test("Services can be late bound using queue names") {
+    fixture(false) { c =>
+
+      val address = new AddressableDestination("magic-key")
+
+      val sub = c.lateBindService(new SomeIntegerIncrementService(c), c)
+
+      c.bindServiceQueue(sub.getId, address.getKey, classOf[SomeInteger])
+      val request = c.put(SomeInteger(1), BasicRequestHeaders.empty.setDestination(address))
+      request.await should equal(SuccessResponse(list = List(SomeInteger(2))))
     }
   }
 }
