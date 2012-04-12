@@ -28,7 +28,13 @@ object ServiceClientVersions {
     val rootDir = new File(".")
     val sourceDir = new File(rootDir, "../../src/main/java")
 
-    val transformers = List(new ScalaWithFutures, new ScalaJavaShims(false), new JavaFutures, new ScalaJavaShims(true))
+    val transformers = List(
+      new ScalaTraits(true),
+      new ScalaTraits(false),
+      new ScalaJavaShims(false),
+      new JavaFutures,
+      new ScalaJavaShims(true),
+      new ScalaSyncShims)
 
     ApiTransformer.generateFiles(root, sourceDir, rootDir, transformers)
   }

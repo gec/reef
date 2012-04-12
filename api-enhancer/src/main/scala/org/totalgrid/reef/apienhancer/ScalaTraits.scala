@@ -18,17 +18,18 @@
  */
 package org.totalgrid.reef.apienhancer
 
-import scala.collection.JavaConversions._
-
 import com.sun.javadoc.ClassDoc
 import java.io.{ PrintStream, File }
 
 /**
  * converts the original apis to use scala lists and return Futures
  */
-class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
+class ScalaTraits(future: Boolean) extends ApiTransformer with GeneratorFunctions {
+
+  val outputPackage = if (future) ".client.sapi.rpc" else ".client.sapi.sync"
+
   def make(c: ClassDoc, packageStr: String, outputDir: File, sourceFile: File) {
-    getFileStream(packageStr, outputDir, sourceFile, ".client.sapi.rpc", true, c.name) { (stream, javaPackage) =>
+    getFileStream(packageStr, outputDir, sourceFile, outputPackage, true, c.name) { (stream, javaPackage) =>
       scalaClass(c, stream, javaPackage)
     }
   }
@@ -36,14 +37,9 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
   private def scalaClass(c: ClassDoc, stream: PrintStream, packageName: String) {
     stream.println("package " + packageName)
 
-    // we remove the java list import, so the name List will point to scala.collection.List
-    val importMap = Map("java.util.List" -> "", "org.totalgrid.reef.client.ReefServiceException" -> "")
+    addScalaImports(stream, c)
 
-    c.importedClasses().toList.foreach(p => importMap.get(p.qualifiedTypeName()) match {
-      case None => stream.println("import " + p.qualifiedTypeName())
-      case _ =>
-    })
-    stream.println("import org.totalgrid.reef.client.sapi.client.Promise")
+    if (future) stream.println("import org.totalgrid.reef.client.sapi.client.Promise")
     stream.println(commentString(c.getRawCommentText()))
     stream.println("trait " + c.name + "{")
 
@@ -62,7 +58,8 @@ class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
       val returnType = if (isReturnOptional(m)) "Option[" + basicReturnType + "]"
       else basicReturnType
 
-      msg += ": Promise[" + returnType + "]"
+      if (future) msg += ": Promise[" + returnType + "]"
+      else msg += ": " + returnType
 
       stream.println(commentString(m.getRawCommentText()))
       stream.println(msg)

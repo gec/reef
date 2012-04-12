@@ -106,7 +106,8 @@
                         <Export-Package>
                             org.totalgrid.reef.client.service.proto;version="${reef.version}",
                             org.totalgrid.reef.client.service.*;version="${reef.version}",
-                            org.totalgrid.reef.client.sapi.rpc.*;version="${reef.version}"
+                            org.totalgrid.reef.client.sapi.rpc.*;version="${reef.version}",
+                            org.totalgrid.reef.client.sapi.sync.*;version="${reef.version}"
                         </Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>

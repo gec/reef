@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.apienhancer
 
-import com.sun.javadoc.{ MethodDoc, Type }
+import com.sun.javadoc.{ ClassDoc, MethodDoc, Type }
 import java.io.{ FileOutputStream, PrintStream, File }
 
 trait GeneratorFunctions {
@@ -131,4 +131,17 @@ trait GeneratorFunctions {
   def isReturnSubscription(m: MethodDoc) = {
     m.returnType.simpleTypeName == "SubscriptionResult"
   }
+
+  def addImports(stream: PrintStream, c: ClassDoc, importMap: Map[String, String] = Map.empty[String, String]) = {
+    c.importedClasses().toList.foreach(p => importMap.get(p.qualifiedTypeName()) match {
+      case None => stream.println("import " + p.qualifiedTypeName())
+      case _ =>
+    })
+  }
+
+  def addScalaImports(stream: PrintStream, c: ClassDoc) = {
+    val importMap = Map("java.util.List" -> "", "org.totalgrid.reef.client.exception.ReefServiceException" -> "")
+    addImports(stream, c, importMap)
+  }
+
 }

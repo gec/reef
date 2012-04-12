@@ -48,6 +48,7 @@ public class ReefServices implements ServicesList
         // step to fail on unknown imports.
 
         list.add( org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImplServiceList.getServiceInfo() );
+        list.add( org.totalgrid.reef.client.sapi.sync.impl.AllScadaServiceSyncServiceList.getServiceInfo() );
         list.add( org.totalgrid.reef.client.service.impl.AllScadaServiceJavaShimServiceList.getServiceInfo() );
         list.add( org.totalgrid.reef.client.service.impl.async.AllScadaServiceAsyncJavaShimServiceList.getServiceInfo() );
         list.add( org.totalgrid.reef.client.sapi.rpc.impl.ClientOperationsServiceProviders.getScalaServiceInfo() );
