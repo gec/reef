@@ -19,26 +19,25 @@
 package org.totalgrid.reef.apienhancer
 
 import com.sun.javadoc._
-
-import scala.collection.JavaConversions._
 import java.io.File
 
 trait ApiTransformer {
-  def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File)
+  def make(c: ClassDoc, packageStr: String, outputDir: File, sourceFile: File)
 
   // called once all of the classes have been procesed
   def finish(rootDir: File) {}
 }
 
-object ApiEnhancer {
-  def start(root: RootDoc): Boolean = {
+object ApiTransformer {
 
-    // we use the destDir setting in javadoc
-    val rootDir = new File(".")
-    val sourceDir = new File(rootDir, "../../src/main/java")
-
-    val transformers = List(new ScalaWithFutures, new ScalaJavaShims(false), new JavaFutures, new ScalaJavaShims(true), new HttpServiceCallBindings)
-
+  /**
+   * @param root doclet collection of all classes we are processing
+   * @param sourceDir base location of the api definition files
+   * @param outputDir output dir for new packages
+   * @param transformers list of transformers to run over the classes
+   * @return
+   */
+  def generateFiles(root: RootDoc, sourceDir: File, outputDir: File, transformers: List[ApiTransformer]): Boolean = {
     root.classes.toList.filter { c =>
       c.getRawCommentText.indexOf("!api-definition!") != -1
     }.foreach { c =>
@@ -48,22 +47,11 @@ object ApiEnhancer {
       val sourceFile = new File(sourceDir, c.qualifiedTypeName.replaceAllLiterally(".", "/") + ".java")
       if (!sourceFile.exists) throw new Exception("Can't find source file: " + sourceFile.getAbsolutePath)
 
-      transformers.foreach { _.make(c, packageStr, rootDir, sourceFile) }
+      transformers.foreach { _.make(c, packageStr, outputDir, sourceFile) }
     }
 
-    transformers.foreach { _.finish(rootDir) }
+    transformers.foreach { _.finish(outputDir) }
 
     true
-  }
-
-  /**
-   * FROM: http://stackoverflow.com/questions/5731619/doclet-get-generics-of-a-list
-   * vote first answer up if you read this comment
-   * NOTE: Without this method present and returning LanguageVersion.JAVA_1_5,
-   *       Javadoc will not process generics because it assumes LanguageVersion.JAVA_1_1
-   * @return language version (hard coded to LanguageVersion.JAVA_1_5)
-   */
-  def languageVersion() = {
-    LanguageVersion.JAVA_1_5;
   }
 }

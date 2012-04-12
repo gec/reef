@@ -27,8 +27,8 @@ import java.io.{ PrintStream, File }
  * converts the original apis to use scala lists and return Futures
  */
 class ScalaWithFutures extends ApiTransformer with GeneratorFunctions {
-  def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
-    getFileStream(packageStr, rootDir, sourceFile, ".client.sapi.rpc", true, c.name) { (stream, javaPackage) =>
+  def make(c: ClassDoc, packageStr: String, outputDir: File, sourceFile: File) {
+    getFileStream(packageStr, outputDir, sourceFile, ".client.sapi.rpc", true, c.name) { (stream, javaPackage) =>
       scalaClass(c, stream, javaPackage)
     }
   }

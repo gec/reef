@@ -33,7 +33,7 @@
 							<goal>javadoc</goal>
 						</goals>
 						<configuration>
-							<doclet>org.totalgrid.reef.apienhancer.ApiEnhancer</doclet>
+							<doclet>org.totalgrid.reef.apienhancer.ServiceClientVersions</doclet>
 							<docletArtifact>
 								<groupId>org.totalgrid.reef</groupId>
 								<artifactId>reef-api-enhancer</artifactId>
