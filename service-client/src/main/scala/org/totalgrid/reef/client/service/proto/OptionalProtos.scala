@@ -321,6 +321,11 @@ object OptionalProtos {
     val lastUpdate = optionally(_.hasLastUpdate, _.getLastUpdate)
     val enabled = optionally(_.hasEnabled, _.getEnabled)
   }
+  implicit def proto2OptFEPCommandHandlerBinding(a: org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding): OptFEPCommandHandlerBinding = new OptFEPCommandHandlerBinding(Some(a))
+  class OptFEPCommandHandlerBinding(real: Option[org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding]) extends OptionalStruct(real) {
+    val endpointConnection = new OptFEPEndpointConnection(optionally(_.hasEndpointConnection, _.getEndpointConnection))
+    val commandQueue = optionally(_.hasCommandQueue, _.getCommandQueue)
+  }
   implicit def proto2OptMappingMeasMap(a: org.totalgrid.reef.client.service.proto.Mapping.MeasMap): OptMappingMeasMap = new OptMappingMeasMap(Some(a))
   class OptMappingMeasMap(real: Option[org.totalgrid.reef.client.service.proto.Mapping.MeasMap]) extends OptionalStruct(real) {
     val _type = optionally(_.getType)

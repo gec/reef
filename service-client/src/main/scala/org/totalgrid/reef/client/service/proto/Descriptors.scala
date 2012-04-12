@@ -262,6 +262,12 @@ object Descriptors {
     def getKlass = classOf[org.totalgrid.reef.client.service.proto.FEP.EndpointConnection]
     def id = "endpoint_connection"
   }
+  def commandHandlerBinding() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding] {
+    def serialize(typ: org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding.parseFrom(bytes)
+    def getKlass = classOf[org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding]
+    def id = "command_handler_binding"
+  }
   def measMap() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.Mapping.MeasMap] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.Mapping.MeasMap): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.Mapping.MeasMap.parseFrom(bytes)
