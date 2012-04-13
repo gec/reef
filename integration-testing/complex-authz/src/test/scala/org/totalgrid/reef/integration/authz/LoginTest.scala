@@ -34,9 +34,9 @@ class LoginTest extends AuthTestBase {
 
       activeLogins.size should be <= allLogins.size
 
-      val byVersion = admin.getLoginsByClientVersion(true, allLogins.head.getClientVersion)
-
-      byVersion should equal(allLogins)
+      val versions = allLogins.map { _.getClientVersion }.distinct
+      val byVersion = versions.map { admin.getLoginsByClientVersion(true, _) }.flatten
+      byVersion.map { _.getId.getValue }.sorted should equal(allLogins.map { _.getId.getValue }.sorted)
 
       val ownLogins = admin.getOwnLogins(true)
       ownLogins.size should be > 0
