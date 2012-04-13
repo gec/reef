@@ -484,6 +484,12 @@ object Descriptors {
     def getKlass = classOf[MeasurementProcessingConnection]
     def id = "measurement_processing_connection"
   }
+  def measurementStreamBinding() = new TypeDescriptor[MeasurementStreamBinding] {
+    def serialize(typ: MeasurementStreamBinding): Array[Byte] = typ.toByteArray
+    def deserialize(bytes: Array[Byte]) = MeasurementStreamBinding.parseFrom(bytes)
+    def getKlass = classOf[MeasurementStreamBinding]
+    def id = "measurement_stream_binding"
+  }
   def measSim() = new TypeDescriptor[org.totalgrid.reef.client.service.proto.SimMapping.MeasSim] {
     def serialize(typ: org.totalgrid.reef.client.service.proto.SimMapping.MeasSim): Array[Byte] = typ.toByteArray
     def deserialize(bytes: Array[Byte]) = org.totalgrid.reef.client.service.proto.SimMapping.MeasSim.parseFrom(bytes)

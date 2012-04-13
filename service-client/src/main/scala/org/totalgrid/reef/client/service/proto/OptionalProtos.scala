@@ -588,6 +588,11 @@ object OptionalProtos {
     val assignedTime = optionally(_.hasAssignedTime, _.getAssignedTime)
     val readyTime = optionally(_.hasReadyTime, _.getReadyTime)
   }
+  implicit def proto2OptMeasurementStreamBinding(a: MeasurementStreamBinding): OptMeasurementStreamBinding = new OptMeasurementStreamBinding(Some(a))
+  class OptMeasurementStreamBinding(real: Option[MeasurementStreamBinding]) extends OptionalStruct(real) {
+    val processingConnection = new OptMeasurementProcessingConnection(optionally(_.hasProcessingConnection, _.getProcessingConnection))
+    val measurementQueue = optionally(_.hasMeasurementQueue, _.getMeasurementQueue)
+  }
   implicit def proto2OptSimMappingMeasSim(a: org.totalgrid.reef.client.service.proto.SimMapping.MeasSim): OptSimMappingMeasSim = new OptSimMappingMeasSim(Some(a))
   class OptSimMappingMeasSim(real: Option[org.totalgrid.reef.client.service.proto.SimMapping.MeasSim]) extends OptionalStruct(real) {
     val name = optionally(_.getName)
