@@ -48,7 +48,7 @@ object Timing {
   def benchmark[A](fun: => A): Long = {
     val stopwatch = new Stopwatch
     fun
-    convertNanoToMilli(stopwatch.elapsed)
+    stopwatch.elapsed
   }
 
   /**
