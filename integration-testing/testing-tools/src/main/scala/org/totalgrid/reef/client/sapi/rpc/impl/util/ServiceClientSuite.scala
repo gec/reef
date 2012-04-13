@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl.util
 
-import xml.Node
 import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.client.sapi.sync.AllScadaService
+import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AsyncAllScadaService }
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionCreationListener, SubscriptionEvent, SubscriptionEventAcceptor }
+import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.standalone.InMemoryNode
 import org.totalgrid.reef.loader.commons.LoaderServicesList
@@ -46,11 +46,13 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
   private var connectionOption = Option.empty[Connection]
   private var sessionOption = Option.empty[Client]
   private var clientOption = Option.empty[AllScadaService]
+  private var asyncClientOption = Option.empty[AsyncAllScadaService]
 
   val canceler = new SubscriptionCanceler
 
   def session = sessionOption.get
   def client = clientOption.get
+  def async = asyncClientOption.get
   def connection = connectionOption.get
 
   override def beforeAll() {
@@ -74,6 +76,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
 
     sessionOption = Some(conn.login(userConfig).await)
     clientOption = Some(session.getRpcInterface(classOf[AllScadaService]))
+    asyncClientOption = Some(session.getRpcInterface(classOf[AsyncAllScadaService]))
     client.addSubscriptionCreationListener(canceler)
 
     client.setHeaders(client.getHeaders.setTimeout(50000))
