@@ -36,14 +36,16 @@ import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceE
 import org.totalgrid.reef.services.framework.{ RequestContextSource, RequestContext }
 import org.totalgrid.reef.services.{ HeadersContext, SilentRequestContext }
 import org.totalgrid.reef.client.settings.Version
-import org.totalgrid.reef.models.{ AgentPermissionSetJoin, ApplicationSchema, DatabaseUsingTestBase }
-import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
+import org.totalgrid.reef.models.{ DatabaseUsingTestNotTransactionSafe, RunTestsInsideTransaction }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
-class AuthSystemTestBase extends DatabaseUsingTestBase {
+class AuthSystemTestBase extends DatabaseUsingTestNotTransactionSafe  with RunTestsInsideTransaction {
 
   override def beforeAll() {
     super.beforeAll()
+    dbConnection.transaction{
+      seedTesting(new SilentRequestContext)
+    }
   }
 
   def seedTesting(context: RequestContext) {
@@ -55,10 +57,6 @@ class AuthSystemTestBase extends DatabaseUsingTestBase {
     seeder.addUser("core", "core", List("all", "read_only"))
     seeder.addUser("operator", "operator", List("all", "read_only"))
     seeder.addUser("guest", "guest", List("read_only"))
-  }
-
-  override def beforeEachInTransaction() = {
-    seedTesting(new SilentRequestContext)
   }
 
   class Fixture extends SubscriptionTools.SubscriptionTesting {
