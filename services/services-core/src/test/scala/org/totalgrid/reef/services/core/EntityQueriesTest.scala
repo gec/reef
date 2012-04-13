@@ -106,7 +106,7 @@ object EntityTestSeed {
 }
 
 @RunWith(classOf[JUnitRunner])
-class EntityQueriesTest extends DatabaseUsingTestBase with RunTestsInsideTransaction {
+class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction {
   import EntityQuery._
 
   override def beforeAll() {

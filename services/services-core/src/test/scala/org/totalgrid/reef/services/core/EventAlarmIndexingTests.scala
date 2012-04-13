@@ -29,7 +29,7 @@ import org.totalgrid.reef.client.service.proto.Events._
 import org.totalgrid.reef.models._
 
 @RunWith(classOf[JUnitRunner])
-class EventAlarmIndexingTests extends DatabaseUsingTestBaseNoTransaction with SyncServicesTestHelpers {
+class EventAlarmIndexingTests extends DatabaseUsingTestNotTransactionSafe with SyncServicesTestHelpers {
 
   test("Seed events") {
 

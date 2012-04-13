@@ -34,10 +34,10 @@ import org.totalgrid.reef.client.service.proto.Commands.CommandLock
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.{ CoreServicesSchema, DatabaseUsingTestBaseNoTransaction }
+import org.totalgrid.reef.models.{ CoreServicesSchema, DatabaseUsingTestNotTransactionSafe }
 
 @RunWith(classOf[JUnitRunner])
-class BatchServiceRequestServiceTest extends DatabaseUsingTestBaseNoTransaction {
+class BatchServiceRequestServiceTest extends DatabaseUsingTestNotTransactionSafe {
 
   override def beforeEach() {
     CoreServicesSchema.prepareDatabase(dbConnection)

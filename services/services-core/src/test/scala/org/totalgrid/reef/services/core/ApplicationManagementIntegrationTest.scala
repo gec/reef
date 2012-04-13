@@ -34,10 +34,10 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.models.{ CoreServicesSchema, DatabaseUsingTestBaseNoTransaction }
+import org.totalgrid.reef.models.{ CoreServicesSchema, DatabaseUsingTestNotTransactionSafe }
 
 @RunWith(classOf[JUnitRunner])
-class ApplicationManagementIntegrationTest extends DatabaseUsingTestBaseNoTransaction {
+class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransactionSafe {
 
   override def beforeEach() {
     CoreServicesSchema.prepareDatabase(dbConnection)

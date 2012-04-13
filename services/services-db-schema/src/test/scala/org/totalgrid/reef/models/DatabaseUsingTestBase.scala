@@ -20,16 +20,50 @@ package org.totalgrid.reef.models
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FunSuite }
-import org.totalgrid.reef.persistence.squeryl.{ DbInfo, DbConnector }
+import org.totalgrid.reef.persistence.squeryl.{ DbConnection, DbInfo, DbConnector }
+import org.totalgrid.reef.util.Timing
+import com.weiglewilczek.slf4s.Logging
 
-abstract class DatabaseUsingTestBaseNoTransaction extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach {
-  lazy val dbConnection = DbConnector.connect(DbInfo.loadInfo("../../org.totalgrid.reef.test.cfg"))
-  override def beforeAll() {
-    CoreServicesSchema.prepareDatabase(dbConnection, true, false)
+object ConnectionStorage {
+  private var lastConnection = Option.empty[DbConnection]
+  private var lastOptions = Option.empty[DbInfo]
+
+  def connect(dbInfo: DbInfo): DbConnection = {
+    if (lastOptions != Some(dbInfo)) {
+      lastConnection = Some(DbConnector.connect(dbInfo))
+      lastOptions = Some(dbInfo)
+    }
+    lastConnection.get
   }
 
+  var dbNeedsReset = true
+}
+
+abstract class DatabaseUsingTestBaseNoTransaction extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with Logging {
+  lazy val dbConnection = ConnectionStorage.connect(DbInfo.loadInfo("../../org.totalgrid.reef.test.cfg"))
+  override def beforeAll() {
+    if (ConnectionStorage.dbNeedsReset) {
+      val prepareTime = Timing.benchmark {
+        CoreServicesSchema.prepareDatabase(dbConnection, true, false)
+      }
+      logger.info("Prepared db in: " + prepareTime)
+      ConnectionStorage.dbNeedsReset = false
+    }
+  }
+
+  /**
+   * we only need to rebuild the database schema when a Non-Transaction-Safe test suite has been run.
+   */
+  protected def resetDbAfterTestSuite: Boolean
+  override def afterAll() {
+    ConnectionStorage.dbNeedsReset = resetDbAfterTestSuite
+  }
 }
 
 abstract class DatabaseUsingTestBase extends DatabaseUsingTestBaseNoTransaction with RunTestsInsideTransaction {
+  protected override def resetDbAfterTestSuite = false
+}
 
+abstract class DatabaseUsingTestNotTransactionSafe extends DatabaseUsingTestBaseNoTransaction {
+  protected override def resetDbAfterTestSuite = true
 }
