@@ -137,7 +137,6 @@ class CalculationConfigServiceModel
   override protected def preUpdate(context: RequestContext, entry: CalculationConfig, previous: CalculationConfig) = {
     val calcEntity = entry.entity.value
     if (entry.outputPointId != previous.outputPointId) {
-      // this should be unreachable until we fix searching
       val previousOutputPoint = previous.outputPoint.value.entity.value
       edgeModel.deleteEdges(context, calcEntity, List(previousOutputPoint), "calcs")
       edgeModel.deleteEdges(context, previousOutputPoint, List(calcEntity), "source")
