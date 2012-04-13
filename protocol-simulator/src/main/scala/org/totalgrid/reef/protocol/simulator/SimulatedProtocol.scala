@@ -24,7 +24,7 @@ import org.totalgrid.reef.protocol.api._
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.service.proto.SimMapping.SimulatorMapping
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 
@@ -33,7 +33,6 @@ import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommCha
  * under configurable load.
  */
 class SimulatedProtocol(exe: Executor) extends ChannelIgnoringProtocol with Logging {
-
   final override def name: String = "benchmark"
 
   case class PluginRecord(endpoint: String, mapping: SimulatorMapping, publisher: Publisher[MeasurementBatch], current: Option[SimulatorPlugin])

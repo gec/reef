@@ -38,7 +38,7 @@ abstract class MetricsCommands extends ReefCommandSupport {
   val outputToCSV = obj[scala.Option[String]]("metrics.csv", None)
 
   protected def metrics: MetricsService = {
-    this.reefClient.getRpcInterface(classOf[MetricsService])
+    this.reefClient.getService(classOf[MetricsService])
   }
 
   def output(pubValues: Map[String, Any]) = {

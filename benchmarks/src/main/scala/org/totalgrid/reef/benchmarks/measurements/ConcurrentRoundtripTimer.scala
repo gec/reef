@@ -21,7 +21,7 @@ package org.totalgrid.reef.benchmarks.measurements
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.sapi.client.Promise
 import net.agileautomata.executor4s.{ Success, Result }
 import org.totalgrid.reef.util.Timing.Stopwatch
@@ -61,7 +61,8 @@ class ConcurrentRoundtripTimer(client: Client, result: SubscriptionResult[List[M
    * measurement was received and how long it took to receive the last one. All times in milliseconds.
    */
   def timeRoundtrip(measurements: List[Measurement]): Promise[RoundtripReading] = this.synchronized {
-    val future = client.future[Result[RoundtripReading]]
+    val exe = client.getInternal.getExecutor
+    val future = exe.future[Result[RoundtripReading]]
 
     var expected = measurements
     var firstMeas = Option.empty[Long]

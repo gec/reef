@@ -29,7 +29,7 @@ import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionCreationList
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.standalone.InMemoryNode
 import org.totalgrid.reef.loader.commons.LoaderServicesList
-import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
+import org.totalgrid.reef.client.{ Connection, Client }
 import org.totalgrid.reef.client.sapi.client.SubscriptionCanceler
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {

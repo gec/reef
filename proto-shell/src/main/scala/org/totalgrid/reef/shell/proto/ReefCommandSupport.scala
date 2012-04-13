@@ -23,14 +23,13 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.AllScadaService
 import org.apache.felix.service.command.CommandSession
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
+import org.totalgrid.reef.client.{ Connection, Client }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.metrics.client.MetricsServiceList
 import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, SubscriptionEvent, Subscription, ConnectionCloseListener }
+import org.totalgrid.reef.client.factory.ReefConnectionFactory
 
 object ReefCommandSupport extends Logging {
   def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
@@ -48,8 +47,8 @@ object ReefCommandSupport extends Logging {
 
   def getAuthenticatedClient(session: CommandSession, connection: Connection, context: String, cancelable: Cancelable, userSettings: UserSettings) {
     try {
-      val client = connection.login(userSettings).await
-      val services = client.getRpcInterface(classOf[AllScadaService])
+      val client = connection.login(userSettings)
+      val services = client.getService(classOf[AllScadaService])
 
       println("Logged into " + context + " as user: " + userSettings.getUserName + "\n\n")
 
@@ -64,13 +63,16 @@ object ReefCommandSupport extends Logging {
 
   def attemptLogin(session: CommandSession, amqpSettings: AmqpSettings, userSettings: UserSettings, unexpectedDisconnectCallback: () => Unit) = {
 
+    val factory = new ReefConnectionFactory(amqpSettings, new ReefServices)
+    val conn = factory.connect()
+    /*
     val factory = new ReefFactory(amqpSettings, new ReefServices)
-    val conn = factory.connect
+    val conn = factory.connect*/
     conn.addServicesList(new MetricsServiceList)
 
     val cancel = new Cancelable {
       def cancel() = {
-        factory.shutdown()
+        factory.terminate()
       }
     }
     conn.addConnectionListener(new ConnectionCloseListener {

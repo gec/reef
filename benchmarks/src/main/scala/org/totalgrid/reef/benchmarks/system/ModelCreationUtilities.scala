@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.benchmarks.system
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointOwnership }
@@ -34,7 +34,7 @@ object ModelCreationUtilities {
   }
 
   def addEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
-    val loaderServices = client.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = client.getService(classOf[LoaderServices])
     loaderServices.startBatchRequests()
 
     val names = getPointNames(endpointName, pointsPerEndpoint)
@@ -49,7 +49,7 @@ object ModelCreationUtilities {
   }
 
   def deleteEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
-    val loaderServices = client.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = client.getService(classOf[LoaderServices])
 
     val uuid = loaderServices.getEndpointByName(endpointName).await.getUuid
     loaderServices.disableEndpointConnection(uuid).await
@@ -72,7 +72,9 @@ object ModelCreationUtilities {
     var remainingOps = batchableOperations
     var timingResults = List.empty[(Long, A)]
 
-    val f = client.future[Result[List[(Long, A)]]]
+    val exe = client.getInternal.getExecutor
+
+    val f = exe.future[Result[List[(Long, A)]]]
     val prom = Promise.from(f)
 
     def completed(stopwatch: Stopwatch, a: Promise[A]): Unit = f.synchronized {

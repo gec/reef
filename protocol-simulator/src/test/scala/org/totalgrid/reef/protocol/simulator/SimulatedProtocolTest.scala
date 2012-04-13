@@ -29,7 +29,7 @@ import net.agileautomata.executor4s.Executor
 import java.lang.Exception
 import org.totalgrid.reef.client.service.proto.Model.Command
 import org.mockito.Mockito
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 
 @RunWith(classOf[JUnitRunner])
 class SimulatedProtocolTest extends FunSuite with ShouldMatchers {

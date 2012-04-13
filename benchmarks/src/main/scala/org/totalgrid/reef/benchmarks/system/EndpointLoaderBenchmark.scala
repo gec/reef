@@ -20,7 +20,7 @@ package org.totalgrid.reef.benchmarks.system
 
 import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
 import java.io.PrintStream
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.util.Timing.Stopwatch
 
