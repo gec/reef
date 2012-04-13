@@ -20,8 +20,7 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
-import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
+import org.totalgrid.reef.client.service.proto.Processing._
 
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.client.Promise
@@ -30,7 +29,7 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.client.{ SubscriptionResult, AddressableDestination }
+import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionResult }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
 
@@ -45,7 +44,7 @@ trait MeasurementProcessorServices extends AllScadaServiceImpl {
 
   def publishIndividualMeasurementAsEvent(meas: Measurement)
 
-  def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection): Cancelable
+  def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection): Promise[SubscriptionBinding]
 
   def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long): Promise[MeasurementProcessingConnection]
 }
@@ -80,13 +79,15 @@ class MeasurementProcessorServicesImpl(client: Client)
   }
 
   override def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection) = {
-    val destination = new AddressableDestination(conn.getRouting.getServiceRoutingKey)
-    val service = new AddressableMeasurementBatchService(handler)
+    ops.operation("Failed binding to measurementstream: " + conn.getMeasProc.getUuid) { session =>
+      import net.agileautomata.executor4s.Result
 
-    val closeable = client.bindService(service, client, destination, false)
+      val service = new AddressableMeasurementBatchService(handler)
+      val binding = client.lateBindService(service, client)
 
-    new Cancelable {
-      def cancel() = closeable.cancel()
+      val bindingProto = MeasurementStreamBinding.newBuilder.setMeasurementQueue(binding.getId).setProcessingConnection(conn).build
+
+      session.post(bindingProto).map { _.one }.map(s => Result(binding))
     }
   }
 
