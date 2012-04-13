@@ -63,7 +63,7 @@ class PointDeleteTest extends ServiceClientSuite {
     client.disableEndpointConnection(endpoint.getUuid)
     loaderServices.delete(endpoint).await
 
-    (0 to numberOfPoints).foreach { i => loaderServices.delete(points.get(i).toBuilder.clearEndpoint.build).await }
+    (0 to numberOfPoints).foreach { i => loaderServices.delete(points.get(i)).await }
   }
 
 }
