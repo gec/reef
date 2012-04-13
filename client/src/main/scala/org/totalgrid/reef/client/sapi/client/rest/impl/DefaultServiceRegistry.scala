@@ -43,7 +43,7 @@ trait DefaultServiceRegistry {
       //case Some(creator) => creator.createRpcProvider(client).asInstanceOf[A]
       case Some(creator) => creator match {
         case jfac: JavaProviderFactory => jfac.createRpcProvider(jclient).asInstanceOf[A] //throw new UnknownServiceException("Java interface for: " + klass + "not supported")
-        case sfac: ServiceProviderFactory => sfac.createRpcProvider(sclient).asInstanceOf[A]
+        case sfac: ServiceProviderFactory => sfac.createRpcProvider(jclient).asInstanceOf[A]
       }
       case None => throw new UnknownServiceException("Unknown rpc interface for: " + klass)
     }

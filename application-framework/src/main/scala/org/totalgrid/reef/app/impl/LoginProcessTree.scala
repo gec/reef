@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.app.impl
 
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.app.process._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
@@ -64,16 +64,16 @@ class LoginProcessTree(connection: Connection,
 
     def setup(p: ProcessManager) {
 
-      client = Some(connection.login(managerSettings.userSettings).await)
+      client = Some(connection.login(managerSettings.userSettings))
 
-      val services = client.get.getRpcInterface(classOf[AllScadaService])
+      val services = client.get.getService(classOf[AllScadaService])
       childTask = Some(new AppRegistrationTask(client.get, services))
       p.addChildProcess(this, childTask.get)
     }
 
     def cleanup(p: ProcessManager) {
       childTask.foreach { p.removeProcess(_) }
-      client.foreach { _.logout().await }
+      client.foreach { _.logout() }
     }
   }
 

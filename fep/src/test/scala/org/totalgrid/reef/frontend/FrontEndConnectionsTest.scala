@@ -31,7 +31,7 @@ import org.totalgrid.reef.protocol.api.mock.{ NullProtocol, RecordingProtocol }
 import org.totalgrid.reef.protocol.api.mock.RecordingProtocol._
 import org.mockito.{ Matchers, Mockito }
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
@@ -39,7 +39,7 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
     val config = getConnectionProto(true, Some("routing"))
     val client = Mockito.mock(classOf[FrontEndProviderServices], new MockitoStubbedOnly)
     val rawClient = Mockito.mock(classOf[Client])
-    Mockito.doReturn(client).when(rawClient).getRpcInterface(classOf[FrontEndProviderServices])
+    Mockito.doReturn(client).when(rawClient).getService(classOf[FrontEndProviderServices])
     val cancelable = new MockSubscription
     val commandBinding = success(cancelable)
     Mockito.doReturn(commandBinding).when(client).bindCommandHandler(Matchers.eq(config.getEndpoint.getUuid), Matchers.any(classOf[CommandRequestHandler]))

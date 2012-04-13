@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.calc.protocol
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement, MeasurementBatch }
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection }
@@ -42,7 +42,7 @@ class CalculatorProtocol extends ChannelIgnoringProtocol {
     batchPublisher: Publisher[MeasurementBatch],
     endpointPublisher: Publisher[EndpointConnection.State], client: Client) = {
 
-    val service = client.getRpcInterface(classOf[AllScadaService])
+    val service = client.getService(classOf[AllScadaService])
 
     val metricsPublisher = new CalculationMetricsSource(metrics.getStore(endpointName), true)
 

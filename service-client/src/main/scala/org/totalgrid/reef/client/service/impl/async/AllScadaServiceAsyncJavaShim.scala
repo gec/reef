@@ -24,7 +24,8 @@ import org.totalgrid.reef.client.service.async._
 import org.totalgrid.reef.client.service.async.impl._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => ScalaAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
-import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider, Client }
+import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
+import org.totalgrid.reef.client.Client
 
 trait AllScadaServiceAsyncJavaShim
     extends AllScadaServiceAsync

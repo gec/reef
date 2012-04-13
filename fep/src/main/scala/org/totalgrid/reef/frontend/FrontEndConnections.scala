@@ -30,7 +30,7 @@ import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.service.command.{ CommandResultCallback, CommandRequestHandler }
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest }
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.Commands
 import org.totalgrid.reef.protocol.api.{ ProtocolManager, Publisher, CommandHandler, Protocol }
 import org.totalgrid.reef.client.javaimpl.ClientWrapper
@@ -83,7 +83,7 @@ class FrontEndConnections(comms: Seq[Protocol], mgrs: Map[String, ProtocolManage
   def addEntry(c: EndpointConnection) = try {
 
     val client = newClient
-    val services = client.getRpcInterface(classOf[FrontEndProviderServices])
+    val services = client.getService(classOf[FrontEndProviderServices])
 
     val protocolName = c.getEndpoint.getProtocol
     val endpointName = c.getEndpoint.getName
@@ -92,7 +92,7 @@ class FrontEndConnections(comms: Seq[Protocol], mgrs: Map[String, ProtocolManage
       case None => throw new IllegalArgumentException("Unknown protocol: " + protocolName)
       case Some(p) => p match {
         case TraitInterface(protocol) => addProtocolTrait(protocol, client, services, c)
-        case ManagerInterface(mgr) => mgr.addEndpoint(new ClientWrapper(client), c)
+        case ManagerInterface(mgr) => mgr.addEndpoint(client, c)
       }
     }
 

@@ -31,11 +31,13 @@ import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import org.mockito.Mockito
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.settings._
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.service.proto.Application.{ HeartbeatConfig, ApplicationConfig }
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.app.{ ConnectionProvider, ApplicationSettings, ConnectedApplication }
+
+import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
 
 @RunWith(classOf[JUnitRunner])
 class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
@@ -79,15 +81,15 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  def makeServices(): (Connection, AllScadaService) = {
+  def makeServices(): (SConnection, AllScadaService) = {
     val client = Mockito.mock(classOf[Client], new MockitoStubbedOnly)
     val services = Mockito.mock(classOf[AllScadaService], new MockitoStubbedOnly)
-    val connection = Mockito.mock(classOf[Connection], new MockitoStubbedOnly)
+    val connection = Mockito.mock(classOf[SConnection], new MockitoStubbedOnly)
 
     Mockito.doReturn(success(true)).when(client).logout()
 
     Mockito.doReturn(client).when(client).spawn()
-    Mockito.doReturn(services).when(client).getRpcInterface(classOf[AllScadaService])
+    Mockito.doReturn(services).when(client).getService(classOf[AllScadaService])
     Mockito.doReturn(success(client)).when(connection).login(userSettings)
     (connection, services)
   }

@@ -19,7 +19,8 @@
 package org.totalgrid.reef.app
 
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+//import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 
 /**
  * ConnectedApplicationManager manages the connection state to reef. This is more than just the connection to the broker,

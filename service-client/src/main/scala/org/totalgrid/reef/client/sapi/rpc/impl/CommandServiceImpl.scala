@@ -27,6 +27,7 @@ import org.totalgrid.reef.client.sapi.client.rpc.framework.{ MultiRequestHelper,
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
 import org.totalgrid.reef.client.SubscriptionBinding
 import org.totalgrid.reef.client.sapi.client.rest.impl.BatchServiceRestOperations
+import net.agileautomata.executor4s.Result
 
 trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
@@ -157,15 +158,17 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
       val entity = EntityRequestBuilders.getPointsFeedbackCommands(pointUuid)
       val entityList = session.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
 
-      val batchClient = new BatchServiceRestOperations(client)
+      val batchClient = buildBatchRestOps
       def getCommandWithUuid(uuid: ReefUUID) = batchClient.get(CommandRequestBuilders.getByEntityId(uuid)).map(_.one)
-      MultiRequestHelper.batchScatterGatherQuery(client, entityList, getCommandWithUuid _, batchClient.flush _)
+      MultiRequestHelper.batchScatterGatherQuery(exe, entityList, getCommandWithUuid _, batchClient.flush _)
     }
   }
 
   override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
     ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { session =>
-      import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
+      exe.future[Result[SubscriptionBinding]]
+
+      /*import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
       import org.totalgrid.reef.client.AddressableDestination
       import net.agileautomata.executor4s._
 
@@ -180,7 +183,7 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
           case fail: Failure =>
             connectionFuture.asInstanceOf[Future[Result[SubscriptionBinding]]]
         }
-      }
+      }*/
     }
   }
 }

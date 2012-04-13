@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.{ UserSettings, Version }
-import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Routable }
+import org.totalgrid.reef.client.{RequestHeaders, SubscriptionBinding, AnyNodeDestination, Routable}
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -105,7 +105,8 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
   private def createClient(authToken: String, strand: Strand) = {
     val client = new DefaultClient(this, strand)
-    client.modifyHeaders(_.addAuthToken(authToken))
+    //client.modifyHeaders(_.addAuthToken(authToken))
+    client.setHeaders(client.getHeaders.setAuthToken(authToken))
     client
   }
 

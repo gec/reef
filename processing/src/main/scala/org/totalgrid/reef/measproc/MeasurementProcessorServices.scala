@@ -25,14 +25,14 @@ import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessin
 
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.client.Promise
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.client.{ SubscriptionResult, AddressableDestination }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
+import org.totalgrid.reef.client.{Client, SubscriptionResult, AddressableDestination}
+import org.totalgrid.reef.client.registration.EventPublisher
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig): Promise[SubscriptionResult[List[MeasurementProcessingConnection], MeasurementProcessingConnection]]
@@ -50,7 +50,7 @@ trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long): Promise[MeasurementProcessingConnection]
 }
 
-class MeasurementProcessorServicesImpl(client: Client)
+class MeasurementProcessorServicesImpl(client: Client, eventPub: EventPublisher)
     extends ApiBase(client) with MeasurementProcessorServices {
 
   override def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig) = {
@@ -83,15 +83,16 @@ class MeasurementProcessorServicesImpl(client: Client)
     val destination = new AddressableDestination(conn.getRouting.getServiceRoutingKey)
     val service = new AddressableMeasurementBatchService(handler)
 
-    val closeable = client.bindService(service, client, destination, false)
+    // TODO: FIX FIX FIX FIX
+    ///val closeable = client.bindService(service, client, destination, false)
 
     new Cancelable {
-      def cancel() = closeable.cancel()
+      def cancel() {} //= closeable.cancel()
     }
   }
 
   override def publishIndividualMeasurementAsEvent(meas: Measurement) {
-    client.publishEvent(Envelope.SubscriptionEventType.MODIFIED, meas, meas.getName)
+    eventPub.publishEvent(Envelope.SubscriptionEventType.MODIFIED, meas, meas.getName)
   }
 
   override def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long) = {

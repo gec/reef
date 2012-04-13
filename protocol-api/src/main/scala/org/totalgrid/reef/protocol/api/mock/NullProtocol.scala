@@ -20,7 +20,7 @@ package org.totalgrid.reef.protocol.api.mock
 
 import org.totalgrid.reef.protocol.api._
 import org.totalgrid.reef.client.service.proto.{ FEP, Model }
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, EndpointConnection }
 

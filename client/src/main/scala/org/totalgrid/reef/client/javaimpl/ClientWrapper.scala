@@ -18,11 +18,12 @@
  */
 package org.totalgrid.reef.client.javaimpl
 
-import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, RequestSpy }
 import org.totalgrid.reef.client.exception.ServiceIOException
 import org.totalgrid.reef.client._
 import org.totalgrid.reef.client.ServiceProviderInfo
+import net.agileautomata.executor4s.Executor
+import sapi.client.rest.{ServiceRegistry, RestOperations, Client => SClient}
+import sapi.client.{RequestSpyHook, BasicRequestHeaders, RequestSpy}
 
 class ClientWrapper(client: SClient) extends Client {
 
@@ -61,4 +62,19 @@ class ClientWrapper(client: SClient) extends Client {
   def logout() {
     client.logout().await
   }
+
+  def getInternal: ClientInternal = {
+    new ClientInternal {
+      def getExecutor: Executor = client
+      def getOperations: RestOperations = client
+      def getRequestSpyHook: RequestSpyHook = client
+      def getServiceRegistry: ServiceRegistry = client
+
+      def getHeaders: BasicRequestHeaders = client.getHeaders
+
+      def setHeaders(headers: BasicRequestHeaders) { client.setHeaders(headers) }
+    }
+  }
+
+  def spawn(): Client = new ClientWrapper(client.spawn())
 }

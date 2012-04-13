@@ -27,6 +27,7 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.app.{ ConnectedApplication, ConnectionConsumer, ConnectedApplicationManager, ConnectionProvider }
 import net.agileautomata.executor4s.{ Cancelable, Executor }
 import org.totalgrid.reef.util.Lifecycle
+import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
 
 case class ApplicationManagerSettings(
     userSettings: UserSettings,
@@ -103,7 +104,11 @@ class SimpleConnectedApplicationManager(executor: Executor, provider: Connection
   }
 
   private def createLoginProcess(app: ConnectedApplication) {
-    val process = if (currentConnection.isEmpty) None else Some(new LoginProcessTree(currentConnection.get, app, managerSettings, executor))
+    val process = if (currentConnection.isEmpty) {
+      None
+    } else {
+      Some(new LoginProcessTree(new ConnectionWrapper(currentConnection.get, executor), app, managerSettings, executor))
+    }
 
     applications += (app -> process)
   }

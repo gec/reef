@@ -25,9 +25,9 @@ import org.totalgrid.reef.client.proto.Envelope.{ SubscriptionEventType, Verb }
 import org.totalgrid.reef.client.sapi.service.AsyncService
 
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
-import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList, Routable }
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.client.javaimpl.ClientWrapper
+import org.totalgrid.reef.client.{RequestHeaders, ServiceProviderInfo, ServicesList, Routable}
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RequestSpyHook with ExecutorDelegate {
 

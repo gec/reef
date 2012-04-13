@@ -18,7 +18,8 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest
 
-import org.totalgrid.reef.client.{ ServiceProviderInfo }
+import org.totalgrid.reef.client.{ ServiceProviderInfo, Client => JClient }
+import org.totalgrid.reef.client.internal.ProviderFactory
 
 trait RpcProvider {
   def getRpcInterface[A](klass: Class[A]): A
@@ -28,7 +29,19 @@ trait RpcProvider {
  * helper object to make defining a provider nice looking in scala
  */
 object RpcProvider {
-  def apply(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = {
+  import scala.collection.JavaConversions._
+
+  def apply(fun: (JClient) => AnyRef, interfaces: List[Class[_]]): ServiceProviderInfo = {
+    new ServiceProviderInfo {
+      def getInterfacesImplemented: java.util.List[Class[_]] = interfaces
+
+      def getFactory: ProviderFactory = new ServiceProviderFactory {
+        def createRpcProvider(client: JClient): AnyRef = fun(client)
+      }
+    }
+  }
+
+  /*def apply(fun: (Client) => AnyRef, interfaces: List[Class[_]]) = {
     new ServiceProviderInfo {
       override val getFactory = new ServiceProviderFactory {
         def createRpcProvider(client: Client) = fun(client)
@@ -37,5 +50,5 @@ object RpcProvider {
       import scala.collection.JavaConversions._
       override def getInterfacesImplemented = interfaces
     }
-  }
+  }*/
 }

@@ -43,4 +43,5 @@ trait AnnotatedOperations {
    * @param fun function that uses the client and subscription to generate a result
    */
   def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]]
+
 }
