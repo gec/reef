@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>reef-admin-shell</artifactId>
-    <packaging>bundle</packaging>
     <parent>
         <groupId>org.totalgrid.reef</groupId>
-        <artifactId>reef-scala-base</artifactId>
+        <artifactId>reef-services</artifactId>
         <version>0.4.8-SNAPSHOT</version>
-        <relativePath>../scala-base</relativePath>
+        <relativePath>../</relativePath>
     </parent>
+    <artifactId>reef-services-authz</artifactId>
+    <packaging>bundle</packaging>
 
     <licenses>
         <license>
@@ -26,9 +26,13 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>Reef Admin Shell Extension</Bundle-Name>
-                        <Export-Package>org.totalgrid.reef.shell.admin.*;version="${reef.version}"</Export-Package>
+                        <Bundle-Name>Reef Authz Service</Bundle-Name>
+                        <Export-Package>
+							org.totalgrid.reef.authz.*;version="${reef.version}"
+                        </Export-Package>
+                        <Private-Package>org.totalgrid.reef.authz.activator</Private-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
+                        <_nouses>true</_nouses>
                     </instructions>
                 </configuration>
             </plugin>
@@ -36,48 +40,33 @@
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
-                    <header>../AGPL_FILE_HEADER</header>
+                    <header>${main.basedir}/AGPL_FILE_HEADER</header>
                 </configuration>
             </plugin>
         </plugins>
     </build>
     <dependencies>
-        <dependency>
+        
+		<dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-proto-shell</artifactId>
-            <version>${reef.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-services-core</artifactId>
-            <version>${reef.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-application-framework</artifactId>
-            <version>${reef.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-metrics</artifactId>
-            <version>${reef.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-util-osgi</artifactId>
+            <artifactId>reef-services-db-schema</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
+        
         <dependency>
-            <groupId>org.apache.karaf.shell</groupId>
-            <artifactId>org.apache.karaf.shell.console</artifactId>
-            <version>${karaf.console.version}</version>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-services-db-schema</artifactId>
+            <version>${reef.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>${felix-core.version}</version>
-            <scope>compile</scope>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-persistence-postgresql</artifactId>
+            <version>${reef.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
+
 </project>
