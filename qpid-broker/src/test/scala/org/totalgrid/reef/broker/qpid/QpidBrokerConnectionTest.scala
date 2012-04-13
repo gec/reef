@@ -96,7 +96,6 @@ class QpidBrokerConnectionTest extends BrokerConnectionTestBase {
       val okMessages = List("Recent message should be delivered", "Other Recent message should be delivered")
       okMessages.foreach { msg =>
         broker.publish("test", "hi", msg.getBytes, None)
-        Thread.sleep(TTL / 4)
       }
 
       val list = new SynchronizedList[String]
