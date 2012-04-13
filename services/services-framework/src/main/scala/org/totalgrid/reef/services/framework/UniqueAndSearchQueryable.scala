@@ -26,6 +26,8 @@ import org.squeryl.dsl.QueryYield
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.SquerylConversions
 
+import SquerylModel._
+
 /**
  * defines a simple to integrate implementation of the findRecord and findRecords functions
  * that makes a clear and explicit distinction between "identity"/"unique" fields and "data"
@@ -66,7 +68,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * entries that had that matching field (user_name). Since these uniqueQueries are useful for
    * searching they are merged with the searchQueries to avoid code duplication.
    */
-  def uniqueQuery(proto: MessageType, sql: T): List[Option[LogicalBoolean]]
+  def uniqueQuery(proto: MessageType, sql: T): List[Option[SearchTerm]]
 
   /**
    * this list is for fields that we want to be searchable but do not factor into determining
@@ -75,7 +77,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * across all users/commands but if they attempt to create a new status we would be able to determine
    * which record we should be updating.
    */
-  def searchQuery(proto: MessageType, sql: T): List[Option[LogicalBoolean]]
+  def searchQuery(proto: MessageType, sql: T): List[Option[SearchTerm]]
 
   /**
    * helper function for use in complex queries in models :

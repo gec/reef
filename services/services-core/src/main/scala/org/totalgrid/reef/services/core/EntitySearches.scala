@@ -32,7 +32,7 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
   val table = ApplicationSchema.entities
   def uniqueQuery(proto: EntityProto, sql: Entity) = {
     List(
-      proto.uuid.value.asParam(sql.id === UUID.fromString(_)),
+      proto.uuid.value.asParam(sql.id === UUID.fromString(_)).unique,
       proto.name.asParam(sql.name === _),
       EntityQuery.noneIfEmpty(proto.types).asParam(sql.id in EntityQuery.entityIdsFromTypes(_)))
   }
@@ -52,7 +52,7 @@ trait EntityPartsSearches extends UniqueAndSearchQueryable[EntitySearch, Entity]
   val table = ApplicationSchema.entities
   def uniqueQuery(proto: EntitySearch, sql: Entity) = {
     List(
-      proto.uuid.asParam(sql.id === UUID.fromString(_)),
+      proto.uuid.asParam(sql.id === UUID.fromString(_)).unique,
       proto.name.asParam(sql.name === _),
       EntityQuery.noneIfEmpty(proto.types).asParam(sql.id in EntityQuery.entityIdsFromTypes(_)))
   }

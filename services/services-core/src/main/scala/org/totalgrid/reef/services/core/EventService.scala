@@ -211,12 +211,17 @@ trait EventConversion
 
   // Derive a SQL expression from the proto. Used by GET. 
   def searchQuery(proto: Event, sql: EventStore) = {
-    proto.eventType.asParam(sql.eventType === _) :: proto.severity.asParam(sql.severity === _) :: proto.subsystem.asParam(sql.subsystem === _) ::
-      proto.userId.asParam(sql.userId === _) :: proto.entity.map(ent => sql.entityId in EntityQuery.idsFromProtoQuery(ent)) :: Nil
+    List(
+      proto.eventType.asParam(sql.eventType === _),
+      proto.severity.asParam(sql.severity === _),
+      proto.subsystem.asParam(sql.subsystem === _),
+      proto.userId.asParam(sql.userId === _),
+      proto.entity.map(ent => sql.entityId in EntityQuery.idsFromProtoQuery(ent)))
   }
 
   def uniqueQuery(proto: Event, sql: EventStore) = {
-    proto.id.value.asParam(sql.id === _.toLong) :: Nil // if exists, use it.
+    List(
+      proto.id.value.asParam(sql.id === _.toLong).unique)
   }
 
   def isModified(entry: EventStore, existing: EventStore): Boolean = {

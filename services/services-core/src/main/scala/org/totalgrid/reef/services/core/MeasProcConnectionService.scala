@@ -97,9 +97,9 @@ trait MeasurementProcessingConnectionConversion
   }
 
   def uniqueQuery(proto: ConnProto, sql: MeasProcAssignment) = {
-    proto.id.value.asParam(sql.id === _.toLong) ::
-      proto.measProc.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })) ::
-      Nil
+    List(
+      proto.id.value.asParam(sql.id === _.toLong).unique,
+      proto.measProc.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })))
   }
 
   def isModified(entry: MeasProcAssignment, existing: MeasProcAssignment): Boolean = {

@@ -150,16 +150,16 @@ trait CommunicationEndpointConnectionConversion
   }
 
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {
-    proto.frontEnd.appConfig.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })) ::
-      proto.state.asParam(sql.state === _.getNumber) ::
-      proto.enabled.asParam(sql.enabled === _) ::
-      Nil
+    List(
+      proto.frontEnd.appConfig.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })),
+      proto.state.asParam(sql.state === _.getNumber),
+      proto.enabled.asParam(sql.enabled === _))
   }
 
   def uniqueQuery(proto: ConnProto, sql: FrontEndAssignment) = {
-    proto.id.value.asParam(sql.id === _.toLong) ::
-      proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(endpoint, { _.id })) ::
-      Nil
+    List(
+      proto.id.value.asParam(sql.id === _.toLong).unique,
+      proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(endpoint, { _.id })))
   }
 
   def isModified(entry: FrontEndAssignment, existing: FrontEndAssignment): Boolean = {

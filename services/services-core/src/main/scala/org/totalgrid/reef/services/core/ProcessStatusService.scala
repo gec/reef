@@ -161,12 +161,13 @@ trait ProcessStatusConversion
   }
 
   def uniqueQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {
-    proto.processId.asParam(sql.processId === _) ::
+    List[Option[SearchTerm]](
+      proto.processId.asParam(sql.processId === _).unique,
       proto.instanceName.map { inst =>
         // TODO: Make this better; shouldn't have to make a proto to use interface
         val nameProto = ApplicationConfig.newBuilder.setInstanceName(inst).build
         sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(nameProto, { _.id })
-      } :: Nil
+      })
   }
 
   def isModified(entry: HeartbeatStatus, existing: HeartbeatStatus): Boolean = {

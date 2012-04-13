@@ -27,6 +27,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.models.{ EntityQuery, Entity, ApplicationSchema, EntityAttribute => AttrModel }
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
+import org.totalgrid.reef.services.framework.SquerylModel._
 
 class EntityAttributeService(protected val model: EntityAttributeServiceModel)
     extends SyncModeledServiceBase[AttrProto, AttrModel, EntityAttributeServiceModel]
@@ -87,15 +88,15 @@ trait EntityAttributeConversion extends UniqueAndSearchQueryable[AttrProto, Attr
   }
 
   def searchQuery(proto: AttrProto, sql: AttrModel) = {
-    proto.entity.map(ent => sql.entityId in EntitySearches.searchQueryForId(ent, { _.id })) ::
-      proto.attribute.name.map(n => sql.attrName === n) ::
-      Nil
+    List(
+      proto.entity.map(ent => sql.entityId in EntitySearches.searchQueryForId(ent, { _.id })),
+      proto.attribute.name.map(n => sql.attrName === n))
   }
 
   def uniqueQuery(proto: AttrProto, sql: AttrModel) = {
-    proto.entity.map(ent => sql.entityId in EntitySearches.uniqueQueryForId(ent, { _.id })) ::
-      proto.attribute.name.map(n => sql.attrName === n) ::
-      Nil
+    List(
+      proto.entity.map(ent => sql.entityId in EntitySearches.uniqueQueryForId(ent, { _.id })),
+      proto.attribute.name.map(n => sql.attrName === n))
   }
 
   def relatedEntities(entries: List[AttrModel]) = {

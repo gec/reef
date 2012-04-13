@@ -22,10 +22,8 @@ import org.squeryl.PrimitiveTypeMode._
 import com.google.protobuf.GeneratedMessage
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
-import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.client.service.proto.Model.ReefID
-import org.squeryl.{ KeyedEntity, Table }
-import org.totalgrid.reef.models.{ ModelWithIdBase, EntityBasedModel, ModelWithUUID, ModelWithId }
+import org.squeryl.Table
+import org.totalgrid.reef.models.ModelWithIdBase
 
 /**
  * Supertype for Proto/Squeryl models
@@ -171,13 +169,43 @@ trait BasicSquerylModel[SqlKeyType, SqlType <: ModelWithIdBase[SqlKeyType]]
 
 object SquerylModel {
 
-  import org.squeryl.dsl.ast.{ LogicalBoolean, BinaryOperatorNodeLogicalBoolean }
+  import org.squeryl.dsl.ast.LogicalBoolean
+
+  /**
+   * instead of directly using squeryl's LogicalBoolean type we'll wrap it in a case class we
+   * can then use to "short-circuit" a search when we have been given a term like UUID.
+   */
+  case class SearchTerm(operand: LogicalBoolean, isUnique: Boolean)
+
+  class AsUnique(o: Option[LogicalBoolean]) {
+    def unique: Option[SearchTerm] = {
+      o.map { SearchTerm(_, true) }
+    }
+    def search: Option[SearchTerm] = {
+      o.map { SearchTerm(_, false) }
+    }
+  }
+  implicit def makeAsNormal(o: LogicalBoolean): SearchTerm = SearchTerm(o, false)
+  implicit def makeAsUniqueO(o: Option[LogicalBoolean]): AsUnique = new AsUnique(o)
+  implicit def makeAsNormalO(o: Option[LogicalBoolean]): Option[SearchTerm] = o.map { SearchTerm(_, false) }
+
+  implicit def makeAsNormalList(list: List[Option[LogicalBoolean]]): List[Option[SearchTerm]] = list.map { makeAsNormalO(_) }
+
+  implicit def unMakeAsNormal(o: SearchTerm): LogicalBoolean = o.operand
+  implicit def unMakeAsNormal(o: Option[SearchTerm]): Option[LogicalBoolean] = o.map { _.operand }
+
+  implicit def convertSearchTerms(exps: List[SearchTerm]): List[LogicalBoolean] = {
+    exps.find(_.isUnique) match {
+      case Some(op) => List(op.operand)
+      case None => exps.map { _.operand }
+    }
+  }
 
   /**
    * we use this singleton to indicate a wildcard search so we can differentiate between a totally blank query and
    * one where we asked for a wildcard search on some parameter
    */
-  val WILDCARD: Option[LogicalBoolean] = Some(true === true)
+  private val WILDCARD: Option[LogicalBoolean] = Some(true === true)
 
   class FilterStars[A](o: Option[A]) {
     def asParam(f: A => LogicalBoolean): Option[LogicalBoolean] = {
