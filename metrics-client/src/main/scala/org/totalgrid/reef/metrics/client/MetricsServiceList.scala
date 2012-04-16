@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.types.{ ServiceInfo, ServiceTypeInformation }
 import org.totalgrid.reef.client.internal.ProviderFactory
 import org.totalgrid.reef.client.sapi.client.rest.{ ServiceProviderFactory }
-import org.totalgrid.reef.client.{Client, ServiceProviderInfo, ServicesList}
+import org.totalgrid.reef.client.{ Client, ServiceProviderInfo, ServicesList }
 
 class MetricsServiceList extends ServicesList {
 

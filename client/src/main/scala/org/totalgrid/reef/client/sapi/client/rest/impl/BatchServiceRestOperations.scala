@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceR
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 
 class BatchServiceRestOperations(ops: RestOperations, hook: RequestSpyHook, registry: ServiceRegistry, exe: Executor) extends RestOperations {
-//class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with ServiceRegistry with Executor](client: A) extends RestOperations {
+  //class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with ServiceRegistry with Executor](client: A) extends RestOperations {
 
   case class RequestWithFuture[A](request: SelfIdentityingServiceRequest, future: Future[Response[A]] with Settable[Response[A]], descriptor: TypeDescriptor[A])
   private val pendingRequests = Queue.empty[RequestWithFuture[_]]

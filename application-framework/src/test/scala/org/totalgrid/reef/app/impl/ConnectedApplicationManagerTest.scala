@@ -37,7 +37,6 @@ import org.totalgrid.reef.client.service.proto.Application.{ HeartbeatConfig, Ap
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.app.{ ConnectionProvider, ApplicationSettings, ConnectedApplication }
 
-
 @RunWith(classOf[JUnitRunner])
 class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
 

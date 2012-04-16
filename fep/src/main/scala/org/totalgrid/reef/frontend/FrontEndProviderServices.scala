@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.sapi.client.rest.RpcProvider
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.{Client, SubscriptionResult}
+import org.totalgrid.reef.client.{ Client, SubscriptionResult }
 
 trait FrontEndProviderServices extends AllScadaService {
 

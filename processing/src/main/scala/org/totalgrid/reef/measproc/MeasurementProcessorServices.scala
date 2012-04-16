@@ -31,7 +31,7 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
-import org.totalgrid.reef.client.{Client, SubscriptionResult, AddressableDestination}
+import org.totalgrid.reef.client.{ Client, SubscriptionResult, AddressableDestination }
 import org.totalgrid.reef.client.registration.EventPublisher
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {

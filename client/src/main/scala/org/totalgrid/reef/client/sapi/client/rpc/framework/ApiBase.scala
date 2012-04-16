@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.client.rest.impl.{ BatchServiceRestOperati
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client._
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.{RequestHeaders, SubscriptionCreator, SubscriptionCreationListener, Client}
+import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionCreator, SubscriptionCreationListener, Client }
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations

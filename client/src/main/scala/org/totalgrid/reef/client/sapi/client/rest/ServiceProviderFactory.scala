@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.client.rest
 
 import org.totalgrid.reef.client.internal.ProviderFactory
-import org.totalgrid.reef.client.{Client => JClient}
+import org.totalgrid.reef.client.{ Client => JClient }
 
 trait ServiceProviderFactory extends ProviderFactory {
 

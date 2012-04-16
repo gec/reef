@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.{ UserSettings, Version }
-import org.totalgrid.reef.client.{RequestHeaders, SubscriptionBinding, AnyNodeDestination, Routable}
+import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionBinding, AnyNodeDestination, Routable }
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
