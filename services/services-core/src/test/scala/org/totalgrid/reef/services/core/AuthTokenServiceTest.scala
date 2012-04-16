@@ -39,11 +39,11 @@ import org.totalgrid.reef.client.settings.Version
 import org.totalgrid.reef.models.{ DatabaseUsingTestNotTransactionSafe, RunTestsInsideTransaction }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
-class AuthSystemTestBase extends DatabaseUsingTestNotTransactionSafe  with RunTestsInsideTransaction {
+class AuthSystemTestBase extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction {
 
   override def beforeAll() {
     super.beforeAll()
-    dbConnection.transaction{
+    dbConnection.transaction {
       seedTesting(new SilentRequestContext)
     }
   }

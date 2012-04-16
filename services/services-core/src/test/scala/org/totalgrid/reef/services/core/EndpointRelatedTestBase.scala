@@ -33,7 +33,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi._
-import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.models.{ RunTestsInsideTransaction, DatabaseUsingTestNotTransactionSafe }
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.measproc.{ MeasBatchProcessor, AddressableMeasurementBatchService }
 import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
@@ -45,7 +45,7 @@ import org.totalgrid.reef.client.sapi.client.{ Event, BasicRequestHeaders }
 import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.client.AddressableDestination
 
-abstract class EndpointRelatedTestBase extends DatabaseUsingTestBase with Logging {
+abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction with Logging {
 
   class CountingEventSink extends SystemEventSink {
     import scala.collection.mutable.{ Map, ListBuffer }
