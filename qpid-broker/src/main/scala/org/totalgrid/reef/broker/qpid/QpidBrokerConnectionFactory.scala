@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.exception.ServiceIOException
 
 object QpidBrokerConnectionFactory {
 
-  def loadssl(config: AmqpSettings) {
+  def loadssl(config: AmqpSettings, qpidSettings : ConnectionSettings) {
     if (config.getSsl) {
       if (config.getTrustStore == null || config.getTrustStore == "") {
         throw new IllegalArgumentException("ssl is enabled, trustStore must be not null and not empty")
@@ -38,18 +38,18 @@ object QpidBrokerConnectionFactory {
       val trustStoreFile = new File(config.getTrustStore)
       if (!trustStoreFile.canRead) throw new ServiceIOException("Cannot access trustStore file: " + trustStoreFile.getAbsolutePath)
 
-      System.setProperty("javax.net.ssl.trustStore", config.getTrustStore)
-      System.setProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword)
-
-      if (config.getKeyStore != null && config.getKeyStore != "") {
+      val (keyStore, keyStorePassword) = if (config.getKeyStore != null && config.getKeyStore != "") {
         val keyStoreFile = new File(config.getKeyStore)
         if (!keyStoreFile.canRead) throw new ServiceIOException("Cannot access keyStore file: " + trustStoreFile.getAbsolutePath)
-        System.setProperty("javax.net.ssl.keyStore", config.getKeyStore)
-        System.setProperty("javax.net.ssl.keyStorePassword", config.getKeyStorePassword)
+        (config.getKeyStore, config.getKeyStorePassword)
       } else {
-        System.setProperty("javax.net.ssl.keyStore", config.getTrustStore)
-        System.setProperty("javax.net.ssl.keyStorePassword", config.getTrustStorePassword)
+        (config.getTrustStore,config.getTrustStorePassword)
       }
+
+      qpidSettings.setTrustStorePath(config.getTrustStore)
+      qpidSettings.setTrustStorePassword(config.getTrustStorePassword)
+      qpidSettings.setKeyStorePath(keyStore)
+      qpidSettings.setKeyStorePassword(keyStorePassword)
     }
   }
 
@@ -74,10 +74,11 @@ class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnection
 
   def connect: BrokerConnection = {
     try {
-      QpidBrokerConnectionFactory.loadssl(config)
+      val settings = makeSettings
+      QpidBrokerConnectionFactory.loadssl(config, settings)
       val conn = new Connection
       val broker = new QpidBrokerConnection(conn, config.getTtlMilliseconds())
-      conn.connect(makeSettings)
+      conn.connect(settings)
       broker
     } catch {
       case ex: Exception =>
