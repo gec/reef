@@ -29,23 +29,23 @@ class LoginTest extends AuthTestBase {
 
   test("Admin can see logins") {
     as(ADMIN) { admin =>
-      val activeLogins = admin.getLogins(false).await
-      val allLogins = admin.getLogins(true).await
+      val activeLogins = admin.getLogins(false)
+      val allLogins = admin.getLogins(true)
 
       activeLogins.size should be <= allLogins.size
 
-      val byVersion = admin.getLoginsByClientVersion(true, allLogins.head.getClientVersion).await
+      val versions = allLogins.map { _.getClientVersion }.distinct
+      val byVersion = versions.map { admin.getLoginsByClientVersion(true, _) }.flatten
+      byVersion.map { _.getId.getValue }.sorted should equal(allLogins.map { _.getId.getValue }.sorted)
 
-      byVersion should equal(allLogins)
-
-      val ownLogins = admin.getOwnLogins(true).await
+      val ownLogins = admin.getOwnLogins(true)
       ownLogins.size should be > 0
       allAgent(ADMIN, ownLogins)
 
-      val agents = admin.getAgents().await
+      val agents = admin.getAgents()
 
       agents.foreach { agent =>
-        val logins = admin.getLoginsByAgent(true, agent.getName).await
+        val logins = admin.getLoginsByAgent(true, agent.getName)
         allAgent(agent.getName, logins)
       }
     }
@@ -55,14 +55,12 @@ class LoginTest extends AuthTestBase {
 
   test("Guest can only see own logins") {
     as(GUEST) { guest =>
-      // TODO: filtering is done after the result limit so if the most recent 100 logins are other users
       // we dont' get any guest logins
-      guest.setHeaders(guest.getHeaders.setResultLimit(1000))
-      val allLogins = guest.getLogins(true).await
+      val allLogins = guest.getLogins(true)
 
       allAgent(GUEST, allLogins)
 
-      val ownLogins = guest.getOwnLogins(true).await
+      val ownLogins = guest.getOwnLogins(true)
       allAgent(GUEST, ownLogins)
       allLogins.map { _.getId } should equal(ownLogins.map { _.getId })
     }
@@ -72,20 +70,20 @@ class LoginTest extends AuthTestBase {
 
   test("User can revoke old logins") {
     as(USER, false) { user =>
-      user.getOwnLogins(false).await.size should be > 0
+      user.getOwnLogins(false).size should be > 0
     }
     val moreLogins = as(USER, false) { user =>
-      user.getOwnLogins(false).await
+      user.getOwnLogins(false)
     }
     allRevoked(false, moreLogins)
     as(USER) { user =>
       // revoke all of the old logins
-      val revoked = user.revokeOwnLogins().await
+      val revoked = user.revokeOwnLogins()
       allAgent(USER, revoked)
       allRevoked(true, revoked)
       revoked.map { _.getId } should equal(moreLogins.map { _.getId })
 
-      user.getOwnLogins(false).await.size should equal(1)
+      user.getOwnLogins(false).size should equal(1)
     }
   }
 

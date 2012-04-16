@@ -27,7 +27,8 @@ import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.client.{ Subscription, Promise }
 import org.totalgrid.reef.client.sapi.client.rest.{ RestOperations, AnnotatedOperations }
 import org.totalgrid.reef.client.javaimpl.SubscriptionResultWrapper
-import org.totalgrid.reef.client.SubscriptionResult
+import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionResult }
+import org.totalgrid.reef.client.sapi.service.AsyncService
 
 /**
  * object provides the stateless functions to do a complex futures operation
@@ -108,6 +109,25 @@ final class DefaultAnnotatedOperations(restOps: RestOperations, exe: Executor) e
     } catch {
       case ex: Exception =>
         definedFuture[Result[SubscriptionResult[A, B]]](exe, Failure("Couldn't create subscribe queue - " + renderErrorMsg(err) + " - " + ex.getMessage))
+    }
+
+    Promise.from(future)
+  }
+
+  def clientSideService[A, B](handler: AsyncService[B], err: => String)(fun: (SubscriptionBinding, RestOperations) => Future[Result[A]]) = {
+    val future: Future[Result[SubscriptionBinding]] = try {
+
+      // TODO: fix service bindings
+      val subBinding = restOps.subscribe(handler.descriptor)
+      val opFuture = safeOpWithFuture(err, exe) { fun(subBinding, restOps) }
+      def onResult(r: Result[A]) = {
+        if (r.isFailure) subBinding.cancel()
+      }
+      opFuture.listen(onResult)
+      opFuture.map(_.map(a => subBinding))
+    } catch {
+      case ex: Exception =>
+        definedFuture[Result[SubscriptionBinding]](exe, Failure("Couldn't bind client service handler - " + renderErrorMsg(err) + " - " + ex.getMessage))
     }
 
     Promise.from(future)

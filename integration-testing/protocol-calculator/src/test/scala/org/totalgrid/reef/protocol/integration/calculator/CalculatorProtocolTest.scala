@@ -41,13 +41,13 @@ class CalculatorProtocolTest extends ServiceClientSuite {
 
   test("Test A * B") {
 
-    val current = client.getPointByName("Microgrid1.Output.Current").await
-    val voltage = client.getPointByName("Microgrid1.Output.Voltage").await
+    val current = client.getPointByName("Microgrid1.Output.Current")
+    val voltage = client.getPointByName("Microgrid1.Output.Voltage")
 
-    client.setPointOutOfService(current).await
-    client.setPointOutOfService(voltage).await
+    client.setPointOutOfService(current)
+    client.setPointOutOfService(voltage)
 
-    val calc = client.getCalculationForPointByName("Microgrid1.Output.Power").await
+    val calc = client.getCalculationForPointByName("Microgrid1.Output.Power")
     calc.getFormula should equal("A * B")
 
     val meas = getCurrentValueWatcher(calc.getOutputPoint.getName)
@@ -60,15 +60,15 @@ class CalculatorProtocolTest extends ServiceClientSuite {
 
     parameters.foreach { p =>
 
-      client.setPointOverride(current, makeMeas("Microgrid1.Output.Current", p.time - 10, p.current)).await
-      client.setPointOverride(voltage, makeMeas("Microgrid1.Output.Voltage", p.time, p.voltage)).await
+      client.setPointOverride(current, makeMeas("Microgrid1.Output.Current", p.time - 10, p.current))
+      client.setPointOverride(voltage, makeMeas("Microgrid1.Output.Voltage", p.time, p.voltage))
 
       meas.shouldHaveValue(p.output) within 500
     }
   }
 
   private def getCurrentValueWatcher(name: String) = {
-    val subResult = client.subscribeToMeasurementsByNames(List(name)).await
+    val subResult = client.subscribeToMeasurementsByNames(List(name))
     val meas = new SynchronizedVariable[Measurement](subResult.getResult.head) {
       def shouldBecome(fun: Measurement => Boolean) = {
         def evaluate(success: Boolean, last: Measurement, timeout: Long) =

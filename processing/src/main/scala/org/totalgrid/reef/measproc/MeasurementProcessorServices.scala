@@ -20,8 +20,7 @@ package org.totalgrid.reef.measproc
 
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
-import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessingConnection, MeasOverride, TriggerSet }
+import org.totalgrid.reef.client.service.proto.Processing._
 
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.client.Promise
@@ -29,6 +28,7 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
+import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionResult }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
 import org.totalgrid.reef.client.{ Client, SubscriptionResult, AddressableDestination }
@@ -45,7 +45,7 @@ trait MeasurementProcessorServices extends AllScadaServiceImpl {
 
   def publishIndividualMeasurementAsEvent(meas: Measurement)
 
-  def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection): Cancelable
+  def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection): Promise[SubscriptionBinding]
 
   def setMeasurementProcessingConnectionReadyTime(conn: MeasurementProcessingConnection, time: Long): Promise[MeasurementProcessingConnection]
 }
@@ -80,14 +80,14 @@ class MeasurementProcessorServicesImpl(client: Client, eventPub: EventPublisher)
   }
 
   override def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection) = {
-    val destination = new AddressableDestination(conn.getRouting.getServiceRoutingKey)
     val service = new AddressableMeasurementBatchService(handler)
 
-    // TODO: FIX FIX FIX FIX
-    ///val closeable = client.bindService(service, client, destination, false)
+    ops.clientSideService(service, "Couldn't register as measurement processor for stream: " + conn.getRouting.getServiceRoutingKey) { (binding, session) =>
+      import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection, CommandHandlerBinding }
 
-    new Cancelable {
-      def cancel() {} //= closeable.cancel()
+      val bindingProto = MeasurementStreamBinding.newBuilder.setMeasurementQueue(binding.getId).setProcessingConnection(conn).build
+
+      session.post(bindingProto).map { _.one }
     }
   }
 

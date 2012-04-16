@@ -34,8 +34,8 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
   val japiPackage = if (isFuture) "async." else ""
   val targetEx = if (isFuture) "Async" else ""
 
-  def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
-    getFileStream(packageStr, rootDir, sourceFile, ".client.service." + japiPackage + "impl", true, c.name + exName) { (stream, javaPackage) =>
+  def make(c: ClassDoc, packageStr: String, outputDir: File, sourceFile: File) {
+    getFileStream(packageStr, outputDir, sourceFile, ".client.service." + japiPackage + "impl", true, c.name + exName) { (stream, javaPackage) =>
       javaShimClass(c, stream, javaPackage)
     }
   }

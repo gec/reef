@@ -31,44 +31,44 @@ class ApplicationAuthTest extends AuthTestBase {
 
   test("Applications can't see live system") {
     as(USER) { admin =>
-      unAuthed(USER + " shouldnt see system") { admin.getCommands().await }
-      unAuthed(USER + " shouldnt see system") { admin.getCommandHistory().await }
-      unAuthed(USER + " shouldnt see system") { admin.getPoints().await }
-      unAuthed(USER + " shouldnt see system") { admin.getEndpointConnections().await }
+      unAuthed(USER + " shouldnt see system") { admin.getCommands() }
+      unAuthed(USER + " shouldnt see system") { admin.getCommandHistory() }
+      unAuthed(USER + " shouldnt see system") { admin.getPoints() }
+      unAuthed(USER + " shouldnt see system") { admin.getEndpointConnections() }
     }
   }
 
   test("Apps can register and heartbeat") {
     as(USER) { fep =>
       val nodeSettings = new NodeSettings("node1", "any", "any")
-      val appConfig = fep.registerApplication(nodeSettings, "fakeApplication", List("HMI")).await
+      val appConfig = fep.registerApplication(nodeSettings, "fakeApplication", List("HMI"))
 
-      fep.getApplicationByName(appConfig.getInstanceName).await should equal(appConfig)
+      fep.getApplicationByName(appConfig.getInstanceName) should equal(appConfig)
 
-      fep.sendHeartbeat(appConfig).await
+      fep.sendHeartbeat(appConfig)
 
-      fep.sendApplicationOffline(appConfig).await
+      fep.sendApplicationOffline(appConfig)
 
-      fep.unregisterApplication(appConfig).await
+      fep.unregisterApplication(appConfig)
     }
   }
 
   test("Cant heartbeat or delete another users application") {
     as(USER) { fep =>
       val nodeSettings = new NodeSettings("node1", "any", "any")
-      val appConfig = fep.registerApplication(nodeSettings, "fakeApplication", List("HMI")).await
+      val appConfig = fep.registerApplication(nodeSettings, "fakeApplication", List("HMI"))
 
       as("hmi_app") { hmi =>
         unAuthed("application heartbeated by non owner") {
-          hmi.sendHeartbeat(appConfig).await
+          hmi.sendHeartbeat(appConfig)
         }
 
         unAuthed("application deleted by non owner") {
-          hmi.unregisterApplication(appConfig).await
+          hmi.unregisterApplication(appConfig)
         }
       }
 
-      fep.unregisterApplication(appConfig).await
+      fep.unregisterApplication(appConfig)
     }
   }
 }

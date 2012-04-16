@@ -37,6 +37,9 @@ public class AmqpSettings
 
     private final int heartbeatTimeSeconds;
 
+    private final int TTL_DEFAULT = 5000;
+    private final int ttlMilliseconds;
+
     private final boolean ssl;
     private final String trustStore;
     private final String trustStorePassword;
@@ -82,6 +85,38 @@ public class AmqpSettings
         this.password = password;
         this.virtualHost = virtualHost;
         this.heartbeatTimeSeconds = heartbeatTimeSeconds;
+        this.ttlMilliseconds = TTL_DEFAULT;
+        this.ssl = ssl;
+        this.trustStore = trustStore;
+        this.trustStorePassword = trustStorePassword;
+        this.keyStore = keyStore;
+        this.keyStorePassword = keyStorePassword;
+    }
+
+    /**
+     * @param host        The IP address or DNS name of AMQP broker
+     * @param port        The TCP port that the broker is listening on (default 5672)
+     * @param user        The username for the connection
+     * @param password    The password for the connection
+     * @param virtualHost The virtual host to use, default is '/'
+     * @param heartbeatTimeSeconds heartbeat time in seconds, 0 disables heartbeats
+     * @param ttlMilliseconds ttl time for published messages before they are dropped by broker, 0 disables
+     * @param ssl         If connection is encrypted using SSL
+     * @param trustStore  Relative path to trustStore file (trust-store.jks)
+     * @param trustStorePassword Used to verify trustStore integrity, actually closer to a checksum than password
+     * @param keyStore    Relative path to keyStore file (key-store.jks) (only used with SASL_EXTERNAL)
+     * @param keyStorePassword Used to verify keyStore integrity, actually closer to a checksum than password
+     */
+    public AmqpSettings( String host, int port, String user, String password, String virtualHost, int heartbeatTimeSeconds, int ttlMilliseconds,
+        boolean ssl, String trustStore, String trustStorePassword, String keyStore, String keyStorePassword )
+    {
+        this.host = host;
+        this.port = port;
+        this.user = user;
+        this.password = password;
+        this.virtualHost = virtualHost;
+        this.heartbeatTimeSeconds = heartbeatTimeSeconds;
+        this.ttlMilliseconds = ttlMilliseconds;
         this.ssl = ssl;
         this.trustStore = trustStore;
         this.trustStorePassword = trustStorePassword;
@@ -119,6 +154,7 @@ public class AmqpSettings
         password = PropertyLoading.getString( "org.totalgrid.reef.amqp.password", props );
         virtualHost = PropertyLoading.getString( "org.totalgrid.reef.amqp.virtualHost", props );
         heartbeatTimeSeconds = PropertyLoading.getInt( "org.totalgrid.reef.amqp.heartbeatTimeSeconds", props );
+        ttlMilliseconds = PropertyLoading.getInt( "org.totalgrid.reef.amqp.ttl", props, TTL_DEFAULT );
         ssl = PropertyLoading.getBoolean( "org.totalgrid.reef.amqp.ssl", props, false );
         trustStore = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStore", props, "" );
         trustStorePassword = PropertyLoading.getString( "org.totalgrid.reef.amqp.trustStorePassword", props, "" );
@@ -195,6 +231,14 @@ public class AmqpSettings
     public int getHeartbeatTimeSeconds()
     {
         return heartbeatTimeSeconds;
+    }
+
+    /**
+     * @return ttl time for published messages before they are dropped by broker, 0 disables
+     */
+    public int getTtlMilliseconds()
+    {
+        return ttlMilliseconds;
     }
 
     /**

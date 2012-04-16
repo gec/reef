@@ -22,7 +22,8 @@ import org.totalgrid.reef.client.types.TypeDescriptor
 
 import net.agileautomata.executor4s.{ Future, Result }
 import org.totalgrid.reef.client.sapi.client.{ Promise, Subscription }
-import org.totalgrid.reef.client.SubscriptionResult
+import org.totalgrid.reef.client.sapi.service.AsyncService
+import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionResult }
 
 /**
  *  Defines an interface for composite subcribe/rest operations. Used in the RPC API implementations.
@@ -44,4 +45,12 @@ trait AnnotatedOperations {
    */
   def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]]
 
+  /**
+   * Does a rest operation with a localServiceBinding. Almost the same as a subscription, but we keep track of the sender
+   * and respond back to the requester.
+   * @param handler Service handler for all client handled service requests.
+   * @param err If an error occurs, this message is attached to the exception
+   * @param fun function that uses the client and subscription to generate a result
+   */
+  def clientSideService[A, B](handler: AsyncService[B], err: => String)(fun: (SubscriptionBinding, RestOperations) => Future[Result[A]]): Promise[SubscriptionBinding]
 }

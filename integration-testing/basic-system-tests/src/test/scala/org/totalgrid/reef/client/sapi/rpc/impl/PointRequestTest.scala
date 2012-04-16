@@ -29,11 +29,11 @@ class PointRequestTest extends ServiceClientSuite {
   test("Simple gets") {
 
     // keep list of all points so we can use them for id and name queries
-    val allResp = client.getPoints().await
+    val allResp = client.getPoints()
 
-    client.getPointByUuid(allResp.head.getUuid).await should equal(allResp.head)
+    client.getPointByUuid(allResp.head.getUuid) should equal(allResp.head)
 
-    client.getPointByName(allResp.head.getName).await should equal(allResp.head)
+    client.getPointByName(allResp.head.getName) should equal(allResp.head)
   }
 
 }

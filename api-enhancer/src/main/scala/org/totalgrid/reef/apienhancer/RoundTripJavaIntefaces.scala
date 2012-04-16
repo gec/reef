@@ -29,9 +29,9 @@ import java.io.{ PrintStream, File }
  * api-requests somewhere else and only compile the transformed code.
  */
 class RoundTripJavaIntefaces extends ApiTransformer with GeneratorFunctions {
-  def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
+  def make(c: ClassDoc, packageStr: String, outputDir: File, sourceFile: File) {
 
-    getFileStream(packageStr, rootDir, sourceFile, ".japi2.request", false, c.name) { (stream, javaPackage) =>
+    getFileStream(packageStr, outputDir, sourceFile, ".japi2.request", false, c.name) { (stream, javaPackage) =>
       duplicateJava(c, stream, javaPackage)
     }
   }

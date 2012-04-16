@@ -41,12 +41,12 @@ class RequestSpyTest extends ServiceClientSuite {
 
     val relations = List(new EntityRelation("feedback", "Point", false))
 
-    val fromRoots = client.getEntityRelationsFromTypeRoots("Command", relations).await
+    val fromRoots = client.getEntityRelationsFromTypeRoots("Command", relations)
 
     spy.count should equal(1)
     spy.reset()
 
-    val fromParents = client.getEntityRelationsForParents(fromRoots.map { _.getUuid }, relations).await
+    val fromParents = client.getEntityRelationsForParents(fromRoots.map { _.getUuid }, relations)
 
     fromParents should equal(fromRoots)
 

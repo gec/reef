@@ -31,22 +31,22 @@ class MeasurementOverrideTest extends ServiceClientSuite {
   test("Demonstrate Overrides") {
     val point = PointRequestBuilders.getByName("StaticSubstation.Line02.Current")
 
-    client.clearMeasurementOverridesOnPoint(point).await
+    client.clearMeasurementOverridesOnPoint(point)
 
-    val originalMeas = client.getMeasurementByPoint(point).await
+    val originalMeas = client.getMeasurementByPoint(point)
 
-    val nis = client.setPointOutOfService(point).await
+    val nis = client.setPointOutOfService(point)
 
-    val nised = client.getMeasurementByPoint(point).await
+    val nised = client.getMeasurementByPoint(point)
 
-    val over = client.setPointOverride(point, originalMeas.toBuilder.setDoubleVal(100).setTime(System.currentTimeMillis).build).await
+    val over = client.setPointOverride(point, originalMeas.toBuilder.setDoubleVal(100).setTime(System.currentTimeMillis).build)
 
     // TODO: add id to measurement override - backlog-63
     //over.getId should equal(nis.getId)
 
-    val overriden = client.getMeasurementByPoint(point).await
+    val overriden = client.getMeasurementByPoint(point)
 
-    client.deleteMeasurementOverride(over).await
+    client.deleteMeasurementOverride(over)
 
     //    // TODO: fix overrides time ordering reef-23
     //    nised.getQuality.getOperatorBlocked should equal(true)

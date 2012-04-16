@@ -27,7 +27,6 @@ import org.totalgrid.reef.client.sapi.client.rpc.framework.{ MultiRequestHelper,
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
 import org.totalgrid.reef.client.SubscriptionBinding
 import org.totalgrid.reef.client.sapi.client.rest.impl.BatchServiceRestOperations
-import net.agileautomata.executor4s.Result
 
 trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
 
@@ -165,25 +164,16 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
-    ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { session =>
-      exe.future[Result[SubscriptionBinding]]
 
-      /*import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
-      import org.totalgrid.reef.client.AddressableDestination
-      import net.agileautomata.executor4s._
+    val service = new EndpointCommandHandlerImpl(handler)
 
-      val connectionFuture = session.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build)
+    ops.clientSideService(service, "Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { (binding, session) =>
+      import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection, CommandHandlerBinding }
 
-      connectionFuture.flatMap {
-        _.one match {
-          case Success(connection) =>
-            val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
-            val service = new EndpointCommandHandlerImpl(handler)
-            connectionFuture.replicate[Result[SubscriptionBinding]](Success(client.bindService(service, client, destination, false)))
-          case fail: Failure =>
-            connectionFuture.asInstanceOf[Future[Result[SubscriptionBinding]]]
-        }
-      }*/
+      val endpointConnection = EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid))
+      val bindingProto = CommandHandlerBinding.newBuilder.setEndpointConnection(endpointConnection).setCommandQueue(binding.getId).build
+
+      session.post(bindingProto).map { _.one }
     }
   }
 }

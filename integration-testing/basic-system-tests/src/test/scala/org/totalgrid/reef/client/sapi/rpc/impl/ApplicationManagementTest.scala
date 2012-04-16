@@ -33,33 +33,33 @@ class ApplicationManagementTest extends ServiceClientSuite {
 
   test("Register, heartbeat then offline application") {
 
-    val appConfig = client.registerApplication(nodeSettings, "testNode-Register", Nil).await
+    val appConfig = client.registerApplication(nodeSettings, "testNode-Register", Nil)
     val hconfig = appConfig.getHeartbeatCfg
 
     (1 to 5).foreach { i =>
-      client.sendHeartbeat(makeProto(hconfig, true)).await
+      client.sendHeartbeat(makeProto(hconfig, true))
     }
 
     // send offline application
-    client.sendHeartbeat(makeProto(hconfig, false)).await
+    client.sendHeartbeat(makeProto(hconfig, false))
 
     intercept[BadRequestException] {
       // cannot heartbeat an already offline application
-      client.sendHeartbeat(makeProto(hconfig, true)).await
+      client.sendHeartbeat(makeProto(hconfig, true))
     }
 
-    client.unregisterApplication(appConfig).await
+    client.unregisterApplication(appConfig)
   }
 
   test("Unregister then try heartbeating") {
-    val appConfig = client.registerApplication(nodeSettings, "testNode-Register", Nil).await
+    val appConfig = client.registerApplication(nodeSettings, "testNode-Register", Nil)
     val hconfig = appConfig.getHeartbeatCfg
 
-    client.unregisterApplication(appConfig).await
+    client.unregisterApplication(appConfig)
 
     intercept[BadRequestException] {
       // cannot heartbeat an already offline application
-      client.sendHeartbeat(makeProto(hconfig, false)).await
+      client.sendHeartbeat(makeProto(hconfig, false))
     }
   }
 

@@ -26,7 +26,7 @@ import com.weiglewilczek.slf4s.Logging
 
 import org.totalgrid.reef.broker._
 
-final class QpidWorkerChannel(val session: Session, connection: QpidBrokerConnection) extends SessionListener with Logging {
+final class QpidWorkerChannel(val session: Session, connection: QpidBrokerConnection, ttlMilliseconds: Int) extends SessionListener with Logging {
 
   def isOpen = !session.isClosing
 
@@ -54,7 +54,7 @@ final class QpidWorkerChannel(val session: Session, connection: QpidBrokerConnec
     QpidChannelOperations.unbindQueue(session, queue, exchange, key)
 
   def publish(exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[BrokerDestination]) =
-    QpidChannelOperations.publish(session, exchange, key, b, replyTo)
+    QpidChannelOperations.publish(session, exchange, key, b, replyTo, ttlMilliseconds)
 
   def close() {
     QpidChannelOperations.close(session)

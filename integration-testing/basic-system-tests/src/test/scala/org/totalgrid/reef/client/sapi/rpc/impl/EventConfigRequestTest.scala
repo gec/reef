@@ -34,21 +34,21 @@ class EventConfigRequestTest extends ServiceClientSuite {
 
     var configs = List.empty[EventConfig]
 
-    configs ::= client.setEventConfigAsLogOnly("Demo.AsLog", 1, "Log Message").await
+    configs ::= client.setEventConfigAsLogOnly("Demo.AsLog", 1, "Log Message")
 
-    configs ::= client.setEventConfigAsEvent("Demo.AsEvent", 2, "Event Message").await
+    configs ::= client.setEventConfigAsEvent("Demo.AsEvent", 2, "Event Message")
 
-    configs ::= client.setEventConfigAsEvent("Demo.AsAlarm", 3, "Alarm Message").await
+    configs ::= client.setEventConfigAsEvent("Demo.AsAlarm", 3, "Alarm Message")
 
-    client.publishEvent("Demo.AsEvent", "Tests").await
+    client.publishEvent("Demo.AsEvent", "Tests")
 
-    client.publishEvent("Demo.AsLog", "Tests").await
+    client.publishEvent("Demo.AsLog", "Tests")
 
-    configs ::= client.setEventConfigAsEvent("Demo.Formatting", 1, "Attributes name: {name} value: {value}").await
+    configs ::= client.setEventConfigAsEvent("Demo.Formatting", 1, "Attributes name: {name} value: {value}")
 
-    client.publishEvent("Demo.Formatting", "Tests", makeAttributeList("name" -> "abra", "value" -> "cadabra")).await
+    client.publishEvent("Demo.Formatting", "Tests", makeAttributeList("name" -> "abra", "value" -> "cadabra"))
 
-    configs.foreach(client.deleteEventConfig(_).await)
+    configs.foreach(client.deleteEventConfig(_))
   }
 
   def makeAttributeList(tuples: Tuple2[String, String]*): List[Attribute] = {

@@ -33,7 +33,7 @@
 							<goal>javadoc</goal>
 						</goals>
 						<configuration>
-							<doclet>org.totalgrid.reef.apienhancer.ApiEnhancer</doclet>
+							<doclet>org.totalgrid.reef.apienhancer.ServiceClientVersions</doclet>
 							<docletArtifact>
 								<groupId>org.totalgrid.reef</groupId>
 								<artifactId>reef-api-enhancer</artifactId>
@@ -106,7 +106,8 @@
                         <Export-Package>
                             org.totalgrid.reef.client.service.proto;version="${reef.version}",
                             org.totalgrid.reef.client.service.*;version="${reef.version}",
-                            org.totalgrid.reef.client.sapi.rpc.*;version="${reef.version}"
+                            org.totalgrid.reef.client.sapi.rpc.*;version="${reef.version}",
+                            org.totalgrid.reef.client.sapi.sync.*;version="${reef.version}"
                         </Export-Package>
                         <_nouses>true</_nouses>
                     </instructions>

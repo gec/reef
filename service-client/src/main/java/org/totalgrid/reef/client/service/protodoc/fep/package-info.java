@@ -126,6 +126,15 @@
  *     optional uint64                 last_update         = 7;
  *     optional bool                   enabled             = 8;
  * }
+ * 
+ * /*
+ *   When an application wants to handle the commands for an endpoint they should post this message with the
+ *   endpoint_connection object and the name/id of the SubscriptionBinding queue).
+ * -/
+ * message CommandHandlerBinding {
+ *     optional EndpointConnection   endpoint_connection       = 1;
+ *     optional string               command_queue             = 2;
+ * }
  * </pre>
  */
 package org.totalgrid.reef.client.service.protodoc.fep;

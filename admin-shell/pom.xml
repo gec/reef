@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-services</artifactId>
+            <artifactId>reef-services-core</artifactId>
             <version>${reef.version}</version>
         </dependency>
         <dependency>

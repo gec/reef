@@ -72,7 +72,7 @@ class MeasurementStreamProcessingNode(
   val triggerResult = client.subscribeToTriggerSetsForConnection(connection).await
   val triggerSub = processingPipeline.triggerProc.setSubscription(triggerResult)
 
-  val binding = client.bindMeasurementProcessingNode(processingPipeline, connection)
+  val binding = client.bindMeasurementProcessingNode(processingPipeline, connection).await
 
   client.setMeasurementProcessingConnectionReadyTime(connection, System.currentTimeMillis()).await
 

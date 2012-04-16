@@ -18,17 +18,17 @@
  */
 package org.totalgrid.reef.apienhancer
 
-import com.sun.javadoc.{ MethodDoc, Type }
+import com.sun.javadoc.{ ClassDoc, MethodDoc, Type }
 import java.io.{ FileOutputStream, PrintStream, File }
 
 trait GeneratorFunctions {
 
-  def getFileStream(packageStr: String, rootDir: File, sourceFile: File, newPackage: String, scalaFile: Boolean, className: String)(func: (PrintStream, String) => Unit) {
+  def getFileStream(packageStr: String, outputDir: File, sourceFile: File, newPackage: String, scalaFile: Boolean, className: String)(func: (PrintStream, String) => Unit) {
     val javaPackage = packageStr.replaceAllLiterally(".client.service", newPackage)
 
     val (fileEnding, folder) = if (scalaFile) (".scala", "scala/") else (".java", "java/")
 
-    val packageDir = new File(rootDir, folder + javaPackage.replaceAllLiterally(".", "/"))
+    val packageDir = new File(outputDir, folder + javaPackage.replaceAllLiterally(".", "/"))
     packageDir.mkdirs()
 
     val classFile = new File(packageDir, className + fileEnding)
@@ -41,6 +41,7 @@ trait GeneratorFunctions {
   def writeFileIfNewer(outputFile: File, shouldBeNewerThan: Long)(func: (PrintStream) => Unit) {
     if (!outputFile.exists || shouldBeNewerThan > outputFile.lastModified) {
       println("Genenerating: " + outputFile.getAbsolutePath)
+      outputFile.getParentFile.mkdirs()
       val stream = new PrintStream(new FileOutputStream(outputFile))
       func(stream)
       stream.close
@@ -130,4 +131,17 @@ trait GeneratorFunctions {
   def isReturnSubscription(m: MethodDoc) = {
     m.returnType.simpleTypeName == "SubscriptionResult"
   }
+
+  def addImports(stream: PrintStream, c: ClassDoc, importMap: Map[String, String] = Map.empty[String, String]) = {
+    c.importedClasses().toList.foreach(p => importMap.get(p.qualifiedTypeName()) match {
+      case None => stream.println("import " + p.qualifiedTypeName())
+      case _ =>
+    })
+  }
+
+  def addScalaImports(stream: PrintStream, c: ClassDoc) = {
+    val importMap = Map("java.util.List" -> "", "org.totalgrid.reef.client.exception.ReefServiceException" -> "")
+    addImports(stream, c, importMap)
+  }
+
 }

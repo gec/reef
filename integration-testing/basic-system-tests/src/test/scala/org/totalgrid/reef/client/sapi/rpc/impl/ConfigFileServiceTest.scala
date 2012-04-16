@@ -31,28 +31,28 @@ import scala.util.Random
 class ConfigFileServiceTest extends ServiceClientSuite {
 
   test("Create config files") {
-    val cf = client.createConfigFile("Test-Config-File", "text/plain", "Data".getBytes()).await
+    val cf = client.createConfigFile("Test-Config-File", "text/plain", "Data".getBytes())
 
-    client.updateConfigFile(cf, "New Data".getBytes()).await
+    client.updateConfigFile(cf, "New Data".getBytes())
 
-    client.deleteConfigFile(cf).await
+    client.deleteConfigFile(cf)
   }
 
   test("Associate Config File to Entity") {
-    val entity = client.getEntityByName("StaticSubstation").await
+    val entity = client.getEntityByName("StaticSubstation")
 
-    val cf1 = client.createConfigFile("Test-Entity-Text-File", "text/plain", "Data".getBytes(), entity.getUuid).await
-    val cf2 = client.createConfigFile("Test-Entity-XML-File", "text/xml", "<Data/>".getBytes(), entity.getUuid).await
+    val cf1 = client.createConfigFile("Test-Entity-Text-File", "text/plain", "Data".getBytes(), entity.getUuid)
+    val cf2 = client.createConfigFile("Test-Entity-XML-File", "text/xml", "<Data/>".getBytes(), entity.getUuid)
 
-    client.getConfigFilesUsedByEntity(entity.getUuid).await
+    client.getConfigFilesUsedByEntity(entity.getUuid)
 
-    client.getConfigFilesUsedByEntity(entity.getUuid, "text/xml").await
+    client.getConfigFilesUsedByEntity(entity.getUuid, "text/xml")
 
-    val entity2 = client.getEntityByName("SimulatedSubstation").await
-    client.addConfigFileUsedByEntity(cf1, entity2.getUuid).await
+    val entity2 = client.getEntityByName("SimulatedSubstation")
+    client.addConfigFileUsedByEntity(cf1, entity2.getUuid)
 
-    client.deleteConfigFile(cf1).await
-    client.deleteConfigFile(cf2).await
+    client.deleteConfigFile(cf1)
+    client.deleteConfigFile(cf2)
   }
 
   test("Create config file with hard to serialize bytes") {
@@ -60,10 +60,10 @@ class ConfigFileServiceTest extends ServiceClientSuite {
     val bytes = new Array[Byte](10000)
     val rand = new Random()
     rand.nextBytes(bytes)
-    val cf = client.createConfigFile("Test-Config-File", "text/plain", bytes).await
+    val cf = client.createConfigFile("Test-Config-File", "text/plain", bytes)
 
     cf.getFile.toByteArray should equal(bytes)
 
-    client.deleteConfigFile(cf).await
+    client.deleteConfigFile(cf)
   }
 }

@@ -20,7 +20,8 @@ package org.totalgrid.reef.standalone
 
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
-import org.totalgrid.reef.services.{ ServiceBootstrap, ServiceOptions }
+import org.totalgrid.reef.services.ServiceBootstrap
+import org.totalgrid.reef.services.settings.ServiceOptions
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.services.activator.{ ServiceFactory, ServiceModulesFactory }
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
@@ -31,7 +32,6 @@ import org.totalgrid.reef.client.settings.util.{ PropertyLoading, PropertyReader
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.models.CoreServicesSchema
 import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnectedApplicationManager }
-import net.agileautomata.executor4s.testing.InstantExecutor
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
 import org.totalgrid.reef.frontend.FepConnectedApplication
 import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication

@@ -41,9 +41,7 @@ trait ModelDeleterCache extends ModelCollector {
   var eventConfigs = List.empty[EventConfig]
 
   def addPoint(obj: Point, entity: Entity) = {
-    // need to clear off the logicalNode because delete uses searchQuery
-    // TODO: fix services so they only first do unique query then search query on delete
-    points ::= obj.toBuilder.clearEndpoint.build
+    points ::= obj
   }
   def addCommand(obj: Command, entity: Entity) = {
     commands ::= obj.toBuilder.clearEndpoint.build
