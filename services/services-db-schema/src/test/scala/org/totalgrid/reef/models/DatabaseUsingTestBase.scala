@@ -41,8 +41,11 @@ object ConnectionStorage {
 
 abstract class DatabaseUsingTestBaseNoTransaction extends FunSuite with ShouldMatchers with BeforeAndAfterAll with BeforeAndAfterEach with Logging {
   lazy val dbConnection = ConnectionStorage.connect(DbInfo.loadInfo("../../org.totalgrid.reef.test.cfg"))
+
+  protected def alwaysReset = true
+
   override def beforeAll() {
-    if (ConnectionStorage.dbNeedsReset) {
+    if (ConnectionStorage.dbNeedsReset || alwaysReset) {
       val prepareTime = Timing.benchmark {
         CoreServicesSchema.prepareDatabase(dbConnection, true, false)
       }
