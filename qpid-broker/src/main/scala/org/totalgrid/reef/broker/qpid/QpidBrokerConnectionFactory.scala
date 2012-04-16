@@ -67,6 +67,7 @@ class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnection
     settings.setUsername(config.getUser)
     settings.setPassword(config.getPassword)
     settings.setUseSSL(config.getSsl)
+    // TODO: qpid 0.14 check if setting setSaslMechs is still necessary
     settings.setSaslMechs("PLAIN")
     settings.setHeartbeatInterval(config.getHeartbeatTimeSeconds)
     settings
