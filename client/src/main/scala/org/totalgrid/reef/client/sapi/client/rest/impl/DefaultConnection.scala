@@ -145,7 +145,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     future
   }
 
-  def subscribe[A](exe: Executor, descriptor: TypeDescriptor[A]) = {
+  def subscribe[A](descriptor: TypeDescriptor[A], exe: Executor) = {
     new DefaultSubscription[A](conn.listen(), exe, descriptor.deserialize)
   }
 

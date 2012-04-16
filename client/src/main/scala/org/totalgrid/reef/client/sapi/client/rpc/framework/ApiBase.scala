@@ -66,6 +66,7 @@ trait ClientOperations extends SubscriptionCreator with RequestSpyManager with H
 abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperations with ClientOperations with ExecutorDelegate {
 
   protected val restOps = client.getInternal.getOperations
+  protected val bindings = client.getInternal.getBindings
   protected val exe = client.getInternal.getExecutor
   protected val spyHooks = client.getInternal.getRequestSpyHook
   protected val serviceRegistry = client.getInternal.getServiceRegistry
@@ -74,18 +75,22 @@ abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperati
     new BatchServiceRestOperations(restOps, spyHooks, serviceRegistry, exe)
   }
 
-  private var currentOpsMode = new DefaultAnnotatedOperations(restOps, exe)
+  protected def buildOperationHandler(restOps: RestOperations): AnnotatedOperations = {
+    new DefaultAnnotatedOperations(restOps, bindings, exe)
+  }
+
+  private var currentOpsMode = buildOperationHandler(restOps)
   private var flushableOps = Option.empty[BatchServiceRestOperations]
   def ops = currentOpsMode
 
   def startBatchRequests() {
     // TODO: add clearBatchRequests and checking that batched operations have been flushed
-    flushableOps = Some(new BatchServiceRestOperations(restOps, spyHooks, serviceRegistry, exe))
-    currentOpsMode = new DefaultAnnotatedOperations(flushableOps.get, exe)
+    flushableOps = Some(buildBatchRestOps)
+    currentOpsMode = buildOperationHandler(flushableOps.get)
   }
   def stopBatchRequests() {
     flushableOps = None
-    currentOpsMode = new DefaultAnnotatedOperations(restOps, exe)
+    currentOpsMode = buildOperationHandler(restOps)
   }
   def flushBatchRequests() = {
     flushableOps match {

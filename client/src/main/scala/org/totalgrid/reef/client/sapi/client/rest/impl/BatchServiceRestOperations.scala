@@ -56,8 +56,6 @@ class BatchServiceRestOperations(ops: RestOperations, hook: RequestSpyHook, regi
     future
   }
 
-  def subscribe[A](descriptor: TypeDescriptor[A]) = ops.subscribe(descriptor)
-
   /**
    * send all of the pending requests in a single BatchServiceRequests
    */

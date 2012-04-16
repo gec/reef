@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.exception.{ ServiceIOException, InternalClientE
 import org.totalgrid.reef.client.types.TypeDescriptor
 
 import org.totalgrid.reef.client.sapi.client.{ Subscription, Promise }
-import org.totalgrid.reef.client.sapi.client.rest.{ RestOperations, AnnotatedOperations }
+import org.totalgrid.reef.client.sapi.client.rest.{ ClientBindOperations, RestOperations, AnnotatedOperations }
 import org.totalgrid.reef.client.javaimpl.SubscriptionResultWrapper
 import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionResult }
 import org.totalgrid.reef.client.sapi.service.AsyncService
@@ -86,7 +86,7 @@ object DefaultAnnotatedOperations {
 /**
  * we only need the executor to create futures for errors correctly
  */
-final class DefaultAnnotatedOperations(restOps: RestOperations, exe: Executor) extends AnnotatedOperations {
+final class DefaultAnnotatedOperations(restOps: RestOperations, bindable: ClientBindOperations, exe: Executor) extends AnnotatedOperations {
 
   import DefaultAnnotatedOperations._
 
@@ -99,7 +99,7 @@ final class DefaultAnnotatedOperations(restOps: RestOperations, exe: Executor) e
   // TODO - it's probably possible to make SubscriptionResult only polymorphic in one type 0.5.x
   def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Future[Result[A]]): Promise[SubscriptionResult[A, B]] = {
     val future: Future[Result[SubscriptionResult[A, B]]] = try {
-      val sub = restOps.subscribe(desc)
+      val sub = bindable.subscribe(desc)
       val opFuture = safeOpWithFuture(err, exe) { fun(sub, restOps) }
       def onResult(r: Result[A]) = {
         if (r.isFailure) sub.cancel()
@@ -116,9 +116,7 @@ final class DefaultAnnotatedOperations(restOps: RestOperations, exe: Executor) e
 
   def clientSideService[A, B](handler: AsyncService[B], err: => String)(fun: (SubscriptionBinding, RestOperations) => Future[Result[A]]) = {
     val future: Future[Result[SubscriptionBinding]] = try {
-
-      // TODO: fix service bindings
-      val subBinding = restOps.subscribe(handler.descriptor)
+      val subBinding = bindable.lateBindService(handler)
       val opFuture = safeOpWithFuture(err, exe) { fun(subBinding, restOps) }
       def onResult(r: Result[A]) = {
         if (r.isFailure) subBinding.cancel()

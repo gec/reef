@@ -24,6 +24,7 @@ import org.totalgrid.reef.client.sapi.client._
 trait Client
     extends Executor
     with RestOperations
+    with ClientBindOperations
     with RequestSpyHook
     with DefaultHeaders
     with Connection

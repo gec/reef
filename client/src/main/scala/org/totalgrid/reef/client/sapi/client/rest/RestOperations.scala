@@ -20,10 +20,16 @@ package org.totalgrid.reef.client.sapi.client.rest
 
 import org.totalgrid.reef.client.sapi.client._
 import org.totalgrid.reef.client.proto.Envelope.Verb
-import org.totalgrid.reef.client.types.TypeDescriptor
 
 import net.agileautomata.executor4s.Future
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.client.sapi.service.AsyncService
+import org.totalgrid.reef.client.SubscriptionBinding
 
+/**
+ * api-implementer facing interface that encapsulates the get/put/post/delete operations without revealing which
+ * executor our request is going to be returned to
+ */
 trait RestOperations {
 
   def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]): Future[Response[A]]
@@ -38,10 +44,23 @@ trait RestOperations {
   final def post[A](payload: A) = request(Verb.POST, payload, None)
   final def put[A](payload: A) = request(Verb.PUT, payload, None)
 
+}
+
+/**
+ * api-implementer facing interface that allows us to ask for a subscription or serviceBinding without worrying
+ * about which executor it is using
+ */
+trait ClientBindOperations {
   /**
    * subscribe returns a Future to the result that is always going to be set when it is returned, it is
    * returned as a future so a client who wants to listen to the SubscriptionResult will get the event
    * on the same dispatcher as the result would come on
    */
   def subscribe[A](descriptor: TypeDescriptor[A]): Subscription[A]
+
+  /**
+   * setups a service listener to the published "request exchange" associated with the service type A; binding must be
+   * done later by an authorized agent with "services" level access to the broker using the bindServiceQueue() function.
+   */
+  def lateBindService[A](service: AsyncService[A]): SubscriptionBinding
 }

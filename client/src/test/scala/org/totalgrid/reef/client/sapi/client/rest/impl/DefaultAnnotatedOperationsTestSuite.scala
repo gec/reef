@@ -34,14 +34,15 @@ import org.totalgrid.reef.client.sapi.client._
 
 import org.totalgrid.reef.client.sapi.client.rest.fixture._
 import org.totalgrid.reef.test.MockitoStubbedOnly
-import org.totalgrid.reef.client.sapi.client.rest.RestOperations
+import org.totalgrid.reef.client.sapi.client.rest.{ ClientBindOperations, RestOperations }
 
 @RunWith(classOf[JUnitRunner])
 class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {
 
   test("Failure promise throws on await") {
     val client = mock(classOf[RestOperations], new MockitoStubbedOnly)
-    val ops = new DefaultAnnotatedOperations(client, new InstantExecutor)
+    val bindable = mock(classOf[ClientBindOperations], new MockitoStubbedOnly)
+    val ops = new DefaultAnnotatedOperations(client, bindable, new InstantExecutor)
 
     doReturn(MockFuture.defined[Response[Int]](FailureResponse())).when(client).get(4)
 
@@ -52,10 +53,11 @@ class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {
 
   test("New Subscriptions are reported to manager") {
     val client = mock(classOf[RestOperations], new MockitoStubbedOnly)
-    val ops = new DefaultAnnotatedOperations(client, new InstantExecutor)
+    val bindable = mock(classOf[ClientBindOperations], new MockitoStubbedOnly)
+    val ops = new DefaultAnnotatedOperations(client, bindable, new InstantExecutor)
     val subscription = mock(classOf[Subscription[SomeInteger]])
 
-    doReturn(subscription).when(client).subscribe(SomeIntegerTypeDescriptor)
+    doReturn(subscription).when(bindable).subscribe(SomeIntegerTypeDescriptor)
     doReturn(MockFuture.defined[Response[Int]](SuccessResponse(list = List(8)))).when(client).get(4)
 
     val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
@@ -66,10 +68,11 @@ class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {
 
   test("Subscription is canceled on failed request") {
     val client = mock(classOf[RestOperations], new MockitoStubbedOnly)
-    val ops = new DefaultAnnotatedOperations(client, new InstantExecutor)
+    val bindable = mock(classOf[ClientBindOperations], new MockitoStubbedOnly)
+    val ops = new DefaultAnnotatedOperations(client, bindable, new InstantExecutor)
     val subscription = mock(classOf[Subscription[SomeInteger]])
 
-    doReturn(subscription).when(client).subscribe(SomeIntegerTypeDescriptor)
+    doReturn(subscription).when(bindable).subscribe(SomeIntegerTypeDescriptor)
     doReturn(MockFuture.defined[Response[Int]](FailureResponse())).when(client).get(4)
 
     val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
@@ -81,9 +84,10 @@ class DefaultAnnotatedOperationsTestSuite extends FunSuite with ShouldMatchers {
 
   test("Failed subscription terminates sequence early") {
     val client = mock(classOf[RestOperations], new MockitoStubbedOnly)
-    val ops = new DefaultAnnotatedOperations(client, new InstantExecutor)
+    val bindable = mock(classOf[ClientBindOperations], new MockitoStubbedOnly)
+    val ops = new DefaultAnnotatedOperations(client, bindable, new InstantExecutor)
 
-    doThrow(new RuntimeException("Intentional Error")).when(client).subscribe(SomeIntegerTypeDescriptor)
+    doThrow(new RuntimeException("Intentional Error")).when(bindable).subscribe(SomeIntegerTypeDescriptor)
 
     val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
       client.get(4).map(r => r.one)

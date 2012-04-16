@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.exception.ServiceIOException
 import org.totalgrid.reef.client._
 import org.totalgrid.reef.client.ServiceProviderInfo
 import net.agileautomata.executor4s.Executor
-import sapi.client.rest.{ ServiceRegistry, RestOperations, Client => SClient }
+import sapi.client.rest.{ ClientBindOperations, ServiceRegistry, RestOperations, Client => SClient }
 import sapi.client.{ RequestSpyHook, BasicRequestHeaders, RequestSpy }
 
 class ClientWrapper(client: SClient) extends Client {
@@ -67,6 +67,7 @@ class ClientWrapper(client: SClient) extends Client {
     new ClientInternal {
       def getExecutor: Executor = client
       def getOperations: RestOperations = client
+      def getBindings: ClientBindOperations = client
       def getRequestSpyHook: RequestSpyHook = client
       def getServiceRegistry: ServiceRegistry = client
 
