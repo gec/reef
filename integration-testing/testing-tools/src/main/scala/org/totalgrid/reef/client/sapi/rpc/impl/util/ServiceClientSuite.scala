@@ -80,6 +80,8 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
     client.addSubscriptionCreationListener(canceler)
 
     client.setHeaders(client.getHeaders.setTimeout(50000))
+    // TODO: filtering is done after the result limit is applied
+    client.setHeaders(client.getHeaders.setResultLimit(5000))
 
     ModelPreparer.load(modelFile, session)
   }

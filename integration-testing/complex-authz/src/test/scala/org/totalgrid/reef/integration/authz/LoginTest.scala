@@ -55,9 +55,7 @@ class LoginTest extends AuthTestBase {
 
   test("Guest can only see own logins") {
     as(GUEST) { guest =>
-      // TODO: filtering is done after the result limit so if the most recent 100 logins are other users
       // we dont' get any guest logins
-      guest.setHeaders(guest.getHeaders.setResultLimit(1000))
       val allLogins = guest.getLogins(true)
 
       allAgent(GUEST, allLogins)
