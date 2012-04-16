@@ -35,6 +35,7 @@ class UserAuthorizationTest extends ServiceClientSuite {
     val agent = client.createNewAgent(name, password, List(permission, "password_updatable"))
     try {
       val guestClient = session.login(name, password).await
+      guestClient.setHeaders(guestClient.getHeaders.setResultLimit(5000))
       fun(guestClient, guestClient.getRpcInterface(classOf[AllScadaService]))
       guestClient.logout().await
     } finally {
@@ -46,6 +47,7 @@ class UserAuthorizationTest extends ServiceClientSuite {
     val agent = client.createNewAgent(name, password, List(permission, "password_updatable"))
     try {
       val guestClient = session.login(name, password).await
+      guestClient.setHeaders(guestClient.getHeaders.setResultLimit(5000))
       fun(guestClient, guestClient.getRpcInterface(classOf[AllScadaServiceAsync]))
       guestClient.logout().await
     } finally {
@@ -136,7 +138,7 @@ class UserAuthorizationTest extends ServiceClientSuite {
       val errorMessage2 = intercept[UnauthorizedException] {
         guestServices.deleteAgent(agent)
       }.getMessage
-      println(errorMessage2)
+
       errorMessage2 should include("agent")
       errorMessage2 should include("delete")
     }

@@ -47,6 +47,7 @@ class AuthTestBase extends ServiceClientSuite {
    */
   def as[A](userName: String, logout: Boolean = true)(f: AllScadaService => A): A = {
     val c = session.login(userName, userConfig.get.getUserPassword).await
+    c.setHeaders(c.getHeaders.setResultLimit(5000))
     val ret = f(c.getRpcInterface(classOf[AllScadaService]))
     if (logout) c.logout()
     ret
