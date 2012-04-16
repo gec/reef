@@ -24,8 +24,9 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.client.exception.UnauthorizedException
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.settings.UserSettings
 
 @RunWith(classOf[JUnitRunner])
 class UserAuthorizationTest extends ServiceClientSuite {
@@ -33,9 +34,9 @@ class UserAuthorizationTest extends ServiceClientSuite {
   private def asGuestUser(name: String, password: String, permission: String = "read_only")(fun: (Client, AllScadaService) => Unit) = {
     val agent = client.createNewAgent(name, password, List(permission, "password_updatable")).await
     try {
-      val guestClient = session.login(name, password).await
-      fun(guestClient, guestClient.getRpcInterface(classOf[AllScadaService]))
-      guestClient.logout().await
+      val guestClient = connection.login(new UserSettings(name, password))
+      fun(guestClient, guestClient.getService(classOf[AllScadaService]))
+      guestClient.logout()
     } finally {
       client.deleteAgent(agent).await
     }
@@ -43,15 +44,15 @@ class UserAuthorizationTest extends ServiceClientSuite {
 
   test("Double logout doesn't throw") {
     asGuestUser("test-agent", "test-password") { (guestClient, guestServices) =>
-      guestClient.logout().await
+      guestClient.logout()
 
-      guestClient.logout().await
+      guestClient.logout()
     }
   }
 
   test("Fail after logout ") {
     asGuestUser("test-agent", "test-password") { (guestClient, guestServices) =>
-      guestClient.logout().await
+      guestClient.logout()
 
       intercept[UnauthorizedException] {
         guestServices.getAgents().await
@@ -105,12 +106,12 @@ class UserAuthorizationTest extends ServiceClientSuite {
       guestServices.setAgentPassword(agent, password + password).await
 
       // get a new auth token with new password
-      val newClient = guestClient.login(userName, password + password).await
+      val newClient = connection.login(new UserSettings(userName, password + password))
 
       // change password back
-      newClient.getRpcInterface(classOf[AllScadaService]).setAgentPassword(agent, password).await
+      newClient.getService(classOf[AllScadaService]).setAgentPassword(agent, password).await
 
-      newClient.logout().await
+      newClient.logout()
 
       // show that we can't create a new agent
       val permissionSets = guestServices.getPermissionSets.await

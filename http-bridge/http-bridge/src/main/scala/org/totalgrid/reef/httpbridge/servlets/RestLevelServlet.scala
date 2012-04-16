@@ -51,7 +51,7 @@ class RestLevelServlet(connection: ManagedConnection, builderLocator: BuilderLoc
 
     // make the request to reef, will fail if we don't have valid connection to reef
     val client = connection.getAuthenticatedClient(authToken)
-    val future = client.request(verb, requestProto, Some(headers))
+    val future = client.getInternal.getOperations.request(verb, requestProto, Some(headers))
 
     // once we have an async servlet we could use .listen on the future, for now we can use .await
     val response = future.await

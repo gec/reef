@@ -23,7 +23,7 @@ import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 
 class BenchmarkTestBase extends FunSuite with BeforeAndAfterAll {
   def client = {
-    val c = InMemoryNode.javaConnectionFactory.connect.login(InMemoryNode.userSettings)
+    val c = InMemoryNode.javaConnection.login(InMemoryNode.userSettings)
     c.setHeaders(c.getHeaders.setTimeout(120000))
     c.setHeaders(c.getHeaders.setResultLimit(10000))
 

@@ -20,7 +20,7 @@ package org.totalgrid.reef.app.impl
 
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.broker.BrokerConnection
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
@@ -53,7 +53,7 @@ class SimpleConnectedApplicationManager(executor: Executor, provider: Connection
     val conn = new DefaultConnection(brokerConnection, exe, 5000)
     conn.addServicesList(new ReefServices)
 
-    handleConnection(conn)
+    handleConnection(new ConnectionWrapper(conn, exe))
   }
 
   def handleConnection(conn: Connection) = {
@@ -107,7 +107,7 @@ class SimpleConnectedApplicationManager(executor: Executor, provider: Connection
     val process = if (currentConnection.isEmpty) {
       None
     } else {
-      Some(new LoginProcessTree(new ConnectionWrapper(currentConnection.get, executor), app, managerSettings, executor))
+      Some(new LoginProcessTree(currentConnection.get, app, managerSettings, executor))
     }
 
     applications += (app -> process)

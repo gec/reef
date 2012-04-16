@@ -37,7 +37,6 @@ import org.totalgrid.reef.client.service.proto.Application.{ HeartbeatConfig, Ap
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.app.{ ConnectionProvider, ApplicationSettings, ConnectedApplication }
 
-import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
 
 @RunWith(classOf[JUnitRunner])
 class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
@@ -81,10 +80,10 @@ class ConnectedApplicationManagerTest extends FunSuite with ShouldMatchers {
     }
   }
 
-  def makeServices(): (SConnection, AllScadaService) = {
+  def makeServices(): (Connection, AllScadaService) = {
     val client = Mockito.mock(classOf[Client], new MockitoStubbedOnly)
     val services = Mockito.mock(classOf[AllScadaService], new MockitoStubbedOnly)
-    val connection = Mockito.mock(classOf[SConnection], new MockitoStubbedOnly)
+    val connection = Mockito.mock(classOf[Connection], new MockitoStubbedOnly)
 
     Mockito.doReturn(success(true)).when(client).logout()
 

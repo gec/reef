@@ -32,8 +32,9 @@ import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, SubscriptionEvent,
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
 
 object ReefCommandSupport extends Logging {
-  def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
+  def setSessionVariables(session: CommandSession, connection: Connection, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
     session.put("context", context)
+    session.put("connection", connection)
     session.put("client", client)
     session.put("reefSession", service)
     session.put("user", userName)
@@ -52,7 +53,7 @@ object ReefCommandSupport extends Logging {
 
       println("Logged into " + context + " as user: " + userSettings.getUserName + "\n\n")
 
-      setSessionVariables(session, client, services, context, cancelable, userSettings.getUserName, client.getHeaders.getAuthToken)
+      setSessionVariables(session, connection, client, services, context, cancelable, userSettings.getUserName, client.getHeaders.getAuthToken)
     } catch {
       case x: Exception =>
         cancelable.cancel()
@@ -130,6 +131,13 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     }
   }
 
+  protected def connection: Connection = {
+    this.session.get("connection") match {
+      case null => throw new Exception("No connection configured!")
+      case x => x.asInstanceOf[Connection]
+    }
+  }
+
   protected def reefClient: Client = {
     this.session.get("client") match {
       case null => throw new Exception("No client configured!")
@@ -151,12 +159,12 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     case x => true
   }
 
-  def login(client: Client, services: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) {
-    ReefCommandSupport.setSessionVariables(this.session, client, services, context, cancelable, userName, authToken)
+  def login(connection: Connection, client: Client, services: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) {
+    ReefCommandSupport.setSessionVariables(this.session, connection, client, services, context, cancelable, userName, authToken)
   }
 
   protected def logout() {
-    login(null, null, null, null, null, null)
+    login(null, null, null, null, null, null, null)
   }
 
   protected def get(name: String): Option[String] = {

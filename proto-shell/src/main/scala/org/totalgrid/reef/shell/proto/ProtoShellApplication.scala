@@ -59,7 +59,7 @@ object ProtoShellApplication {
       val client = connection.login(userSettings)
       val services = client.getService(classOf[AllScadaService])
 
-      val app = new ProtoShellApplication(client, services, cancelable, userSettings.getUserName, context, client.getHeaders.getAuthToken)
+      val app = new ProtoShellApplication(connection, client, services, cancelable, userSettings.getUserName, context, client.getHeaders.getAuthToken)
       app.run(Array[String]())
     } catch {
       case e: Exception =>
@@ -69,7 +69,7 @@ object ProtoShellApplication {
   }
 }
 
-class ProtoShellApplication(client: Client, services: AllScadaService, cancelable: Cancelable, userName: String, context: String, authToken: String) extends Main {
+class ProtoShellApplication(connection: Connection, client: Client, services: AllScadaService, cancelable: Cancelable, userName: String, context: String, authToken: String) extends Main {
 
   setUser(userName)
   setApplication(context)
@@ -79,7 +79,7 @@ class ProtoShellApplication(client: Client, services: AllScadaService, cancelabl
   protected override def createConsole(commandProcessor: CommandProcessorImpl, in: InputStream, out: PrintStream, err: PrintStream, terminal: Terminal) = {
     new Console(commandProcessor, in, out, err, terminal, null) {
       protected override def setSessionProperties = {
-        ReefCommandSupport.setSessionVariables(this.session, client, services, context, cancelable, userName, authToken)
+        ReefCommandSupport.setSessionVariables(this.session, connection, client, services, context, cancelable, userName, authToken)
       }
     }
   }

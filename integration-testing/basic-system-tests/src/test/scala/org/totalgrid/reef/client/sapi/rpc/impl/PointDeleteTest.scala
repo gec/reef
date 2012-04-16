@@ -37,7 +37,7 @@ class PointDeleteTest extends ServiceClientSuite {
 
     client.setHeaders(client.getHeaders.setTimeout(100000))
 
-    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = session.getService(classOf[LoaderServices])
 
     val names = (0 to numberOfPoints).map { i => "TestPoint" + i }
 
