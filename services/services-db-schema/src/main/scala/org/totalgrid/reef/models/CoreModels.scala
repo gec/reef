@@ -117,11 +117,12 @@ case class ConfigFile(
 case class CommunicationEndpoint(
     _entityId: UUID,
     val protocol: String,
+    val autoAssigned: Boolean,
     var frontEndPortId: Option[UUID],
     val dataSource: Boolean) extends EntityBasedModel(_entityId) {
 
-  def this() = this(new UUID(0, 0), "", Some(new UUID(0, 0)), false)
-  def this(entityId: UUID, protocol: String, dataSource: Boolean) = this(entityId, protocol, Some(new UUID(0, 0)), dataSource)
+  def this() = this(new UUID(0, 0), "", true, Some(new UUID(0, 0)), false)
+  def this(entityId: UUID, protocol: String, autoAssigned: Boolean, dataSource: Boolean) = this(entityId, protocol, autoAssigned, Some(new UUID(0, 0)), dataSource)
 
   val port = LazyVar(mayHaveOneByEntityUuid(ApplicationSchema.frontEndPorts, frontEndPortId))
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)

@@ -91,8 +91,12 @@ class CommunicationEndpointConnectionServiceModel
     // changing enabled flag has precedence, then connection state changes
     val currentlyEnabled = existing.enabled
     val currentState = existing.state
+    val currentFep = existing.applicationId
 
-    def isSame(entry: FrontEndAssignment) = entry.enabled == currentlyEnabled && entry.state == currentState
+    def loadFepId(fep: FrontEndProcessor): Option[Long] = FrontEndProcessorConversion.findRecord(context, fep).map { _.id }
+    lazy val requestedFepId = loadFepId(proto.getFrontEnd)
+
+    def isSame(entry: FrontEndAssignment) = entry.enabled == currentlyEnabled && entry.state == currentState && entry.applicationId == currentFep
 
     if (proto.hasEnabled && proto.getEnabled != currentlyEnabled) {
       context.auth.authorize(context, "endpoint_enabled", "update", List(endpoint.entityId))
@@ -114,6 +118,12 @@ class CommunicationEndpointConnectionServiceModel
           eventFunc(EventType.Scada.CommEndpointOffline)
           toBeUpdated.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
         }
+      }
+    } else if (proto.hasFrontEnd && currentFep != requestedFepId) {
+      context.auth.authorize(context, "endpoint_connection", "update", List(endpoint.entityId))
+      if (endpoint.autoAssigned) throw new BadRequestException("Cannot claim endpoint that is autoAssigned")
+      exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
+        toBeUpdated.copy(applicationId = requestedFepId)
       }
     } else {
       // If we don't do an auth check AT ALL, this is a sneaky way to read without permissions
@@ -169,7 +179,8 @@ trait CommunicationEndpointConnectionConversion
       entry.assignedTime != existing.assignedTime ||
       entry.offlineTime != existing.offlineTime ||
       entry.onlineTime != existing.onlineTime ||
-      entry.enabled != existing.enabled
+      entry.enabled != existing.enabled ||
+      entry.applicationId != existing.applicationId
   }
 
   def convertToProto(entry: FrontEndAssignment): ConnProto = {
@@ -196,6 +207,7 @@ trait CommunicationEndpointConnectionConversion
       .setUuid(makeUuid(endpoint.entity.value))
       .setName(endpoint.entity.value.name)
       .setProtocol(endpoint.protocol)
+      .setAutoAssigned(endpoint.autoAssigned)
 
     endpoint.port.value.foreach(p => b.setChannel(FrontEndPortConversion.convertToProto(p)))
 

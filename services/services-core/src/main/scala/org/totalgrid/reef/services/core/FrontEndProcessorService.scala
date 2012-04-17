@@ -87,17 +87,16 @@ trait FrontEndProcessorConversion
   }
 
   def searchQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
-    val protocol = if (proto.getProtocolsCount == 1) Some(proto.getProtocols(1)) else None
+    val protocol = if (proto.getProtocolsCount == 1) Some(proto.getProtocols(0)) else None
 
     val protocolSearch = List(
-      protocol.map(p => sql.id in from(ApplicationSchema.protocols)(t => where(t.protocol === p) select (&(t.applicationId)))))
+      protocol.asParam(p => sql.id in from(ApplicationSchema.protocols)(t => where(t.protocol === p) select (&(t.applicationId)))))
     protocolSearch ::: ApplicationConfigConversion.searchQuery(proto.getAppConfig, sql)
   }
 
   def uniqueQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
-    List(
-      proto.uuid.value.asParam(sql.id === _.toLong).unique,
-      proto.appConfig.instanceName.asParam(sql.instanceName === _).unique)
+    val uuidSearch = List(proto.uuid.value.asParam(sql.id === _.toLong).unique)
+    uuidSearch ::: proto.appConfig.map(ApplicationConfigConversion.uniqueQuery(_, sql)).getOrElse(Nil)
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
@@ -115,3 +114,5 @@ trait FrontEndProcessorConversion
     b.build
   }
 }
+
+object FrontEndProcessorConversion extends FrontEndProcessorConversion

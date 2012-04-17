@@ -183,8 +183,8 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
       meas
     }
 
-    def addDevice(name: String, pname: String = "test_point"): Endpoint = {
-      val send = Endpoint.newBuilder.setName(name).setProtocol("benchmark")
+    def addDevice(name: String, pname: String = "test_point", autoAssigned: Boolean = true): Endpoint = {
+      val send = Endpoint.newBuilder.setName(name).setProtocol("benchmark").setAutoAssigned(autoAssigned)
       addEndpointPointsAndCommands(send, List(name + "." + pname), List(name + ".test_commands"))
     }
 
@@ -203,13 +203,19 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
         val pointProto = Point.newBuilder().setName(pname).setType(PointType.ANALOG).setUnit("raw").build
         pointService.put(pointProto).expectOne()
       }
-      pointNames.foreach { cname =>
+      commandNames.foreach { cname =>
         owns.addCommands(cname)
         val cmdProto = Command.newBuilder().setName(cname).setDisplayName(cname).setType(CommandType.CONTROL).build
         commandService.put(cmdProto).expectOne()
       }
       ce.setOwnerships(owns)
       commEndpointService.put(ce.build).expectOne()
+    }
+
+    def claimEndpoint(endpointName: String, fepName: Option[String]): EndpointConnection = {
+      val b = EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setName(endpointName))
+      b.setFrontEnd(FrontEndProcessor.newBuilder.setAppConfig(ApplicationConfig.newBuilder.setInstanceName(fepName.getOrElse("-"))))
+      frontEndConnection.put(b.build).expectOne()
     }
 
     def getPoint(device: String): Point =

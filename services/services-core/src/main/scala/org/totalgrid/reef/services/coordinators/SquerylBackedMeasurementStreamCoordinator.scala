@@ -67,7 +67,8 @@ class SquerylBackedMeasurementStreamCoordinator(
 
     // then either assign the endpoint to a compatible FEP or no FEP
     val assigned = determineFepAssignment(context, fepProcAssignment.copy(applicationId = None), ce)
-    fepConnection.create(context, assigned.getOrElse(new FrontEndAssignment(ce.id, initialConnectionState, fepProcAssignment.enabled, None, None, None, Some(System.currentTimeMillis), None)))
+    lazy val defaultFep = new FrontEndAssignment(ce.id, initialConnectionState, fepProcAssignment.enabled, fepProcAssignment.serviceRoutingKey, None, None, Some(System.currentTimeMillis), None)
+    fepConnection.create(context, assigned.getOrElse(defaultFep))
   }
 
   def onEndpointDeleted(context: RequestContext, ce: CommunicationEndpoint) {
@@ -99,7 +100,8 @@ class SquerylBackedMeasurementStreamCoordinator(
     val serviceRoutingKey = measAssign.readyTime.flatMap { x => measAssign.serviceRoutingKey }
 
     // lookup a compatible FEP only if the connection is enabled
-    val applicationId = if (assign.enabled) getFep(ce).map { _.id } else None
+    val applicationId = if (ce.autoAssigned) if (assign.enabled) getFep(ce).map { _.id } else None
+    else assign.applicationId
 
     logger.info(
       ce.entityName + " assigned FEP: " + applicationId + ", protocol: " + ce.protocol +
