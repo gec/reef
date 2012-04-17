@@ -22,13 +22,13 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
-import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
-
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.sapi.rpc.EndpointService
 import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.service.proto.FEP.{ FrontEndProcessor, Endpoint, EndpointConnection }
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 
 trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
 
@@ -67,6 +67,30 @@ trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
           case Failure(ex) => f1
         }
       }
+    }
+  }
+
+  override def setEndpointAutoAssigned(endpointUuid: ReefUUID, autoAssigned: Boolean) = {
+    ops.operation("Couldn't set endpoint: " + endpointUuid.getValue + " to autoAssigned: " + autoAssigned) {
+      val endpoint = Endpoint.newBuilder.setUuid(endpointUuid).setAutoAssigned(autoAssigned)
+
+      _.put(endpoint.build).map { _.one }
+    }
+  }
+
+  override def setEndpointConnectionAssignedProtocolAdapter(endpointUuid: ReefUUID, applicationUuid: ReefUUID) = {
+    ops.operation("Couldn't assign endpoint: " + endpointUuid.getValue + " to application: " + applicationUuid.getValue) {
+      val app = ApplicationConfig.newBuilder.setUuid(applicationUuid)
+      val fep = FrontEndProcessor.newBuilder.setAppConfig(app)
+      val endpoint = Endpoint.newBuilder.setUuid(endpointUuid)
+
+      _.put(EndpointConnection.newBuilder.setEndpoint(endpoint).setFrontEnd(fep).build).map { _.one }
+    }
+  }
+
+  override def getProtocolAdapters() = {
+    ops.operation("Couldn't get all protocol adapters.") {
+      _.get(FrontEndProcessor.newBuilder.addProtocols("*").build).map { _.many }
     }
   }
 

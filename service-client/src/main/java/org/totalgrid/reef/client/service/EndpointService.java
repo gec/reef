@@ -20,6 +20,7 @@ package org.totalgrid.reef.client.service;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.SubscriptionResult;
+import org.totalgrid.reef.client.service.proto.FEP.FrontEndProcessor;
 import org.totalgrid.reef.client.service.proto.FEP.Endpoint;
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection;
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State;
@@ -92,6 +93,34 @@ public interface EndpointService
      * @return the connection object representing the current connection state
      */
     EndpointConnection enableEndpointConnection( ReefUUID endpointUuid ) throws ReefServiceException;
+
+    /**
+     * Alter an endpoint to determine if it is autoAssigned to a frontend by the coordinator or is manually claimed.
+     * Endpoints that are manuallyAssigned are marked COMMS_DOWN by the coordinator only if the application that
+     * has claimed the endpoint timesout the heartbeat, all other transitions become the responsiblity of the protocol
+     * adapters.
+     * @param endpointUuid endpoint uuid
+     * @param autoAssigned whether the front end is assigned by the coordinator based on protocol and location (true) or
+     *                     if frontends will manually claim endpoints they communicating with (false)
+     * @return the updated endpoint proto
+     */
+    Endpoint setEndpointAutoAssigned( ReefUUID endpointUuid, boolean autoAssigned ) throws ReefServiceException;
+
+    /**
+     * Claims an endpoint as being handled by a particular application. This provides two functions:
+     * - It indicates to other, possibly competing, protocol adapters that the endpoint is handled
+     * - If the protocol adapter is heartbeating and loses contact with the server the endpoint will automatically
+     *   be marked as COMMS_DOWN.
+     * @param endpointUuid endpoint uuid
+     * @param applicationUuid uuid of the protocol adapter application
+     * @return the endpoint connection reflecting the assignment or an error if assignment fails
+     */
+    EndpointConnection setEndpointConnectionAssignedProtocolAdapter( ReefUUID endpointUuid, ReefUUID applicationUuid ) throws ReefServiceException;
+
+    /**
+     * @return List of all protocol adapters registered with the system
+     */
+    List<FrontEndProcessor> getProtocolAdapters() throws ReefServiceException;
 
     /**
      * get all of the objects representing endpoint to protocol adapter connections. Sub protos - Endpoint and frontend
