@@ -177,6 +177,12 @@
         <command name="endpoint/changestate">
             <action class="org.totalgrid.reef.shell.proto.EndpointChangeStateCommand"/>
         </command>
+        <command name="endpoint/assign">
+            <action class="org.totalgrid.reef.shell.proto.EndpointAssignCommand"/>
+        </command>
+        <command name="endpoint/adapters">
+            <action class="org.totalgrid.reef.shell.proto.EndpointAdaptersCommand"/>
+        </command>
         <command name="application/list">
             <action class="org.totalgrid.reef.shell.proto.ApplicationListCommand"/>
         </command>

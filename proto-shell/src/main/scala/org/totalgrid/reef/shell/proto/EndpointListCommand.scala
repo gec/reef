@@ -18,12 +18,11 @@
  */
 package org.totalgrid.reef.shell.proto
 
-import presentation.EndpointView
-
-import org.apache.felix.gogo.commands.{ Argument, Command }
-
+import presentation.{ ApplicationView, EndpointView }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.client.exception.BadRequestException
+import org.apache.felix.gogo.commands.{ Argument, Option => GogoOption, Command }
 
 @Command(scope = "endpoint", name = "list", description = "Prints endpoint connection information")
 class EndpointListCommand extends ReefCommandSupport {
@@ -75,6 +74,52 @@ class EndpointChangeStateCommand extends ReefCommandSupport with EndpointRetriev
         services.alterEndpointConnectionState(connection.getId, state)
       })
     }
+  }
+}
+
+@Command(scope = "endpoint", name = "assign", description = "Force an endpoint into a different state (experts only!)")
+class EndpointAssignCommand extends ReefCommandSupport {
+
+  @Argument(index = 0, name = "name", description = "Endpoint name. ", required = true, multiValued = false)
+  var endpointName: String = null
+
+  @GogoOption(name = "--auto", description = "Switch endpoint to be autoAssigned", required = false, multiValued = false)
+  var switchToAutoAssign: Boolean = false
+
+  @GogoOption(name = "--manual", description = "Switch endpoint to be manually assigned", required = false, multiValued = false)
+  var switchToManualAssign: Boolean = false
+
+  @GogoOption(name = "--fep", description = "Name of the application we want to be the FEP.", required = false, multiValued = false)
+  var fepName: String = null
+
+  def doCommand() = {
+    if (switchToAutoAssign && fepName != null) throw new Exception("Cannot use both --auto and set an fep at same time.")
+    if (fepName != null) switchToManualAssign = true
+    if (switchToAutoAssign && switchToManualAssign) throw new Exception("Cannot use both --auto and --manual options")
+
+    val endpoint = services.getEndpointByName(endpointName)
+
+    if (switchToAutoAssign && !endpoint.getAutoAssigned) {
+      services.setEndpointAutoAssigned(endpoint.getUuid, true)
+    }
+    if (switchToManualAssign && endpoint.getAutoAssigned) {
+      services.setEndpointAutoAssigned(endpoint.getUuid, false)
+    }
+    if (fepName != null) {
+      val fep = services.getApplicationByName(fepName)
+      ApplicationView.printInspect(fep)
+      services.setEndpointConnectionAssignedProtocolAdapter(endpoint.getUuid, fep.getUuid)
+    }
+    val connection = services.getEndpointConnectionByUuid(endpoint.getUuid)
+    EndpointView.printTable(List(connection))
+  }
+}
+
+@Command(scope = "endpoint", name = "adapters", description = "List protocol adapters")
+class EndpointAdaptersCommand extends ReefCommandSupport {
+
+  def doCommand() = {
+    EndpointView.printProtocolAdapters(services.getProtocolAdapters.toList)
   }
 }
 

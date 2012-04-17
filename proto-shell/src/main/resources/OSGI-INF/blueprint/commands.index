@@ -48,6 +48,8 @@ org.totalgrid.reef.shell.proto.ChannelListCommand
 org.totalgrid.reef.shell.proto.EndpointListCommand
 org.totalgrid.reef.shell.proto.EndpointEnableCommand
 org.totalgrid.reef.shell.proto.EndpointDisableCommand
+org.totalgrid.reef.shell.proto.EndpointAssignCommand
+org.totalgrid.reef.shell.proto.EndpointAdaptersCommand
 org.totalgrid.reef.shell.proto.ApplicationListCommand
 org.totalgrid.reef.shell.proto.ApplicationViewCommand
 org.totalgrid.reef.shell.proto.ApplicationRemoveCommand
