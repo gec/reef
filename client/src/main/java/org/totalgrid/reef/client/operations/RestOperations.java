@@ -28,6 +28,8 @@ public interface RestOperations
 
     <T> Promise<Response<T>> request( Envelope.Verb verb, T payload, RequestHeaders headers );
 
+    <T> Promise<Response<T>> request( Envelope.Verb verb, T payload );
+
     <T> Promise<Response<T>> get( T payload, RequestHeaders headers );
 
     <T> Promise<Response<T>> delete( T payload, RequestHeaders headers );
