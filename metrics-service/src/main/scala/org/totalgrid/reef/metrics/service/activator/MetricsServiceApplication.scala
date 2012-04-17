@@ -36,8 +36,9 @@ class MetricsServiceApplication extends ConnectedApplication with Logging {
   def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
     connection.addServicesList(new MetricsServiceList)
 
-    // TODO: FIX FIX FIX FIX
-    //serviceBinding = Some(connection.bindService(new MetricsService(MetricsSink), appLevelClient, new AnyNodeDestination, true))
+    val service = new MetricsService(MetricsSink)
+    val registry = connection.getServiceRegistration
+    serviceBinding = Some(registry.bindService(service, service.descriptor, new AnyNodeDestination, true))
   }
 
   def onApplicationShutdown() = {
