@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
 import org.mockito.{ Matchers, Mockito }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
@@ -56,7 +56,7 @@ class ApiServletTest extends BaseServletTest {
     client = Mockito.mock(classOf[Client], new MockitoStubbedOnly())
     services = Mockito.mock(classOf[AllScadaService], new MockitoStubbedOnly())
 
-    Mockito.doReturn(services).when(client).getRpcInterface(Matchers.eq(classOf[AllScadaService]))
+    Mockito.doReturn(services).when(client).getService(Matchers.eq(classOf[AllScadaService]))
     Mockito.doReturn(client).when(connection).getAuthenticatedClient(fakeAuthToken)
     Mockito.doNothing().when(client).setHeaders(Matchers.any())
 

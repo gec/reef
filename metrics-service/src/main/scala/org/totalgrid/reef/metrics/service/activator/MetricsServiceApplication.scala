@@ -24,7 +24,7 @@ import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.metrics.client.MetricsServiceList
 import com.weiglewilczek.slf4s.Logging
 
@@ -35,7 +35,9 @@ class MetricsServiceApplication extends ConnectedApplication with Logging {
 
   def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
     connection.addServicesList(new MetricsServiceList)
-    serviceBinding = Some(connection.bindService(new MetricsService(MetricsSink), appLevelClient, new AnyNodeDestination, true))
+
+    // TODO: FIX FIX FIX FIX
+    //serviceBinding = Some(connection.bindService(new MetricsService(MetricsSink), appLevelClient, new AnyNodeDestination, true))
   }
 
   def onApplicationShutdown() = {

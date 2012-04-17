@@ -34,7 +34,7 @@ class ModelSetup extends ServiceClientSuite {
 
   test("Delete model") {
 
-    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = session.getService(classOf[LoaderServices])
     loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
 
     ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
@@ -42,7 +42,7 @@ class ModelSetup extends ServiceClientSuite {
 
   test("Load mainstreet model") {
 
-    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = session.getService(classOf[LoaderServices])
 
     val fileName = "../../assemblies/assembly-common/filtered-resources/samples/mainstreet/config.xml"
     loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
@@ -52,7 +52,7 @@ class ModelSetup extends ServiceClientSuite {
 
   test("Delete mainstreet model") {
 
-    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = session.getService(classOf[LoaderServices])
     loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
 
     ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
@@ -60,7 +60,7 @@ class ModelSetup extends ServiceClientSuite {
 
   test("Load integration model") {
 
-    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = session.getService(classOf[LoaderServices])
 
     val fileName = "../../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
 

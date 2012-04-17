@@ -20,10 +20,18 @@ package org.totalgrid.reef.client.sapi.client.rest
 
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.{ SubscriptionBinding, Routable }
-
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.client.sapi.client.Subscription
 import org.totalgrid.reef.client.sapi.service.AsyncService
 
 trait Bindable {
+
+  /**
+   * subscribe returns a Future to the result that is always going to be set when it is returned, it is
+   * returned as a future so a client who wants to listen to the SubscriptionResult will get the event
+   * on the same dispatcher as the result would come on
+   */
+  def subscribe[A](descriptor: TypeDescriptor[A], dispatcher: Executor): Subscription[A]
 
   /**
    * setup and bind a service listener to the published "request exchange" associated with the service type A.

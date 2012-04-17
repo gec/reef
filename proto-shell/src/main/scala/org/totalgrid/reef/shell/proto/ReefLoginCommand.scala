@@ -83,7 +83,7 @@ class ReefLogoutCommand extends ReefCommandSupport {
     try {
       this.get("authToken") match {
         case Some(token) =>
-          reefClient.logout().await
+          reefClient.logout()
         case None =>
       }
     } catch {
@@ -111,7 +111,7 @@ class ReefHeadersCommand extends ReefCommandSupport {
   var reset: Boolean = false
 
   def doCommand() = {
-    var headers = reefClient.getHeaders
+    var headers = reefClient.getInternal.getHeaders
 
     if (reset) headers = headers.clearResultLimit().clearTimeout()
     if (resultLimit > 0) headers = headers.setResultLimit(resultLimit)

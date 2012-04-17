@@ -42,8 +42,6 @@ final class MockSyncOperations(
     putQueue: Queue[AnyRef] = Queue[AnyRef](),
     delQueue: Queue[AnyRef] = Queue[AnyRef]()) extends RestOperations with DefaultHeaders {
 
-  override def subscribe[A](descriptor: TypeDescriptor[A]) = throw new IllegalArgumentException("not implemented")
-
   /**
    * Reset all queues.
    */

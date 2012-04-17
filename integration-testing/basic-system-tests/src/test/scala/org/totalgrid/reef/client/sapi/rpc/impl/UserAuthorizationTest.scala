@@ -24,9 +24,10 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.client.exception.UnauthorizedException
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AllScadaServiceAsync }
+import org.totalgrid.reef.client.settings.UserSettings
 
 @RunWith(classOf[JUnitRunner])
 class UserAuthorizationTest extends ServiceClientSuite {
@@ -34,10 +35,10 @@ class UserAuthorizationTest extends ServiceClientSuite {
   private def asGuestUser(name: String, password: String, permission: String = "read_only")(fun: (Client, AllScadaService) => Unit) = {
     val agent = client.createNewAgent(name, password, List(permission, "password_updatable"))
     try {
-      val guestClient = session.login(name, password).await
+      val guestClient = connection.login(new UserSettings(name, password))
       guestClient.setHeaders(guestClient.getHeaders.setResultLimit(5000))
-      fun(guestClient, guestClient.getRpcInterface(classOf[AllScadaService]))
-      guestClient.logout().await
+      fun(guestClient, guestClient.getService(classOf[AllScadaService]))
+      guestClient.logout()
     } finally {
       client.deleteAgent(agent)
     }
@@ -46,10 +47,10 @@ class UserAuthorizationTest extends ServiceClientSuite {
   private def asGuestUserAsync(name: String, password: String, permission: String = "read_only")(fun: (Client, AllScadaServiceAsync) => Unit) = {
     val agent = client.createNewAgent(name, password, List(permission, "password_updatable"))
     try {
-      val guestClient = session.login(name, password).await
+      val guestClient = connection.login(new UserSettings(name, password))
       guestClient.setHeaders(guestClient.getHeaders.setResultLimit(5000))
-      fun(guestClient, guestClient.getRpcInterface(classOf[AllScadaServiceAsync]))
-      guestClient.logout().await
+      fun(guestClient, guestClient.getService(classOf[AllScadaServiceAsync]))
+      guestClient.logout()
     } finally {
       client.deleteAgent(agent)
     }
@@ -57,15 +58,15 @@ class UserAuthorizationTest extends ServiceClientSuite {
 
   test("Double logout doesn't throw") {
     asGuestUser("test-agent", "test-password") { (guestClient, guestServices) =>
-      guestClient.logout().await
+      guestClient.logout()
 
-      guestClient.logout().await
+      guestClient.logout()
     }
   }
 
   test("Fail after logout ") {
     asGuestUser("test-agent", "test-password") { (guestClient, guestServices) =>
-      guestClient.logout().await
+      guestClient.logout()
 
       intercept[UnauthorizedException] {
         guestServices.getAgents()
@@ -93,7 +94,7 @@ class UserAuthorizationTest extends ServiceClientSuite {
       // test that we can use batch service to do allowed operations
       guestServices.startBatchRequests()
       val commandPromise = guestServices.getCommands()
-      guestServices.flushBatchRequests()
+      guestServices.flushBatchRequests().await
 
       val commands = commandPromise.await
 
@@ -119,12 +120,12 @@ class UserAuthorizationTest extends ServiceClientSuite {
       guestServices.setAgentPassword(agent, password + password)
 
       // get a new auth token with new password
-      val newClient = guestClient.login(userName, password + password).await
+      val newClient = connection.login(new UserSettings(userName, password + password))
 
       // change password back
-      newClient.getRpcInterface(classOf[AllScadaService]).setAgentPassword(agent, password)
+      newClient.getService(classOf[AllScadaService]).setAgentPassword(agent, password)
 
-      newClient.logout().await
+      newClient.logout()
 
       // show that we can't create a new agent
       val permissionSets = guestServices.getPermissionSets()
@@ -138,7 +139,7 @@ class UserAuthorizationTest extends ServiceClientSuite {
       val errorMessage2 = intercept[UnauthorizedException] {
         guestServices.deleteAgent(agent)
       }.getMessage
-
+      println(errorMessage2)
       errorMessage2 should include("agent")
       errorMessage2 should include("delete")
     }

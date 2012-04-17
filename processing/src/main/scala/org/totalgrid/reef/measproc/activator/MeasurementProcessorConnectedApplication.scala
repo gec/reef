@@ -21,9 +21,10 @@ package org.totalgrid.reef.measproc.activator
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.measproc.{ ProcessingNodeMap, MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.registration.EventPublisher
 
 class MeasurementProcessorConnectedApplication(measStore: MeasurementStore) extends ConnectedApplication with Logging {
 
@@ -37,7 +38,7 @@ class MeasurementProcessorConnectedApplication(measStore: MeasurementStore) exte
   }
 
   def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) {
-    measProc = Some(makeMeasProc(appLevelClient, appConfig))
+    measProc = Some(makeMeasProc(appLevelClient, appConfig, connection.getServiceRegistration.getEventPublisher))
     measProc.foreach { _.start }
   }
 
@@ -45,9 +46,9 @@ class MeasurementProcessorConnectedApplication(measStore: MeasurementStore) exte
     logger.warn("Error logging in MeasProc: " + msg)
   }
 
-  private def makeMeasProc(client: Client, appConfig: ApplicationConfig) = {
+  private def makeMeasProc(client: Client, appConfig: ApplicationConfig, eventPub: EventPublisher) = {
     def perStreamService = {
-      new MeasurementProcessorServicesImpl(client.spawn())
+      new MeasurementProcessorServicesImpl(client.spawn(), eventPub)
     }
 
     measStore.connect()
@@ -55,7 +56,7 @@ class MeasurementProcessorConnectedApplication(measStore: MeasurementStore) exte
     val connector = new MeasStreamConnector(perStreamService, measStore, appConfig.getInstanceName)
     val connectionHandler = new ProcessingNodeMap(connector)
 
-    val services = new MeasurementProcessorServicesImpl(client)
+    val services = new MeasurementProcessorServicesImpl(client, eventPub)
     new FullProcessor(services, connectionHandler, appConfig, services)
   }
 }

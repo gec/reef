@@ -28,9 +28,14 @@ import net.agileautomata.executor4s.Executor
 import registration.ServiceRegistration
 
 class ConnectionWrapper(conn: SConnection, exe: Executor) extends Connection {
-  def addConnectionListener(listener: ConnectionCloseListener) = conn.addConnectionListener(listener)
 
-  def removeConnectionListener(listener: ConnectionCloseListener) = conn.removeConnectionListener(listener)
+  def addConnectionListener(listener: ConnectionCloseListener) {
+    conn.addConnectionListener(listener)
+  }
+
+  def removeConnectionListener(listener: ConnectionCloseListener) {
+    conn.removeConnectionListener(listener)
+  }
 
   @throws(classOf[ReefServiceException])
   def login(userSettings: UserSettings): Client =
@@ -38,11 +43,11 @@ class ConnectionWrapper(conn: SConnection, exe: Executor) extends Connection {
 
   def createClient(authToken: String): Client = new ClientWrapper(conn.login(authToken))
 
-  def logout(authToken: String) = conn.logout(authToken).await
+  def logout(authToken: String) { conn.logout(authToken).await }
 
-  def disconnect(): Unit = conn.disconnect()
+  def disconnect() { conn.disconnect() }
 
-  def addServicesList(servicesList: ServicesList) = conn.addServicesList(servicesList)
+  def addServicesList(servicesList: ServicesList) { conn.addServicesList(servicesList) }
 
   def getServiceRegistration: ServiceRegistration = new ServiceRegistrationWrapper(conn, exe)
 }

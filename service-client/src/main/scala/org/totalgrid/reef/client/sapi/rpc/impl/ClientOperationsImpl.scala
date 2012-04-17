@@ -38,7 +38,7 @@ trait ClientOperationsImpl extends HasAnnotatedOperations with ClientOperations 
     import org.totalgrid.reef.client.types.TypeDescriptor
     import org.totalgrid.reef.client.sapi.client.Subscription._
 
-    val descriptor = client.getServiceInfo(request.asInstanceOf[AnyRef].getClass).getDescriptor
+    val descriptor = serviceRegistry.getServiceInfo(request.asInstanceOf[AnyRef].getClass).getDescriptor
     val typeDescriptor = descriptor.asInstanceOf[TypeDescriptor[T]]
     ops.subscription(typeDescriptor, "Cannot getMany with request: " + request) { (sub, c) =>
       c.get(request, sub).map(_.many)

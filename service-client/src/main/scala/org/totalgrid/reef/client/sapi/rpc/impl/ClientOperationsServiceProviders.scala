@@ -20,11 +20,12 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc.ClientOperations
 import org.totalgrid.reef.client.service.{ ClientOperations => JClientOperations }
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, RpcProvider }
+import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.service.impl.ClientOperationsJavaShim
 import org.totalgrid.reef.client.service.async.impl.ClientOperationsAsyncJavaShim
 import org.totalgrid.reef.client.service.async.ClientOperationsAsync
+import org.totalgrid.reef.client.Client
 
 class ClientOperationsWrapper(client: Client) extends ApiBase(client) with ClientOperationsImpl
 

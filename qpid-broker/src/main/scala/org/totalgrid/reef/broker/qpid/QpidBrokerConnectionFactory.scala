@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.exception.ServiceIOException
 
 object QpidBrokerConnectionFactory {
 
-  def loadssl(config: AmqpSettings, qpidSettings : ConnectionSettings) {
+  def loadssl(config: AmqpSettings, qpidSettings: ConnectionSettings) {
     if (config.getSsl) {
       if (config.getTrustStore == null || config.getTrustStore == "") {
         throw new IllegalArgumentException("ssl is enabled, trustStore must be not null and not empty")
@@ -43,7 +43,7 @@ object QpidBrokerConnectionFactory {
         if (!keyStoreFile.canRead) throw new ServiceIOException("Cannot access keyStore file: " + trustStoreFile.getAbsolutePath)
         (config.getKeyStore, config.getKeyStorePassword)
       } else {
-        (config.getTrustStore,config.getTrustStorePassword)
+        (config.getTrustStore, config.getTrustStorePassword)
       }
 
       qpidSettings.setTrustStorePath(config.getTrustStore)

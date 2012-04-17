@@ -27,13 +27,12 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.sapi.client.Promise
-import org.totalgrid.reef.client.SubscriptionResult
 import org.totalgrid.reef.client.sapi.client.rest.RpcProvider
 
 import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import org.totalgrid.reef.client.{ Client, SubscriptionResult }
 
 trait FrontEndProviderServices extends AllScadaService {
 

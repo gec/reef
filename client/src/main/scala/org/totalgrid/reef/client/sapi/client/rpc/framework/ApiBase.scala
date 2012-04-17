@@ -20,20 +20,28 @@ package org.totalgrid.reef.client.sapi.client.rpc.framework
 
 import org.totalgrid.reef.client.sapi.client.rest._
 import org.totalgrid.reef.client.sapi.client.rest.impl.{ BatchServiceRestOperations, DefaultAnnotatedOperations }
-import org.totalgrid.reef.client.{ SubscriptionCreator, SubscriptionCreationListener }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client._
 import net.agileautomata.executor4s._
+import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionCreator, SubscriptionCreationListener, Client }
 
 trait HasAnnotatedOperations {
   protected def ops: AnnotatedOperations
+  /*
   protected def client: Client
+  protected def restOps: RestOperations
+  protected def spyHooks: RestOperations
+  protected def serviceRegistry: ServiceRegistry
+  */
+  protected def serviceRegistry: ServiceRegistry
+  protected def exe: Executor
+  protected def buildBatchRestOps: BatchServiceRestOperations
 
   /**
    * do a set of operations as a single batch request (not for use for multi-step requests)!
    */
   def batch[A](fun: (RestOperations) => A): A = {
-    val batch = new BatchServiceRestOperations(client)
+    val batch = buildBatchRestOps
     val result = fun(batch)
     batch.flush()
     result
@@ -45,7 +53,7 @@ trait HasAnnotatedOperations {
     val requests = batch { batchSession =>
       gets.map { g => batchSession.get(g).map(_.one) }
     }
-    MultiRequestHelper.gatherResults(client, requests)
+    MultiRequestHelper.gatherResults(exe, requests)
   }
 }
 
@@ -57,18 +65,32 @@ trait ClientOperations extends SubscriptionCreator with RequestSpyManager with H
 
 abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperations with ClientOperations with ExecutorDelegate {
 
-  private var currentOpsMode = new DefaultAnnotatedOperations(client, client)
-  private var flushableOps = Option.empty[BatchServiceRestOperations[_]]
-  override def ops = currentOpsMode
+  protected val restOps = client.getInternal.getOperations
+  protected val bindings = client.getInternal.getBindings
+  protected val exe = client.getInternal.getExecutor
+  protected val spyHooks = client.getInternal.getRequestSpyHook
+  protected val serviceRegistry = client.getInternal.getServiceRegistry
+
+  protected def buildBatchRestOps: BatchServiceRestOperations = {
+    new BatchServiceRestOperations(restOps, spyHooks, serviceRegistry, exe)
+  }
+
+  protected def buildOperationHandler(restOps: RestOperations): AnnotatedOperations = {
+    new DefaultAnnotatedOperations(restOps, bindings, exe)
+  }
+
+  private var currentOpsMode = buildOperationHandler(restOps)
+  private var flushableOps = Option.empty[BatchServiceRestOperations]
+  def ops = currentOpsMode
 
   def startBatchRequests() {
     // TODO: add clearBatchRequests and checking that batched operations have been flushed
-    flushableOps = Some(new BatchServiceRestOperations(client))
-    currentOpsMode = new DefaultAnnotatedOperations(flushableOps.get, client)
+    flushableOps = Some(buildBatchRestOps)
+    currentOpsMode = buildOperationHandler(flushableOps.get)
   }
   def stopBatchRequests() {
     flushableOps = None
-    currentOpsMode = new DefaultAnnotatedOperations(client, client)
+    currentOpsMode = buildOperationHandler(restOps)
   }
   def flushBatchRequests() = {
     flushableOps match {
@@ -86,15 +108,17 @@ abstract class ApiBase(protected val client: Client) extends HasAnnotatedOperati
   override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.addSubscriptionCreationListener(listener)
   override def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.removeSubscriptionCreationListener(listener)
 
-  override def addRequestSpy(listener: RequestSpy): Unit = client.addRequestSpy(listener)
-  override def removeRequestSpy(listener: RequestSpy): Unit = client.removeRequestSpy(listener)
+  override def addRequestSpy(listener: RequestSpy) { spyHooks.addRequestSpy(listener) }
+  override def removeRequestSpy(listener: RequestSpy) { spyHooks.removeRequestSpy(listener) }
 
-  override def getHeaders = client.getHeaders
-  override def setHeaders(headers: BasicRequestHeaders) = client.setHeaders(headers)
-  override def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders) = client.modifyHeaders(modify)
+  override def getHeaders = client.getInternal.getHeaders
+  override def setHeaders(headers: BasicRequestHeaders) { client.getInternal.setHeaders(headers) }
+  override def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders) = {
+    client.getInternal.setHeaders(modify(client.getInternal.getHeaders))
+  }
 
   // for ExecutorDelegate
-  protected def executor = client
+  protected def executor = exe
 
 }
 

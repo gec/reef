@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.httpbridge
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.exception.ReefServiceException
 
 /**

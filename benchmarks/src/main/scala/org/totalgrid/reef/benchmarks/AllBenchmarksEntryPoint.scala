@@ -20,8 +20,8 @@ package org.totalgrid.reef.benchmarks
 
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.service.list.ReefServices
+import org.totalgrid.reef.client.factory.ReefConnectionFactory
 
 object AllBenchmarksEntryPoint {
   def main(args: Array[String]) {
@@ -35,14 +35,14 @@ object AllBenchmarksEntryPoint {
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
 
-    val factory = new ReefFactory(connectionInfo, new ReefServices)
+    val factory = new ReefConnectionFactory(connectionInfo, new ReefServices)
 
     try {
 
       val connection = factory.connect()
-      val client = connection.login(userSettings).await
+      val client = connection.login(userSettings)
 
-      BenchmarksRunner.runAllTests(client, testOptions)
+      BenchmarksRunner.runAllTests(connection, client, testOptions)
 
     } finally {
       factory.terminate()

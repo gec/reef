@@ -18,11 +18,12 @@
  */
 package org.totalgrid.reef.client.sapi.sync.impl
 
-import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider, Client }
+import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.sync._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AsyncAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
+import org.totalgrid.reef.client.Client
 
 trait AllScadaServiceSyncImpl
     extends AllScadaService

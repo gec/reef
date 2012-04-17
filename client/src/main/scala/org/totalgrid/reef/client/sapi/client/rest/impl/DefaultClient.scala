@@ -25,10 +25,9 @@ import org.totalgrid.reef.client.proto.Envelope.{ SubscriptionEventType, Verb }
 import org.totalgrid.reef.client.sapi.service.AsyncService
 
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
-import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList, Routable }
-import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo }
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.client.javaimpl.ClientWrapper
+import org.totalgrid.reef.client.{ RequestHeaders, ServiceProviderInfo, ServicesList, Routable }
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RequestSpyHook with ExecutorDelegate {
 
@@ -41,14 +40,22 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
     future
   }
 
+  // implement ClientBindOperations
   final override def subscribe[A](descriptor: TypeDescriptor[A]) = {
-    notifySubscriptionCreated(conn.subscribe(strand, descriptor))
+    notifySubscriptionCreated(conn.subscribe(descriptor, strand))
+  }
+  final override def lateBindService[A](service: AsyncService[A]) = {
+    notifySubscriptionCreated(conn.lateBindService(service, strand))
+  }
+
+  // implement Bindable
+  final override def subscribe[A](descriptor: TypeDescriptor[A], dispatcher: Executor) = {
+    notifySubscriptionCreated(conn.subscribe(descriptor, dispatcher))
   }
   final override def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = {
     notifySubscriptionCreated(conn.bindService(service, dispatcher, destination, competing))
   }
   final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
-
   final override def lateBindService[A](service: AsyncService[A], dispatcher: Executor) =
     notifySubscriptionCreated(conn.lateBindService(service, dispatcher))
   final override def bindServiceQueue[A](subQueue: String, key: String, klass: Class[A]) = conn.bindServiceQueue(subQueue, key, klass)

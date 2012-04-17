@@ -19,7 +19,7 @@
 package org.totalgrid.reef.calc.lib
 
 import org.totalgrid.reef.calc.lib.eval._
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Calculations.{ Calculation }
 import net.agileautomata.executor4s.{ Cancelable }
@@ -63,7 +63,7 @@ class BasicCalculationFactory(
 
     // get a new client (strand) for each calculation
     val client = rootClient.spawn()
-    val services = client.getRpcInterface(classOf[AllScadaService])
+    val services = client.getService(classOf[AllScadaService])
 
     val currentMeasurement = services.getMeasurementByName(settings.components.measSettings.name).await
 
@@ -91,7 +91,7 @@ class BasicCalculationFactory(
 
     inputDataManager.initialize(currentMeasurement, settings.inputs, eventedTrigger)
 
-    initiatingTrigger.foreach(_.start(client))
+    initiatingTrigger.foreach(_.start(client.getInternal.getExecutor))
 
     new MultiCancelable(List(Some(inputDataManager), initiatingTrigger).flatten)
   }

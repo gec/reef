@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.proto.Envelope.RequestHeader
 import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import org.springframework.mock.web.MockHttpServletRequest
 import org.totalgrid.reef.httpbridge.servlets.helpers.argumentsources.ParameterArgumentSource
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.mockito.Mockito
 import org.totalgrid.reef.client.service.proto.Utils.Attribute
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityAttributesBuilders
@@ -138,7 +138,7 @@ class ApiProviderTest extends FunSuite with ShouldMatchers with BeforeAndAfterEa
   val api = new MockProvider()
   val service = new MockService()
   val client = Mockito.mock(classOf[Client])
-  Mockito.doReturn(service).when(client).getRpcInterface(classOf[MockService])
+  Mockito.doReturn(service).when(client).getService(classOf[MockService])
 
   var request: MockHttpServletRequest = null
   var args: ParameterArgumentSource = null

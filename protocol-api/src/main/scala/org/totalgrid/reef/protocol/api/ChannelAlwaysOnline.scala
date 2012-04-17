@@ -20,7 +20,7 @@ package org.totalgrid.reef.protocol.api
 
 import org.totalgrid.reef.client.service.proto.FEP.CommChannel
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 
 trait ChannelAlwaysOnline extends Protocol with Logging {
 

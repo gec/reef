@@ -37,7 +37,7 @@ import org.totalgrid.reef.protocol.dnp3._
 import org.totalgrid.reef.protocol.dnp3.mock.InstantCommandResponder
 import org.totalgrid.reef.client.service.proto.Model.Command
 import org.mockito.Mockito
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 
 @RunWith(classOf[JUnitRunner])
 class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndAfterAll with Logging {

@@ -76,9 +76,9 @@ trait PointServiceImpl extends HasAnnotatedOperations with PointService {
       val entity = EntityRequestBuilders.getCommandsFeedbackPoints(commandUuid)
       val entityList = session.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
 
-      val batchClient = new BatchServiceRestOperations(client)
+      val batchClient = buildBatchRestOps
       def getPointWithUuid(uuid: ReefUUID) = batchClient.get(PointRequestBuilders.getById(uuid)).map(_.one)
-      MultiRequestHelper.batchScatterGatherQuery(client, entityList, getPointWithUuid _, batchClient.flush _)
+      MultiRequestHelper.batchScatterGatherQuery(exe, entityList, getPointWithUuid _, batchClient.flush _)
     }
   }
 }

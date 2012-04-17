@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import java.io.PrintStream
 import org.totalgrid.reef.benchmarks._
 import org.totalgrid.reef.benchmarks.system.ModelCreationUtilities
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -65,7 +65,7 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
 
   def runTest(client: Client, stream: Option[PrintStream]) = {
 
-    val services = client.getRpcInterface(classOf[AllScadaService])
+    val services = client.getService(classOf[AllScadaService])
 
     // load the endpoint connections and point names for each endpoint
     val endpoints = endpointNames.map { services.getEndpointByName(_).await }
@@ -101,7 +101,7 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
 
   private def startFakeSubscribers(subClient: Client, allPointNames: List[String]) = {
 
-    val subServices = subClient.getRpcInterface(classOf[AllScadaService])
+    val subServices = subClient.getService(classOf[AllScadaService])
     val subscriptionCanceler = new SubscriptionCanceler
     subClient.addSubscriptionCreationListener(subscriptionCanceler)
     (0 to (subscribers - 1)).foreach { i =>
@@ -122,7 +122,7 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
 
     // prepare the batch publishers (lazy definition because of Stream.continually)
     val batchPublishers = endpointNames.map { endpointName =>
-      val publishingClient = client.getRpcInterface(classOf[AllScadaService])
+      val publishingClient = client.getService(classOf[AllScadaService])
 
       val (connection, pointsOnEndpoint) = pointsForEndpoints(endpointName)
       val measurementProcessorDestination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)

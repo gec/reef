@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.benchmarks
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import java.io.PrintStream
 import org.totalgrid.reef.benchmarks.output.{ DelimitedFileOutput, TeamCityStatisticsXml }
 

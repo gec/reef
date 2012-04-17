@@ -20,31 +20,49 @@ package org.totalgrid.reef.metrics.client.impl
 
 import org.totalgrid.reef.metrics.client.MetricsService
 import org.totalgrid.reef.metrics.client.proto.Metrics.MetricsRead
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
+import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 
-class MetricsServiceImpl(client: Client) extends MetricsService {
+class MetricsServiceImpl(client: Client) extends ApiBase(client) with MetricsService {
 
   def getMetrics(): MetricsRead = {
-    client.get(MetricsRead.newBuilder.build).await.expectOne
+    ops.operation("getMetrics failed") { rest =>
+      rest.get(MetricsRead.newBuilder.build).map(_.one)
+    }.await
   }
 
   def getMetricsWithFilter(filter: String): MetricsRead = {
-    client.get(MetricsRead.newBuilder.addFilters(filter).build).await.expectOne
+    ops.operation("getMetrics failed") { rest =>
+      rest.get(MetricsRead.newBuilder.addFilters(filter).build).map(_.one)
+    }.await
+    //client.get(MetricsRead.newBuilder.addFilters(filter).build).await.expectOne
   }
 
   def getMetricsWithFilters(filters: java.util.List[String]): MetricsRead = {
-    client.get(MetricsRead.newBuilder.addAllFilters(filters).build).await.expectOne
+    ops.operation("getMetrics failed") { rest =>
+      rest.get(MetricsRead.newBuilder.addAllFilters(filters).build).map(_.one)
+    }.await
+    //client.get(MetricsRead.newBuilder.addAllFilters(filters).build).await.expectOne
   }
 
   def resetMetrics(): MetricsRead = {
-    client.delete(MetricsRead.newBuilder.addFilters("*").build).await.expectOne
+    ops.operation("getMetrics failed") { rest =>
+      rest.delete(MetricsRead.newBuilder.addFilters("*").build).map(_.one)
+    }.await
+    //client.delete(MetricsRead.newBuilder.addFilters("*").build).await.expectOne
   }
 
   def resetMetricsWithFilter(filter: String): MetricsRead = {
-    client.delete(MetricsRead.newBuilder.addFilters(filter).build).await.expectOne
+    ops.operation("getMetrics failed") { rest =>
+      rest.delete(MetricsRead.newBuilder.addFilters(filter).build).map(_.one)
+    }.await
+    //client.delete(MetricsRead.newBuilder.addFilters(filter).build).await.expectOne
   }
 
   def resetMetricsWithFilters(filters: java.util.List[String]): MetricsRead = {
-    client.delete(MetricsRead.newBuilder.addAllFilters(filters).build).await.expectOne
+    ops.operation("getMetrics failed") { rest =>
+      rest.delete(MetricsRead.newBuilder.addAllFilters(filters).build).map(_.one)
+    }.await
+    //client.delete(MetricsRead.newBuilder.addAllFilters(filters).build).await.expectOne
   }
 }

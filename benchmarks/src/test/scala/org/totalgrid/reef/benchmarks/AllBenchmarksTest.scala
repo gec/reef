@@ -42,7 +42,7 @@ class AllBenchmarksTest extends BenchmarkTestBase {
   test("Load Model") {
     InMemoryNode.system.loadModel("../assemblies/assembly-common/filtered-resources/samples/integration/config.xml")
 
-    val c = client.getRpcInterface(classOf[AllScadaService])
+    val c = client.getService(classOf[AllScadaService])
     endpointNames = c.getEndpoints().await.map { _.getName }
     pointNames = c.getPoints().await.map { _.getName }
   }

@@ -30,7 +30,7 @@ import org.totalgrid.reef.client.Connection;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.exception.ServiceIOException;
 import org.totalgrid.reef.client.javaimpl.ConnectionWrapper;
-import org.totalgrid.reef.client.sapi.client.rest.Client;
+import org.totalgrid.reef.client.Client;
 import org.totalgrid.reef.client.service.proto.Application;
 import org.totalgrid.reef.client.settings.AmqpSettings;
 import org.totalgrid.reef.client.settings.NodeSettings;
@@ -66,10 +66,9 @@ public class ApplicationConnectionManagerImpl implements ApplicationConnectionMa
         return applicationSettings;
     }
 
-    public synchronized void onApplicationStartup( Application.ApplicationConfig appConfig,
-        org.totalgrid.reef.client.sapi.client.rest.Connection newConnection, Client scalaClient )
+    public synchronized void onApplicationStartup( Application.ApplicationConfig appConfig, Connection newConnection, Client client )
     {
-        connection = new ConnectionWrapper( newConnection, executor );
+        connection = newConnection;
 
         notifyListeners( true );
     }

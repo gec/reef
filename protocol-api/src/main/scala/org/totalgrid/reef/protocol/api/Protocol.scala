@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.service.proto.{ FEP, Commands, Measurements, Mo
 import Measurements.MeasurementBatch
 import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 
 object Protocol {

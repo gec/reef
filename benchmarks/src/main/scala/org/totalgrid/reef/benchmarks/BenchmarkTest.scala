@@ -19,7 +19,7 @@
 package org.totalgrid.reef.benchmarks
 
 import java.io.PrintStream
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
@@ -36,7 +36,7 @@ trait BenchmarkTest {
  */
 trait AllScadaServicesTest extends BenchmarkTest {
   def runTest(client: Client, stream: Option[PrintStream]) = {
-    runTest(client.getRpcInterface(classOf[AllScadaService]), stream)
+    runTest(client.getService(classOf[AllScadaService]), stream)
   }
   def runTest(client: AllScadaService, stream: Option[PrintStream]): List[BenchmarkReading]
 }

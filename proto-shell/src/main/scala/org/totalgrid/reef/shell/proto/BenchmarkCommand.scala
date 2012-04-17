@@ -32,6 +32,6 @@ class BenchmarkCommand extends ReefCommandSupport {
 
     val testOptions = PropertyReader.readFromFile(configFile)
 
-    BenchmarksRunner.runAllTests(reefClient, testOptions)
+    BenchmarksRunner.runAllTests(connection, reefClient, testOptions)
   }
 }

@@ -26,7 +26,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, ServiceRequest }
 
 class ServiceResponseCallbackWrapper(scallback: ServiceResponseCallback) extends JSRC {
-  def onResponse(rsp: ServiceResponse) = {
+  def onResponse(rsp: ServiceResponse) {
     scallback.onResponse(rsp)
   }
 }

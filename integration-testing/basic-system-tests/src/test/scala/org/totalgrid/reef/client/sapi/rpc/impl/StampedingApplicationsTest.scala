@@ -25,12 +25,11 @@ import org.mockito.Mockito
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.app._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
-
 import org.totalgrid.reef.app.impl.{ SimpleConnectedApplicationManager, ApplicationManagerSettings }
 import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.commons.testing.SynchronizedVariable
 import org.totalgrid.reef.client.settings.util.PropertyReader
+import org.totalgrid.reef.client.{ Client, Connection }
 
 /**
  * tests that a large number of applications can be running and heartbeating (10 millisecond heartbeats)

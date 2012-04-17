@@ -21,7 +21,7 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.frontend._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.settings.UserSettings
@@ -41,7 +41,8 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
 
   def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
 
-    client = Some(appLevelClient.login(protocolSpecificUser).await)
+    client = Some(connection.login(protocolSpecificUser))
+    //client = Some(appLevelClient.login(protocolSpecificUser))
 
     fem = Some(makeFepNode(client.get, appConfig))
     fem.foreach {
@@ -54,7 +55,7 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
       _.stop()
     }
     client.foreach {
-      _.logout().await
+      _.logout()
     }
   }
 
@@ -63,9 +64,9 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
   }
 
   private def makeFepNode(client: Client, appConfig: ApplicationConfig) = {
-    client.addRpcProvider(FrontEndProviderServices.serviceInfo)
+    client.addServiceProvider(FrontEndProviderServices.serviceInfo)
 
-    val services = client.getRpcInterface(classOf[FrontEndProviderServices])
+    val services = client.getService(classOf[FrontEndProviderServices])
 
     def endpointClient = {
       client.spawn()
@@ -76,7 +77,7 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
 
     val frontEndConnections = new FrontEndConnections(protocols, mgrs, endpointClient)
     val populator = new EndpointConnectionPopulatorAction(services)
-    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client)
+    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client.getInternal.getExecutor)
 
     // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events

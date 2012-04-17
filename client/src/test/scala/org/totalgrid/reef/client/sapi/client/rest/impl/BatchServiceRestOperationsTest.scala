@@ -110,7 +110,7 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
   test("Single Request works") {
     val requestCounter = new RealRequestCounter()
     val client = new MockRestOperations(duplicatePayload(requestCounter.increment _, _))
-    val ops = new BatchServiceRestOperations(client)
+    val ops = new BatchServiceRestOperations(client, client, client, client)
 
     val future = ops.request(Envelope.Verb.PUT, SomeInteger(100), None)
 
@@ -127,7 +127,7 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
   test("Multiple Requests works") {
     val requestCounter = new RealRequestCounter()
     val client = new MockRestOperations(duplicatePayload(requestCounter.increment _, _))
-    val ops = new BatchServiceRestOperations(client)
+    val ops = new BatchServiceRestOperations(client, client, client, client)
 
     val futures = (0 to 100).map { i =>
       ops.request(Envelope.Verb.PUT, SomeInteger(i), None)
@@ -147,7 +147,7 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
 
   test("Handles General Batch Level Failure") {
     val client = new MockRestOperations(badAuthFailure _)
-    val ops = new BatchServiceRestOperations(client)
+    val ops = new BatchServiceRestOperations(client, client, client, client)
 
     val future = ops.request(Envelope.Verb.PUT, SomeInteger(100), None)
 
@@ -165,7 +165,7 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
 
   test("Handles Partial Failures") {
     val client = new MockRestOperations(conditionalSuccess(List(None, Some("partial failure"))))
-    val ops = new BatchServiceRestOperations(client)
+    val ops = new BatchServiceRestOperations(client, client, client, client)
 
     val successFuture = ops.request(Envelope.Verb.PUT, SomeInteger(100), None)
     val failureFuture = ops.request(Envelope.Verb.PUT, SomeInteger(200), None)
@@ -184,7 +184,7 @@ class BatchServiceRestOperationsTest extends FunSuite with ShouldMatchers {
   test("BatchedFlush will send in chunks") {
     val requestCounter = new RealRequestCounter()
     val client = new MockRestOperations(duplicatePayload(requestCounter.increment _, _))
-    val ops = new BatchServiceRestOperations(client)
+    val ops = new BatchServiceRestOperations(client, client, client, client)
 
     (1 to 13).map { i => ops.request(Envelope.Verb.PUT, SomeInteger(i), None) }
 

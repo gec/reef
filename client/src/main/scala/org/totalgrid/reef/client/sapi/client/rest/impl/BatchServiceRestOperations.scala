@@ -31,14 +31,15 @@ import org.totalgrid.reef.client.sapi.client._
 import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb }
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 
-class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with ServiceRegistry with Executor](client: A) extends RestOperations {
+class BatchServiceRestOperations(ops: RestOperations, hook: RequestSpyHook, registry: ServiceRegistry, exe: Executor) extends RestOperations {
+  //class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with ServiceRegistry with Executor](client: A) extends RestOperations {
 
   case class RequestWithFuture[A](request: SelfIdentityingServiceRequest, future: Future[Response[A]] with Settable[Response[A]], descriptor: TypeDescriptor[A])
   private val pendingRequests = Queue.empty[RequestWithFuture[_]]
 
   def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
 
-    val info = client.getServiceInfo(ClassLookup.get(payload))
+    val info = registry.getServiceInfo(ClassLookup.get(payload))
     val uuid = UUID.randomUUID().toString
 
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId(uuid)
@@ -47,15 +48,13 @@ class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with Se
 
     val cachedRequest = SelfIdentityingServiceRequest.newBuilder.setExchange(info.getDescriptor.id).setRequest(builder).build
 
-    val future = client.future[Response[A]]
+    val future = exe.future[Response[A]]
 
     pendingRequests.enqueue(RequestWithFuture(cachedRequest, future, info.getDescriptor))
-    client.notifyRequestSpys(verb, payload, future)
+    hook.notifyRequestSpys(verb, payload, future)
 
     future
   }
-
-  def subscribe[A](descriptor: TypeDescriptor[A]) = client.subscribe(descriptor)
 
   /**
    * send all of the pending requests in a single BatchServiceRequests
@@ -81,7 +80,7 @@ class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with Se
       }
     }
 
-    val overallFuture = client.future[Response[Boolean]]
+    val overallFuture = exe.future[Response[Boolean]]
 
     startNextBatch(overallFuture, grabPendingRequests(), None)
 
@@ -100,7 +99,7 @@ class BatchServiceRestOperations[A <: RestOperations with RequestSpyHook with Se
     inProgress.foreach { o => b.addRequests(o.request) }
     val batchServiceProto = b.build
 
-    val batchFuture = client.request(Envelope.Verb.POST, batchServiceProto, None)
+    val batchFuture = ops.request(Envelope.Verb.POST, batchServiceProto, None)
     batchFuture.listen {
       _ match {
         case SuccessResponse(status, batchResults) =>

@@ -48,7 +48,7 @@ class EntityRequestTest extends ServiceClientSuite {
 
   test("Put with UUID") {
 
-    val loaderServices = session.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = session.getService(classOf[LoaderServices])
 
     loaderServices.findEntityByName("MagicTestObject").await.foreach { e =>
       loaderServices.delete(e)
