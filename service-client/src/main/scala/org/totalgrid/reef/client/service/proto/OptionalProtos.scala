@@ -306,6 +306,7 @@ object OptionalProtos {
     val name = optionally(_.hasName, _.getName)
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
     val protocol = optionally(_.hasProtocol, _.getProtocol)
+    val autoAssigned = optionally(_.hasAutoAssigned, _.getAutoAssigned)
     val channel = new OptFEPCommChannel(optionally(_.hasChannel, _.getChannel))
     val ownerships = new OptFEPEndpointOwnership(optionally(_.hasOwnerships, _.getOwnerships))
     val configFiles = optionally(_.getConfigFilesList.toList.map { i => new OptModelConfigFile(Some(i)) })

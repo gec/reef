@@ -81,6 +81,7 @@ message Endpoint {
     optional string            name         = 2;
     optional org.totalgrid.reef.client.service.proto.Model.Entity entity = 7;
     optional string            protocol     = 3;
+    optional bool              autoAssigned = 9;
     optional CommChannel       channel      = 4;
     optional EndpointOwnership ownerships   = 6;
     repeated org.totalgrid.reef.client.service.proto.Model.ConfigFile        config_files = 5;
