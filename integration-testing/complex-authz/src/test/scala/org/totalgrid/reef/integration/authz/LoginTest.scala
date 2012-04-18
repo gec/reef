@@ -36,7 +36,7 @@ class LoginTest extends AuthTestBase {
 
       val versions = allLogins.map { _.getClientVersion }.distinct
       val byVersion = versions.map { admin.getLoginsByClientVersion(true, _) }.flatten
-      byVersion.map { _.getId.getValue }.sorted should equal(allLogins.map { _.getId.getValue }.sorted)
+      matchingIds(byVersion, allLogins)
 
       val ownLogins = admin.getOwnLogins(true)
       ownLogins.size should be > 0
@@ -62,7 +62,7 @@ class LoginTest extends AuthTestBase {
 
       val ownLogins = guest.getOwnLogins(true)
       allAgent(GUEST, ownLogins)
-      allLogins.map { _.getId } should equal(ownLogins.map { _.getId })
+      matchingIds(allLogins, ownLogins)
     }
   }
 
@@ -81,7 +81,7 @@ class LoginTest extends AuthTestBase {
       val revoked = user.revokeOwnLogins()
       allAgent(USER, revoked)
       allRevoked(true, revoked)
-      revoked.map { _.getId } should equal(moreLogins.map { _.getId })
+      matchingIds(revoked, moreLogins)
 
       user.getOwnLogins(false).size should equal(1)
     }
@@ -94,5 +94,9 @@ class LoginTest extends AuthTestBase {
   private def allRevoked(state: Boolean, logins: List[AuthToken]) = {
     logins.map { _.getRevoked }.filterNot { _ == state } should equal(Nil)
     logins
+  }
+  private def matchingIds(l1: List[AuthToken], l2: List[AuthToken]) = {
+    l1.map { _.getId.getValue }.sorted should equal(l2.map { _.getId.getValue }.sorted)
+    l1
   }
 }
