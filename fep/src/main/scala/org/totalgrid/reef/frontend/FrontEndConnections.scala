@@ -58,6 +58,7 @@ class FrontEndConnections(protocolManagers: Map[String, ProtocolManager], newCli
   } catch {
     case ex: Exception =>
       logger.error("Can't add endpoint: " + c.getEndpoint.getName, ex)
+      reportError(c)
   }
 
   def removeEntry(c: EndpointConnection) = try {
@@ -82,6 +83,7 @@ class FrontEndConnections(protocolManagers: Map[String, ProtocolManager], newCli
   } catch {
     case ex: Exception =>
       logger.error("Can't remove endpoint: " + c.getEndpoint.getName, ex)
+      reportError(c)
   }
 
   private def getProtocol(protocolName: String): ProtocolManager = {
@@ -89,6 +91,18 @@ class FrontEndConnections(protocolManagers: Map[String, ProtocolManager], newCli
       case None =>
         throw new IllegalArgumentException("Unknown protocol: " + protocolName + " expected: " + protocolManagers.keys)
       case Some(p) => p
+    }
+  }
+
+  private def reportError(c: EndpointConnection) {
+    val client = newClient
+    val services = client.getService(classOf[FrontEndProviderServices])
+
+    val endpointName = c.getEndpoint.getName
+
+    services.alterEndpointConnectionState(c.getId, EndpointConnection.State.ERROR).extract match {
+      case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
+      case Failure(ex) => logger.error("Couldn't update endpointState: " + ex.getMessage)
     }
   }
 }
