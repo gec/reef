@@ -30,7 +30,13 @@ import org.totalgrid.reef.app.whiteboard.ConnectedApplicationBundleActivator
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.protocol.api.{ ProtocolManager, Protocol }
-import org.totalgrid.reef.frontend.{ FepConnectedApplication, ProtocolInterface }
+import org.totalgrid.reef.frontend.FepConnectedApplication
+
+object ProtocolInterface {
+  sealed trait ProtocolInterface
+  case class TraitInterface(protocol: Protocol) extends ProtocolInterface
+  case class ManagerInterface(protocol: ProtocolManager) extends ProtocolInterface
+}
 
 final class FepActivator extends ConnectedApplicationBundleActivator {
 

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.frontend
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,11 +16,11 @@ package org.totalgrid.reef.frontend
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.{ Client, Connection }
-import org.totalgrid.reef.frontend._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.protocol.api.{ ProtocolManager, Protocol }
@@ -72,10 +70,14 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
       client.spawn()
     }
 
-    val mgrs = mgr.map(m => Map(protocolName -> m)) getOrElse Map()
-    val protocols = p.map(List(_)) getOrElse Nil
+    val potentialManagers = List(
+      mgr.map(m => protocolName -> m),
+      p.map(p => p.name -> new ProtocolTraitToManagerShim(p)))
 
-    val frontEndConnections = new FrontEndConnections(protocols, mgrs, endpointClient)
+    val managers = potentialManagers.flatten.toMap
+    if (managers.isEmpty) throw new IllegalArgumentException("Must include atleast one protocol implementation")
+
+    val frontEndConnections = new FrontEndConnections(managers, endpointClient)
     val populator = new EndpointConnectionPopulatorAction(services)
     val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client.getInternal.getExecutor)
 
@@ -86,7 +88,7 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
       services,
       connectionContext,
       appConfig,
-      protocols.map(_.name).toList ::: mgrs.keys.toList,
+      managers.keys.toList,
       5000)
   }
 }

@@ -51,7 +51,9 @@ class FrontEndConnectionsTest extends FunSuite with ShouldMatchers {
 
     cancelable.canceled should equal(false)
 
-    val connections = new FrontEndConnections(mp :: Nil, Map(), rawClient)
+    val managers = Map(mp.name -> new ProtocolTraitToManagerShim(mp))
+
+    val connections = new FrontEndConnections(managers, rawClient)
 
     connections.add(config)
 
