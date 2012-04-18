@@ -30,7 +30,7 @@ import org.totalgrid.reef.models.{ Command, UserCommandModel }
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, UserCommandRequest }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.{ AddressableDestination, Routable }
 
 class UserCommandRequestService(
@@ -72,7 +72,7 @@ class UserCommandRequestService(
   }
 
   private def requestCommand(client: Client, request: UserCommandRequest, address: Routable, contextSource: RequestContextSource, callback: Response[UserCommandRequest] => Unit) {
-    client.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
+    client.getInternal.getOperations.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
       try {
         contextSource.transaction { context =>
           model.findRecord(context, request) match {

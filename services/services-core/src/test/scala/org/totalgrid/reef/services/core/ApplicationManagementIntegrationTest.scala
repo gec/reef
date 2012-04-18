@@ -29,12 +29,13 @@ import org.totalgrid.reef.client.service.proto.Application.{ ApplicationConfig, 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.Event
 
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.models.{ CoreServicesSchema, DatabaseUsingTestNotTransactionSafe }
+import org.totalgrid.reef.client.settings.UserSettings
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransactionSafe {
@@ -43,11 +44,11 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransacti
     CoreServicesSchema.prepareDatabase(dbConnection)
   }
 
-  class Fixture(amqp: Connection) {
+  class Fixture(conn: Connection) {
 
     val start = System.currentTimeMillis
 
-    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp)
+    val deps = new ServiceDependenciesDefaults(dbConnection, conn, conn.getServiceRegistration.getEventPublisher)
     val contextSource = new MockRequestContextSource(deps)
 
     val modelFac = new ModelFactories(deps)
@@ -58,7 +59,7 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransacti
 
     val processStatusCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
-    val client = amqp.login("")
+    val client = conn.createClient("fakeAuth")
 
     /// current state of the StatusSnapshot
     var lastSnapShot = new SyncVar[Option[StatusSnapshot]](None: Option[StatusSnapshot])
@@ -115,8 +116,8 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransacti
   }
 
   test("Application Timesout") {
-    ConnectionFixture.mock() { amqp =>
-      val fix = new Fixture(amqp)
+    ConnectionFixture.mock() { conn =>
+      val fix = new Fixture(conn)
 
       fix.checkTimeouts(fix.start + 1000000)
 
@@ -125,8 +126,8 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransacti
   }
 
   test("Application Stays Online w/ Heartbeats") {
-    ConnectionFixture.mock() { amqp =>
-      val fix = new Fixture(amqp)
+    ConnectionFixture.mock() { conn =>
+      val fix = new Fixture(conn)
 
       fix.checkTimeouts(fix.start + 1)
       fix.waitUntilSnapshot(_.getOnline == true)
@@ -142,8 +143,8 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransacti
   }
 
   test("Application can go offline cleanly") {
-    ConnectionFixture.mock() { amqp =>
-      val fix = new Fixture(amqp)
+    ConnectionFixture.mock() { conn =>
+      val fix = new Fixture(conn)
 
       fix.doHeartBeat(false, fix.start + 200)
       fix.waitUntilSnapshot(_.getOnline == false)
@@ -151,8 +152,8 @@ class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransacti
   }
 
   test("Application can go online/offline") {
-    ConnectionFixture.mock() { amqp =>
-      val fix = new Fixture(amqp)
+    ConnectionFixture.mock() { conn =>
+      val fix = new Fixture(conn)
 
       fix.doHeartBeat(false, fix.start + 200)
       fix.waitUntilSnapshot(_.getOnline == false)

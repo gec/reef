@@ -28,7 +28,7 @@ import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProce
 import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Lifecycle
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
 import org.totalgrid.reef.client.proto.Envelope
@@ -68,7 +68,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
     def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
       val klass = endpoint.descriptor.getKlass
       //call just so an exception will be thrown if it doesn't exist
-      amqp.declareEventExchange(klass)
+      amqp.getServiceRegistration.declareEventExchange(klass)
       new NoOpService
     }
   }

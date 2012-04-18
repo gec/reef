@@ -49,4 +49,17 @@ public interface ServiceRegistration
     <T> SubscriptionBinding bindService( Service service, TypeDescriptor<T> descriptor, Routable destination, boolean competing );
 
     // TODO: add lateBindService and bindServiceQueue functions
+
+
+    /**
+     * Bind an arbitrary subscription queue to service.
+     *
+     * NOTE: Requires "services" level access to broker to perform binding operations, most clients
+     * do not have the necessary privileges to bind to arbitrary queues.
+     */
+    <T> void bindServiceQueue( String subscriptionQueue, String key, Class<T> klass );
+
+
+    // TODO: event and service declaration in same call
+    void declareEventExchange( Class<?> klass );
 }

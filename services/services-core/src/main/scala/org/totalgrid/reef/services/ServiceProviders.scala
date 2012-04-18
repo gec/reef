@@ -30,7 +30,7 @@ import org.totalgrid.reef.services.authz.AuthzService
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.settings.ServiceOptions
 
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.metrics.IMetricsSink
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 import net.agileautomata.executor4s.Executor
@@ -51,7 +51,7 @@ class ServiceProviders(
   private val authService = new AuthzServiceMetricsWrapper(authzService, metricsPublisher.getStore("services.auth"))
 
   private val eventPublisher = new LocalSystemEventSink(executor)
-  private val dependencies = new ServiceDependencies(dbConnection, connection, connection, cm, eventPublisher, authToken, authService)
+  private val dependencies = new ServiceDependencies(dbConnection, connection, connection.getServiceRegistration.getEventPublisher, cm, eventPublisher, authToken, authService)
 
   private val contextSource = new DependenciesSource(dependencies)
 

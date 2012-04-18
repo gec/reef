@@ -29,6 +29,7 @@ import java.util.UUID
 import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.authz._
+import org.totalgrid.reef.client.registration.EventPublisher
 
 // TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
@@ -65,7 +66,7 @@ object SubscriptionTools {
   }
 
   case class SubEvent(typ: SubscriptionEventType, value: AnyRef, key: String)
-  class QueueingEventSink extends SubscriptionHandler {
+  class QueueingEventSink extends EventPublisher {
 
     private var received = List.empty[SubEvent]
     def events = received.reverse
@@ -77,8 +78,9 @@ object SubscriptionTools {
     def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
   }
 
-  class QueueingRequestContext(val subHandler: SubscriptionHandler, val auth: AuthzService) extends RequestContext with HeadersContext {
+  class QueueingRequestContext(val subHandler: EventPublisher, val auth: AuthzService) extends RequestContext with HeadersContext {
     def client = throw new Exception("Asked for client in silent request context")
+    def serviceRegistration = throw new Exception("Asked for service registration in silent request context")
     val eventSink = new SilentEventSink
     val operationBuffer = new BasicOperationBuffer
   }

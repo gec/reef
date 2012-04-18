@@ -45,7 +45,7 @@ class MeasurementStreamBindingService extends ServiceEntryPoint[MeasurementStrea
       val commandQueueName = req.getMeasurementQueue
       val routingKey = connection.serviceRoutingKey.getOrElse(throw new BadRequestException("MeasurementStream not running"))
 
-      context.client.bindServiceQueue(commandQueueName, routingKey, klass)
+      context.serviceRegistration.bindServiceQueue(commandQueueName, routingKey, klass)
 
       Response(Envelope.Status.OK, req)
     })

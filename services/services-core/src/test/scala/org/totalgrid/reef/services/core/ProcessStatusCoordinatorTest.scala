@@ -27,13 +27,13 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
 import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.registration.EventPublisher
 
 @RunWith(classOf[JUnitRunner])
 class ProcessStatusCoordinatorTest extends DatabaseUsingTestBase {
 
-  class CountingSubscriptionHandler extends SubscriptionHandler {
+  class CountingSubscriptionHandler extends EventPublisher {
     var count = new SyncVar(0: Int)
     var lastEvent: Option[Envelope.SubscriptionEventType] = None
     var lastKey: Option[String] = None

@@ -356,6 +356,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
   class AuthRequestContext extends RequestContext with HeadersContext {
 
     def client = throw new Exception
+    def serviceRegistration = throw new Exception
     def eventSink = throw new Exception
     def operationBuffer = throw new Exception
     def subHandler = throw new Exception

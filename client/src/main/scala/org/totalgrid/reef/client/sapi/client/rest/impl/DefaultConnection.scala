@@ -176,6 +176,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     conn.publish(info.getEventExchange, key, event.toByteArray)
   }
 
+  // TODO: rename to "bind event queue"
   override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit = {
     val info = getServiceInfo(klass)
     conn.bindQueue(subQueue, info.getEventExchange, key)

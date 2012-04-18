@@ -21,7 +21,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.client.sapi.service.AsyncService
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.AnyNodeDestination
@@ -37,7 +37,7 @@ class ServiceContext(connection: Connection, executor: Executor) extends Service
 
   def attachService(endpoint: AsyncService[_]): AsyncService[_] = {
     // bind to the "well known" public queue that is statically routed from the well known exchange
-    connection.bindService(endpoint, executor, new AnyNodeDestination, true)
+    connection.getServiceRegistration.bindService(endpoint, endpoint.descriptor, new AnyNodeDestination, true)
     endpoint
   }
 }

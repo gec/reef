@@ -34,6 +34,8 @@ import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.persistence.squeryl.DbConnection
+import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
+import org.totalgrid.reef.client.Connection
 
 /**
  * gets other modules used by the services so can implemented via OSGI or directly
@@ -49,7 +51,7 @@ object ServiceFactory {
     new ConnectionConsumer {
       def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
 
-        val connection = new DefaultConnection(brokerConnection, exe, 5000)
+        val connection: Connection = new ConnectionWrapper(new DefaultConnection(brokerConnection, exe, 5000), exe)
         connection.addServicesList(new ReefServices)
 
         val dbConnection = modules.getDbConnector()
@@ -63,8 +65,8 @@ object ServiceFactory {
 
         measStore.connect()
 
-        val client = connection.login(authToken)
-        val services = client.getRpcInterface(classOf[AllScadaService])
+        val client = connection.createClient(authToken)
+        val services = client.getService(classOf[AllScadaService])
         val heartbeater = new ProcessHeartbeatActor(services, appConfig.getHeartbeatCfg, exe)
         val providers = new ServiceProviders(dbConnection, connection, measStore, serviceOptions,
           new SqlAuthzService(), metricsHolder, authToken, exe)
@@ -81,7 +83,7 @@ object ServiceFactory {
         new Cancelable {
           def cancel() = {
 
-            client.logout().await
+            client.logout()
 
             providers.coordinators.foreach { _.stopProcess() }
             mgr.stop()

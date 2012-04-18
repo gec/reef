@@ -40,10 +40,11 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.client.service.proto.Events
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.client.{ Event, BasicRequestHeaders }
 import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.client.AddressableDestination
+import org.totalgrid.reef.client.settings.UserSettings
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction with Logging {
 
@@ -97,7 +98,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
       val exchange = measBatchService.descriptor.id
       val destination = new AddressableDestination(measProcAssign.getRouting.getServiceRoutingKey)
 
-      amqp.bindService(measBatchService, client, destination, false)
+      amqp.getServiceRegistration.bindService(measBatchService, measBatchService.descriptor, destination, false)
 
       logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " id " + measProcAssign.getId }
 
@@ -107,12 +108,12 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
 
   class CoordinatorFixture(amqp: Connection, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
-    val client = amqp.login("")
+    val client = amqp.createClient("fakeAuth")
 
     val rtDb = new InMemoryMeasurementStore()
     val eventSink = new CountingEventSink
 
-    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp, rtDb, eventSink)
+    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp.getServiceRegistration.getEventPublisher, rtDb, eventSink)
     val contextSource = new MockRequestContextSource(deps)
 
     val modelFac = new ModelFactories(deps)
@@ -165,7 +166,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
         def set(meas: Seq[Measurement]) {
           rtDb.set(meas)
           meas.foreach { m =>
-            amqp.publishEvent(Envelope.SubscriptionEventType.MODIFIED, m, m.getName)
+            amqp.getServiceRegistration.getEventPublisher.publishEvent(Envelope.SubscriptionEventType.MODIFIED, m, m.getName)
           }
         }
       }
@@ -286,7 +287,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
     }
 
     def bindCommandHandler(service: SyncServiceBase[UserCommandRequest], key: String) {
-      amqp.bindService(service, client, new AddressableDestination(key), false)
+      amqp.getServiceRegistration.bindService(service, service.descriptor, new AddressableDestination(key), false)
     }
 
     def subscribeMeasurements() = {

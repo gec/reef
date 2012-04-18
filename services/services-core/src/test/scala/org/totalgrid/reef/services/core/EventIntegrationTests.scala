@@ -31,15 +31,17 @@ import org.totalgrid.reef.client.service.proto.Alarms.{ Alarm => AlarmProto, Eve
 import org.totalgrid.reef.client.service.proto.Utils.{ AttributeList, Attribute }
 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.{ SilentRequestContext, ConnectionFixture }
+import org.totalgrid.reef.client.settings.UserSettings
+import org.totalgrid.reef.util.SyncVar
 
 class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   class AlarmTestFixture(amqp: Connection) {
-    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp)
+    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp.getServiceRegistration.getEventPublisher)
     val contextSource = new MockRequestContextSource(deps)
 
     val factories = new ModelFactories(deps)
@@ -81,7 +83,7 @@ class EventIntegrationTestsBase extends DatabaseUsingTestBase {
       val toDevId = edgeModel.addEdge(context, devId, pointId, rel)
     }
 
-    val client = amqp.login("")
+    val client = amqp.createClient("fakeAuth")
 
     def subscribeEvents(expected: Int, req: EventProto) = {
       val (updates, env) = getEventQueue(client, Descriptors.event)
