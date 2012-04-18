@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.rpc.impl
+package org.totalgrid.reef.loader.integration
 
 import org.totalgrid.reef.loader.LoadManager
 
