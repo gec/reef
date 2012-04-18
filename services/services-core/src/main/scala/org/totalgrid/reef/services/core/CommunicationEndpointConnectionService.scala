@@ -139,6 +139,20 @@ class CommunicationEndpointConnectionServiceModel
     logger.info("EndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " id " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
     coordinator.onFepConnectionChange(context, sql, existing)
   }
+
+  // don't ever actually remove the assignments, keep them around as an audit log
+  override def delete(context: RequestContext, entry: FrontEndAssignment) = {
+
+    // downside of using case classes and copy constructor is id is not copied
+    val deleted = entry.copy(active = false)
+    deleted.id = entry.id
+
+    table.update(deleted)
+
+    onDeleted(context, deleted)
+    postDelete(context, deleted)
+    deleted
+  }
 }
 
 object CommunicationEndpointConnectionConversion extends CommunicationEndpointConnectionConversion
@@ -168,6 +182,8 @@ trait CommunicationEndpointConnectionConversion
 
   def uniqueQuery(proto: ConnProto, sql: FrontEndAssignment) = {
     List(
+      // TODO: after 0.5.0 we can make this a searchable parameter and expose the history to clients
+      Some(sql.active === true),
       proto.id.value.asParam(sql.id === _.toLong).unique,
       proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(endpoint, { _.id })))
   }
@@ -180,7 +196,8 @@ trait CommunicationEndpointConnectionConversion
       entry.offlineTime != existing.offlineTime ||
       entry.onlineTime != existing.onlineTime ||
       entry.enabled != existing.enabled ||
-      entry.applicationId != existing.applicationId
+      entry.applicationId != existing.applicationId ||
+      entry.active != existing.active
   }
 
   def convertToProto(entry: FrontEndAssignment): ConnProto = {
@@ -192,6 +209,7 @@ trait CommunicationEndpointConnectionConversion
     entry.serviceRoutingKey.foreach(k => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(k)))
     b.setState(ConnProto.State.valueOf(entry.state))
     b.setEnabled(entry.enabled)
+    b.setActive(entry.active)
 
     // get the most recent change
     val times = entry.onlineTime :: entry.offlineTime :: entry.assignedTime :: Nil

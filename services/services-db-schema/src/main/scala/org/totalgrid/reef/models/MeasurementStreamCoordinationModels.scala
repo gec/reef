@@ -31,9 +31,10 @@ case class FrontEndAssignment(
     val applicationId: Option[Long],
     var assignedTime: Option[Long],
     var offlineTime: Option[Long],
-    var onlineTime: Option[Long]) extends ModelWithId {
+    var onlineTime: Option[Long],
+    val active: Boolean) extends ModelWithId {
 
-  def this() = this(0, 0, false, Some(""), Some(0), Some(0), Some(0), Some(0))
+  def this() = this(0, 0, false, Some(""), Some(0), Some(0), Some(0), Some(0), false)
 
   val application = LazyVar(mayHaveOne(ApplicationSchema.apps, applicationId))
   val endpoint = LazyVar(ApplicationSchema.endpoints.where(p => p.id === endpointId).headOption)

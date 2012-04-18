@@ -126,6 +126,9 @@
  *     optional CommEndpointRouting    routing             = 5;
  *     optional uint64                 last_update         = 7;
  *     optional bool                   enabled             = 8;
+ *     // only one connection is active for each Endpoint at a time, when an endpoint is updated
+ *     // a new connection object is created and the old object is marked active = false
+ *     optional bool                   active              = 9;
  * }
  * 
  * /*
