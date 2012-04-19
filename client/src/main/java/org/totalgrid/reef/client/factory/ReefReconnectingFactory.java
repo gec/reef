@@ -39,8 +39,32 @@ import java.util.Set;
 /**
  * implementation of reconnecting factory for java applications.
  */
-public class ReefReconnectingFactory implements ReconnectingConnectionFactory, org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
+public class ReefReconnectingFactory implements ReconnectingConnectionFactory
 {
+    private class Watcher implements org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
+    {
+        @Override
+        public synchronized void onConnectionClosed( boolean expected )
+        {
+            for ( ConnectionWatcher cw : watchers )
+            {
+                cw.onConnectionClosed( expected );
+            }
+        }
+
+        @Override
+        public synchronized void onConnectionOpened( BrokerConnection connection )
+        {
+            org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection scalaConnection;
+            scalaConnection = new DefaultConnection( connection, exe, 5000 );
+            scalaConnection.addServicesList( servicesList );
+            Connection c = new ConnectionWrapper( scalaConnection, exe );
+            for ( ConnectionWatcher cw : watchers )
+            {
+                cw.onConnectionOpened( c );
+            }
+        }
+    }
 
     private Set<ConnectionWatcher> watchers = new HashSet<ConnectionWatcher>();
     private final BrokerConnectionFactory brokerConnectionFactory;
@@ -49,40 +73,49 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory, o
 
     private final DefaultReconnectingFactory factory;
 
+    private final Watcher watcher = new Watcher();
+
     /**
      * @param settings amqp settings
      * @param list services list from service-client package
      * @param startDelayMs beginning delay if can't connect first time
      * @param maxDelayMs delay doubles in length upto this maxTime
      */
-    public ReefReconnectingFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
+    public static ReconnectingConnectionFactory defaultFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
+    {
+        BrokerConnectionFactory brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
+        return new ReefReconnectingFactory( brokerConnectionFactory, list, startDelayMs, maxDelayMs );
+    }
+
+    /**
+     * @param brokerConnectionFactory connection factory to the broker
+     * @param list services list from service-client package
+     * @param startDelayMs beginning delay if can't connect first time
+     * @param maxDelayMs delay doubles in length upto this maxTime
+     */
+    public ReefReconnectingFactory( BrokerConnectionFactory brokerConnectionFactory, ServicesList list, long startDelayMs, long maxDelayMs )
+    {
+        this.brokerConnectionFactory = brokerConnectionFactory;
+        exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        servicesList = list;
+        factory = new DefaultReconnectingFactory( brokerConnectionFactory, exe, startDelayMs, maxDelayMs );
+        factory.addConnectionWatcher( watcher );
+    }
+
+    /**
+     * @param settings amqp settings
+     * @param list services list from service-client package
+     * @param startDelayMs beginning delay if can't connect first time
+     * @param maxDelayMs delay doubles in length upto this maxTime
+     */
+    /*private ReefReconnectingFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
     {
         brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
         exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
         servicesList = list;
         factory = new DefaultReconnectingFactory( brokerConnectionFactory, exe, startDelayMs, maxDelayMs );
-        factory.addConnectionWatcher( this );
-    }
-
-    public synchronized void onConnectionClosed( boolean expected )
-    {
-        for ( ConnectionWatcher cw : watchers )
-        {
-            cw.onConnectionClosed( expected );
-        }
-    }
-
-    public synchronized void onConnectionOpened( BrokerConnection connection )
-    {
-        org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection scalaConnection;
-        scalaConnection = new DefaultConnection( connection, exe, 5000 );
-        scalaConnection.addServicesList( servicesList );
-        Connection c = new ConnectionWrapper( scalaConnection, exe );
-        for ( ConnectionWatcher cw : watchers )
-        {
-            cw.onConnectionOpened( c );
-        }
-    }
+        factory.addConnectionWatcher( watcher );
+    }*/
 
     public synchronized void addConnectionWatcher( ConnectionWatcher watcher )
     {

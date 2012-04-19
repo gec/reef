@@ -98,7 +98,7 @@
             <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-memory-broker</artifactId>
             <version>${reef.version}</version>
-			<scope>test</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>

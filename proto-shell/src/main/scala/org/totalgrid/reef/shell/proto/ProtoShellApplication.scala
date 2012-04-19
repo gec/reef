@@ -26,13 +26,13 @@ import jline.Terminal
 import java.io.{ PrintStream, InputStream }
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.service.AllScadaService
-import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.service.list.ReefServices
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
+import org.totalgrid.reef.client.{ ConnectionFactory, Client, Connection }
 
 object ProtoShellApplication {
   def main(args: Array[String]) = {
@@ -43,7 +43,7 @@ object ProtoShellApplication {
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
 
-    val factory = new ReefConnectionFactory(connectionInfo, new ReefServices)
+    val factory = ReefConnectionFactory.defaultFactory(connectionInfo, new ReefServices)
 
     val connection = factory.connect()
     val cancel = new Cancelable {

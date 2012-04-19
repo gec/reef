@@ -42,14 +42,25 @@ public class ReefConnectionFactory implements ConnectionFactory
     private final ServicesList servicesList;
 
     /**
-     * @param settings amqp settings
+     * @param settings Settings for AMQP connection
+     * @param list services list from service-client package
+     * @return
+     */
+    public static ConnectionFactory defaultFactory( AmqpSettings settings, ServicesList list )
+    {
+        BrokerConnectionFactory broker = new QpidBrokerConnectionFactory( settings );
+        return new ReefConnectionFactory( broker, list );
+    }
+
+    /**
+     * @param brokerConnectionFactory broker connection
      * @param list services list from service-client package
      */
-    public ReefConnectionFactory( AmqpSettings settings, ServicesList list )
+    public ReefConnectionFactory( BrokerConnectionFactory brokerConnectionFactory, ServicesList list )
     {
-        brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
-        exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
-        servicesList = list;
+        this.brokerConnectionFactory = brokerConnectionFactory;
+        this.exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        this.servicesList = list;
     }
 
     public Connection connect() throws ReefServiceException
