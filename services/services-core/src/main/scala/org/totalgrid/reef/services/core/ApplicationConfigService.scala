@@ -129,6 +129,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   }
 
   override def postDelete(context: RequestContext, sql: ApplicationInstance) {
+    ApplicationSchema.protocols.deleteWhere(c => c.applicationId === sql.id)
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id)
     entityModel.delete(context, sql.entity.value)
   }
