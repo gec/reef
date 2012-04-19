@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.client.factory;
 
+import net.agileautomata.executor4s.Executor;
 import net.agileautomata.executor4s.ExecutorService;
 import net.agileautomata.executor4s.Executors;
 import net.agileautomata.executor4s.Minutes;
@@ -38,7 +39,8 @@ import org.totalgrid.reef.client.settings.AmqpSettings;
 public class ReefConnectionFactory implements ConnectionFactory
 {
     private final BrokerConnectionFactory brokerConnectionFactory;
-    private final ExecutorService exe;
+    private final ExecutorService exeService;
+    private final Executor exe;
     private final ServicesList servicesList;
 
     /**
@@ -54,12 +56,26 @@ public class ReefConnectionFactory implements ConnectionFactory
 
     /**
      * @param brokerConnectionFactory broker connection
+     * @param exe Executor to use
+     * @param list services list from service-client package
+     */
+    public ReefConnectionFactory( BrokerConnectionFactory brokerConnectionFactory, Executor exe, ServicesList list )
+    {
+        this.brokerConnectionFactory = brokerConnectionFactory;
+        this.exe = exe;
+        this.exeService = null;
+        this.servicesList = list;
+    }
+
+    /**
+     * @param brokerConnectionFactory broker connection
      * @param list services list from service-client package
      */
     public ReefConnectionFactory( BrokerConnectionFactory brokerConnectionFactory, ServicesList list )
     {
         this.brokerConnectionFactory = brokerConnectionFactory;
-        this.exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        this.exeService = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        this.exe = exeService;
         this.servicesList = list;
     }
 
@@ -73,6 +89,9 @@ public class ReefConnectionFactory implements ConnectionFactory
 
     public void terminate()
     {
-        exe.terminate();
+        if ( exeService != null )
+        {
+            exeService.terminate();
+        }
     }
 }

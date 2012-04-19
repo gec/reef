@@ -18,6 +18,7 @@
  */
 package org.totalgrid.reef.client.factory;
 
+import net.agileautomata.executor4s.Executor;
 import net.agileautomata.executor4s.ExecutorService;
 import net.agileautomata.executor4s.Executors;
 import net.agileautomata.executor4s.Minutes;
@@ -68,7 +69,8 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory
 
     private Set<ConnectionWatcher> watchers = new HashSet<ConnectionWatcher>();
     private final BrokerConnectionFactory brokerConnectionFactory;
-    private final ExecutorService exe;
+    private final ExecutorService exeService;
+    private final Executor exe;
     private final ServicesList servicesList;
 
     private final DefaultReconnectingFactory factory;
@@ -96,26 +98,31 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory
     public ReefReconnectingFactory( BrokerConnectionFactory brokerConnectionFactory, ServicesList list, long startDelayMs, long maxDelayMs )
     {
         this.brokerConnectionFactory = brokerConnectionFactory;
-        exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        this.exeService = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        this.exe = exeService;
         servicesList = list;
         factory = new DefaultReconnectingFactory( brokerConnectionFactory, exe, startDelayMs, maxDelayMs );
         factory.addConnectionWatcher( watcher );
     }
 
     /**
-     * @param settings amqp settings
+     * @param brokerConnectionFactory connection factory to the broker
+     * @param exe Executor to use
      * @param list services list from service-client package
      * @param startDelayMs beginning delay if can't connect first time
      * @param maxDelayMs delay doubles in length upto this maxTime
      */
-    /*private ReefReconnectingFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
+    public ReefReconnectingFactory( BrokerConnectionFactory brokerConnectionFactory, Executor exe, ServicesList list, long startDelayMs,
+        long maxDelayMs )
     {
-        brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
-        exe = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        this.brokerConnectionFactory = brokerConnectionFactory;
+        this.exeService = null;
+        this.exe = exe;
         servicesList = list;
         factory = new DefaultReconnectingFactory( brokerConnectionFactory, exe, startDelayMs, maxDelayMs );
         factory.addConnectionWatcher( watcher );
-    }*/
+    }
+
 
     public synchronized void addConnectionWatcher( ConnectionWatcher watcher )
     {
@@ -135,6 +142,9 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory
     public void stop()
     {
         factory.stop();
-        exe.terminate();
+        if ( exeService != null )
+        {
+            exeService.terminate();
+        }
     }
 }

@@ -27,13 +27,8 @@ import net.agileautomata.executor4s._
  */
 object InMemoryNode {
 
-  private lazy val connection = systemOption.get.connection()
-  lazy val javaConnection = new ConnectionWrapper(connection, exeOption.get)
-  lazy val javaConnectionFactory = new ConnectionFactory {
-    def connect() = javaConnection
-
-    def terminate() {}
-  }
+  lazy val connection = systemOption.get.connection()
+  lazy val connectionFactory = systemOption.get.connectionFactory
   lazy val userSettings = systemOption.get.userSettings
   lazy val system = systemOption.get
 

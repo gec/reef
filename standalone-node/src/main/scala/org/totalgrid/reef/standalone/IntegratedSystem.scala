@@ -24,7 +24,6 @@ import org.totalgrid.reef.services.ServiceBootstrap
 import org.totalgrid.reef.services.settings.ServiceOptions
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.services.activator.{ ServiceFactory, ServiceModulesFactory }
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderServicesList }
@@ -35,6 +34,8 @@ import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnected
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
 import org.totalgrid.reef.frontend.{ ProtocolTraitToManagerShim, FepConnectedApplication }
 import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
+import org.totalgrid.reef.client.factory.ReefConnectionFactory
+import org.totalgrid.reef.client.Connection
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
@@ -89,16 +90,17 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     applicationManager.addConnectedApplication(new MetricsServiceApplication)
   }
 
-  def connection() = {
-    val clientConnection = new DefaultConnection(brokerConnection.connect, exe, 15000)
-    clientConnection.addServicesList(new ReefServices)
-    clientConnection.addServicesList(new LoaderServicesList)
-    clientConnection
+  val connectionFactory = new ReefConnectionFactory(brokerConnection, exe, new ReefServices)
+
+  def connection(): Connection = {
+    val conn = connectionFactory.connect()
+    conn.addServicesList(new LoaderServicesList)
+    conn
   }
 
   def loadModel(modelFile: String) {
-    val client = connection().login(userSettings.getUserName, userSettings.getUserPassword).await
-    LoadManager.loadFile(client.getRpcInterface(classOf[LoaderServices]), modelFile, false, false, false, 25)
+    val client = connection().login(userSettings)
+    LoadManager.loadFile(client.getService(classOf[LoaderServices]), modelFile, false, false, false, 25)
   }
 
   def start() = {

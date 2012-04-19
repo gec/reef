@@ -82,7 +82,7 @@ public class ReefConnectionTestBase
             {
 
                 InMemoryNode.initialize( "../../standalone-node.cfg", true );
-                this.factory = InMemoryNode.javaConnectionFactory();
+                this.factory = InMemoryNode.connectionFactory();
             }
         }
         catch ( Exception ex )

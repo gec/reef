@@ -68,7 +68,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
       factoryOption.get.connect()
     } else {
       InMemoryNode.initialize("../../standalone-node.cfg", true, None)
-      InMemoryNode.javaConnection
+      InMemoryNode.connection
     }
     conn.addServicesList(new LoaderServicesList)
     conn.addServicesList(new ReefServices)
