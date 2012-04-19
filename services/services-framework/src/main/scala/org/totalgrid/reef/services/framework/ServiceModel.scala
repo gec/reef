@@ -129,7 +129,7 @@ trait ServiceEventBuffering[MessageType <: GeneratedMessage, ModelType]
 trait ServiceEventPublishing[MessageType <: GeneratedMessage] {
 
   protected def publishEvent(context: RequestContext, event: Envelope.SubscriptionEventType, resp: MessageType, key: String): Unit = {
-    context.subHandler.publishEvent(event, resp, key)
+    context.eventPublisher.publishEvent(event, resp, key)
   }
 }
 
@@ -145,7 +145,7 @@ trait ServiceEventSubscribing[MessageType <: GeneratedMessage] extends Subscribe
    */
   def subscribe(context: RequestContext, req: MessageType, queue: String): Unit = {
     val keys = getSubscribeKeys(req)
-    keys.foreach(context.subHandler.bindQueueByClass(queue, _, req.getClass))
+    keys.foreach(context.eventPublisher.bindQueueByClass(queue, _, req.getClass))
   }
 }
 

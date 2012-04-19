@@ -20,7 +20,6 @@ package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.event.SystemEventSink
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.services.authz.AuthzService
 import scala.collection.mutable
@@ -44,11 +43,10 @@ trait RequestContext {
   def operationBuffer: OperationBuffer
 
   /**
-   * subscription handler that handles the publish and bind calls. Differs from the original subHandler since it will
+   * subscription handler that handles the publish and bind calls. Differs from the original eventPublisher since it will
    * accept any service event and lookup the exchange rather than needing a different publisher for each object type
    */
-  // TODO: RENAME to eventPublisher
-  def subHandler: EventPublisher
+  def eventPublisher: EventPublisher
 
   /**
    * for publishing system messages (System.LogOn, Subsystem.Starting) etc, publishes these messages immediately and

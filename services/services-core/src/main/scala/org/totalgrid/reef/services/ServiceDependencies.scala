@@ -60,7 +60,7 @@ class DependenciesRequestContext(dependencies: RequestContextDependencies) exten
 
   val operationBuffer = new BasicOperationBuffer
 
-  val subHandler = dependencies.pubs
+  val eventPublisher = dependencies.pubs
 
   val eventSink = dependencies.eventSink
 
@@ -83,6 +83,6 @@ class SilentRequestContext extends RequestContext with HeadersContext {
   def serviceRegistration = throw new Exception("Asked for serviceRegistration in silent request context")
   def eventSink = new SilentEventSink
   def operationBuffer = new BasicOperationBuffer
-  def subHandler = new SilentServiceSubscriptionHandler
+  def eventPublisher = new SilentServiceSubscriptionHandler
   val auth = new NullAuthzService
 }
