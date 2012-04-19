@@ -101,7 +101,7 @@ trait OverrideConfigConversion
 
   def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {
     List(
-      proto.id.value.asParam(sql.id === _.toInt),
+      proto.id.value.asParam(sql.id === _.toInt).unique,
       proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
   }
 

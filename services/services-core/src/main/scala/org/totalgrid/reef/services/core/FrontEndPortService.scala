@@ -116,7 +116,7 @@ trait FrontEndPortConversion
   def uniqueQuery(proto: ChannelProto, sql: FrontEndPort) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Channel")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
   }
 
   def isModified(entry: FrontEndPort, existing: FrontEndPort): Boolean = {

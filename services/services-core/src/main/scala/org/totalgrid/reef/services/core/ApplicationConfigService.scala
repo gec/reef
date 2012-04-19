@@ -163,7 +163,7 @@ trait ApplicationConfigConversion
 
   def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.instanceName, proto.instanceName.map(x => List("Application")))
-    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
