@@ -745,6 +745,7 @@
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
 		<xs:attribute name="dataSource" type="xs:boolean" default="true"/>
+        <xs:attribute name="autoAssigned" type="xs:boolean" default="true"/>
     </xs:complexType>
     <xs:element name="endpointProfile">
         <xs:annotation>

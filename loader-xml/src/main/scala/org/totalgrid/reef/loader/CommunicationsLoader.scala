@@ -221,7 +221,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     // Now we have a list of all the controls and points for this Endpoint
     val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, commChannel, controls, setpoints,
-      points, endpoint.isDataSource).build
+      points, endpoint.isDataSource, endpoint.isAutoAssigned).build
     modelLoader.putOrThrow(endpointCfg)
 
     val endpointEntity = ProtoUtils.toEntityType(endpointName, "CommunicationEndpoint" :: Nil)
@@ -549,7 +549,8 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     controls: HashMap[String, Control],
     setpoints: HashMap[String, Setpoint],
     points: HashMap[String, PointType],
-    isDataSource: Boolean): EndpointProto.Builder = {
+    isDataSource: Boolean,
+    autoAssigned: Boolean): EndpointProto.Builder = {
 
     val proto = EndpointProto.newBuilder
       .setName(name)
@@ -557,6 +558,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
       .setOwnerships(toEndpointOwnership(controls.keys.toList ::: setpoints.keys.toList, points.keys))
 
     proto.setDataSource(isDataSource)
+    proto.setAutoAssigned(autoAssigned)
 
     if (port.isDefined)
       proto.setChannel(port.get)

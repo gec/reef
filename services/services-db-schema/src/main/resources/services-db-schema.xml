@@ -914,4 +914,11 @@
             </column>
         </addColumn>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1334779573500-1">
+        <addColumn tableName="FrontEndAssignment">
+            <column name="active" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

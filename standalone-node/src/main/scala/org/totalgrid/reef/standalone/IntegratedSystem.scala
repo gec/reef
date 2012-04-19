@@ -33,7 +33,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.models.CoreServicesSchema
 import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnectedApplicationManager }
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
-import org.totalgrid.reef.frontend.FepConnectedApplication
+import org.totalgrid.reef.frontend.{ ProtocolTraitToManagerShim, FepConnectedApplication }
 import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
@@ -82,7 +82,8 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
 
     // we need to load the protocol separately for each node
     loadProtocols(properties, exe).foreach { protocol =>
-      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol, userSettings))
+      val manager = new ProtocolTraitToManagerShim(protocol)
+      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol.name, manager, userSettings))
     }
 
     applicationManager.addConnectedApplication(new MetricsServiceApplication)

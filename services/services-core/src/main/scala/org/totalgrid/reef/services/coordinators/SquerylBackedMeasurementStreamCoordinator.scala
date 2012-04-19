@@ -54,7 +54,7 @@ class SquerylBackedMeasurementStreamCoordinator(
     markOffline(ce, context)
 
     measProcModel.create(context, new MeasProcAssignment(ce.id, serviceRoutingKey, measProcId, measProcAssignedTime, None))
-    fepConnection.create(context, new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, offlineTime, None))
+    fepConnection.create(context, new FrontEndAssignment(ce.id, initialConnectionState, true, None, None, None, offlineTime, None, true))
   }
 
   def onEndpointUpdated(context: RequestContext, ce: CommunicationEndpoint, existing: CommunicationEndpoint) {
@@ -62,12 +62,12 @@ class SquerylBackedMeasurementStreamCoordinator(
     checkMeasProcAssignment(context, measProcAssignment)
 
     // when there is any change, delete the current assignment
-    val fepProcAssignment = fepAssignmentTable.where(fep => fep.endpointId === ce.id).single
+    val fepProcAssignment = getAssignedFep(ce)
     fepConnection.delete(context, fepProcAssignment)
 
     // then either assign the endpoint to a compatible FEP or no FEP
     val assigned = determineFepAssignment(context, fepProcAssignment.copy(applicationId = None), ce)
-    lazy val defaultFep = new FrontEndAssignment(ce.id, initialConnectionState, fepProcAssignment.enabled, fepProcAssignment.serviceRoutingKey, None, None, Some(System.currentTimeMillis), None)
+    lazy val defaultFep = new FrontEndAssignment(ce.id, initialConnectionState, fepProcAssignment.enabled, measProcAssignment.serviceRoutingKey, None, None, Some(System.currentTimeMillis), None, true)
     fepConnection.create(context, assigned.getOrElse(defaultFep))
   }
 
@@ -75,7 +75,7 @@ class SquerylBackedMeasurementStreamCoordinator(
     val assignedMeasProc = measProcTable.where(measProc => measProc.endpointId === ce.id).single
     measProcModel.delete(context, assignedMeasProc)
 
-    val assignedFep = fepAssignmentTable.where(fep => fep.endpointId === ce.id).single
+    val assignedFep = getAssignedFep(ce)
     fepConnection.delete(context, assignedFep)
   }
 
@@ -216,4 +216,7 @@ class SquerylBackedMeasurementStreamCoordinator(
     }
   }
 
+  private def getAssignedFep(ce: CommunicationEndpoint) = {
+    fepAssignmentTable.where(fep => (fep.endpointId === ce.id) and (fep.active === true)).single
+  }
 }

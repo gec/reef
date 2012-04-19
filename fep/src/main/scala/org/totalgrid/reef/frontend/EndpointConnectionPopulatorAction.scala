@@ -22,6 +22,7 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
 
+// TODO: move EndpointPopulation into Shim class only
 class EndpointConnectionPopulatorAction(client: FrontEndProviderServices) {
   /**
    * takes a partially populated endpoint connection and makes requests to the services to fill in the

@@ -125,7 +125,7 @@ case class CommunicationEndpoint(
   def this(entityId: UUID, protocol: String, autoAssigned: Boolean, dataSource: Boolean) = this(entityId, protocol, autoAssigned, Some(new UUID(0, 0)), dataSource)
 
   val port = LazyVar(mayHaveOneByEntityUuid(ApplicationSchema.frontEndPorts, frontEndPortId))
-  val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => p.endpointId === id).single)
+  val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => (p.endpointId === id) and (p.active === true)).single)
   val measProcAssignment = LazyVar(ApplicationSchema.measProcAssignments.where(p => p.endpointId === id).single)
 
   val configFiles = LazyVar(Entity
