@@ -23,14 +23,10 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.{ Client, Connection }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.settings.UserSettings
-import org.totalgrid.reef.protocol.api.{ ProtocolManager, Protocol }
+import org.totalgrid.reef.protocol.api.ProtocolManager
 
-class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Option[ProtocolManager], protocolSpecificUser: UserSettings)
+class FepConnectedApplication(protocolName: String, manager: ProtocolManager, protocolSpecificUser: UserSettings)
     extends ConnectedApplication with Logging {
-
-  def this(p: Protocol, protocolSpecificUser: UserSettings) = this(p.name, Some(p), None, protocolSpecificUser)
-
-  def this(protocolName: String, mgr: ProtocolManager, protocolSpecificUser: UserSettings) = this(protocolName, None, Some(mgr), protocolSpecificUser)
 
   def getApplicationSettings = new ApplicationSettings("FEP-" + protocolName, "FEP")
 
@@ -40,21 +36,14 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
   def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
 
     client = Some(connection.login(protocolSpecificUser))
-    //client = Some(appLevelClient.login(protocolSpecificUser))
 
     fem = Some(makeFepNode(client.get, appConfig))
-    fem.foreach {
-      _.start()
-    }
+    fem.foreach { _.start() }
   }
 
   def onApplicationShutdown() = {
-    fem.foreach {
-      _.stop()
-    }
-    client.foreach {
-      _.logout()
-    }
+    fem.foreach { _.stop() }
+    client.foreach { _.logout() }
   }
 
   def onConnectionError(msg: String) = {
@@ -66,18 +55,9 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
 
     val services = client.getService(classOf[FrontEndProviderServices])
 
-    def endpointClient = {
-      client.spawn()
-    }
+    def endpointClient = { client.spawn() }
 
-    val potentialManagers = List(
-      mgr.map(m => protocolName -> m),
-      p.map(p => p.name -> new ProtocolTraitToManagerShim(p)))
-
-    val managers = potentialManagers.flatten.toMap
-    if (managers.isEmpty) throw new IllegalArgumentException("Must include atleast one protocol implementation")
-
-    val frontEndConnections = new FrontEndConnections(managers, endpointClient)
+    val frontEndConnections = new FrontEndConnections(Map(protocolName -> manager), endpointClient)
     val populator = new EndpointConnectionPopulatorAction(services)
     val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client.getInternal.getExecutor)
 
@@ -88,7 +68,7 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
       services,
       connectionContext,
       appConfig,
-      managers.keys.toList,
+      List(protocolName),
       5000)
   }
 }

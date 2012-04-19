@@ -72,7 +72,9 @@ public class StandaloneProtocolAdapter
     public StandaloneProtocolAdapter( Properties properties, Protocol protocol )
     {
         UserSettings userSettings = prepareApplicationManager( properties );
-        applicationManager.addConnectedApplication( new FepConnectedApplication( protocol, userSettings ) );
+
+        ProtocolManager manager = new ProtocolTraitToManagerShim( protocol );
+        applicationManager.addConnectedApplication( new FepConnectedApplication( protocol.name(), manager, userSettings ) );
     }
 
     /**

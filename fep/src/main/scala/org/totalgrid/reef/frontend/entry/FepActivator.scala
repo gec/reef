@@ -30,19 +30,11 @@ import org.totalgrid.reef.app.whiteboard.ConnectedApplicationBundleActivator
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.protocol.api.{ ProtocolManager, Protocol }
-import org.totalgrid.reef.frontend.FepConnectedApplication
-
-object ProtocolInterface {
-  sealed trait ProtocolInterface
-  case class TraitInterface(protocol: Protocol) extends ProtocolInterface
-  case class ManagerInterface(protocol: ProtocolManager) extends ProtocolInterface
-}
+import org.totalgrid.reef.frontend.{ ProtocolTraitToManagerShim, FepConnectedApplication }
 
 final class FepActivator extends ConnectedApplicationBundleActivator {
 
-  import ProtocolInterface._
-
-  private var map = Map.empty[String, (ProtocolInterface, ConnectedApplication)]
+  private var map = Map.empty[String, (ProtocolManager, ConnectedApplication)]
 
   override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.fep")
 
@@ -57,12 +49,12 @@ final class FepActivator extends ConnectedApplicationBundleActivator {
   def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
 
     context watchServices withInterface[Protocol] andHandle {
-      case AddingService(p, _) => addProtocol(context, p.name, TraitInterface(p), appManager)
+      case AddingService(p, _) => addProtocol(context, p.name, new ProtocolTraitToManagerShim(p), appManager)
       case ServiceRemoved(p, _) => removeProtocol(p.name, appManager)
     }
 
     context watchServices withInterface[ProtocolManager] andHandle {
-      case AddingService(p, props) => getProtocolName(props).foreach(name => addProtocol(context, name, ManagerInterface(p), appManager))
+      case AddingService(p, props) => getProtocolName(props).foreach(name => addProtocol(context, name, p, appManager))
       case ServiceRemoved(p, props) => getProtocolName(props).foreach(name => removeProtocol(name, appManager))
     }
   }
@@ -73,17 +65,13 @@ final class FepActivator extends ConnectedApplicationBundleActivator {
     new UserSettings(userProperties)
   }
 
-  private def addProtocol(context: BundleContext, protocolName: String, p: ProtocolInterface, appManager: ConnectedApplicationManager) = map.synchronized {
+  private def addProtocol(context: BundleContext, protocolName: String, p: ProtocolManager, appManager: ConnectedApplicationManager) = map.synchronized {
     map.get(protocolName) match {
       case Some(_) => logger.info("Protocol already added: " + protocolName)
       case None =>
         val userSettings = getSettings(context, protocolName)
 
-        val app = p match {
-          case TraitInterface(pt) => new FepConnectedApplication(pt, userSettings)
-          case ManagerInterface(pm) => new FepConnectedApplication(protocolName, pm, userSettings)
-        }
-
+        val app = new FepConnectedApplication(protocolName, p, userSettings)
         appManager.addConnectedApplication(app)
 
         map += (protocolName -> (p, app))
