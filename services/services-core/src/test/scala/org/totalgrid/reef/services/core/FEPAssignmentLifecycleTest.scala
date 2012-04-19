@@ -144,6 +144,36 @@ class FEPAssignmentLifecycleTest extends EndpointRelatedTestBase {
       coord.checkPoints(1, 1)
     }
   }
+
+  test("Self Assigned Device, heartbeat out app causes COMMS_DOWN") {
+    ConnectionFixture.mock() { amqp =>
+      val coord = new CoordinatorFixture(amqp)
+
+      val device = coord.addDevice("dev1", autoAssigned = false)
+      val FEP_NAME = "fep"
+      val fep = coord.addFep(FEP_NAME)
+      val meas = coord.addMeasProc("meas99")
+
+      coord.checkAssignments(1, None, Some(meas))
+
+      val connection = coord.claimEndpoint(device.getName, Some(FEP_NAME))
+
+      connection.getFrontEnd.getAppConfig.getInstanceName should equal(FEP_NAME)
+
+      coord.checkAssignments(1, Some(fep), Some(meas))
+
+      coord.updatePoint("dev1.test_point")
+      coord.checkPoints(1, 0)
+
+      coord.timeoutApplication(fep.getAppConfig)
+
+      coord.checkAssignments(1, None, Some(meas))
+
+      // check that the point is now marked as bad in the rtdb
+      coord.checkPoints(1, 1)
+    }
+  }
+
   test("Switching to autoAssigned") {
     ConnectionFixture.mock() { amqp =>
       val coord = new CoordinatorFixture(amqp)

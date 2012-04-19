@@ -77,6 +77,7 @@ class SquerylBackedMeasurementStreamCoordinator(
 
     val assignedFep = getAssignedFep(ce)
     fepConnection.delete(context, assignedFep)
+    fepConnection.deleteAllAssignmentsForEndpoint(ce)
   }
 
   def onFepAppChanged(context: RequestContext, app: ApplicationInstance, added: Boolean) {
@@ -101,7 +102,12 @@ class SquerylBackedMeasurementStreamCoordinator(
 
     // lookup a compatible FEP only if the connection is enabled
     val applicationId = if (ce.autoAssigned) if (assign.enabled) getFep(ce).map { _.id } else None
-    else assign.applicationId
+    else {
+      assign.application.value.flatMap { app =>
+        if (app.heartbeat.value.isOnline) Some(app.id)
+        else None
+      }
+    }
 
     logger.info(
       ce.entityName + " assigned FEP: " + applicationId + ", protocol: " + ce.protocol +
