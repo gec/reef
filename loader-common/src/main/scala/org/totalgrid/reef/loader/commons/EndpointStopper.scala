@@ -34,7 +34,7 @@ object EndpointStopper extends Logging {
    * synchronous function that blocks until all passed in endpoints are stopped
    * TODO: use endpoint stopper before reef:unload
    */
-  def stopEndpoints(local: LoaderServices, endpoints: List[Endpoint], stream: Option[PrintStream], forceStop: Boolean) {
+  def stopEndpoints(local: LoaderServices, endpoints: List[Endpoint], stream: Option[PrintStream], forceStop: Boolean, timeout: Long = 20000) {
 
     // then subscribe to all of the connections
     val subResult = local.subscribeToEndpointConnections().await
@@ -72,7 +72,7 @@ object EndpointStopper extends Logging {
          * never return
          */
         @annotation.tailrec
-        def waitForEmptyList(endpointUuids: Map[ReefID, EndpointConnection], timeout: Int): Map[ReefID, EndpointConnection] = {
+        def waitForEmptyList(endpointUuids: Map[ReefID, EndpointConnection], timeout: Long): Map[ReefID, EndpointConnection] = {
           if (!endpointUuids.isEmpty) {
             stream.foreach { _.println("Waiting for " + endpointNames(endpointUuids) + " to stop...") }
             val nextEvent = queue.poll(timeout, TimeUnit.MILLISECONDS)
@@ -84,7 +84,7 @@ object EndpointStopper extends Logging {
         }
 
         // wait until all endpoints are not COMMS_UP
-        val stillOnline = waitForEmptyList(stillRunning, 20000)
+        val stillOnline = waitForEmptyList(stillRunning, timeout)
 
         if (!stillOnline.isEmpty) {
           val msg = "Couldn't stop all endpoints: " + endpointNames(stillOnline)
