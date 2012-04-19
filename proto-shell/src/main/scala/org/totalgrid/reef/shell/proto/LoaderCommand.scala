@@ -60,11 +60,14 @@ class UnloadConfigCommand extends ReefCommandSupport {
   @GogoOption(name = "-batchSize", description = "Upload batch size, 0 disables all batching.", required = false, multiValued = false)
   var batchSize = 0
 
+  @GogoOption(name = "--force", description = "Force unloading even if endpoints are still marked as COMMS_UP", required = false, multiValued = false)
+  var force = false
+
   override def doCommand(): Unit = {
     val loaderServices = new LoaderServicesImpl(reefClient)
 
     reefClient.setHeaders(reefClient.getHeaders.setTimeout(30000))
-    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out), batchSize)
+    ModelDeleter.deleteEverything(loaderServices, false, force, Some(Console.out), batchSize)
   }
 
 }
