@@ -163,5 +163,13 @@ public interface EndpointService
      */
     EndpointConnection alterEndpointConnectionState( ReefID connectionId, State state ) throws ReefServiceException;
 
+    /**
+     * Protocol Adapters will update the endpoint connection state to indicate when the endpoint
+     * changes communication state.
+     * @param endpointUuid  id for the endpoint
+     * @param state          COMMS_UP, COMMS_DOWN, COMMS_ERROR ...
+     * @return updated state
+     */
+    EndpointConnection alterEndpointConnectionStateByEndpoint( ReefUUID endpointUuid, State state ) throws ReefServiceException;
 
 }

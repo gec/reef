@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 131 of 210 calls ported
+ * 131 of 211 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -336,6 +336,7 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     (c) => c.getEndpointConnectionByEndpointName(a0)
   })
   // Can't encode alterEndpointConnectionState : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
+  // Can't encode alterEndpointConnectionStateByEndpoint : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
   ////////////////////
   // EntityService
   ////////////////////
