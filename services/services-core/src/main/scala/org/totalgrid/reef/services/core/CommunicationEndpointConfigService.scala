@@ -84,8 +84,8 @@ class CommEndCfgServiceModel(
     if (frontEndAssignment.enabled)
       throw new BadRequestException("Cannot delete endpoint that is still enabled, disable before deleting.  Try running karaf command: endpoint:disable *")
 
-    if (frontEndAssignment.state != ConnProto.State.COMMS_DOWN.getNumber)
-      throw new BadRequestException("Cannot delete endpoint that is not in COMMS_DOWN state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
+    if (frontEndAssignment.state == ConnProto.State.COMMS_UP.getNumber)
+      throw new BadRequestException("Cannot delete endpoint that is not in COMMS_UP state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
 
     sql.entity.value // preload lazy entity since it will be deleted by the time event is rendered
     coordinator.onEndpointDeleted(context, sql)
@@ -161,7 +161,7 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("CommunicationEndpoint")))
-    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
   }
 
   def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
