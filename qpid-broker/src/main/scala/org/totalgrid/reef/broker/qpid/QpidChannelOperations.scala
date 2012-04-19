@@ -133,11 +133,15 @@ object QpidChannelOperations extends Logging {
       fun
     } catch {
       case sse: SessionException =>
-        sse.getException.getErrorCode match {
-          case ExecutionErrorCode.NOT_FOUND =>
+        // getException can be null in some cases
+        ScalaOption(sse.getException).map(_.getErrorCode) match {
+          case Some(ExecutionErrorCode.NOT_FOUND) =>
             throw new ServiceIOException("Exchange not found. Usually indicates no services node is attached to the broker.", sse)
+          case Some(ExecutionErrorCode.UNAUTHORIZED_ACCESS) =>
+            throw new ServiceIOException("Broker denied action, check that you have authorization to perform low level actions: " + msg, sse)
+          case _ =>
+            throw new ServiceIOException("Qpid error during " + msg + " cause: " + sse.getMessage, sse)
         }
-        throw new ServiceIOException("Qpid error during " + msg + " cause: " + sse.getMessage, sse)
       case ex: Exception =>
         throw new ServiceIOException("Unexpected error during " + msg + " cause: " + ex.getMessage, ex)
     }
