@@ -20,30 +20,54 @@ package org.totalgrid.reef.app
 
 import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.broker.{ BrokerConnectionFactory, BrokerConnection }
+import org.totalgrid.reef.broker.{ BrokerConnectionFactory }
 import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.util.Lifecycle
-import org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
-import org.totalgrid.reef.client.sapi.client.rest.impl.{ DefaultConnection, DefaultReconnectingFactory }
+import org.totalgrid.reef.client.factory.ReefReconnectingFactory
+import org.totalgrid.reef.client.service.list.ReefServices
+import org.totalgrid.reef.client.{ Connection, ConnectionWatcher }
 
 /**
  * handles the connection to an amqp broker, passing the valid and created Connection to the
  * applicationCreator function
  */
 class ConnectionCloseManagerEx(broker: BrokerConnectionFactory, exe: Executor)
-    extends ConnectionWatcher
-    with ConnectionProvider
+    extends ConnectionProvider
     with Lifecycle
     with Logging {
 
   def this(amqpSettings: AmqpSettings, exe: Executor) = this(new QpidBrokerConnectionFactory(amqpSettings), exe)
 
-  private val factory = new DefaultReconnectingFactory(broker, exe, 1000, 10000)
-  factory.addConnectionWatcher(this)
+  // ServicesList list, long startDelayMs, long maxDelayMs
+  private val factory = new ReefReconnectingFactory(broker, new ReefServices, 1000, 100)
 
-  private var connection = Option.empty[BrokerConnection]
+  private class Watcher extends ConnectionWatcher {
+    def onConnectionOpened(conn: Connection) {
+      this.synchronized {
+        if (connection.isDefined) {
+          logger.error("Connection is already defined")
+        }
+        connection = Some(conn)
+        cancelDelays()
+        consumers.keys.foreach { doBrokerConnectionStarted(_, conn) }
+      }
+    }
+    def onConnectionClosed(expected: Boolean) {
+      this.synchronized {
+        connection = None
+        cancelDelays()
+        if (!expected) {
+          logger.warn("Connection to broker " + broker + " lost.")
+          consumers.keys.foreach { doBrokerConnectionLost(_) }
+        }
+      }
+    }
+  }
+  private val watcher = new Watcher
+  factory.addConnectionWatcher(watcher)
+
+  private var connection = Option.empty[Connection]
   private var consumers = Map.empty[ConnectionConsumer, Option[Cancelable]]
   private var delays = Map.empty[ConnectionConsumer, Cancelable]
 
@@ -61,28 +85,12 @@ class ConnectionCloseManagerEx(broker: BrokerConnectionFactory, exe: Executor)
     consumers -= generator
   }
 
-  def onConnectionOpened(conn: BrokerConnection) = this.synchronized {
-    if (connection.isDefined) logger.error("Connection is already defined")
-    connection = Some(conn)
-    cancelDelays()
-    consumers.keys.foreach { doBrokerConnectionStarted(_, conn) }
-  }
-
-  def onConnectionClosed(expected: Boolean) = this.synchronized {
-    connection = None
-    cancelDelays()
-    if (!expected) {
-      logger.warn("Connection to broker " + broker + " lost.")
-      consumers.keys.foreach { doBrokerConnectionLost(_) }
-    }
-  }
-
   private def cancelDelays() {
     delays.values.foreach { _.cancel }
     delays = Map.empty[ConnectionConsumer, Cancelable]
   }
 
-  private def doBrokerConnectionStarted(generator: ConnectionConsumer, conn: BrokerConnection): Unit = this.synchronized {
+  private def doBrokerConnectionStarted(generator: ConnectionConsumer, conn: Connection): Unit = this.synchronized {
     consumers.get(generator).foreach { cancelable =>
       if (cancelable.isDefined) {
         logger.error("Still have an active application instance onConnectionOpened!")
@@ -90,7 +98,7 @@ class ConnectionCloseManagerEx(broker: BrokerConnectionFactory, exe: Executor)
       }
     }
     val application = tryC("Couldn't start consumer successfully: ") {
-      generator.handleNewConnection(new ConnectionWrapper(new DefaultConnection(conn, exe, 5000), exe))
+      generator.handleNewConnection(conn)
     }
     consumers += generator -> application
 
