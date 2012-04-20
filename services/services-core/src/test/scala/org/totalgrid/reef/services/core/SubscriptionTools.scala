@@ -29,6 +29,7 @@ import java.util.UUID
 import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.authz._
+import org.squeryl.Query
 
 // TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
@@ -135,6 +136,10 @@ object SubscriptionTools {
       filterRequestQueue.enqueue(FilterRequest(service, action, payloads, uuids))
       filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
     }
+
+    def selector(permissions: => List[Permission], service: String, action: String): Option[Query[UUID]] = None
+
+    def selector(context: RequestContext, service: String, action: String) = None
 
     def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
 

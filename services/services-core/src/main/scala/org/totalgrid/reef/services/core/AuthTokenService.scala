@@ -29,7 +29,9 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.event.EventType
-import org.totalgrid.reef.models.{ UUIDConversions, Agent, ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin }
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models.{ Agent, UUIDConversions, ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin }
 
 /**
  * auth token specific code for searching the sql table and converting from
@@ -46,6 +48,16 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
 
   def relatedEntities(entries: List[AuthTokenModel]) = {
     entries.map { _.agent.value.entityId }
+  }
+
+  override def resourceId = Descriptors.authToken.id
+
+  override def visibilitySelector(entitySelector: Query[UUID], sql: AuthTokenModel) = {
+    sql.id in from(table, ApplicationSchema.agents, ApplicationSchema.entities)((auth, agent, entities) =>
+      where(
+        (sql.agentId === agent.id) and
+          (agent.entityId in entitySelector))
+        select (auth.id))
   }
 
   def uniqueQuery(proto: AuthToken, sql: AuthTokenModel) = {

@@ -18,10 +18,9 @@
  */
 package org.totalgrid.reef.authz
 
-import java.util.UUID
 import org.totalgrid.reef.models.ApplicationSchema
-
-import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.Query
+import java.util.UUID
 
 sealed trait ResourceSelector {
   def includes(uuids: List[UUID]): List[Option[Boolean]]
@@ -29,7 +28,13 @@ sealed trait ResourceSelector {
   def allow: Boolean
 
   def resourceDependent: Boolean
+
+  def selector(): Option[Query[UUID]] = {
+    None
+  }
 }
+
+import org.squeryl.PrimitiveTypeMode._
 
 class WildcardMatcher extends ResourceSelector {
 
@@ -38,6 +43,10 @@ class WildcardMatcher extends ResourceSelector {
   val allow = true
   val resourceDependent = false
   override def toString() = "*"
+
+  override def selector() = {
+    None
+  }
 }
 
 class EntityTypeIncludes(types: List[String]) extends ResourceSelector {
@@ -57,17 +66,12 @@ class EntityTypeIncludes(types: List[String]) extends ResourceSelector {
     }
   }
   override def toString() = "entity.types include " + types.mkString("(", ",", ")")
-}
 
-class EntityTypeDoesntInclude(types: List[String]) extends ResourceSelector {
-  val allow = false
-  val resourceDependent = true
-
-  private val includeMatcher = new EntityTypeIncludes(types)
-
-  def includes(uuids: List[UUID]) = includeMatcher.includes(uuids)
-
-  override def toString() = "entity.types dont include " + types.mkString("(", ",", ")")
+  override def selector() = {
+    Some(from(ApplicationSchema.entityTypes, ApplicationSchema.entities)((typeJoin, entity) =>
+      where((typeJoin.entType in types) and (typeJoin.entityId === entity.id))
+        select (entity.id)))
+  }
 }
 
 class EntityHasName(names: List[String]) extends ResourceSelector {
@@ -88,6 +92,12 @@ class EntityHasName(names: List[String]) extends ResourceSelector {
   }
 
   override def toString() = "entity.name is " + names.mkString("(", ",", ")")
+
+  override def selector() = {
+    Some(from(ApplicationSchema.entities)(sql =>
+      where((sql.name in names))
+        select (sql.id)))
+  }
 }
 
 class EntityParentIncludes(parentNames: List[String]) extends ResourceSelector {
@@ -112,5 +122,16 @@ class EntityParentIncludes(parentNames: List[String]) extends ResourceSelector {
     }
   }
   override def toString() = "entity.parents include " + parentNames.mkString("(", ",", ")")
+
+  override def selector() = {
+    Some(from(ApplicationSchema.entities, ApplicationSchema.edges, ApplicationSchema.entities)((parent, edge, child) =>
+      where(
+        (parent.name in parentNames)
+          and ((child.name in parentNames)
+            or ((parent.id === edge.parentId)
+              and (child.id === edge.childId)
+              and (edge.relationship === "owns"))))
+        select (child.id)))
+  }
 }
 

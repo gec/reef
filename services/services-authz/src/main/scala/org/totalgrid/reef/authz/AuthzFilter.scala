@@ -20,6 +20,9 @@ package org.totalgrid.reef.authz
 
 import com.weiglewilczek.slf4s.Logging
 import java.util.UUID
+import org.squeryl.Query
+import scala.Predef._
+import java.awt.peer.ListPeer
 
 object AuthzFilter extends AuthzFiltering(ResourceSpecificFilter)
 
@@ -55,6 +58,32 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
     }
 
     results
+  }
+
+  def selector(permissions: => List[Permission], service: String, action: String): Option[Query[UUID]] = {
+    // first filter down to permissions that have right service+action
+    val applicablePermissions = permissions.filter(_.applicable(service, action))
+
+    if (applicablePermissions.isEmpty) {
+      None
+    } else {
+      if (applicablePermissions.find(_.resourceDependent).isEmpty) {
+        None
+      } else {
+        val l: List[Option[Query[UUID]]] = applicablePermissions.map { _.selector() }
+
+        println(applicablePermissions)
+
+        l.head
+
+        //        l.find(_.isEmpty) match {
+        //          case Some(empty) => None
+        //          case None =>
+        //            // TODO: merge queries
+        //            l.head
+        //        }
+      }
+    }
   }
 
   private def unmatchedServiceAction(service: String, action: String) = {

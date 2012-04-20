@@ -27,6 +27,29 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.SquerylConversions
 
 import SquerylModel._
+import java.util.UUID
+
+import org.totalgrid.reef.event.SilentEventSink
+import org.totalgrid.reef.services.authz.NullAuthzService
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+
+class SilentRequestContext extends RequestContext {
+  def client = throw new Exception("Asked for client in silent request context")
+  def eventSink = new SilentEventSink
+  def operationBuffer = new BasicOperationBuffer
+  def subHandler = new SilentServiceSubscriptionHandler
+  val auth = new NullAuthzService
+
+  protected var headers = BasicRequestHeaders.empty
+
+  def getHeaders = headers
+
+  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders = {
+    val newHeaders = modify(headers)
+    headers = newHeaders
+    newHeaders
+  }
+}
 
 /**
  * defines a simple to integrate implementation of the findRecord and findRecords functions
@@ -79,20 +102,32 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    */
   def searchQuery(proto: MessageType, sql: T): List[Option[SearchTerm]]
 
+  def visibilitySelector(entitySelector: Query[UUID], sql: T): LogicalBoolean = (true === true)
+
+  def resourceId: String = "entity"
+
   /**
    * helper function for use in complex queries in models :
    * proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id }))
    * @param idFun this function determines which field we are trying to match against (not always .id)
    */
-  def uniqueQueryForId[R](req: MessageType, idFun: T => R): Query[R] = {
-    from(table)(sql => where(uniqueParams(req, sql)) select (idFun(sql)))
+  def uniqueQueryForId[R](context: RequestContext, req: MessageType, idFun: T => R): Query[R] = {
+    from(table)(sql => where(uniqueParams(context, req, sql)) select (idFun(sql)))
   }
 
   /**
    * same as uniqueQueryForId but using the broader searching
    */
+  def searchQueryForId[R](context: RequestContext, req: MessageType, idFun: T => R): Query[R] = {
+    from(table)(sql => where(searchParams(context, req, sql)) select (idFun(sql)))
+  }
+
+  // TODO: get rid of these overloads, add context to UniquQuery
   def searchQueryForId[R](req: MessageType, idFun: T => R): Query[R] = {
-    from(table)(sql => where(searchParams(req, sql)) select (idFun(sql)))
+    searchQueryForId(new SilentRequestContext, req, idFun)
+  }
+  def uniqueQueryForId[R](req: MessageType, idFun: T => R): Query[R] = {
+    uniqueQueryForId(new SilentRequestContext, req, idFun)
   }
 
   /**
@@ -100,7 +135,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * find a single record for updating/creating
    */
   def findRecord(context: RequestContext, messageType: MessageType): Option[T] = {
-    val uniqueItems = uniqueQuery(messageType, { (sql, w) => w.select(sql) }, getResultLimit(context)).toList
+    val uniqueItems = doUniqueQuery(context, messageType, { (sql, w) => w.select(sql) }, getResultLimit(context)).toList
     uniqueItems.size match {
       case 0 => None
       case 1 => Some(uniqueItems.head)
@@ -113,7 +148,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * all records matching the request proto
    */
   def findRecords(context: RequestContext, req: MessageType): List[T] = {
-    searchQuery(req, { (sql, w) => w.select(sql) }, getResultLimit(context)).toList
+    doSearchQuery(context, req, { (sql, w) => w.select(sql) }, getResultLimit(context)).toList
   }
 
   /**
@@ -138,16 +173,23 @@ trait UniqueAndSearchQueryable[MessageType, T] {
 
   /// internal (for now) functions that minimize code duplication but aren't needed externally yet
   /// though as the system grows that may change
-  private def uniqueQuery[R](req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R], resultLimit: Int): Query[R] = {
-    from(table)(sql => selectFun(sql, where(uniqueParams(req, sql)))).page(0, resultLimit)
+  private def doUniqueQuery[R](context: RequestContext, req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R], resultLimit: Int): Query[R] = {
+    from(table)(sql => selectFun(sql, where(uniqueParams(context, req, sql)))).page(0, resultLimit)
   }
-  private def searchQuery[R](req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R], resultLimit: Int): Query[R] = {
-    from(table)(sql => getOrdering(selectFun(sql, where(searchParams(req, sql))), sql)).page(0, resultLimit)
+  private def doSearchQuery[R](context: RequestContext, req: MessageType, selectFun: (T, WhereState[Conditioned]) => SelectState[R], resultLimit: Int): Query[R] = {
+    from(table)(sql => getOrdering(selectFun(sql, where(searchParams(context, req, sql))), sql)).page(0, resultLimit)
   }
-  def uniqueParams(req: MessageType, sql: T): LogicalBoolean = {
-    SquerylConversions.combineExpressions(uniqueQuery(req, sql).flatten)
+
+  private def filterForVisiblity(context: RequestContext, sql: T, request: LogicalBoolean): LogicalBoolean = {
+    context.auth.selector(context, resourceId, "read").map { sel =>
+      SquerylConversions.combineExpressions(List(request, visibilitySelector(sel, sql)))
+    }.getOrElse(request)
   }
-  def searchParams(req: MessageType, sql: T): LogicalBoolean = {
-    SquerylConversions.combineExpressions((uniqueQuery(req, sql) ::: searchQuery(req, sql)).flatten)
+
+  private def uniqueParams(context: RequestContext, req: MessageType, sql: T): LogicalBoolean = {
+    filterForVisiblity(context, sql, SquerylConversions.combineExpressions(uniqueQuery(req, sql).flatten))
+  }
+  private def searchParams(context: RequestContext, req: MessageType, sql: T): LogicalBoolean = {
+    filterForVisiblity(context, sql, SquerylConversions.combineExpressions((uniqueQuery(req, sql) ::: searchQuery(req, sql)).flatten))
   }
 }

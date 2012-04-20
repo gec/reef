@@ -45,6 +45,10 @@ class AuthzServiceMetricsWrapper(authz: AuthzService, source: MetricsHookSource)
     }
   }
 
+  override def selector(context: RequestContext, componentId: String, action: String) = {
+    authz.selector(context, componentId, action)
+  }
+
   override def prepare(context: RequestContext) = {
     prepareCount(1)
     prepareTime {

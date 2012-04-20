@@ -31,7 +31,9 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.{ BadRequestException, UnauthorizedException }
 
 import org.totalgrid.reef.models.{ UserCommandModel, ApplicationSchema, CommandLockModel => AccessModel, Command => CommandModel, CommandBlockJoin }
-import java.util.Date
+import java.util.{ UUID, Date }
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.models.CommandLockModel._
 
 class CommandLockServiceModel
     extends SquerylServiceModel[Long, AccessProto, AccessModel]
@@ -208,6 +210,17 @@ trait CommandLockConversion
 
   def relatedEntities(entries: List[AccessModel]) = {
     entries.map { _.commands.map { _.entityId } }.flatten
+  }
+
+  override def resourceId = Descriptors.commandLock.id
+
+  override def visibilitySelector(entitySelector: Query[UUID], sql: AccessModel) = {
+    sql.id in from(table, ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((acc, join, command) =>
+      where(
+        (acc.id === join.accessId) and
+          (join.commandId === command.id) and
+          (command.entityId in entitySelector))
+        select (acc.id))
   }
 
   def uniqueQuery(proto: AccessProto, sql: AccessModel) = {

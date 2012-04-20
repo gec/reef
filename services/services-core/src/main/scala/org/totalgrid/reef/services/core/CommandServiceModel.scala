@@ -32,9 +32,8 @@ import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
-import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
-import org.totalgrid.reef.models.EntityQuery
 import java.util.UUID
+import org.totalgrid.reef.models._
 
 class CommandService(protected val model: CommandServiceModel)
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -121,6 +120,12 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
 
   def relatedEntities(entries: List[Command]) = {
     entries.map { _.entityId }
+  }
+
+  override def resourceId = Descriptors.command.id
+
+  override def visibilitySelector(entitySelector: Query[UUID], sql: Command) = {
+    sql.entityId in entitySelector
   }
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {

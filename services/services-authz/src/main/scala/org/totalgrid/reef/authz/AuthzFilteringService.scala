@@ -19,6 +19,7 @@
 package org.totalgrid.reef.authz
 
 import java.util.UUID
+import org.squeryl.Query
 
 sealed trait FilteredResult[A] {
   def result: A
@@ -37,4 +38,6 @@ case class Denied[A](a: A, permission: Permission) extends FilteredResult[A] {
 
 trait AuthzFilteringService {
   def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]]
+
+  def selector(permissions: => List[Permission], service: String, action: String): Option[Query[UUID]]
 }
