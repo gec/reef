@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.standalone
 
-import org.totalgrid.reef.client.ConnectionFactory
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
 import net.agileautomata.executor4s._
 
 /**

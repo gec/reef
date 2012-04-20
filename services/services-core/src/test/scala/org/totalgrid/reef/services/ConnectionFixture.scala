@@ -23,7 +23,6 @@ import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import org.totalgrid.reef.client.service.list.ReefServices
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.InstantExecutor
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
 
 object ConnectionFixture {

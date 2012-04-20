@@ -36,8 +36,6 @@ import org.totalgrid.reef.frontend.{ ProtocolTraitToManagerShim, FepConnectedApp
 import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
 import org.totalgrid.reef.client.Connection
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
