@@ -118,7 +118,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     procStatusModel.notifyModels(context, sql, false, removedCaps)
 
     val time = if (req.hasHeartbeatCfg) req.getHeartbeatCfg.getPeriodMs else 60000
-    procStatusModel.addApplication(context, sql, time, req.getProcessId, newCaps)
+    procStatusModel.addApplication(context, sql, time, req.getProcessId, req.getCapabilitesList.toList)
 
     (sql, updated)
   }
