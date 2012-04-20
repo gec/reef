@@ -153,6 +153,11 @@ class CommunicationEndpointConnectionServiceModel
     postDelete(context, deleted)
     deleted
   }
+
+  def deleteAllAssignmentsForEndpoint(sql: CommunicationEndpoint) {
+    // when we delete the endpoint we need to delete all of the assignments it ever had
+    table.deleteWhere(_.endpointId === sql.id)
+  }
 }
 
 object CommunicationEndpointConnectionConversion extends CommunicationEndpointConnectionConversion

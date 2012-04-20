@@ -1133,6 +1133,7 @@
 			});
 		};
 		// Can't encode alterEndpointConnectionState : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
+		// Can't encode alterEndpointConnectionStateByEndpoint : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
 		////////////////////
 		// EntityService
 		////////////////////

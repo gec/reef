@@ -26,6 +26,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.util.{ EndpointConnectionStateMap, ServiceClientSuite }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.service.proto.FEP.{ FrontEndProcessor, EndpointConnection }
+import org.totalgrid.reef.loader.commons.{ EndpointStopper, LoaderServices }
 
 @RunWith(classOf[JUnitRunner])
 class EndpointAssignmentTest extends ServiceClientSuite {
@@ -93,6 +94,22 @@ class EndpointAssignmentTest extends ServiceClientSuite {
     val result = client.subscribeToEndpointConnections()
     val map = new EndpointConnectionStateMap(result)
     map.checkAllState(true, EndpointConnection.State.COMMS_UP)
+  }
+
+  test("Disable Endpoints and then set COMMS_UP and delete") {
+
+    val endpoints = client.getEndpoints()
+    endpoints.foreach { e => client.disableEndpointConnection(e.getUuid) }
+
+    val result = client.subscribeToEndpointConnections()
+    val map = new EndpointConnectionStateMap(result)
+    map.checkAllState(false, EndpointConnection.State.COMMS_DOWN)
+
+    endpoints.foreach { e => client.alterEndpointConnectionStateByEndpoint(e.getUuid, EndpointConnection.State.COMMS_UP) }
+
+    val loaderServices = session.getService(classOf[LoaderServices])
+
+    EndpointStopper.stopEndpoints(loaderServices, endpoints, Some(Console.out), true, 1000)
   }
 
   private def findProtocolAdapter(fun: String => Boolean): FrontEndProcessor = {

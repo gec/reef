@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl.util
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.{ Tag, FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AsyncAllScadaService }
 import org.totalgrid.reef.client.settings.util.PropertyReader
@@ -54,12 +54,14 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
   def async = asyncClientOption.get
   def connection = connectionOption.get
 
+  private lazy val remoteTest = System.getProperty("remote-test") != null
+
   override def beforeAll() {
     // gets default connection settings or overrides using system properties
     val props = PropertyReader.readFromFile("../../org.totalgrid.reef.test.cfg")
     val userConfig = new UserSettings(props)
 
-    val conn: Connection = if (System.getProperty("remote-test") != null) {
+    val conn: Connection = if (remoteTest) {
 
       val config = new AmqpSettings(props)
 
@@ -91,5 +93,11 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
     factoryOption.foreach(_.terminate())
   }
 
+  // we preface all of the tests with the REMOTE name so we can easily tell if it failed
+  // during the first run
+  override protected def test(testName: String, testTags: Tag*)(testFun: => Unit) {
+    val name = if (remoteTest) "REMOTE-" + testName else testName
+    super.test(name, testTags: _*)(testFun)
+  }
 }
 

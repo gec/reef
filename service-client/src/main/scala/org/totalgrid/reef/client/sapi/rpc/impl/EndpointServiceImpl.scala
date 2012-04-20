@@ -58,15 +58,9 @@ trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
 
   private def alterEndpointEnabled(endpointUuid: ReefUUID, enabled: Boolean): Promise[EndpointConnection] = {
     ops.operation("Couldn't alter endpoint: " + endpointUuid.getValue + " to enabled: " + enabled) { client =>
-      val f1 = client.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build).map(_.one)
+      val proto = EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).setEnabled(enabled).build
 
-      // this tricky little SOB creates another future based on the result of the last one, either by
-      f1.flatMap { r =>
-        r match {
-          case Success(conn) => client.post(EndpointConnection.newBuilder.setId(conn.getId).setEnabled(enabled).build).map(_.one)
-          case Failure(ex) => f1
-        }
-      }
+      client.post(proto).map(_.one)
     }
   }
 
@@ -97,6 +91,12 @@ trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
   override def alterEndpointConnectionState(id: ReefID, state: EndpointConnection.State) = {
     ops.operation("Couldn't alter endpoint connection: " + id + " to : " + state) {
       _.post(EndpointConnection.newBuilder.setId(id).setState(state).build).map(_.one)
+    }
+  }
+
+  override def alterEndpointConnectionStateByEndpoint(endpointUuid: ReefUUID, state: EndpointConnection.State) = {
+    ops.operation("Couldn't alter endpoint: " + endpointUuid + " to : " + state) {
+      _.post(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).setState(state).build).map(_.one)
     }
   }
 

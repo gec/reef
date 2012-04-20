@@ -87,11 +87,7 @@ trait EntityAttributeConversion extends UniqueAndSearchQueryable[AttrProto, Attr
     proto.entity.uuid.value :: proto.entity.name :: proto.attribute.name :: Nil
   }
 
-  def searchQuery(proto: AttrProto, sql: AttrModel) = {
-    List(
-      proto.entity.map(ent => sql.entityId in EntitySearches.searchQueryForId(ent, { _.id })),
-      proto.attribute.name.map(n => sql.attrName === n))
-  }
+  def searchQuery(proto: AttrProto, sql: AttrModel) = Nil
 
   def uniqueQuery(proto: AttrProto, sql: AttrModel) = {
     List(

@@ -34,7 +34,7 @@ object ModelPreparer {
   private def load(modelFile: String, loaderServices: LoaderServices, scadaServices: AllScadaService) {
     if (lastModelFile != modelFile) {
       lastModelFile = modelFile
-      ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
+      ModelDeleter.deleteEverything(loaderServices, false, true, Some(Console.out))
       LoadManager.loadFile(loaderServices, modelFile, false, false, false)
       // wait for all endpoints to be up before continuing
       val result = scadaServices.subscribeToEndpointConnections().await

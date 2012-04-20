@@ -39,7 +39,7 @@ class ServiceActivator extends ExecutorBundleActivator with Logging {
 
     logger.info("Starting Service bundle..")
 
-    val fileEndings = List("amqp", "user", "node", "sql", "services")
+    val fileEndings = List("amqp", "user", "node", "sql", "amqp-server", "services")
     val properties = OsgiConfigReader.load(context, fileEndings.map { "org.totalgrid.reef." + _ })
 
     val brokerConfig = new AmqpSettings(properties)

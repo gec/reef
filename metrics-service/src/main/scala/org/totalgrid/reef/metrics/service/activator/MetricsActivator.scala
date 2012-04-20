@@ -29,5 +29,5 @@ class MetricsActivator extends ConnectedApplicationBundleActivator {
     appManager.addConnectedApplication(new MetricsServiceApplication)
   }
 
-  override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.metrics")
+  override def propertyFiles = super.propertyFiles ::: List("org.totalgrid.reef.amqp-server", "org.totalgrid.reef.metrics")
 }

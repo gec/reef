@@ -173,7 +173,7 @@ trait CalculationConfigConversion
 
   def uniqueQuery(proto: Calculation, sql: CalculationConfig) = {
     List(proto.uuid.value.asParam(sql.entityId === UUID.fromString(_)).unique,
-      proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
+      proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })).unique)
   }
 
   def searchQuery(proto: Calculation, sql: CalculationConfig) =

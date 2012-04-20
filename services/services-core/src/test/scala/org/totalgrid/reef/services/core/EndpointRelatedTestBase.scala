@@ -28,6 +28,8 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import collection.JavaConversions._
 
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+
 import org.totalgrid.reef.measurementstore.{ MeasSink, InMemoryMeasurementStore }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.SyncVar
@@ -44,6 +46,7 @@ import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.client.{ Event, BasicRequestHeaders }
 import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.client.AddressableDestination
+import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.client.settings.UserSettings
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction with Logging {
@@ -120,7 +123,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
 
     val heartbeatCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
-    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
+    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus, false), contextSource)
     val appService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
     val frontendService = new SyncService(new FrontEndProcessorService(modelFac.fep), contextSource)
     val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
@@ -155,6 +158,13 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
 
     def addFep(name: String, protocols: List[String] = List("dnp3", "benchmark")): FrontEndProcessor = {
       addProtocols(addApp(name, List("FEP")), protocols)
+    }
+    def timeoutApplication(appConfig: ApplicationConfig) {
+      processStatusService.put(StatusSnapshot.newBuilder
+        .setProcessId(appConfig.getProcessId)
+        .setInstanceName(appConfig.getInstanceName)
+        .setTime(System.currentTimeMillis + 600000)
+        .setOnline(false).build).expectOne()
     }
 
     def addMeasProc(name: String): ApplicationConfig = {
@@ -247,9 +257,11 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
 
     def checkFeps(feps: List[EndpointConnection], online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
-      //feps.forall { f => f.getState == EndpointConnection.State.COMMS_UP } should equal(true)
-      feps.forall { f => f.hasFrontEnd == frontEndId.isDefined && (frontEndId.isEmpty || frontEndId.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
-      //feps.forall { f => f.hasFrontEnd == hasFrontEnd } should equal(true)
+
+      val fepNames = feps.map { _.frontEnd.appConfig.instanceName }.distinct
+      if (frontEndId.isDefined) fepNames should equal(List(Some(frontEndId.get.getAppConfig.getInstanceName)))
+      else fepNames should equal(List(None))
+
       feps.forall { f => f.hasRouting == hasServiceRouting } should equal(true)
     }
 
