@@ -24,8 +24,9 @@ import org.totalgrid.reef.broker.{ BrokerConnectionFactory, BrokerConnection }
 import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.util.Lifecycle
 import org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultReconnectingFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
+import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
+import org.totalgrid.reef.client.sapi.client.rest.impl.{ DefaultConnection, DefaultReconnectingFactory }
 
 /**
  * handles the connection to an amqp broker, passing the valid and created Connection to the
@@ -89,7 +90,7 @@ class ConnectionCloseManagerEx(broker: BrokerConnectionFactory, exe: Executor)
       }
     }
     val application = tryC("Couldn't start consumer successfully: ") {
-      generator.newConnection(conn, exe)
+      generator.handleNewConnection(new ConnectionWrapper(new DefaultConnection(conn, exe, 5000), exe))
     }
     consumers += generator -> application
 

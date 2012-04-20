@@ -35,7 +35,7 @@ object AllBenchmarksEntryPoint {
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
 
-    val factory = ReefConnectionFactory.defaultFactory(connectionInfo, new ReefServices)
+    val factory = ReefConnectionFactory.buildFactory(connectionInfo, new ReefServices)
 
     try {
 

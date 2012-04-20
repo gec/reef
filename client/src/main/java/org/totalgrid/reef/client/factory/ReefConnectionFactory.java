@@ -38,8 +38,10 @@ import org.totalgrid.reef.client.settings.AmqpSettings;
  */
 public class ReefConnectionFactory implements ConnectionFactory
 {
+    // TODO: Make this a static factory class, put implementations in scala
+
     private final BrokerConnectionFactory brokerConnectionFactory;
-    private final ExecutorService exeService;
+    private final ExecutorService exeService; // if present, we "own" the service and need to terminate it
     private final Executor exe;
     private final ServicesList servicesList;
 
@@ -48,10 +50,26 @@ public class ReefConnectionFactory implements ConnectionFactory
      * @param list services list from service-client package
      * @return
      */
-    public static ConnectionFactory defaultFactory( AmqpSettings settings, ServicesList list )
+    public static ConnectionFactory buildFactory( AmqpSettings settings, ServicesList list )
     {
         BrokerConnectionFactory broker = new QpidBrokerConnectionFactory( settings );
         return new ReefConnectionFactory( broker, list );
+    }
+
+    /**
+     * @param settings Settings for AMQP connection
+     * @param list services list from service-client package
+     * @return
+     *
+     * @deprecated Use buildFactory instead.
+     */
+    @Deprecated
+    public ReefConnectionFactory( AmqpSettings settings, ServicesList list )
+    {
+        this.brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
+        this.exeService = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        this.exe = exeService;
+        this.servicesList = list;
     }
 
     /**

@@ -36,6 +36,8 @@ import org.totalgrid.reef.frontend.{ ProtocolTraitToManagerShim, FepConnectedApp
 import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
 import org.totalgrid.reef.client.Connection
+import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
+import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
@@ -66,10 +68,13 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     measurementStore.disconnect()
   }
 
+  val connectionFactory = new ReefConnectionFactory(brokerConnection, exe, new ReefServices)
+
   // we don't use ConnectionCloseManagerEx because it doesn't start things in the order they were added
   // and starts them all one-by-one rather than all at once
   //val manager = new ConnectionCloseManagerEx(brokerConnection, exe)
-  val manager = new SimpleConnectionProvider(brokerConnection, exe)
+  //val manager = new SimpleConnectionProvider(() => {new ConnectionWrapper(new DefaultConnection(brokerConnection.connect, exe, 5000), exe)})
+  val manager = new SimpleConnectionProvider(connectionFactory.connect)
 
   nodeSettings.foreach { nodeSettings =>
 
@@ -89,8 +94,6 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
 
     applicationManager.addConnectedApplication(new MetricsServiceApplication)
   }
-
-  val connectionFactory = new ReefConnectionFactory(brokerConnection, exe, new ReefServices)
 
   def connection(): Connection = {
     val conn = connectionFactory.connect()

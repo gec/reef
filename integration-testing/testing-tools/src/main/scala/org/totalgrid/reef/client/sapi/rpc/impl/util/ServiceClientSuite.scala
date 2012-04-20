@@ -22,7 +22,6 @@ import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AsyncAllScadaService }
 import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.client.service.list.ReefServices
@@ -64,7 +63,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
 
       val config = new AmqpSettings(props)
 
-      factoryOption = Some(ReefConnectionFactory.defaultFactory(config, new ReefServices))
+      factoryOption = Some(ReefConnectionFactory.buildFactory(config, new ReefServices))
       factoryOption.get.connect()
     } else {
       InMemoryNode.initialize("../../standalone-node.cfg", true, None)

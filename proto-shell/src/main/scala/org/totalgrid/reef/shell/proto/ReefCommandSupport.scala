@@ -64,11 +64,8 @@ object ReefCommandSupport extends Logging {
 
   def attemptLogin(session: CommandSession, amqpSettings: AmqpSettings, userSettings: UserSettings, unexpectedDisconnectCallback: () => Unit) = {
 
-    val factory = ReefConnectionFactory.defaultFactory(amqpSettings, new ReefServices)
+    val factory = ReefConnectionFactory.buildFactory(amqpSettings, new ReefServices)
     val conn = factory.connect()
-    /*
-    val factory = new ReefFactory(amqpSettings, new ReefServices)
-    val conn = factory.connect*/
     conn.addServicesList(new MetricsServiceList)
 
     val cancel = new Cancelable {

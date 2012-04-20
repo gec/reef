@@ -24,7 +24,6 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FunSuite
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.AmqpSettings
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 

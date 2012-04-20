@@ -20,9 +20,6 @@ package org.totalgrid.reef.services.activator
 
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.app.ConnectionConsumer
-import org.totalgrid.reef.broker.BrokerConnection
-import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.{ ServiceContext, ServiceProviders, ServiceBootstrap }
@@ -32,9 +29,7 @@ import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.persistence.squeryl.DbConnection
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
 import org.totalgrid.reef.client.Connection
 
 /**
@@ -49,10 +44,9 @@ trait ServiceModulesFactory {
 object ServiceFactory {
   def create(serviceOptions: ServiceOptions, userSettings: UserSettings, nodeSettings: NodeSettings, modules: ServiceModulesFactory) = {
     new ConnectionConsumer {
-      def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
+      def handleNewConnection(connection: Connection) = {
 
-        val connection: Connection = new ConnectionWrapper(new DefaultConnection(brokerConnection, exe, 5000), exe)
-        connection.addServicesList(new ReefServices)
+        val exe = connection.getInternal.getExecutor
 
         val dbConnection = modules.getDbConnector()
 

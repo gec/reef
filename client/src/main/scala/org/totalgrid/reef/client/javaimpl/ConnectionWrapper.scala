@@ -50,4 +50,10 @@ class ConnectionWrapper(conn: SConnection, exe: Executor) extends Connection {
   def addServicesList(servicesList: ServicesList) { conn.addServicesList(servicesList) }
 
   def getServiceRegistration: ServiceRegistration = new ServiceRegistrationWrapper(conn, exe)
+
+  def getInternal: ConnectionInternal = {
+    new ConnectionInternal {
+      def getExecutor: Executor = exe
+    }
+  }
 }

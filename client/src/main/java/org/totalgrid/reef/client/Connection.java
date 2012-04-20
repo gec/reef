@@ -88,4 +88,6 @@ public interface Connection
     void addServicesList( ServicesList servicesList );
 
     ServiceRegistration getServiceRegistration();
+
+    ConnectionInternal getInternal();
 }

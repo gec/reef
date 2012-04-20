@@ -42,6 +42,8 @@ import java.util.Set;
  */
 public class ReefReconnectingFactory implements ReconnectingConnectionFactory
 {
+    // TODO: Make this a static factory class, put implementations in scala
+
     private class Watcher implements org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
     {
         @Override
@@ -83,10 +85,29 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory
      * @param startDelayMs beginning delay if can't connect first time
      * @param maxDelayMs delay doubles in length upto this maxTime
      */
-    public static ReconnectingConnectionFactory defaultFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
+    public static ReconnectingConnectionFactory buildFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
     {
         BrokerConnectionFactory brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
         return new ReefReconnectingFactory( brokerConnectionFactory, list, startDelayMs, maxDelayMs );
+    }
+
+    /**
+     * @param settings amqp settings
+     * @param list services list from service-client package
+     * @param startDelayMs beginning delay if can't connect first time
+     * @param maxDelayMs delay doubles in length upto this maxTime
+     *
+     * @deprecated Use buildFactory() instead
+     */
+    @Deprecated
+    public ReefReconnectingFactory( AmqpSettings settings, ServicesList list, long startDelayMs, long maxDelayMs )
+    {
+        this.brokerConnectionFactory = new QpidBrokerConnectionFactory( settings );
+        this.exeService = Executors.newResizingThreadPool( new Minutes( 5 ) );
+        this.exe = exeService;
+        servicesList = list;
+        factory = new DefaultReconnectingFactory( brokerConnectionFactory, exe, startDelayMs, maxDelayMs );
+        factory.addConnectionWatcher( watcher );
     }
 
     /**
