@@ -34,6 +34,8 @@ import org.totalgrid.reef.models.{ UserCommandModel, ApplicationSchema, CommandL
 import java.util.{ UUID, Date }
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.models.CommandLockModel._
+import org.totalgrid.reef.authz.VisibilityMap
+import org.squeryl.dsl.ast.LogicalBoolean
 
 class CommandLockServiceModel
     extends SquerylServiceModel[Long, AccessProto, AccessModel]
@@ -212,15 +214,19 @@ trait CommandLockConversion
     entries.map { _.commands.map { _.entityId } }.flatten
   }
 
-  override def resourceId = Descriptors.commandLock.id
+  private def resourceId = Descriptors.commandLock.id
 
-  override def visibilitySelector(entitySelector: Query[UUID], sql: AccessModel) = {
+  private def visibilitySelector(entitySelector: Query[UUID], sql: AccessModel) = {
     sql.id in from(table, ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((acc, join, command) =>
       where(
         (acc.id === join.accessId) and
           (join.commandId === command.id) and
           (command.entityId in entitySelector))
         select (acc.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: AccessModel) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def uniqueQuery(proto: AccessProto, sql: AccessModel) = {

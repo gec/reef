@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.{ ApplicationSchema, Point, Entity }
-import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -36,6 +34,9 @@ import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 import org.totalgrid.reef.models.UUIDConversions._
 import java.util.UUID
+import org.squeryl.Query
+import org.totalgrid.reef.models._
+import org.totalgrid.reef.authz.VisibilityMap
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -145,6 +146,16 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
 
   def relatedEntities(models: List[Point]) = {
     models.map { _.entityId }
+  }
+
+  private def resourceId = Descriptors.command.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: Point) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: Point) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   /**

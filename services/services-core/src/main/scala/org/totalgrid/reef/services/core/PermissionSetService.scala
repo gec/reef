@@ -28,8 +28,9 @@ import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.client.service.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 import org.totalgrid.reef.models._
+import org.totalgrid.reef.authz.VisibilityMap
+import org.totalgrid.reef.client.service.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 
 class PermissionSetService(protected val model: PermissionSetServiceModel)
     extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
@@ -102,6 +103,8 @@ trait PermissionSetConversions
   def relatedEntities(entries: List[PermissionSet]) = {
     Nil
   }
+
+  override def selector(map: VisibilityMap, sql: PermissionSet) = (true === true)
 
   def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("PermissionSet")))

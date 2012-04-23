@@ -97,7 +97,7 @@ object StandardAuthSeedData {
 
     val appCreate = seeder.makePermission(true, List("create"), List("application_config"))
     val appUpdate = seeder.makePermission(true, List("update", "delete", "read"), List("application_config"), List(selfAgent))
-    val statusUpdate = seeder.makePermission(true, List("update"), List("status_snapshot"), List(selfAgent))
+    val statusUpdate = seeder.makePermission(true, List("update", "read"), List("status_snapshot"), List(selfAgent))
     val applicationRole = seeder.addRole("application", List(appCreate, appUpdate, statusUpdate))
 
     val userRole = seeder.addRole("user_role", List(updatePassword, readSelfAgent, readAndDeleteOwnTokens))

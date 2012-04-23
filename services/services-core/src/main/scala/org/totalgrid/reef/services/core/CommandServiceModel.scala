@@ -33,7 +33,9 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
 import java.util.UUID
+import org.totalgrid.reef.authz.VisibilityMap
 import org.totalgrid.reef.models._
+import org.squeryl.dsl.ast.LogicalBoolean
 
 class CommandService(protected val model: CommandServiceModel)
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -62,7 +64,6 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
   val entityModel = new EntityServiceModel
 
-  val table = ApplicationSchema.commands
   def getCommands(names: List[String]): Query[Command] = {
     Command.findByNames(names)
   }
@@ -112,6 +113,8 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
 trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Command] {
 
+  val table = ApplicationSchema.commands
+
   def sortResults(list: List[CommandProto]) = list.sortBy(_.getName)
 
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
@@ -122,10 +125,14 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     entries.map { _.entityId }
   }
 
-  override def resourceId = Descriptors.command.id
+  private def resourceId = Descriptors.command.id
 
-  override def visibilitySelector(entitySelector: Query[UUID], sql: Command) = {
+  private def visibilitySelector(entitySelector: Query[UUID], sql: Command) = {
     sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: Command) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def uniqueQuery(proto: CommandProto, sql: Command) = {
@@ -161,3 +168,5 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     b.build
   }
 }
+
+object CommandServiceConversion extends CommandServiceConversion

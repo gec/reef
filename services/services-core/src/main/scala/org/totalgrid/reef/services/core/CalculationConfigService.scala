@@ -32,6 +32,8 @@ import org.totalgrid.reef.client.sapi.types.Optional._
 import org.totalgrid.reef.models.UUIDConversions._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.squeryl.Query
+import org.totalgrid.reef.authz.VisibilityMap
 
 class CalculationConfigService(protected val model: CalculationConfigServiceModel)
     extends SyncModeledServiceBase[Calculation, CalculationConfig, CalculationConfigServiceModel]
@@ -166,6 +168,20 @@ trait CalculationConfigConversion
 
   def relatedEntities(models: List[CalculationConfig]) = {
     models.map { _.outputPoint.value.entityId }
+  }
+
+  private def resourceId = Descriptors.calculation.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: CalculationConfig) = {
+    sql.id in from(table, ApplicationSchema.points)((over, point) =>
+      where(
+        (over.outputPointId === point.id) and
+          (point.entityId in entitySelector))
+        select (over.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: CalculationConfig) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def getRoutingKey(req: Calculation) = ProtoRoutingKeys.generateRoutingKey(

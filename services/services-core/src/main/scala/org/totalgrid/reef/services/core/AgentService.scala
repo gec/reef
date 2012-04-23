@@ -31,6 +31,9 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.{ SaltedPasswordHelper, ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 
 import org.totalgrid.reef.models.UUIDConversions._
+import org.totalgrid.reef.authz.VisibilityMap
+import org.squeryl.Query
+import java.util.UUID
 
 class AgentService(protected val model: AgentServiceModel)
     extends SyncModeledServiceBase[Agent, AgentModel, AgentServiceModel]
@@ -157,6 +160,16 @@ trait AgentConversions
 
   def relatedEntities(entries: List[AgentModel]) = {
     entries.map { _.entityId }
+  }
+
+  private def resourceId = Descriptors.agent.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: AgentModel) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: AgentModel) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def uniqueQuery(proto: Agent, sql: AgentModel) = {

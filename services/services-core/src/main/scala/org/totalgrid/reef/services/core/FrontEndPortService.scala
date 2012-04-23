@@ -31,6 +31,7 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.models.UUIDConversions._
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._
+import org.totalgrid.reef.authz.VisibilityMap
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -108,6 +109,8 @@ trait FrontEndPortConversion
   def relatedEntities(entries: List[FrontEndPort]) = {
     Nil
   }
+
+  override def selector(map: VisibilityMap, sql: FrontEndPort) = (true === true)
 
   def searchQuery(proto: ChannelProto, sql: FrontEndPort) = {
     Nil

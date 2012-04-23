@@ -134,7 +134,7 @@ class EntityServiceModel
         resultNode.ent
       }
     }
-
+    // TODO: EntityService search needs to use visibilityMap
     // TODO: Make limits non-superficial
     results.take(context.getHeaders.getResultLimit().getOrElse(100))
   }

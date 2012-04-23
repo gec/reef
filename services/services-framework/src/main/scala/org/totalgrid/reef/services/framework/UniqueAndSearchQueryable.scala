@@ -32,6 +32,7 @@ import java.util.UUID
 import org.totalgrid.reef.event.SilentEventSink
 import org.totalgrid.reef.services.authz.NullAuthzService
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.authz.VisibilityMap
 
 class SilentRequestContext extends RequestContext {
   def client = throw new Exception("Asked for client in silent request context")
@@ -102,9 +103,11 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    */
   def searchQuery(proto: MessageType, sql: T): List[Option[SearchTerm]]
 
-  def visibilitySelector(entitySelector: Query[UUID], sql: T): LogicalBoolean = (true === true)
-
-  def resourceId: String = "entity"
+  /**
+   * pre-filter our sql query so we only ever pull "visible" items from the database and therefore get the
+   * correct ordering/limit behaviors. If we can see all of the entries return a tautology (true === true)
+   */
+  def selector(map: VisibilityMap, sql: T): LogicalBoolean
 
   /**
    * helper function for use in complex queries in models :
@@ -181,9 +184,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   }
 
   private def filterForVisiblity(context: RequestContext, sql: T, request: LogicalBoolean): LogicalBoolean = {
-    context.auth.selector(context, resourceId, "read").map { sel =>
-      SquerylConversions.combineExpressions(List(request, visibilitySelector(sel, sql)))
-    }.getOrElse(request)
+    SquerylConversions.combineExpressions(List(request, selector(context.auth.visibilityMap(context), sql)))
   }
 
   private def uniqueParams(context: RequestContext, req: MessageType, sql: T): LogicalBoolean = {

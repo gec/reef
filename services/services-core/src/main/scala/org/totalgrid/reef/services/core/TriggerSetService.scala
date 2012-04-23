@@ -28,6 +28,9 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.authz.VisibilityMap
 
 class TriggerSetService(protected val model: TriggerSetServiceModel)
     extends SyncModeledServiceBase[TriggerProto, TriggerSet, TriggerSetServiceModel]
@@ -55,6 +58,20 @@ trait TriggerSetConversion
 
   def relatedEntities(models: List[TriggerSet]) = {
     models.map { _.point.value.entityId }
+  }
+
+  private def resourceId = Descriptors.triggerSet.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: TriggerSet) = {
+    sql.id in from(table, ApplicationSchema.points)((over, point) =>
+      where(
+        (over.pointId === point.id) and
+          (point.entityId in entitySelector))
+        select (over.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: TriggerSet) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def uniqueQuery(proto: TriggerProto, sql: TriggerSet) = {

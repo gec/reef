@@ -26,7 +26,10 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.models.{ ApplicationNetworkAccess, Agent => AgentModel, ApplicationInstance, ApplicationSchema, ApplicationCapability }
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models.{ Command, ApplicationNetworkAccess, Agent => AgentModel, ApplicationInstance, ApplicationSchema, ApplicationCapability }
+import org.totalgrid.reef.authz.VisibilityMap
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -148,6 +151,19 @@ trait ApplicationConfigConversion
 
   def relatedEntities(entries: List[ApplicationInstance]) = {
     entries.map { _.agent.value.entityId }
+  }
+
+  private def resourceId = Descriptors.applicationConfig.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: ApplicationInstance) = {
+    sql.id in from(table, ApplicationSchema.agents)((app, agent) =>
+      where(
+        (app.agentId === agent.id) and (agent.entityId in entitySelector))
+        select (app.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: ApplicationInstance) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {

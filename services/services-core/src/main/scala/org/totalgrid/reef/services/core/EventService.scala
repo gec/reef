@@ -31,6 +31,9 @@ import org.squeryl.dsl.fsm.{ SelectState }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
+import java.util.UUID
+import org.squeryl.Query
+import org.totalgrid.reef.authz.VisibilityMap
 
 //import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
@@ -162,6 +165,16 @@ trait EventConversion
 
   def relatedEntities(entries: List[EventStore]) = {
     entries.map { _.entityId }.flatten
+  }
+
+  private def resourceId = Descriptors.event.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: EventStore) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: EventStore) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   // Derive a AMQP routing key from a proto. Used by post?

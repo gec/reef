@@ -20,11 +20,8 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework._
 
-import org.totalgrid.reef.models.HeartbeatStatus
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.ProcessStatus._
-
-import org.totalgrid.reef.models.{ ApplicationInstance, ApplicationSchema }
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.exception.BadRequestException
@@ -32,6 +29,9 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 import java.util.UUID
+import org.squeryl.Query
+import org.totalgrid.reef.models.{ OverrideConfig, HeartbeatStatus, ApplicationInstance, ApplicationSchema }
+import org.totalgrid.reef.authz.VisibilityMap
 
 // Implicits
 import org.totalgrid.reef.client.service.proto.OptionalProtos._ // implicit proto properties
@@ -154,6 +154,21 @@ trait ProcessStatusConversion
 
   def relatedEntities(models: List[HeartbeatStatus]) = {
     models.map { _.application.value.agent.value.entityId }
+  }
+
+  private def resourceId = Descriptors.statusSnapshot.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: HeartbeatStatus) = {
+    sql.id in from(table, ApplicationSchema.apps, ApplicationSchema.agents)((hbeat, app, agent) =>
+      where(
+        (hbeat.applicationId === app.id) and
+          (app.agentId === agent.id) and
+          (agent.entityId in entitySelector))
+        select (hbeat.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: HeartbeatStatus) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def searchQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {

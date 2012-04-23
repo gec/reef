@@ -19,13 +19,16 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Processing._
-import org.totalgrid.reef.models.{ UUIDConversions, ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models.{ CommandLockModel, UUIDConversions, ApplicationSchema, OverrideConfig }
+import org.totalgrid.reef.authz.VisibilityMap
 
 //implicits
 import org.totalgrid.reef.services.framework.ProtoSerializer._
@@ -97,6 +100,20 @@ trait OverrideConfigConversion
 
   def relatedEntities(models: List[OverrideConfig]) = {
     models.map { _.point.value.entityId }
+  }
+
+  private def resourceId = Descriptors.measOverride.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: OverrideConfig) = {
+    sql.id in from(table, ApplicationSchema.points)((over, point) =>
+      where(
+        (over.pointId === point.id) and
+          (point.entityId in entitySelector))
+        select (over.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: OverrideConfig) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {

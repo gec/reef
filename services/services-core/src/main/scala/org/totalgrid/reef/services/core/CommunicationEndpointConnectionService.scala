@@ -20,7 +20,6 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection => ConnProto }
 import org.totalgrid.reef.client.service.proto.FEP._
-import org.totalgrid.reef.models.{ ApplicationSchema, FrontEndAssignment, CommunicationEndpoint, ApplicationInstance, MeasProcAssignment }
 
 import org.totalgrid.reef.services.framework._
 
@@ -33,6 +32,11 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess.ExclusiveAccessException
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models._
+import org.totalgrid.reef.authz.VisibilityMap
+import org.squeryl.dsl.ast.LogicalBoolean
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -176,6 +180,20 @@ trait CommunicationEndpointConnectionConversion
 
   def relatedEntities(entries: List[FrontEndAssignment]) = {
     entries.map { _.endpoint.value.map { _.entityId } }.flatten
+  }
+
+  private def resourceId = Descriptors.endpointConnection.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: FrontEndAssignment) = {
+    sql.id in from(table, ApplicationSchema.endpoints)((assign, endpoint) =>
+      where(
+        (assign.endpointId === endpoint.id) and
+          (endpoint.entityId in entitySelector))
+        select (assign.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: FrontEndAssignment): LogicalBoolean = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {

@@ -20,8 +20,6 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
-import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection => ConnProto, Endpoint => CommEndCfgProto, EndpointOwnership, CommChannel }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
@@ -33,6 +31,9 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 import java.util.UUID
+import org.squeryl.Query
+import org.totalgrid.reef.models._
+import org.totalgrid.reef.authz.VisibilityMap
 
 class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
@@ -157,6 +158,16 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
 
   def relatedEntities(entries: List[CommunicationEndpoint]) = {
     entries.map { _.entityId }
+  }
+
+  def resourceId = Descriptors.command.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: CommunicationEndpoint) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: CommunicationEndpoint) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
