@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, MeasurementStore }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
-import org.totalgrid.reef.client.sapi.client.rest.{ SubscriptionHandler, Connection }
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.{ DependenciesRequestContext, RequestContextDependencies, ServiceDependencies }
 import org.mockito.Mockito
@@ -28,11 +28,23 @@ import org.totalgrid.reef.persistence.squeryl.DbConnection
 import org.totalgrid.reef.services.authz.{ NullAuthzService, AuthzService }
 import org.totalgrid.reef.services.framework.{ RequestContext, SilentServiceSubscriptionHandler }
 import org.totalgrid.reef.models.Entity
+import org.totalgrid.reef.test.MockitoStubbedOnly
+import org.totalgrid.reef.client.registration.{ ServiceRegistration, EventPublisher }
+
+object ServiceDependenciesDefaults {
+
+  def mockConnection: Connection = {
+    val conn = Mockito.mock(classOf[Connection], new MockitoStubbedOnly)
+    val servReg = Mockito.mock(classOf[ServiceRegistration])
+    Mockito.doReturn(servReg).when(conn).getServiceRegistration
+    conn
+  }
+}
 
 class ServiceDependenciesDefaults(
   dbConnection: DbConnection,
-  connection: Connection = Mockito.mock(classOf[Connection]),
-  pubs: SubscriptionHandler = new SilentServiceSubscriptionHandler,
+  connection: Connection = ServiceDependenciesDefaults.mockConnection,
+  pubs: EventPublisher = new SilentServiceSubscriptionHandler,
   cm: MeasurementStore = new InMemoryMeasurementStore,
   eventSink: SystemEventSink = new SilentEventSink,
   authToken: String = "",

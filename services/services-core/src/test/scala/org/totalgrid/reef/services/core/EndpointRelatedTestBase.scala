@@ -28,6 +28,8 @@ import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
 import collection.JavaConversions._
 
+import org.totalgrid.reef.client.service.proto.OptionalProtos._
+
 import org.totalgrid.reef.measurementstore.{ MeasSink, InMemoryMeasurementStore }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.SyncVar
@@ -40,10 +42,12 @@ import org.totalgrid.reef.services.{ ServiceDependencies, ServiceBootstrap }
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.client.service.proto.Events
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.client.{ Event, BasicRequestHeaders }
 import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.client.AddressableDestination
+import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.client.settings.UserSettings
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction with Logging {
 
@@ -97,7 +101,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
       val exchange = measBatchService.descriptor.id
       val destination = new AddressableDestination(measProcAssign.getRouting.getServiceRoutingKey)
 
-      amqp.bindService(measBatchService, client, destination, false)
+      amqp.getServiceRegistration.bindService(measBatchService, measBatchService.descriptor, destination, false)
 
       logger.info { "attaching measProcConnection + " + measProcAssign.getRouting + " id " + measProcAssign.getId }
 
@@ -107,19 +111,19 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
 
   class CoordinatorFixture(amqp: Connection, publishEvents: Boolean = true) {
     val startTime = System.currentTimeMillis - 1
-    val client = amqp.login("")
+    val client = amqp.createClient("fakeAuth")
 
     val rtDb = new InMemoryMeasurementStore()
     val eventSink = new CountingEventSink
 
-    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp, rtDb, eventSink)
+    val deps = new ServiceDependenciesDefaults(dbConnection, amqp, amqp.getServiceRegistration.getEventPublisher, rtDb, eventSink)
     val contextSource = new MockRequestContextSource(deps)
 
     val modelFac = new ModelFactories(deps)
 
     val heartbeatCoordinator = new ProcessStatusCoordinator(modelFac.procStatus, contextSource)
 
-    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus), contextSource)
+    val processStatusService = new SyncService(new ProcessStatusService(modelFac.procStatus, false), contextSource)
     val appService = new SyncService(new ApplicationConfigService(modelFac.appConfig), contextSource)
     val frontendService = new SyncService(new FrontEndProcessorService(modelFac.fep), contextSource)
     val portService = new SyncService(new FrontEndPortService(modelFac.fepPort), contextSource)
@@ -155,6 +159,13 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
     def addFep(name: String, protocols: List[String] = List("dnp3", "benchmark")): FrontEndProcessor = {
       addProtocols(addApp(name, List("FEP")), protocols)
     }
+    def timeoutApplication(appConfig: ApplicationConfig) {
+      processStatusService.put(StatusSnapshot.newBuilder
+        .setProcessId(appConfig.getProcessId)
+        .setInstanceName(appConfig.getInstanceName)
+        .setTime(System.currentTimeMillis + 600000)
+        .setOnline(false).build).expectOne()
+    }
 
     def addMeasProc(name: String): ApplicationConfig = {
       addApp(name, List("Processing"))
@@ -165,7 +176,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
         def set(meas: Seq[Measurement]) {
           rtDb.set(meas)
           meas.foreach { m =>
-            amqp.publishEvent(Envelope.SubscriptionEventType.MODIFIED, m, m.getName)
+            amqp.getServiceRegistration.getEventPublisher.publishEvent(Envelope.SubscriptionEventType.MODIFIED, m, m.getName)
           }
         }
       }
@@ -183,8 +194,8 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
       meas
     }
 
-    def addDevice(name: String, pname: String = "test_point"): Endpoint = {
-      val send = Endpoint.newBuilder.setName(name).setProtocol("benchmark")
+    def addDevice(name: String, pname: String = "test_point", autoAssigned: Boolean = true): Endpoint = {
+      val send = Endpoint.newBuilder.setName(name).setProtocol("benchmark").setAutoAssigned(autoAssigned)
       addEndpointPointsAndCommands(send, List(name + "." + pname), List(name + ".test_commands"))
     }
 
@@ -203,13 +214,19 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
         val pointProto = Point.newBuilder().setName(pname).setType(PointType.ANALOG).setUnit("raw").build
         pointService.put(pointProto).expectOne()
       }
-      pointNames.foreach { cname =>
+      commandNames.foreach { cname =>
         owns.addCommands(cname)
         val cmdProto = Command.newBuilder().setName(cname).setDisplayName(cname).setType(CommandType.CONTROL).build
         commandService.put(cmdProto).expectOne()
       }
       ce.setOwnerships(owns)
       commEndpointService.put(ce.build).expectOne()
+    }
+
+    def claimEndpoint(endpointName: String, fepName: Option[String]): EndpointConnection = {
+      val b = EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setName(endpointName))
+      b.setFrontEnd(FrontEndProcessor.newBuilder.setAppConfig(ApplicationConfig.newBuilder.setInstanceName(fepName.getOrElse("-"))))
+      frontEndConnection.put(b.build).expectOne()
     }
 
     def getPoint(device: String): Point =
@@ -240,9 +257,11 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
 
     def checkFeps(feps: List[EndpointConnection], online: Boolean, frontEndId: Option[FrontEndProcessor], hasServiceRouting: Boolean): Unit = {
       feps.forall { f => f.hasEndpoint == true } should equal(true)
-      //feps.forall { f => f.getState == EndpointConnection.State.COMMS_UP } should equal(true)
-      feps.forall { f => f.hasFrontEnd == frontEndId.isDefined && (frontEndId.isEmpty || frontEndId.get.getUuid == f.getFrontEnd.getUuid) } should equal(true)
-      //feps.forall { f => f.hasFrontEnd == hasFrontEnd } should equal(true)
+
+      val fepNames = feps.map { _.frontEnd.appConfig.instanceName }.distinct
+      if (frontEndId.isDefined) fepNames should equal(List(Some(frontEndId.get.getAppConfig.getInstanceName)))
+      else fepNames should equal(List(None))
+
       feps.forall { f => f.hasRouting == hasServiceRouting } should equal(true)
     }
 
@@ -280,7 +299,7 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
     }
 
     def bindCommandHandler(service: SyncServiceBase[UserCommandRequest], key: String) {
-      amqp.bindService(service, client, new AddressableDestination(key), false)
+      amqp.getServiceRegistration.bindService(service, service.descriptor, new AddressableDestination(key), false)
     }
 
     def subscribeMeasurements() = {

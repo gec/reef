@@ -149,7 +149,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
   def uniqueQuery(proto: ConfigProto, sql: ConfigFile) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("ConfigurationFile")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
   }
 
   def isModified(entry: ConfigFile, existing: ConfigFile): Boolean = {

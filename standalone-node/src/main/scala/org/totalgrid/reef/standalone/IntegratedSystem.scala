@@ -24,7 +24,6 @@ import org.totalgrid.reef.services.ServiceBootstrap
 import org.totalgrid.reef.services.settings.ServiceOptions
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.services.activator.{ ServiceFactory, ServiceModulesFactory }
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderServicesList }
@@ -33,8 +32,10 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.models.CoreServicesSchema
 import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnectedApplicationManager }
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
-import org.totalgrid.reef.frontend.FepConnectedApplication
+import org.totalgrid.reef.frontend.{ ProtocolTraitToManagerShim, FepConnectedApplication }
 import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
+import org.totalgrid.reef.client.factory.ReefConnectionFactory
+import org.totalgrid.reef.client.Connection
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
@@ -65,10 +66,13 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     measurementStore.disconnect()
   }
 
+  val connectionFactory = new ReefConnectionFactory(brokerConnection, exe, new ReefServices)
+
   // we don't use ConnectionCloseManagerEx because it doesn't start things in the order they were added
   // and starts them all one-by-one rather than all at once
   //val manager = new ConnectionCloseManagerEx(brokerConnection, exe)
-  val manager = new SimpleConnectionProvider(brokerConnection, exe)
+  //val manager = new SimpleConnectionProvider(() => {new ConnectionWrapper(new DefaultConnection(brokerConnection.connect, exe, 5000), exe)})
+  val manager = new SimpleConnectionProvider(connectionFactory.connect)
 
   nodeSettings.foreach { nodeSettings =>
 
@@ -82,22 +86,22 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
 
     // we need to load the protocol separately for each node
     loadProtocols(properties, exe).foreach { protocol =>
-      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol, userSettings))
+      val manager = new ProtocolTraitToManagerShim(protocol)
+      applicationManager.addConnectedApplication(new FepConnectedApplication(protocol.name, manager, userSettings))
     }
 
     applicationManager.addConnectedApplication(new MetricsServiceApplication)
   }
 
-  def connection() = {
-    val clientConnection = new DefaultConnection(brokerConnection.connect, exe, 15000)
-    clientConnection.addServicesList(new ReefServices)
-    clientConnection.addServicesList(new LoaderServicesList)
-    clientConnection
+  def connection(): Connection = {
+    val conn = connectionFactory.connect()
+    conn.addServicesList(new LoaderServicesList)
+    conn
   }
 
   def loadModel(modelFile: String) {
-    val client = connection().login(userSettings.getUserName, userSettings.getUserPassword).await
-    LoadManager.loadFile(client.getRpcInterface(classOf[LoaderServices]), modelFile, false, false, false, 25)
+    val client = connection().login(userSettings)
+    LoadManager.loadFile(client.getService(classOf[LoaderServices]), modelFile, false, false, false, 25)
   }
 
   def start() = {

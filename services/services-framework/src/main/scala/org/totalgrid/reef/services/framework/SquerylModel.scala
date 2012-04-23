@@ -179,7 +179,8 @@ object SquerylModel {
 
   class AsUnique(o: Option[LogicalBoolean]) {
     def unique: Option[SearchTerm] = {
-      o.map { SearchTerm(_, true) }
+      if (o.eq(WILDCARD)) o.map { SearchTerm(_, false) }
+      else o.map { SearchTerm(_, true) }
     }
     def search: Option[SearchTerm] = {
       o.map { SearchTerm(_, false) }
@@ -223,7 +224,7 @@ object SquerylModel {
       list match {
         case None => None
         case Some(List()) => None
-        case Some(List("*")) => SquerylModel.WILDCARD
+        case Some(List("*")) => WILDCARD
         case Some(l) => Some(f(l))
       }
     }

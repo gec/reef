@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.rpc.impl
+package org.totalgrid.reef.loader.integration
 
 import org.totalgrid.reef.loader.LoadManager
 
@@ -37,7 +37,7 @@ class ModelSetup extends ServiceClientSuite {
     val loaderServices = session.getService(classOf[LoaderServices])
     loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
 
-    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
+    ModelDeleter.deleteEverything(loaderServices, false, true, Some(Console.out))
   }
 
   test("Load mainstreet model") {
@@ -55,7 +55,7 @@ class ModelSetup extends ServiceClientSuite {
     val loaderServices = session.getService(classOf[LoaderServices])
     loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
 
-    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
+    ModelDeleter.deleteEverything(loaderServices, false, true, Some(Console.out))
   }
 
   test("Load integration model") {
@@ -69,7 +69,7 @@ class ModelSetup extends ServiceClientSuite {
     Timing.time("No batching") {
       LoadManager.loadFile(loaderServices, fileName, true, false, false, 0)
     }
-    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
+    ModelDeleter.deleteEverything(loaderServices, false, true, Some(Console.out))
     Timing.time("25 entry batch") {
       LoadManager.loadFile(loaderServices, fileName, false, false, false, 25)
     }

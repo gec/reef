@@ -29,7 +29,6 @@ import org.totalgrid.reef.app.ConnectionCloseManagerEx;
 import org.totalgrid.reef.client.Connection;
 import org.totalgrid.reef.client.exception.ReefServiceException;
 import org.totalgrid.reef.client.exception.ServiceIOException;
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper;
 import org.totalgrid.reef.client.Client;
 import org.totalgrid.reef.client.service.proto.Application;
 import org.totalgrid.reef.client.settings.AmqpSettings;

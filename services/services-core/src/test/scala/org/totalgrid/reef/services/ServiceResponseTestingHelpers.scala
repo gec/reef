@@ -21,7 +21,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.test.BlockingQueue
 
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Event }
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 
@@ -33,25 +33,25 @@ object ServiceResponseTestingHelpers {
   private def makeId(str: String) = ReefID.newBuilder.setValue(str).build
   implicit def makeIdFromString(str: String): ReefID = makeId(str)
 
-  def getEventQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[A], BasicRequestHeaders) = {
+  def getEventQueue[A <: Any](client: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[A], BasicRequestHeaders) = {
 
     val updates = BlockingQueue.empty[A]
-    val env = getSubscriptionQueue(amqp, descriptor, { (evt: Event[A]) => updates.push(evt.value) })
+    val env = getSubscriptionQueue(client, descriptor, { (evt: Event[A]) => updates.push(evt.value) })
 
     (updates, env)
   }
 
-  def getEventQueueWithCode[A <: Any](amqp: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[Event[A]], BasicRequestHeaders) = {
+  def getEventQueueWithCode[A <: Any](client: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[Event[A]], BasicRequestHeaders) = {
     val updates = BlockingQueue.empty[Event[A]]
 
-    val env = getSubscriptionQueue(amqp, descriptor, { (evt: Event[A]) => updates.push(evt) })
+    val env = getSubscriptionQueue(client, descriptor, { (evt: Event[A]) => updates.push(evt) })
 
     (updates, env)
   }
 
-  def getSubscriptionQueue[A <: Any](amqp: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
+  def getSubscriptionQueue[A <: Any](client: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
 
-    val sub = amqp.subscribe(descriptor)
+    val sub = client.getInternal.getBindings.subscribe(descriptor)
 
     sub.start(func)
 

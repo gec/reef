@@ -31,7 +31,7 @@ object StandaloneLoader {
     try {
       // we only connect to amqp if we are not doing a dry run
       def client = {
-        val factory = new ReefConnectionFactory(connectionInfo, new ReefServices)
+        val factory = ReefConnectionFactory.buildFactory(connectionInfo, new ReefServices)
         val conn = factory.connect
 
         val client = conn.login(userSettings)

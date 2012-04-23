@@ -44,7 +44,7 @@ class CommandHandlerBindingService extends ServiceEntryPoint[CommandHandlerBindi
       val commandQueueName = req.getCommandQueue
       val routingKey = connection.serviceRoutingKey.getOrElse(throw new BadRequestException("Endpoint not running"))
 
-      context.client.bindServiceQueue(commandQueueName, routingKey, klass)
+      context.serviceRegistration.bindServiceQueue(commandQueueName, routingKey, klass)
 
       Response(Envelope.Status.OK, req)
     })

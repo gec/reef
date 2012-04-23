@@ -32,6 +32,7 @@ import org.totalgrid.reef.models.UUIDConversions._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
+import java.util.UUID
 
 class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
@@ -62,8 +63,16 @@ class CommEndCfgServiceModel(
     sql
   }
 
-  override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): Tuple2[CommunicationEndpoint, Boolean] = {
-    val (sql, changed) = update(context, createModelEntry(context, proto, existing.entity.value), existing)
+  override def updateFromProto(context: RequestContext, proto: CommEndCfgProto, existing: CommunicationEndpoint): (CommunicationEndpoint, Boolean) = {
+
+    val updates = List[(CommunicationEndpoint => Option[CommunicationEndpoint])](
+      (e) => proto.autoAssigned.map(a => e.copy(autoAssigned = a)),
+      (e) => proto.protocol.map(a => e.copy(protocol = a)),
+      (e) => proto.dataSource.map(a => e.copy(dataSource = a)))
+
+    val newModel: CommunicationEndpoint = updates.foldLeft(existing)((sum, x) => x(sum).getOrElse(sum))
+
+    val (sql, changed) = update(context, newModel, existing)
     setLinkedObjects(context, sql, proto, existing.entity.value)
     coordinator.onEndpointUpdated(context, sql, existing)
     (sql, changed)
@@ -75,8 +84,8 @@ class CommEndCfgServiceModel(
     if (frontEndAssignment.enabled)
       throw new BadRequestException("Cannot delete endpoint that is still enabled, disable before deleting.  Try running karaf command: endpoint:disable *")
 
-    if (frontEndAssignment.state != ConnProto.State.COMMS_DOWN.getNumber)
-      throw new BadRequestException("Cannot delete endpoint that is not in COMMS_DOWN state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
+    if (frontEndAssignment.state == ConnProto.State.COMMS_UP.getNumber)
+      throw new BadRequestException("Cannot delete endpoint that is not in COMMS_UP state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
 
     sql.entity.value // preload lazy entity since it will be deleted by the time event is rendered
     coordinator.onEndpointDeleted(context, sql)
@@ -109,20 +118,25 @@ class CommEndCfgServiceModel(
     configModel.addOwningEntity(context, request.getConfigFilesList.toList, entity)
   }
 
+  private def findOrCreateLinkedPort(context: RequestContext, portProto: CommChannel): UUID = {
+
+    val portEntity = portModel.findRecord(context, portProto) match {
+      case Some(p) => p
+      case None => portModel.createFromProto(context, portProto)
+    }
+    portEntity.entityId
+  }
+
   def createModelEntry(context: RequestContext, proto: CommEndCfgProto, entity: Entity): CommunicationEndpoint = {
 
-    val linkedPort = proto.channel.map { portProto =>
-      portModel.findRecord(context, portProto) match {
-        case Some(p) => p
-        case None => portModel.createFromProto(context, portProto)
-      }
-    }
+    val linkedPort = proto.channel.map(findOrCreateLinkedPort(context, _))
     // TODO: create "using" edge between port and endpoint
 
     new CommunicationEndpoint(
       entity.id,
       proto.getProtocol(),
-      linkedPort.map { _.entityId },
+      proto.autoAssigned.getOrElse(true),
+      linkedPort,
       proto.dataSource.getOrElse(true))
   }
 }
@@ -147,12 +161,14 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
 
   def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("CommunicationEndpoint")))
-    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
   }
 
   def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     List(
-      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(channel, { _.entityId }) })
+      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(channel, { _.entityId }) },
+      proto.protocol.map { sql.protocol === _ },
+      proto.autoAssigned.map { sql.autoAssigned === _ })
   }
 
   def isModified(entry: CommunicationEndpoint, existing: CommunicationEndpoint) = {
@@ -165,6 +181,7 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
     b.setUuid(makeUuid(sql.entity.value))
     b.setName(sql.entity.value.name)
     b.setProtocol(sql.protocol)
+    b.setAutoAssigned(sql.autoAssigned)
     sql.frontEndPortId.foreach(id => b.setChannel(CommChannel.newBuilder().setUuid(makeUuid(id)).build))
 
     sql.configFiles.value.sortBy(_.entityName).foreach(cf => b.addConfigFiles(ConfigFile.newBuilder().setUuid(makeUuid(cf)).build))

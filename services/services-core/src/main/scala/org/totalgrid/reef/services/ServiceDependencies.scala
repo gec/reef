@@ -21,15 +21,16 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.sapi.client.rest.{ Connection, SubscriptionHandler }
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
+import org.totalgrid.reef.client.registration.EventPublisher
 
 class ServiceDependencies(
   dbConnection: DbConnection,
   connection: Connection,
-  pubs: SubscriptionHandler,
+  pubs: EventPublisher,
   val measurementStore: MeasurementStore,
   eventSink: SystemEventSink,
   authToken: String,
@@ -38,7 +39,7 @@ class ServiceDependencies(
 class RequestContextDependencies(
   val dbConnection: DbConnection,
   val connection: Connection,
-  val pubs: SubscriptionHandler,
+  val pubs: EventPublisher,
   val authToken: String,
   val eventSink: SystemEventSink,
   val auth: AuthzService)
@@ -59,11 +60,13 @@ class DependenciesRequestContext(dependencies: RequestContextDependencies) exten
 
   val operationBuffer = new BasicOperationBuffer
 
-  val subHandler = dependencies.pubs
+  val eventPublisher = dependencies.pubs
 
   val eventSink = dependencies.eventSink
 
-  def client = dependencies.connection.login(dependencies.authToken)
+  def client = dependencies.connection.createClient(dependencies.authToken)
+
+  def serviceRegistration = dependencies.connection.getServiceRegistration
 
   val auth = dependencies.auth
 }
@@ -77,8 +80,9 @@ class DependenciesSource(dependencies: RequestContextDependencies) extends Reque
 
 class SilentRequestContext extends RequestContext with HeadersContext {
   def client = throw new Exception("Asked for client in silent request context")
+  def serviceRegistration = throw new Exception("Asked for serviceRegistration in silent request context")
   def eventSink = new SilentEventSink
   def operationBuffer = new BasicOperationBuffer
-  def subHandler = new SilentServiceSubscriptionHandler
+  def eventPublisher = new SilentServiceSubscriptionHandler
   val auth = new NullAuthzService
 }

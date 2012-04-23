@@ -18,8 +18,10 @@
 	<modules>
         <module>testing-tools</module>
 		<module>basic-system-tests</module>
+		<module>endpoint-assignment</module>
 		<module>protocol-dnp3</module>
 		<module>protocol-calculator</module>
+        <module>model-loading</module>
         <module>complex-authz</module>
 	</modules>
 

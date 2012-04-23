@@ -75,14 +75,14 @@ public class ReefConnectionTestBase
             if ( System.getProperty( "remote-test" ) != null )
             {
                 AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../../org.totalgrid.reef.test.cfg" ) );
-                this.factory = new ReefConnectionFactory( s, new ReefServices() );
+                this.factory = ReefConnectionFactory.buildFactory( s, new ReefServices() );
 
             }
             else
             {
 
                 InMemoryNode.initialize( "../../standalone-node.cfg", true );
-                this.factory = InMemoryNode.javaConnectionFactory();
+                this.factory = InMemoryNode.connectionFactory();
             }
         }
         catch ( Exception ex )

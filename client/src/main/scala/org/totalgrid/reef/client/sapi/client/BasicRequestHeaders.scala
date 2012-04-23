@@ -33,6 +33,11 @@ object BasicRequestHeaders {
   def from(list: List[Envelope.RequestHeader]): BasicRequestHeaders =
     list.foldLeft(BasicRequestHeaders.empty)((sum, i) => sum.addHeader(i.getKey, i.getValue))
 
+  def from(map: java.util.Map[String, java.util.List[String]]): BasicRequestHeaders = {
+    import scala.collection.JavaConversions._
+    map.foldLeft(BasicRequestHeaders.empty)((sum, i) => sum.addHeader(i._1, i._2.head))
+  }
+
   val empty = new BasicRequestHeaders
 }
 

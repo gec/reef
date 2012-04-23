@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.standalone
 
-import org.totalgrid.reef.broker.BrokerConnectionFactory
-import net.agileautomata.executor4s.{ Cancelable, Executor }
+import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.app.{ ConnectionConsumer, ConnectionProvider }
+import org.totalgrid.reef.client.Connection
 
-class SimpleConnectionProvider(brokerConnection: BrokerConnectionFactory, exe: Executor) extends ConnectionProvider {
+class SimpleConnectionProvider(connect: () => Connection) extends ConnectionProvider {
   var cancelables = List.empty[Cancelable]
   def addConsumer(consumer: ConnectionConsumer) {
-    cancelables ::= consumer.newConnection(brokerConnection.connect, exe)
+    cancelables ::= consumer.handleNewConnection(connect())
   }
   def removeConsumer(consumer: ConnectionConsumer) {}
 

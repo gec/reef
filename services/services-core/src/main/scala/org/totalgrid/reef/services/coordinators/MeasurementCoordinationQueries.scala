@@ -111,5 +111,3 @@ trait MeasurementCoordinationQueries {
   }
 
 }
-
-object MeasurementCoordinationQueries extends MeasurementCoordinationQueries

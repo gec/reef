@@ -34,6 +34,7 @@ import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.{ Client, SubscriptionResult }
 
+// TODO: Move FrontEndProviderServices functions into service-client ProtocolAdapaterServices
 trait FrontEndProviderServices extends AllScadaService {
 
   def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[EndpointConnection], EndpointConnection]]

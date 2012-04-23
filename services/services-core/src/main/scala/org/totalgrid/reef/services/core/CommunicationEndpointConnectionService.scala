@@ -91,8 +91,12 @@ class CommunicationEndpointConnectionServiceModel
     // changing enabled flag has precedence, then connection state changes
     val currentlyEnabled = existing.enabled
     val currentState = existing.state
+    val currentFep = existing.applicationId
 
-    def isSame(entry: FrontEndAssignment) = entry.enabled == currentlyEnabled && entry.state == currentState
+    def loadFepId(fep: FrontEndProcessor): Option[Long] = FrontEndProcessorConversion.findRecord(context, fep).map { _.id }
+    lazy val requestedFepId = loadFepId(proto.getFrontEnd)
+
+    def isSame(entry: FrontEndAssignment) = entry.enabled == currentlyEnabled && entry.state == currentState && entry.applicationId == currentFep
 
     if (proto.hasEnabled && proto.getEnabled != currentlyEnabled) {
       context.auth.authorize(context, "endpoint_enabled", "update", List(endpoint.entityId))
@@ -115,6 +119,12 @@ class CommunicationEndpointConnectionServiceModel
           toBeUpdated.copy(offlineTime = Some(System.currentTimeMillis), onlineTime = None, state = newState)
         }
       }
+    } else if (proto.hasFrontEnd && currentFep != requestedFepId) {
+      context.auth.authorize(context, "endpoint_connection", "update", List(endpoint.entityId))
+      if (endpoint.autoAssigned) throw new BadRequestException("Cannot claim endpoint that is autoAssigned")
+      exclusiveUpdate(context, existing, isSame _) { toBeUpdated =>
+        toBeUpdated.copy(applicationId = requestedFepId)
+      }
     } else {
       // If we don't do an auth check AT ALL, this is a sneaky way to read without permissions
       // TODO: magic string
@@ -128,6 +138,25 @@ class CommunicationEndpointConnectionServiceModel
   override def postUpdate(context: RequestContext, sql: FrontEndAssignment, existing: FrontEndAssignment) {
     logger.info("EndpointConnection UPDATED: " + sql.endpoint.value.map { _.entityName } + " id " + existing.id + " e: " + sql.enabled + " s: " + ConnProto.State.valueOf(sql.state) + " fep: " + sql.applicationId)
     coordinator.onFepConnectionChange(context, sql, existing)
+  }
+
+  // don't ever actually remove the assignments, keep them around as an audit log
+  override def delete(context: RequestContext, entry: FrontEndAssignment) = {
+
+    // downside of using case classes and copy constructor is id is not copied
+    val deleted = entry.copy(active = false)
+    deleted.id = entry.id
+
+    table.update(deleted)
+
+    onDeleted(context, deleted)
+    postDelete(context, deleted)
+    deleted
+  }
+
+  def deleteAllAssignmentsForEndpoint(sql: CommunicationEndpoint) {
+    // when we delete the endpoint we need to delete all of the assignments it ever had
+    table.deleteWhere(_.endpointId === sql.id)
   }
 }
 
@@ -158,6 +187,8 @@ trait CommunicationEndpointConnectionConversion
 
   def uniqueQuery(proto: ConnProto, sql: FrontEndAssignment) = {
     List(
+      // TODO: after 0.5.0 we can make this a searchable parameter and expose the history to clients
+      Some(sql.active === true),
       proto.id.value.asParam(sql.id === _.toLong).unique,
       proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(endpoint, { _.id })))
   }
@@ -169,7 +200,9 @@ trait CommunicationEndpointConnectionConversion
       entry.assignedTime != existing.assignedTime ||
       entry.offlineTime != existing.offlineTime ||
       entry.onlineTime != existing.onlineTime ||
-      entry.enabled != existing.enabled
+      entry.enabled != existing.enabled ||
+      entry.applicationId != existing.applicationId ||
+      entry.active != existing.active
   }
 
   def convertToProto(entry: FrontEndAssignment): ConnProto = {
@@ -181,6 +214,7 @@ trait CommunicationEndpointConnectionConversion
     entry.serviceRoutingKey.foreach(k => b.setRouting(CommEndpointRouting.newBuilder.setServiceRoutingKey(k)))
     b.setState(ConnProto.State.valueOf(entry.state))
     b.setEnabled(entry.enabled)
+    b.setActive(entry.active)
 
     // get the most recent change
     val times = entry.onlineTime :: entry.offlineTime :: entry.assignedTime :: Nil
@@ -196,6 +230,7 @@ trait CommunicationEndpointConnectionConversion
       .setUuid(makeUuid(endpoint.entity.value))
       .setName(endpoint.entity.value.name)
       .setProtocol(endpoint.protocol)
+      .setAutoAssigned(endpoint.autoAssigned)
 
     endpoint.port.value.foreach(p => b.setChannel(FrontEndPortConversion.convertToProto(p)))
 

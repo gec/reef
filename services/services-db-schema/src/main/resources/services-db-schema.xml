@@ -907,4 +907,18 @@
             </column>
         </addColumn>
     </changeSet>
+    <changeSet author="incremental" context="original" id="1334669398697-1">
+        <addColumn tableName="CommunicationEndpoint">
+            <column name="autoAssigned" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1334779573500-1">
+        <addColumn tableName="FrontEndAssignment">
+            <column name="active" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

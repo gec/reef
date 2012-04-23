@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 128 of 207 calls ported
+ * 131 of 211 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -308,6 +308,19 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a0 = args.getUuid("endpointUuid")
     (c) => c.enableEndpointConnection(a0)
   })
+  single("setEndpointAutoAssigned", classOf[org.totalgrid.reef.client.service.proto.FEP.Endpoint], args => {
+    val a0 = args.getUuid("endpointUuid")
+    val a1 = args.getBoolean("autoAssigned")
+    (c) => c.setEndpointAutoAssigned(a0, a1)
+  })
+  single("setEndpointConnectionAssignedProtocolAdapter", classOf[org.totalgrid.reef.client.service.proto.FEP.EndpointConnection], args => {
+    val a0 = args.getUuid("endpointUuid")
+    val a1 = args.getUuid("applicationUuid")
+    (c) => c.setEndpointConnectionAssignedProtocolAdapter(a0, a1)
+  })
+  multi("getProtocolAdapters", classOf[org.totalgrid.reef.client.service.proto.FEP.FrontEndProcessor], args => { (c) =>
+    c.getProtocolAdapters()
+  })
   multi("getEndpointConnections", classOf[org.totalgrid.reef.client.service.proto.FEP.EndpointConnection], args => { (c) =>
     c.getEndpointConnections()
   })
@@ -323,6 +336,7 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     (c) => c.getEndpointConnectionByEndpointName(a0)
   })
   // Can't encode alterEndpointConnectionState : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
+  // Can't encode alterEndpointConnectionStateByEndpoint : Can't encode type: org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
   ////////////////////
   // EntityService
   ////////////////////

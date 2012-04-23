@@ -102,6 +102,7 @@
  *     optional string            name         = 2;
  *     optional org.totalgrid.reef.client.service.proto.Model.Entity entity = 7;
  *     optional string            protocol     = 3;
+ *     optional bool              autoAssigned = 9;
  *     optional CommChannel       channel      = 4;
  *     optional EndpointOwnership ownerships   = 6;
  *     repeated org.totalgrid.reef.client.service.proto.Model.ConfigFile        config_files = 5;
@@ -125,6 +126,9 @@
  *     optional CommEndpointRouting    routing             = 5;
  *     optional uint64                 last_update         = 7;
  *     optional bool                   enabled             = 8;
+ *     // only one connection is active for each Endpoint at a time, when an endpoint is updated
+ *     // a new connection object is created and the old object is marked active = false
+ *     optional bool                   active              = 9;
  * }
  * 
  * /*

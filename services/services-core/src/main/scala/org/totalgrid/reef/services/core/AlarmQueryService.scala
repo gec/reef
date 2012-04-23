@@ -83,7 +83,7 @@ class AlarmQueryService
     context.getHeaders.subQueue.foreach { subQueue =>
       val keys = getSubscribeKeys(req)
       // have to pass an alarm object so the binding is done to the correct queue
-      keys.foreach(context.subHandler.bindQueueByClass(subQueue, _, classOf[Alarm]))
+      keys.foreach(context.eventPublisher.bindQueueByClass(subQueue, _, classOf[Alarm]))
     }
   }
 

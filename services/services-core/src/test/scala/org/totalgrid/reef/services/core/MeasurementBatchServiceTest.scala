@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.ConnectionFixture
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.scalatest.junit.JUnitRunner

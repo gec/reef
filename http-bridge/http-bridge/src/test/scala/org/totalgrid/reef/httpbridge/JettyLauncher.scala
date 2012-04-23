@@ -40,13 +40,13 @@ object JettyLauncher {
     val defaultUser = DefaultUserConfiguration.getDefaultUser(properties)
 
     val defaultAuthToken = defaultUser.map { user =>
-      InMemoryNode.javaConnection.login(new UserSettings(user.getUserName, user.getUserPassword)).getHeaders.getAuthToken()
+      InMemoryNode.connection.login(new UserSettings(user.getUserName, user.getUserPassword)).getHeaders.getAuthToken()
     }
 
     val managedConnection = new ManagedConnection {
-      def getAuthenticatedClient(authToken: String) = InMemoryNode.javaConnection.createClient(authToken)
+      def getAuthenticatedClient(authToken: String) = InMemoryNode.connection.createClient(authToken)
       def getNewAuthToken(userName: String, userPassword: String) =
-        InMemoryNode.javaConnection.login(new UserSettings(userName, userPassword)).getHeaders.getAuthToken()
+        InMemoryNode.connection.login(new UserSettings(userName, userPassword)).getHeaders.getAuthToken()
 
       def getSharedBridgeAuthToken() = defaultAuthToken
     }

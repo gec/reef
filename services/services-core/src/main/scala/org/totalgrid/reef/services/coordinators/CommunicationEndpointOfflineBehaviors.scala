@@ -51,7 +51,7 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
     measurementStore.set(toPublish.map { _._2 })
     context.operationBuffer.queueLast {
       toPublish.foreach { e =>
-        context.subHandler.publishEvent(e._1, e._2, e._2.getName)
+        context.eventPublisher.publishEvent(e._1, e._2, e._2.getName)
       }
     }
   }
@@ -61,7 +61,7 @@ trait CommunicationEndpointOfflineBehaviors extends Logging {
     measurementStore.remove(points.map { _.entityName })
     context.operationBuffer.queueLast {
       measurements.foreach { meas =>
-        context.subHandler.publishEvent(REMOVED, meas._2, meas._2.getName)
+        context.eventPublisher.publishEvent(REMOVED, meas._2, meas._2.getName)
       }
     }
   }

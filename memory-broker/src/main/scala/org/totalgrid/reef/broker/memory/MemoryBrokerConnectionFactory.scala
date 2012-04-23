@@ -37,7 +37,7 @@ final class MemoryBrokerConnectionFactory(exe: Executor) extends BrokerConnectio
     updating = false
   }
 
-  def getState: MemoryBrokerState.State = state
+  //def getState: MemoryBrokerState.State = state
 
   def connect = new MemoryBrokerConnection(this, exe)
 

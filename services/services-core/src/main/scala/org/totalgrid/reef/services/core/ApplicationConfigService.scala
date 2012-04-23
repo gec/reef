@@ -118,7 +118,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
     procStatusModel.notifyModels(context, sql, false, removedCaps)
 
     val time = if (req.hasHeartbeatCfg) req.getHeartbeatCfg.getPeriodMs else 60000
-    procStatusModel.addApplication(context, sql, time, req.getProcessId, newCaps)
+    procStatusModel.addApplication(context, sql, time, req.getProcessId, req.getCapabilitesList.toList)
 
     (sql, updated)
   }
@@ -129,6 +129,7 @@ class ApplicationConfigServiceModel(procStatusModel: ProcessStatusServiceModel)
   }
 
   override def postDelete(context: RequestContext, sql: ApplicationInstance) {
+    ApplicationSchema.protocols.deleteWhere(c => c.applicationId === sql.id)
     ApplicationSchema.capabilities.deleteWhere(c => c.applicationId === sql.id)
     entityModel.delete(context, sql.entity.value)
   }
@@ -162,7 +163,7 @@ trait ApplicationConfigConversion
 
   def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.instanceName, proto.instanceName.map(x => List("Application")))
-    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {

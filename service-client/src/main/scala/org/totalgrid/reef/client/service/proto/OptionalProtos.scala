@@ -306,6 +306,7 @@ object OptionalProtos {
     val name = optionally(_.hasName, _.getName)
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
     val protocol = optionally(_.hasProtocol, _.getProtocol)
+    val autoAssigned = optionally(_.hasAutoAssigned, _.getAutoAssigned)
     val channel = new OptFEPCommChannel(optionally(_.hasChannel, _.getChannel))
     val ownerships = new OptFEPEndpointOwnership(optionally(_.hasOwnerships, _.getOwnerships))
     val configFiles = optionally(_.getConfigFilesList.toList.map { i => new OptModelConfigFile(Some(i)) })
@@ -320,6 +321,7 @@ object OptionalProtos {
     val routing = new OptFEPCommEndpointRouting(optionally(_.hasRouting, _.getRouting))
     val lastUpdate = optionally(_.hasLastUpdate, _.getLastUpdate)
     val enabled = optionally(_.hasEnabled, _.getEnabled)
+    val active = optionally(_.hasActive, _.getActive)
   }
   implicit def proto2OptFEPCommandHandlerBinding(a: org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding): OptFEPCommandHandlerBinding = new OptFEPCommandHandlerBinding(Some(a))
   class OptFEPCommandHandlerBinding(real: Option[org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding]) extends OptionalStruct(real) {

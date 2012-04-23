@@ -18,10 +18,10 @@
  */
 package org.totalgrid.reef.services.framework
 
-import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
+import org.totalgrid.reef.client.registration.EventPublisher
 
-class SilentServiceSubscriptionHandler extends SubscriptionHandler {
+class SilentServiceSubscriptionHandler extends EventPublisher {
 
   def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {}
 

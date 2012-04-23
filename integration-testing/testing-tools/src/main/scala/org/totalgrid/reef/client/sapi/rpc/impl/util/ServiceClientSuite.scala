@@ -18,20 +18,18 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl.util
 
-import org.scalatest.{ FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.{ Tag, FunSuite, BeforeAndAfterAll, BeforeAndAfterEach }
 import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AsyncAllScadaService }
 import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
 import org.scalatest.matchers.ShouldMatchers
-import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.standalone.InMemoryNode
 import org.totalgrid.reef.loader.commons.LoaderServicesList
-import org.totalgrid.reef.client.{ Connection, Client }
 import org.totalgrid.reef.client.sapi.client.SubscriptionCanceler
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
+import org.totalgrid.reef.client._
 
 class SubscriptionEventAcceptorShim[A](fun: SubscriptionEvent[A] => Unit) extends SubscriptionEventAcceptor[A] {
   def onEvent(event: SubscriptionEvent[A]) = fun(event)
@@ -43,7 +41,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
   def modelFile: String = "../../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
 
   // we use options so we can avoid starting the factories until the test is actually run
-  private var factoryOption = Option.empty[ReefConnectionFactory]
+  private var factoryOption = Option.empty[ConnectionFactory]
   private var connectionOption = Option.empty[Connection]
   private var sessionOption = Option.empty[Client]
   private var clientOption = Option.empty[AllScadaService]
@@ -56,20 +54,22 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
   def async = asyncClientOption.get
   def connection = connectionOption.get
 
+  private lazy val remoteTest = System.getProperty("remote-test") != null
+
   override def beforeAll() {
     // gets default connection settings or overrides using system properties
     val props = PropertyReader.readFromFile("../../org.totalgrid.reef.test.cfg")
     val userConfig = new UserSettings(props)
 
-    val conn: Connection = if (System.getProperty("remote-test") != null) {
+    val conn: Connection = if (remoteTest) {
 
       val config = new AmqpSettings(props)
 
-      factoryOption = Some(new ReefConnectionFactory(config, new ReefServices))
+      factoryOption = Some(ReefConnectionFactory.buildFactory(config, new ReefServices))
       factoryOption.get.connect()
     } else {
       InMemoryNode.initialize("../../standalone-node.cfg", true, None)
-      InMemoryNode.javaConnection
+      InMemoryNode.connection
     }
     conn.addServicesList(new LoaderServicesList)
     conn.addServicesList(new ReefServices)
@@ -93,5 +93,11 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
     factoryOption.foreach(_.terminate())
   }
 
+  // we preface all of the tests with the REMOTE name so we can easily tell if it failed
+  // during the first run
+  override protected def test(testName: String, testTags: Tag*)(testFun: => Unit) {
+    val name = if (remoteTest) "REMOTE-" + testName else testName
+    super.test(name, testTags: _*)(testFun)
+  }
 }
 

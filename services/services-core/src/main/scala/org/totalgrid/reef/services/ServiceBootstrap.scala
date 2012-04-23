@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.service.proto.Auth.{ AuthToken, Agent }
 
 import org.totalgrid.reef.services.framework.{ RequestContext, RequestContextSource }
 import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
-import org.totalgrid.reef.client.sapi.client.rest.Connection
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.ApplicationConfigBuilders
 import org.totalgrid.reef.services.core.{ ModelFactories, ApplicationConfigService, AuthTokenService, FrontEndProcessorService }
 import org.totalgrid.reef.client.service.list.ReefServicesList
@@ -45,13 +45,13 @@ object ServiceBootstrap {
   }
 
   /**
-   * when we are starting up the system we need to define all of the event exechanges, we do that
+   * when we are starting up the system we need to define all of the event exchanges, we do that
    * during bootstrap so we correctly publish the "someone logged on" events
    */
   def defineEventExchanges(connection: Connection) {
     import scala.collection.JavaConversions._
     ReefServicesList.getServicesList.toList.foreach { serviceInfo =>
-      connection.declareEventExchange(serviceInfo.getDescriptor.getKlass)
+      connection.getServiceRegistration.declareEventExchange(serviceInfo.getDescriptor.getKlass)
     }
   }
 
@@ -61,7 +61,7 @@ object ServiceBootstrap {
    * repeating that setup logic somewhere else
    */
   def bootstrapComponents(dbConnection: DbConnection, connection: Connection, systemUser: UserSettings, appSettings: NodeSettings) = {
-    val dependencies = new RequestContextDependencies(dbConnection, connection, connection, "", new SilentEventSink, new SqlAuthzService())
+    val dependencies = new RequestContextDependencies(dbConnection, connection, connection.getServiceRegistration.getEventPublisher, "", new SilentEventSink, new SqlAuthzService())
 
     // define the events exchanges before "logging in" which will generate some events
     defineEventExchanges(connection)

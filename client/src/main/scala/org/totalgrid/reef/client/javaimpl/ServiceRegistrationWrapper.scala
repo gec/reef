@@ -30,6 +30,15 @@ class ServiceRegistrationWrapper(conn: SConnection, exe: Executor) extends Servi
 
   def bindService[A](service: Service, desc: TypeDescriptor[A], destination: Routable, competing: Boolean): SubscriptionBinding = {
     val srv = new ServiceWrapper(service, desc)
+    // TODO: this exe should be a strand I believe
     conn.bindService(srv, exe, destination, competing)
+  }
+
+  def bindServiceQueue[T](subscriptionQueue: String, key: String, klass: Class[T]) {
+    conn.bindServiceQueue(subscriptionQueue, key, klass)
+  }
+
+  def declareEventExchange(klass: Class[_]) {
+    conn.declareEventExchange(klass)
   }
 }

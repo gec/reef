@@ -18,9 +18,8 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl.util
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.{ Client => JClient }
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.loader.commons.{ ModelDeleter, LoaderServices }
 import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
@@ -29,20 +28,13 @@ object ModelPreparer {
   var lastModelFile = ""
 
   def load(modelFile: String, client: Client) {
-    val loaderServices = client.getRpcInterface(classOf[LoaderServices])
-    val scadaService = client.getRpcInterface(classOf[AllScadaService])
-    load(modelFile, loaderServices, scadaService)
-
-  }
-
-  def load(modelFile: String, client: JClient) {
     load(modelFile, client.getService(classOf[LoaderServices]), client.getService(classOf[AllScadaService]))
   }
 
   private def load(modelFile: String, loaderServices: LoaderServices, scadaServices: AllScadaService) {
     if (lastModelFile != modelFile) {
       lastModelFile = modelFile
-      ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out))
+      ModelDeleter.deleteEverything(loaderServices, false, true, Some(Console.out))
       LoadManager.loadFile(loaderServices, modelFile, false, false, false)
       // wait for all endpoints to be up before continuing
       val result = scadaServices.subscribeToEndpointConnections().await
