@@ -139,6 +139,10 @@ object SubscriptionTools {
 
     def selector(permissions: => List[Permission], service: String, action: String): Option[Query[UUID]] = None
 
+    def visibilityMap(permissions: => List[Permission]) = VisibilityMap.empty
+
+    def visibilityMap(context: RequestContext) = VisibilityMap.empty
+
     def selector(context: RequestContext, service: String, action: String) = None
 
     def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {

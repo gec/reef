@@ -20,6 +20,7 @@ package org.totalgrid.reef.authz
 
 import java.util.UUID
 import org.squeryl.Query
+import org.squeryl.dsl.ast.LogicalBoolean
 
 sealed trait FilteredResult[A] {
   def result: A
@@ -40,4 +41,18 @@ trait AuthzFilteringService {
   def filter[A](permissions: => List[Permission], service: String, action: String, payloads: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]]
 
   def selector(permissions: => List[Permission], service: String, action: String): Option[Query[UUID]]
+
+  def visibilityMap(permissions: => List[Permission]): VisibilityMap
+}
+
+trait VisibilityMap {
+
+  def selector(resourceId: String)(fun: Query[UUID] => LogicalBoolean): LogicalBoolean
+}
+
+object VisibilityMap {
+  def empty = new VisibilityMap {
+    import org.squeryl.PrimitiveTypeMode._
+    def selector(resourceId: String)(fun: (Query[UUID]) => LogicalBoolean) = (true === true)
+  }
 }
