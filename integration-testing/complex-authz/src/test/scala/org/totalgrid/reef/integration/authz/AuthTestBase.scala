@@ -20,9 +20,9 @@ package org.totalgrid.reef.integration.authz
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.client.sapi.sync.AllScadaService
-import org.totalgrid.reef.client.exception.UnauthorizedException
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.UserSettings
+import org.totalgrid.reef.client.exception.{ ExpectationException, BadRequestException, UnauthorizedException }
 
 class AuthTestBase extends ServiceClientSuite {
 
@@ -61,8 +61,13 @@ class AuthTestBase extends ServiceClientSuite {
       f
       fail(failureMessage)
     } catch {
-      case a: UnauthorizedException =>
       // were expecting the auth error, let others bubble
+      case a: UnauthorizedException =>
+      // if the record we cared about has been filtered off then we may get a different error than an explict
+      // unauthorized exception
+      case b: BadRequestException =>
+      case c: ExpectationException =>
+
     }
   }
 }
