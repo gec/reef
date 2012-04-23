@@ -40,8 +40,6 @@ trait AuthzService {
 
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]): Unit
 
-  def selector(context: RequestContext, service: String, action: String): Option[Query[UUID]]
-
   def visibilityMap(context: RequestContext): VisibilityMap
 
   // load up the permissions sets
@@ -53,7 +51,6 @@ class NullAuthzService extends AuthzService {
     payload.map(Allowed(_, new Permission(true, List(), List(), new WildcardMatcher)))
   }
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {}
-  def selector(context: RequestContext, service: String, action: String): Option[Query[UUID]] = None
   def visibilityMap(context: RequestContext) = VisibilityMap.empty
   def prepare(context: RequestContext) {}
 }
@@ -115,13 +112,8 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
     }
   }
 
-  def selector(context: RequestContext, service: String, action: String) = {
-    // TODO: this is optional only to support bootstrap code
-    val permissions = context.get[List[Permission]](AuthzService.permissions)
-    permissions.flatMap { filteringService.selector(_, service, action) }
-  }
-
   def visibilityMap(context: RequestContext) = {
+    // TODO: this is optional only to support bootstrap code
     val permissions = context.get[List[Permission]](AuthzService.permissions)
     permissions.map { filteringService.visibilityMap(_) }.getOrElse(VisibilityMap.empty)
   }

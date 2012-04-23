@@ -62,7 +62,7 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
     results
   }
 
-  def selector(permissions: => List[Permission], service: String, action: String): Option[Query[UUID]] = {
+  private def selector(permissions: => List[Permission], service: String, action: String): Option[Query[UUID]] = {
     // first filter down to permissions that have right service+action
     val applicablePermissions = permissions.filter(_.applicable(service, action))
 

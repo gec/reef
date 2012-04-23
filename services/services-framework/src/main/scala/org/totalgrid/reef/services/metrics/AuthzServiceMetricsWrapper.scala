@@ -45,9 +45,6 @@ class AuthzServiceMetricsWrapper(authz: AuthzService, source: MetricsHookSource)
     }
   }
 
-  override def selector(context: RequestContext, componentId: String, action: String) = {
-    authz.selector(context, componentId, action)
-  }
   def visibilityMap(context: RequestContext) = authz.visibilityMap(context)
 
   override def prepare(context: RequestContext) = {
