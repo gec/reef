@@ -22,8 +22,8 @@ import com.weiglewilczek.slf4s.Logging
 import java.util.UUID
 import org.squeryl.Query
 import scala.Predef._
-import org.squeryl.dsl.ast.{RightHandSideOfIn, BinaryOperatorNodeLogicalBoolean, ExpressionNode, LogicalBoolean}
-import org.totalgrid.reef.models.{ApplicationSchema, SquerylConversions}
+import org.squeryl.dsl.ast.{ RightHandSideOfIn, BinaryOperatorNodeLogicalBoolean, ExpressionNode, LogicalBoolean }
+import org.totalgrid.reef.models.{ ApplicationSchema, SquerylConversions }
 
 object AuthzFilter extends AuthzFiltering(ResourceSpecificFilter)
 
@@ -66,7 +66,7 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
     // first filter down to permissions that have right service+action
     val applicablePermissions = permissions.filter(_.applicable(service, action))
 
-    println(service + ":" + action + " " + permissions + " -> " + applicablePermissions)
+    //println(service + ":" + action + " " + permissions + " -> " + applicablePermissions)
 
     import org.squeryl.PrimitiveTypeMode._
 
@@ -79,14 +79,12 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
           case false => None
         }
       } else {
-        val l: List[Option[Query[UUID]]] = applicablePermissions.map { _.selector() }
-
         applicablePermissions.find(_.selector() != None) match {
           case Some(perm) =>
 
-            def makeSelector(uuid : ExpressionNode) : LogicalBoolean = {
-              SquerylConversions.combineExpressions(applicablePermissions.map{perm =>
-                val x : Option[LogicalBoolean] = (perm.selector(), perm.allow) match {
+            def makeSelector(uuid: ExpressionNode): LogicalBoolean = {
+              SquerylConversions.combineExpressions(applicablePermissions.map { perm =>
+                val x: Option[LogicalBoolean] = (perm.selector(), perm.allow) match {
                   case (Some(query), true) => Some(new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(query), "in", true))
                   case (Some(query), false) => Some(new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(query), "not in", true))
                   case _ => None
@@ -95,10 +93,7 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
               }.flatten)
             }
 
-            val q = from(ApplicationSchema.entities)(sql => where(makeSelector(sql.id)) select(sql.id))
-
-            println(q)
-
+            val q = from(ApplicationSchema.entities)(sql => where(makeSelector(sql.id)) select (sql.id))
             Some(q)
           case None => None
         }
