@@ -29,7 +29,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.{ SquerylConversions, ApplicationSchema, EventStore, EntityQuery }
+import org.totalgrid.reef.models.{ SquerylConversions, ApplicationSchema, EventStore, EntityTreeQuery }
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -53,7 +53,7 @@ object EventQueryService {
       select.getSubsystemList.asParam { row.subsystem in _ },
       severityOptions.asParam { row.severity in _ },
       select.getUserIdList.asParam { row.userId in _ },
-      select.getEntityList.asParam { row.entityId in _.map(EntityQuery.idsFromProtoQuery(_)).flatten.distinct },
+      select.getEntityList.asParam { row.entityId in _.map(EntityTreeQuery.idsFromProtoQuery(_)).flatten.distinct },
       select.timeFrom.asParam(row.time gte _),
       select.timeTo.asParam(row.time lte _))
     //select.uuid.uuidAfter.asParam(row.id gt _.toLong))
@@ -73,7 +73,7 @@ object EventQueryService {
         severityOptions ::
         routingOption(select.getSubsystemList) { s => s } ::
         routingOption(select.getUserIdList) { s => s } ::
-        routingOption(select.getEntityList) { _.map(EntityQuery.idsFromProtoQuery(_)).flatten.distinct.map { _.toString } } :: Nil
+        routingOption(select.getEntityList) { _.map(EntityTreeQuery.idsFromProtoQuery(_)).flatten.distinct.map { _.toString } } :: Nil
 
     val multipleTypesSubscription = routingKeyParts.filter(_.size > 1)
     if (multipleTypesSubscription.size > 1) {

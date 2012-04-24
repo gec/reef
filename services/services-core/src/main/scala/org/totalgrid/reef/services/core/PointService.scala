@@ -174,7 +174,7 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Point")))
     List(
       eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique,
-      proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Point")))
+      proto.entity.map(ent => sql.entityId in EntityTreeQuery.typeIdsFromProtoQuery(ent, "Point")))
   }
 
   override def searchQuery(context: RequestContext, proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),

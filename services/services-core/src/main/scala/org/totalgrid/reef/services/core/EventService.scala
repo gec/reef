@@ -19,8 +19,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Events._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, EventConfigStore, Entity }
-import org.totalgrid.reef.models.EntityQuery
 
 import org.totalgrid.reef.services.framework._
 
@@ -34,6 +32,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import java.util.UUID
 import org.squeryl.Query
 import org.totalgrid.reef.authz.VisibilityMap
+import org.totalgrid.reef.models._
 
 //import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
@@ -214,7 +213,7 @@ trait EventConversion
   def makeSubscribeKeys(req: Event): List[String] = {
 
     // just get top level entities from query, skip subscribe on descendents
-    val entities = req.entity.map { EntityQuery.protoTreeQuery(_).map { _.ent } }.getOrElse(Nil)
+    val entities = req.entity.map { EntityTreeQuery.protoTreeQuery(_).map { _.ent } }.getOrElse(Nil)
 
     val keys = if (entities.size > 0) entities.map(getRoutingKey(req, _))
     else getRoutingKey(req) :: Nil
@@ -229,7 +228,7 @@ trait EventConversion
       proto.severity.asParam(sql.severity === _),
       proto.subsystem.asParam(sql.subsystem === _),
       proto.userId.asParam(sql.userId === _),
-      proto.entity.map(ent => sql.entityId in EntityQuery.idsFromProtoQuery(ent)))
+      proto.entity.map(ent => sql.entityId in EntityTreeQuery.idsFromProtoQuery(ent)))
   }
 
   override def uniqueQuery(context: RequestContext, proto: Event, sql: EventStore) = {

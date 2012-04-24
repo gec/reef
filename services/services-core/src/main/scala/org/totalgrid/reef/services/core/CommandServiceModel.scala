@@ -140,7 +140,7 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))
     List(
       esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique,
-      proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Command")))
+      proto.entity.map(ent => sql.entityId in EntityTreeQuery.typeIdsFromProtoQuery(ent, "Command")))
   }
 
   override def searchQuery(context: RequestContext, proto: CommandProto, sql: Command) = List(
