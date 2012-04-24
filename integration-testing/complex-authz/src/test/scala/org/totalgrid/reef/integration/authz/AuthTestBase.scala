@@ -19,7 +19,7 @@
 package org.totalgrid.reef.integration.authz
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
-import org.totalgrid.reef.client.sapi.sync.AllScadaService
+import org.totalgrid.reef.client.sapi.sync.{ ClientOperations, AllScadaService }
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.client.exception.{ ExpectationException, BadRequestException, UnauthorizedException }
@@ -54,6 +54,17 @@ class AuthTestBase extends ServiceClientSuite {
   }
 
   /**
+   * get a new client as a particular user (assumes password == username)
+   */
+  def asOps[A](userName: String, logout: Boolean = true)(f: ClientOperations => A): A = {
+    val c = connection.login(new UserSettings(userName, userConfig.get.getUserPassword))
+    c.setHeaders(c.getHeaders.setResultLimit(5000))
+    val ret = f(c.getService(classOf[ClientOperations]))
+    if (logout) c.logout()
+    ret
+  }
+
+  /**
    * check that a call fails with an unauthorized error, just using intercept leads to useless error messages
    */
   def unAuthed(failureMessage: String)(f: => Unit) {
@@ -68,6 +79,28 @@ class AuthTestBase extends ServiceClientSuite {
       case b: BadRequestException =>
       case c: ExpectationException =>
 
+    }
+  }
+
+  def executeCommands(service: AllScadaService, cmds: List[String]) {
+    cmds.foreach { cmdName => executeCommand(service, cmdName) }
+  }
+
+  def cantExecuteCommands(service: AllScadaService, cmds: List[String]) {
+    cmds.foreach { cmdName =>
+      unAuthed("Expected executing command: " + cmdName + " to be unauthorized") {
+        executeCommand(service, cmdName)
+      }
+    }
+  }
+
+  private def executeCommand(service: AllScadaService, cmdName: String) {
+    val cmd = service.getCommandByName(cmdName)
+    val lock = service.createCommandExecutionLock(cmd)
+    try {
+      service.executeCommandAsControl(cmd)
+    } finally {
+      service.deleteCommandLock(lock)
     }
   }
 }

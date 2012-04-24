@@ -20,7 +20,6 @@ package org.totalgrid.reef.integration.authz
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.service.entity.EntityRelation
 
 import scala.collection.JavaConversions._
@@ -85,28 +84,12 @@ class CommandAuthTest extends AuthTestBase {
       executeCommands(dlrc, dlrcCommands)
 
       cantExecuteCommands(dlrc, commands)
-    }
-  }
 
-  private def executeCommands(service: AllScadaService, cmds: List[String]) {
-    cmds.foreach { cmdName => executeCommand(service, cmdName) }
-  }
-
-  private def cantExecuteCommands(service: AllScadaService, cmds: List[String]) {
-    cmds.foreach { cmdName =>
-      unAuthed("Expected executing command: " + cmdName + " to be unauthorized") {
-        executeCommand(service, cmdName)
+      dlrcCommands.foreach { cmdName =>
+        val cmd = dlrc.getCommandByName(cmdName)
+        dlrc.getCommandHistory(cmd) should not equal (List())
       }
     }
   }
 
-  private def executeCommand(service: AllScadaService, cmdName: String) {
-    val cmd = service.getCommandByName(cmdName)
-    val lock = service.createCommandExecutionLock(cmd)
-    try {
-      service.executeCommandAsControl(cmd)
-    } finally {
-      service.deleteCommandLock(lock)
-    }
-  }
 }
