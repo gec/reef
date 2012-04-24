@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.framework
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.service.HasComponentId
 import org.totalgrid.reef.authz.FilteredResult
-import org.totalgrid.reef.client.exception.BadRequestException
+import com.weiglewilczek.slf4s.Logging
 
 trait HasCreate extends HasAllTypes with HasComponentId {
 
@@ -52,7 +52,7 @@ trait HasCreate extends HasAllTypes with HasComponentId {
   }
 }
 
-trait HasRead extends HasAllTypes with HasComponentId {
+trait HasRead extends HasAllTypes with HasComponentId with Logging {
 
   /**
    * Called before read. Default implementation does nothing.
@@ -76,8 +76,10 @@ trait HasRead extends HasAllTypes with HasComponentId {
     val relatedEntities = records.map(r => model.relatedEntities(List(r)))
     val results: List[FilteredResult[ModelType]] = context.auth.filter(context, componentId, "read", records, relatedEntities)
 
-    //val removed = results.filter(!_.isAllowed)
-    //if (!removed.isEmpty) throw new BadRequestException("Missed filtering: " + removed)
+    val removed = results.filter(!_.isAllowed)
+    if (!removed.isEmpty) {
+      logger.info("Select based filtering included items that should have been filtered: " + removed)
+    }
     val filtered: List[ModelType] = results.filter(_.isAllowed).map(_.result)
     if (filtered == Nil) {
       context.auth.authorize(context, componentId, "read", Nil)
