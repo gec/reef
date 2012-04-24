@@ -140,7 +140,7 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
     models.map { _.command.entityId }
   }
 
-  private def resourceId = Descriptors.commandRequest.id
+  private def resourceId = Descriptors.userCommandRequest.id
 
   private def visibilitySelector(entitySelector: Query[UUID], sql: UserCommandModel) = {
     sql.id in from(table, ApplicationSchema.commands)((request, command) =>

@@ -160,7 +160,7 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
     entries.map { _.entityId }
   }
 
-  def resourceId = Descriptors.command.id
+  private def resourceId = Descriptors.endpoint.id
 
   private def visibilitySelector(entitySelector: Query[UUID], sql: CommunicationEndpoint) = {
     sql.entityId in entitySelector
