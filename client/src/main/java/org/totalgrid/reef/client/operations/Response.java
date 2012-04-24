@@ -24,7 +24,6 @@ import java.util.List;
 
 public interface Response<T>
 {
-
     Envelope.Status getStatus();
 
     List<T> getList();

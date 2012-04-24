@@ -31,9 +31,9 @@ import org.totalgrid.reef.client.exception.ReefServiceException;
  * promises immediately. The real power in the promises comes from the use of the .listen()
  * callback; this allows the application to be entirely event driven.
  *
- * @param <A>
+ * @param <T>
  */
-public interface Promise<A>
+public interface Promise<T>
 {
     /**
      * wait for the result to be set, there is no timeout because the client will
@@ -42,7 +42,7 @@ public interface Promise<A>
      * producing code (BadRequestException, ResponseTimeout, ServiceIO, ...) it will
      * be thrown when await is called.
      */
-    A await() throws ReefServiceException;
+    T await() throws ReefServiceException;
 
     /**
      * attach a listener to the promise that will be called on the connection thread
@@ -50,11 +50,13 @@ public interface Promise<A>
      * complete listen will still be called on the connection thread (not the callers
      * thread).
      */
-    void listen( PromiseListener<A> listener );
+    void listen( PromiseListener<T> listener );
 
     /**
      * has the promise got a final value set?
      */
     boolean isComplete();
+
+    <U> Promise<U> transform(PromiseTransform<T, U> trans);
 
 }

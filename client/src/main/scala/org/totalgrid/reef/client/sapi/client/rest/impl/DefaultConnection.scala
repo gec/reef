@@ -28,11 +28,16 @@ import org.totalgrid.reef.client.sapi.client._
 
 import com.weiglewilczek.slf4s.Logging
 
+import org.totalgrid.reef.client.operations.{ Response => JResponse }
+import org.totalgrid.reef.client.{ Promise => JPromise }
+
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.{ UserSettings, Version }
-import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionBinding, AnyNodeDestination, Routable }
+import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Routable }
+import org.totalgrid.reef.client.operations.impl.FuturePromiseWrapper
+import org.totalgrid.reef.client.javaimpl.{ ResponseWrapper}
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -110,6 +115,42 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     client
   }
 
+
+  def requestJava[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): JPromise[JResponse[A]] /*Future[JResponse[A]]*/ = {
+
+    val future = requestExecutor.future[JResponse[A]]
+
+    def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) = result match {
+      case Left(response) => future.set(ResponseWrapper.convert(response))
+      case Right(envelope) => future.set(ResponseWrapper.convert(RestHelpers.readServiceResponse(descriptor, envelope)))
+    }
+
+    def send(info: ServiceTypeInformation[A, _]) = {
+      val timeout = headers.getTimeout.getOrElse(timeoutms)
+      val descriptor = info.getDescriptor
+
+      // timeout callback will come in on a random executor thread and be marshalled correctly by future
+      val uuid = correlator.register(timeout.milliseconds, onResponse(descriptor))
+      try {
+        val request = RestHelpers.buildServiceRequest(verb, payload, descriptor, uuid, headers)
+        val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))
+        val destination = headers.getDestination.getOrElse(new AnyNodeDestination)
+        conn.publish(descriptor.id, destination.getKey, request.toByteArray, replyTo)
+      } catch {
+        case ex: Exception =>
+          correlator.fail(uuid, FailureResponse(Envelope.Status.BUS_UNAVAILABLE, ex.getMessage))
+      }
+    }
+
+    ClassLookup(payload).flatMap(getServiceOption) match {
+      case Some(info) => send(info)
+      case None => future.set(ResponseWrapper.failure[A](Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
+    }
+
+    FuturePromiseWrapper(future)
+  }
+
+
   def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): Future[Response[A]] = {
 
     val future = requestExecutor.future[Response[A]]
@@ -117,7 +158,6 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) = result match {
       case Left(response) => future.set(response)
       case Right(envelope) => future.set(RestHelpers.readServiceResponse(descriptor, envelope))
-
     }
 
     def send(info: ServiceTypeInformation[A, _]) = {
