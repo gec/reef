@@ -25,8 +25,6 @@ import org.totalgrid.reef.models.{ EntityQuery, ApplicationSchema, Entity }
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.client.service.proto.Descriptors
-import org.squeryl.Query
 import org.totalgrid.reef.authz.VisibilityMap
 import org.totalgrid.reef.services.framework.{ RequestContext, UniqueAndSearchQueryable }
 
@@ -41,16 +39,11 @@ trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
 
   override def searchQuery(context: RequestContext, proto: EntityProto, sql: Entity) = Nil
 
-  private def resourceId = Descriptors.entity.id
-
-  private def visibilitySelector(entitySelector: Query[UUID], sql: Entity) = {
-    import org.squeryl.PrimitiveTypeMode._
-    sql.id in entitySelector
-  }
-
-  override def selector(map: VisibilityMap, sql: Entity) = {
-    map.selector(resourceId) { visibilitySelector(_, sql) }
-  }
+  /**
+   * we always allow searches on all entities, because the "main type" will then filter out entites
+   * we cannot see.
+   */
+  override def selector(map: VisibilityMap, sql: Entity) = (true === true)
 }
 object EntitySearches extends EntitySearches
 
@@ -72,15 +65,6 @@ trait EntityPartsSearches extends UniqueAndSearchQueryable[EntitySearch, Entity]
 
   override def searchQuery(context: RequestContext, proto: EntitySearch, sql: Entity) = Nil
 
-  private def resourceId = Descriptors.entity.id
-
-  private def visibilitySelector(entitySelector: Query[UUID], sql: Entity) = {
-    import org.squeryl.PrimitiveTypeMode._
-    sql.id in entitySelector
-  }
-
-  override def selector(map: VisibilityMap, sql: Entity) = {
-    map.selector(resourceId) { visibilitySelector(_, sql) }
-  }
+  override def selector(map: VisibilityMap, sql: Entity) = (true === true)
 }
 object EntityPartsSearches extends EntityPartsSearches

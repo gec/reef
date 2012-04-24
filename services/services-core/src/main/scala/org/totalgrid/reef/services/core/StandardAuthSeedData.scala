@@ -92,11 +92,11 @@ object StandardAuthSeedData {
 
     val readOnlyRole = seeder.addRole("read_only", List(readAndDeleteOwnTokens, denyAuthTokens, readOnly))
 
-    val userAdminPermission = seeder.makePermission(true, List("*"), List("agent", "agent permission_set", "agent_password", "agent_permissions"))
+    val userAdminPermission = seeder.makePermission(true, List("*"), List("agent", "permission_set", "agent_password", "agent_permissions"))
     val userAdminRole = seeder.addRole("user_setup", List(userAdminPermission))
 
     val appCreate = seeder.makePermission(true, List("create"), List("application_config"))
-    val appUpdate = seeder.makePermission(true, List("update", "delete", "read"), List("application_config"), List(selfAgent))
+    val appUpdate = seeder.makePermission(true, List("update", "delete", "read"), List("application_config", "entity"), List(selfAgent))
     val statusUpdate = seeder.makePermission(true, List("update", "read"), List("status_snapshot"), List(selfAgent))
     val applicationRole = seeder.addRole("application", List(appCreate, appUpdate, statusUpdate))
 

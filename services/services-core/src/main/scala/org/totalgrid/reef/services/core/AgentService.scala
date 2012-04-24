@@ -138,7 +138,7 @@ class AgentServiceModel
     }
   }
 
-  def findRequestedPermissionSets(context: RequestContext, req: Agent) = {
+  private def findRequestedPermissionSets(context: RequestContext, req: Agent) = {
     val requestedPermissions = req.getPermissionSetsList.toList
     if (requestedPermissions.exists { p => p.getName == "*" || p.getUuid == "*" }) {
       throw new BadRequestException("Cannot use wildcard in PermissionSet specifiers, must use UUIDs or names: " + requestedPermissions)
