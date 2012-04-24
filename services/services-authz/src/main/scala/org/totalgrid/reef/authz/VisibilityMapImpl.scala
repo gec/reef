@@ -22,9 +22,10 @@ import java.util.UUID
 import org.squeryl.Query
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast._
-import org.totalgrid.reef.models.{ SquerylConversions, ApplicationSchema }
+import org.totalgrid.reef.models.ApplicationSchema
+import com.weiglewilczek.slf4s.Logging
 
-class VisibilityMapImpl(permissions: List[Permission]) extends VisibilityMap {
+class VisibilityMapImpl(permissions: List[Permission]) extends VisibilityMap with Logging {
   def selector(resourceId: String)(fun: (Query[UUID]) => LogicalBoolean) = {
 
     val entityQuery = constructQuery(permissions, resourceId, "read")
@@ -45,7 +46,7 @@ class VisibilityMapImpl(permissions: List[Permission]) extends VisibilityMap {
     // first filter down to permissions that have right service+action
     val applicablePermissions = permissions.filter(_.applicable(service, action))
 
-    //println(service + ":" + action + " " + permissions + " -> " + applicablePermissions)
+    //logger.info("vis- " + service + ":" + action)
 
     if (applicablePermissions.isEmpty) {
       DenyAll
@@ -56,19 +57,27 @@ class VisibilityMapImpl(permissions: List[Permission]) extends VisibilityMap {
           case false => DenyAll
         }
       } else {
-        Select(from(ApplicationSchema.entities)(sql => where(makeSelector(applicablePermissions, sql.id)) select (sql.id)))
+        Select(from(ApplicationSchema.entities)(sql =>
+          where(makeSelector(applicablePermissions, sql.id))
+            select (sql.id)))
       }
     }
   }
 
   private def makeSelector(applicablePermissions: List[Permission], uuid: ExpressionNode): LogicalBoolean = {
-    SquerylConversions.combineExpressions(applicablePermissions.map { perm =>
-      val x: Option[LogicalBoolean] = (perm.selector(), perm.allow) match {
-        case (Some(query), true) => Some(new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(query), "in", true))
-        case (Some(query), false) => Some(new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(query), "not in", true))
-        case _ => None
+    val expressions: List[(LogicalBoolean, String)] = applicablePermissions.map { perm =>
+      (perm.selector(), perm.allow) match {
+        case (Some(query), true) => (new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(query), "in", true), "or")
+        case (Some(query), false) => (new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(query), "not in", true), "and")
+        case (None, true) => (true === true, "or")
+        case (None, false) => (false === true, "and")
       }
-      x
-    }.flatten)
+    }
+
+    // combine all allows with "or" and all denies with "and"
+    // TODO: collapse redundant parameters
+    expressions.reduceLeft { (a, b) =>
+      (new BinaryOperatorNodeLogicalBoolean(a._1, b._1, a._2), b._2)
+    }._1
   }
 }
