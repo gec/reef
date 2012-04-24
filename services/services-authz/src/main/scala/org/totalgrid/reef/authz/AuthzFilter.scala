@@ -58,7 +58,7 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
     results
   }
 
-  def visibilityMap(permissions: => List[Permission]) = new VisiblityMapImpl(permissions)
+  def visibilityMap(permissions: => List[Permission]) = new VisibilityMapImpl(permissions)
 
   private def unmatchedServiceAction(service: String, action: String) = {
     Permission.denyAllPermission("No permission matched " + service + ":" + action + ". Assuming deny *")

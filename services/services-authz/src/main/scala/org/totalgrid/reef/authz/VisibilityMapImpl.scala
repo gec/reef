@@ -7,36 +7,43 @@ import org.squeryl.dsl.ast._
 import org.totalgrid.reef.models.{SquerylConversions, ApplicationSchema}
 
 
-class VisiblityMapImpl(permissions : List[Permission]) extends VisibilityMap {
+class VisibilityMapImpl(permissions : List[Permission]) extends VisibilityMap {
   def selector(resourceId: String)(fun: (Query[UUID]) => LogicalBoolean) = {
 
-    val option = constructQuery(permissions, resourceId, "read")
+    val entityQuery = constructQuery(permissions, resourceId, "read")
 
-    if (option.isDefined) {
-      fun(option.get)
-    } else {
-      (false === true)
+    entityQuery match {
+      case DenyAll => (false === true)
+      case AllowAll => (true === true)
+      case Select(q) => fun(q)
     }
   }
 
-  private def constructQuery(permissions: List[Permission], service: String, action: String): Option[Query[UUID]] = {
+  private sealed case class EntityQuery(allowAll : Option[Boolean], query : Option[Query[UUID]])
+  private object DenyAll extends EntityQuery(Some(false), None)
+  private object AllowAll extends EntityQuery(Some(true), None)
+  private case class Select(q : Query[UUID]) extends EntityQuery(None, Some(q))
+
+  private def constructQuery(permissions: List[Permission], service: String, action: String): EntityQuery = {
     // first filter down to permissions that have right service+action
     val applicablePermissions = permissions.filter(_.applicable(service, action))
 
     //println(service + ":" + action + " " + permissions + " -> " + applicablePermissions)
 
     if (applicablePermissions.isEmpty) {
-      None
+      DenyAll
     } else {
       if (applicablePermissions.find(_.resourceDependent).isEmpty) {
         applicablePermissions.head.allow match {
-          case true => Some(from(ApplicationSchema.entities)(sql => select(sql.id)))
-          case false => None
+          case true => AllowAll
+          case false => DenyAll
         }
       } else {
-        applicablePermissions.find(_.selector() != None).map{_ =>
-          from(ApplicationSchema.entities)(sql => where(makeSelector(applicablePermissions, sql.id)) select (sql.id))
-        }
+//        applicablePermissions.find(_.selector() != None) match {
+//          case Some(_) => Select(from(ApplicationSchema.entities)(sql => where(makeSelector(applicablePermissions, sql.id)) select (sql.id)))
+//          case None => DenyAll
+//        }
+        Select(from(ApplicationSchema.entities)(sql => where(makeSelector(applicablePermissions, sql.id)) select (sql.id)))
       }
     }
   }
