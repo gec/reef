@@ -170,14 +170,14 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
+  override def uniqueQuery(context: RequestContext, proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("CommunicationEndpoint")))
-    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
   }
 
-  def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
+  override def searchQuery(context: RequestContext, proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     List(
-      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(channel, { _.entityId }) },
+      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(context, channel, { _.entityId }) },
       proto.protocol.map { sql.protocol === _ },
       proto.autoAssigned.map { sql.autoAssigned === _ })
   }

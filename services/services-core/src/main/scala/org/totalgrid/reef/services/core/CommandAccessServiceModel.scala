@@ -229,12 +229,12 @@ trait CommandLockConversion
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def uniqueQuery(proto: AccessProto, sql: AccessModel) = {
+  override def uniqueQuery(context: RequestContext, proto: AccessProto, sql: AccessModel) = {
     List(
       proto.id.value.asParam(id => sql.id === id.toLong))
   }
 
-  def searchQuery(proto: AccessProto, sql: AccessModel) = {
+  override def searchQuery(context: RequestContext, proto: AccessProto, sql: AccessModel) = {
     val commandsListOption = if (proto.getCommandsCount > 0) Some(proto.getCommandsList.toList.map { _.getName }) else None
     List(
       proto.access.asParam(ac => sql.access === ac.getNumber),

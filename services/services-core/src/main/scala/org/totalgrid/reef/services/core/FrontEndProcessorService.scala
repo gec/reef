@@ -89,17 +89,17 @@ trait FrontEndProcessorConversion
     entries.map { _.entityId }
   }
 
-  def searchQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
+  override def searchQuery(context: RequestContext, proto: FrontEndProcessor, sql: ApplicationInstance) = {
     val protocol = if (proto.getProtocolsCount == 1) Some(proto.getProtocols(0)) else None
 
     val protocolSearch = List(
       protocol.asParam(p => sql.id in from(ApplicationSchema.protocols)(t => where(t.protocol === p) select (&(t.applicationId)))))
-    protocolSearch ::: ApplicationConfigConversion.searchQuery(proto.getAppConfig, sql)
+    protocolSearch ::: ApplicationConfigConversion.searchQuery(context, proto.getAppConfig, sql)
   }
 
-  def uniqueQuery(proto: FrontEndProcessor, sql: ApplicationInstance) = {
+  override def uniqueQuery(context: RequestContext, proto: FrontEndProcessor, sql: ApplicationInstance) = {
     val uuidSearch = List(proto.uuid.value.asParam(sql.id === _.toLong).unique)
-    uuidSearch ::: proto.appConfig.map(ApplicationConfigConversion.uniqueQuery(_, sql)).getOrElse(Nil)
+    uuidSearch ::: proto.appConfig.map(ApplicationConfigConversion.uniqueQuery(context, _, sql)).getOrElse(Nil)
   }
 
   private def resourceId = Descriptors.frontEndProcessor.id

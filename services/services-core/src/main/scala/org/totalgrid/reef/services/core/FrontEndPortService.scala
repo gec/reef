@@ -112,14 +112,14 @@ trait FrontEndPortConversion
 
   override def selector(map: VisibilityMap, sql: FrontEndPort) = (true === true)
 
-  def searchQuery(proto: ChannelProto, sql: FrontEndPort) = {
+  override def searchQuery(context: RequestContext, proto: ChannelProto, sql: FrontEndPort) = {
     Nil
   }
 
-  def uniqueQuery(proto: ChannelProto, sql: FrontEndPort) = {
+  override def uniqueQuery(context: RequestContext, proto: ChannelProto, sql: FrontEndPort) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Channel")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
   }
 
   def isModified(entry: FrontEndPort, existing: FrontEndPort): Boolean = {

@@ -23,24 +23,23 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import java.util.UUID
 import org.totalgrid.reef.models.{ EntityQuery, ApplicationSchema, Entity }
 
-import org.totalgrid.reef.services.framework.UniqueAndSearchQueryable
-
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.squeryl.Query
 import org.totalgrid.reef.authz.VisibilityMap
+import org.totalgrid.reef.services.framework.{ RequestContext, UniqueAndSearchQueryable }
 
 trait EntitySearches extends UniqueAndSearchQueryable[EntityProto, Entity] {
   val table = ApplicationSchema.entities
-  def uniqueQuery(proto: EntityProto, sql: Entity) = {
+  override def uniqueQuery(context: RequestContext, proto: EntityProto, sql: Entity) = {
     List(
       proto.uuid.value.asParam(sql.id === UUID.fromString(_)).unique,
       proto.name.asParam(sql.name === _),
       EntityQuery.noneIfEmpty(proto.types).asParam(sql.id in EntityQuery.entityIdsFromTypes(_)))
   }
 
-  def searchQuery(proto: EntityProto, sql: Entity) = Nil
+  override def searchQuery(context: RequestContext, proto: EntityProto, sql: Entity) = Nil
 
   private def resourceId = Descriptors.entity.id
 
@@ -64,14 +63,14 @@ case class EntitySearch(uuid: Option[String], name: Option[String], types: Optio
 
 trait EntityPartsSearches extends UniqueAndSearchQueryable[EntitySearch, Entity] {
   val table = ApplicationSchema.entities
-  def uniqueQuery(proto: EntitySearch, sql: Entity) = {
+  override def uniqueQuery(context: RequestContext, proto: EntitySearch, sql: Entity) = {
     List(
       proto.uuid.asParam(sql.id === UUID.fromString(_)).unique,
       proto.name.asParam(sql.name === _),
       EntityQuery.noneIfEmpty(proto.types).asParam(sql.id in EntityQuery.entityIdsFromTypes(_)))
   }
 
-  def searchQuery(proto: EntitySearch, sql: Entity) = Nil
+  override def searchQuery(context: RequestContext, proto: EntitySearch, sql: Entity) = Nil
 
   private def resourceId = Descriptors.entity.id
 

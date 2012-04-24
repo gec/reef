@@ -116,13 +116,13 @@ trait OverrideConfigConversion
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {
+  override def uniqueQuery(context: RequestContext, proto: MeasOverride, sql: OverrideConfig) = {
     List(
       proto.id.value.asParam(sql.id === _.toInt).unique,
-      proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
+      proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(context, pointProto, { _.id })))
   }
 
-  def searchQuery(proto: MeasOverride, sql: OverrideConfig) = Nil
+  override def searchQuery(context: RequestContext, proto: MeasOverride, sql: OverrideConfig) = Nil
 
   def isModified(entry: OverrideConfig, existing: OverrideConfig): Boolean = {
     !entry.protoData.sameElements(existing.protoData)

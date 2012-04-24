@@ -168,7 +168,7 @@ import org.squeryl.PrimitiveTypeMode._
 
 trait AlarmQueries {
 
-  def searchQuery(proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
+  def searchQuery(context: RequestContext, proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
 
     // by default we dont return removed items to a get request
     val defaultStateList = List(AlarmModel.UNACK_AUDIBLE, AlarmModel.UNACK_SILENT, AlarmModel.ACKNOWLEDGED)
@@ -177,7 +177,7 @@ trait AlarmQueries {
     (Some(sql.state in stateList) :: Nil).flatten
   }
 
-  def uniqueQuery(proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
+  def uniqueQuery(context: RequestContext, proto: Alarm, sql: AlarmModel): List[LogicalBoolean] = {
     (proto.id.value.asParam(sql.id === _.toLong) :: Nil).flatten // if exists, use it.
   }
 
@@ -185,20 +185,20 @@ trait AlarmQueries {
     entries.map { _.event.value.entityId }.flatten
   }
 
-  def searchEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
-    select.map(EventConversion.searchQuery(_, event).flatten) getOrElse (Nil)
+  def searchEventQuery(context: RequestContext, event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
+    select.map(EventConversion.searchQuery(context, _, event).flatten) getOrElse (Nil)
   }
-  def uniqueEventQuery(event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
-    select.map(EventConversion.uniqueQuery(_, event).flatten) getOrElse (Nil)
+  def uniqueEventQuery(context: RequestContext, event: EventStore, select: Option[EventProto]): List[LogicalBoolean] = {
+    select.map(EventConversion.uniqueQuery(context, _, event).flatten) getOrElse (Nil)
   }
 
   def findRecords(context: RequestContext, req: Alarm): List[AlarmModel] = {
 
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
-      where(SquerylConversions.combineExpressions(uniqueQuery(req, alarm) :::
-        uniqueEventQuery(event, req.event) :::
-        searchQuery(req, alarm) :::
-        searchEventQuery(event, req.event)) and
+      where(SquerylConversions.combineExpressions(uniqueQuery(context, req, alarm) :::
+        uniqueEventQuery(context, event, req.event) :::
+        searchQuery(context, req, alarm) :::
+        searchEventQuery(context, event, req.event)) and
         alarm.eventId === event.id)
         select ((alarm, event))
         orderBy (new OrderByArg(event.time).desc)).page(0, 50)
@@ -222,8 +222,8 @@ trait AlarmQueries {
 
   def findRecord(context: RequestContext, req: Alarm): Option[AlarmModel] = {
     val query = from(ApplicationSchema.alarms, ApplicationSchema.events)((alarm, event) =>
-      where(SquerylConversions.combineExpressions(uniqueQuery(req, alarm) :::
-        uniqueEventQuery(event, req.event)) and
+      where(SquerylConversions.combineExpressions(uniqueQuery(context, req, alarm) :::
+        uniqueEventQuery(context, event, req.event)) and
         alarm.eventId === event.id)
         select ((alarm, event))
         orderBy (new OrderByArg(event.time).desc)).page(0, 50)

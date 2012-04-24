@@ -187,12 +187,12 @@ trait CalculationConfigConversion
   def getRoutingKey(req: Calculation) = ProtoRoutingKeys.generateRoutingKey(
     req.outputPoint.endpoint.uuid.value :: req.outputPoint.name :: Nil)
 
-  def uniqueQuery(proto: Calculation, sql: CalculationConfig) = {
+  override def uniqueQuery(context: RequestContext, proto: Calculation, sql: CalculationConfig) = {
     List(proto.uuid.value.asParam(sql.entityId === UUID.fromString(_)).unique,
-      proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })).unique)
+      proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(context, pointProto, { _.id })).unique)
   }
 
-  def searchQuery(proto: Calculation, sql: CalculationConfig) =
+  override def searchQuery(context: RequestContext, proto: Calculation, sql: CalculationConfig) =
     List(proto.outputPoint.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Calculation")))
 
   def isModified(entry: CalculationConfig, existing: CalculationConfig): Boolean = {

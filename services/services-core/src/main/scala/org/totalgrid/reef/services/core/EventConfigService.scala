@@ -191,11 +191,11 @@ trait EventConfigConversion
 
   override def selector(map: VisibilityMap, sql: EventConfigStore) = (true === true)
 
-  def searchQuery(proto: EventConfig, sql: EventConfigStore) = {
+  override def searchQuery(context: RequestContext, proto: EventConfig, sql: EventConfigStore) = {
     proto.builtIn.asParam(sql.builtIn === _) :: Nil
   }
 
-  def uniqueQuery(proto: EventConfig, sql: EventConfigStore) = {
+  override def uniqueQuery(context: RequestContext, proto: EventConfig, sql: EventConfigStore) = {
     proto.eventType.asParam(sql.eventType === _) :: Nil
   }
 

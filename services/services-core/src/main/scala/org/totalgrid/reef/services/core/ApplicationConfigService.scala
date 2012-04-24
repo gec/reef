@@ -166,7 +166,7 @@ trait ApplicationConfigConversion
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
+  override def searchQuery(context: RequestContext, proto: ApplicationConfig, sql: ApplicationInstance) = {
     def networkQuery(nets: List[String]) = {
       sql.id in from(ApplicationSchema.networks)(sql => where(sql.network in nets) select (sql.applicationId))
     }
@@ -177,9 +177,9 @@ trait ApplicationConfigConversion
       proto.location.asParam(sql.location === _))
   }
 
-  def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
+  override def uniqueQuery(context: RequestContext, proto: ApplicationConfig, sql: ApplicationInstance) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.instanceName, proto.instanceName.map(x => List("Application")))
-    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {

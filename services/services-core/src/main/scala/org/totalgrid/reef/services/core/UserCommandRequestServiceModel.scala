@@ -155,13 +155,13 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
   }
 
   // Relies on implicit to combine LogicalBooleans
-  def uniqueQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
+  override def uniqueQuery(context: RequestContext, proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
       proto.id.value.asParam(sql.id === _.toLong),
       proto.commandRequest.correlationId.asParam(sql.corrolationId === _))
   }
 
-  def searchQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
+  override def searchQuery(context: RequestContext, proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
       proto.status.map(st => sql.status === st.getNumber),
       proto.commandRequest.command.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))

@@ -135,7 +135,7 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
     entries.map { _.entityId }
   }
 
-  def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
+  override def searchQuery(context: RequestContext, proto: ConfigProto, sql: ConfigFile) = {
 
     // when searching we go through all the entities in the proto constucting the intersection of the used config files
     val entities = proto.getEntitiesList.toList.map { EntityQuery.findEntity(_) }.flatten
@@ -146,10 +146,10 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
     (proto.mimeType.asParam(sql.mimeType === _).search :: query).reverse
   }
 
-  def uniqueQuery(proto: ConfigProto, sql: ConfigFile) = {
+  override def uniqueQuery(context: RequestContext, proto: ConfigProto, sql: ConfigFile) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("ConfigurationFile")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
   }
 
   private def resourceId = Descriptors.configFile.id

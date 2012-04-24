@@ -74,11 +74,11 @@ trait TriggerSetConversion
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def uniqueQuery(proto: TriggerProto, sql: TriggerSet) = {
-    List(proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
+  override def uniqueQuery(context: RequestContext, proto: TriggerProto, sql: TriggerSet) = {
+    List(proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(context, pointProto, { _.id })))
   }
 
-  def searchQuery(proto: TriggerProto, sql: TriggerSet) = Nil
+  override def searchQuery(context: RequestContext, proto: TriggerProto, sql: TriggerSet) = Nil
 
   def isModified(entry: TriggerSet, existing: TriggerSet): Boolean = {
     !entry.proto.sameElements(existing.proto)

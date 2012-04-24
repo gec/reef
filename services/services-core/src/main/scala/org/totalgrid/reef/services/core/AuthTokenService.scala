@@ -66,17 +66,17 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def uniqueQuery(proto: AuthToken, sql: AuthTokenModel) = {
+  override def uniqueQuery(context: RequestContext, proto: AuthToken, sql: AuthTokenModel) = {
     List(
       proto.id.value.asParam(sql.id === _.toInt),
-      proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(agent, { _.id })),
+      proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(context, agent, { _.id })),
       proto.loginLocation.asParam(sql.loginLocation === _),
       proto.clientVersion.asParam(sql.clientVersion === _),
       proto.revoked.asParam(sql.revoked === _),
       proto.token.asParam(sql.token === _))
   }
 
-  def searchQuery(proto: AuthToken, sql: AuthTokenModel) = {
+  override def searchQuery(context: RequestContext, proto: AuthToken, sql: AuthTokenModel) = {
     Nil
   }
 
@@ -136,7 +136,7 @@ class AuthTokenServiceModel
     val permissionsRequested = authToken.getPermissionSetsList.toList
     val permissionSets = if (permissionsRequested.size == 1 && permissionsRequested(0).getName == "*") availableSets
     else {
-      val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(ps)).sum
+      val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(context, ps)).sum
       if (setQuerySize > 0) {
         val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
         val unavailableSets = askedForSets.diff(availableSets)

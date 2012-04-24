@@ -106,13 +106,13 @@ trait PermissionSetConversions
 
   override def selector(map: VisibilityMap, sql: PermissionSet) = (true === true)
 
-  def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
+  override def uniqueQuery(context: RequestContext, proto: PermissionSetProto, sql: PermissionSet) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("PermissionSet")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })))
   }
 
-  def searchQuery(proto: PermissionSetProto, sql: PermissionSet) = Nil
+  override def searchQuery(context: RequestContext, proto: PermissionSetProto, sql: PermissionSet) = Nil
 
   def getRoutingKey(req: PermissionSetProto) = ProtoRoutingKeys.generateRoutingKey {
     req.name :: Nil

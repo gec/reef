@@ -196,19 +196,19 @@ trait CommunicationEndpointConnectionConversion
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def searchQuery(proto: ConnProto, sql: FrontEndAssignment) = {
+  override def searchQuery(context: RequestContext, proto: ConnProto, sql: FrontEndAssignment) = {
     List(
-      proto.frontEnd.appConfig.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })),
+      proto.frontEnd.appConfig.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(context, app, { _.id })),
       proto.state.asParam(sql.state === _.getNumber),
       proto.enabled.asParam(sql.enabled === _))
   }
 
-  def uniqueQuery(proto: ConnProto, sql: FrontEndAssignment) = {
+  override def uniqueQuery(context: RequestContext, proto: ConnProto, sql: FrontEndAssignment) = {
     List(
       // TODO: after 0.5.0 we can make this a searchable parameter and expose the history to clients
       Some(sql.active === true),
       proto.id.value.asParam(sql.id === _.toLong).unique,
-      proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(endpoint, { _.id })))
+      proto.endpoint.map(endpoint => sql.endpointId in CommEndCfgServiceConversion.uniqueQueryForId(context, endpoint, { _.id })))
   }
 
   def isModified(entry: FrontEndAssignment, existing: FrontEndAssignment): Boolean = {

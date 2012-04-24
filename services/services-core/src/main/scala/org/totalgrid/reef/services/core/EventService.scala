@@ -223,7 +223,7 @@ trait EventConversion
   }
 
   // Derive a SQL expression from the proto. Used by GET. 
-  def searchQuery(proto: Event, sql: EventStore) = {
+  override def searchQuery(context: RequestContext, proto: Event, sql: EventStore) = {
     List(
       proto.eventType.asParam(sql.eventType === _),
       proto.severity.asParam(sql.severity === _),
@@ -232,7 +232,7 @@ trait EventConversion
       proto.entity.map(ent => sql.entityId in EntityQuery.idsFromProtoQuery(ent)))
   }
 
-  def uniqueQuery(proto: Event, sql: EventStore) = {
+  override def uniqueQuery(context: RequestContext, proto: Event, sql: EventStore) = {
     List(
       proto.id.value.asParam(sql.id === _.toLong).unique)
   }

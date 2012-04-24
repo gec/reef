@@ -27,30 +27,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.SquerylConversions
 
 import SquerylModel._
-import java.util.UUID
-
-import org.totalgrid.reef.event.SilentEventSink
-import org.totalgrid.reef.services.authz.NullAuthzService
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.authz.VisibilityMap
-
-class SilentRequestContext extends RequestContext {
-  def client = throw new Exception("Asked for client in silent request context")
-  def eventSink = new SilentEventSink
-  def operationBuffer = new BasicOperationBuffer
-  def subHandler = new SilentServiceSubscriptionHandler
-  val auth = new NullAuthzService
-
-  protected var headers = BasicRequestHeaders.empty
-
-  def getHeaders = headers
-
-  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders = {
-    val newHeaders = modify(headers)
-    headers = newHeaders
-    newHeaders
-  }
-}
 
 /**
  * defines a simple to integrate implementation of the findRecord and findRecords functions
@@ -62,7 +39,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   /**
    * table all of the queries are run against
    */
-  val table: Table[T]
+  def table: Table[T]
 
   /**
    * limit results to stop denial of service
@@ -92,7 +69,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * entries that had that matching field (user_name). Since these uniqueQueries are useful for
    * searching they are merged with the searchQueries to avoid code duplication.
    */
-  def uniqueQuery(proto: MessageType, sql: T): List[Option[SearchTerm]]
+  def uniqueQuery(context: RequestContext, proto: MessageType, sql: T): List[Option[SearchTerm]]
 
   /**
    * this list is for fields that we want to be searchable but do not factor into determining
@@ -101,7 +78,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * across all users/commands but if they attempt to create a new status we would be able to determine
    * which record we should be updating.
    */
-  def searchQuery(proto: MessageType, sql: T): List[Option[SearchTerm]]
+  def searchQuery(context: RequestContext, proto: MessageType, sql: T): List[Option[SearchTerm]]
 
   /**
    * pre-filter our sql query so we only ever pull "visible" items from the database and therefore get the
@@ -123,14 +100,6 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    */
   def searchQueryForId[R](context: RequestContext, req: MessageType, idFun: T => R): Query[R] = {
     from(table)(sql => where(searchParams(context, req, sql)) select (idFun(sql)))
-  }
-
-  // TODO: get rid of these overloads, add context to UniquQuery
-  def searchQueryForId[R](req: MessageType, idFun: T => R): Query[R] = {
-    searchQueryForId(new SilentRequestContext, req, idFun)
-  }
-  def uniqueQueryForId[R](req: MessageType, idFun: T => R): Query[R] = {
-    uniqueQueryForId(new SilentRequestContext, req, idFun)
   }
 
   /**
@@ -159,18 +128,18 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * determine whether searching for an object is more specific than "get all" for switching on default
    * behaviors.
    */
-  def uniqueQuerySize(req: MessageType): Int = {
+  def uniqueQuerySize(context: RequestContext, req: MessageType): Int = {
     // TODO: remove uniqueQuerySize and searchQuerySize functions
     // we are searching for, in some cases we need to know if they are searching for something in paticular or if they
     // searched for "*" (this would be the same as searching for nothing)
-    from(table)(sql => where(return uniqueQuery(req, sql).flatten.size) select (sql))
+    from(table)(sql => where(return uniqueQuery(context, req, sql).flatten.size) select (sql))
     throw new Exception
   }
   /**
    * same as searchQuerySize but using the broader searching
    */
-  def searchQuerySize(req: MessageType): Int = {
-    from(table)(sql => where(return (uniqueQuery(req, sql) ::: searchQuery(req, sql)).flatten.size) select (sql))
+  def searchQuerySize(context: RequestContext, req: MessageType): Int = {
+    from(table)(sql => where(return (uniqueQuery(context, req, sql) ::: searchQuery(context, req, sql)).flatten.size) select (sql))
     throw new Exception
   }
 
@@ -188,9 +157,9 @@ trait UniqueAndSearchQueryable[MessageType, T] {
   }
 
   private def uniqueParams(context: RequestContext, req: MessageType, sql: T): LogicalBoolean = {
-    filterForVisiblity(context, sql, SquerylConversions.combineExpressions(uniqueQuery(req, sql).flatten))
+    filterForVisiblity(context, sql, SquerylConversions.combineExpressions(uniqueQuery(context, req, sql).flatten))
   }
   private def searchParams(context: RequestContext, req: MessageType, sql: T): LogicalBoolean = {
-    filterForVisiblity(context, sql, SquerylConversions.combineExpressions((uniqueQuery(req, sql) ::: searchQuery(req, sql)).flatten))
+    filterForVisiblity(context, sql, SquerylConversions.combineExpressions((uniqueQuery(context, req, sql) ::: searchQuery(context, req, sql)).flatten))
   }
 }

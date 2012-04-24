@@ -172,13 +172,13 @@ trait AgentConversions
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def uniqueQuery(proto: Agent, sql: AgentModel) = {
+  override def uniqueQuery(context: RequestContext, proto: Agent, sql: AgentModel) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Agent")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
   }
 
-  def searchQuery(proto: Agent, sql: AgentModel) = Nil
+  override def searchQuery(context: RequestContext, proto: Agent, sql: AgentModel) = Nil
 
   def getRoutingKey(req: Agent) = ProtoRoutingKeys.generateRoutingKey {
     req.name :: Nil

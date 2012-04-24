@@ -135,15 +135,15 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def uniqueQuery(proto: CommandProto, sql: Command) = {
+  override def uniqueQuery(context: RequestContext, proto: CommandProto, sql: Command) = {
 
     val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))
     List(
-      esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique,
+      esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique,
       proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Command")))
   }
 
-  def searchQuery(proto: CommandProto, sql: Command) = List(
+  override def searchQuery(context: RequestContext, proto: CommandProto, sql: Command) = List(
     proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def isModified(entry: Command, existing: Command) = {

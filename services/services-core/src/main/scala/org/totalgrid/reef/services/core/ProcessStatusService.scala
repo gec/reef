@@ -171,17 +171,17 @@ trait ProcessStatusConversion
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def searchQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {
+  override def searchQuery(context: RequestContext, proto: StatusSnapshot, sql: HeartbeatStatus) = {
     Nil
   }
 
-  def uniqueQuery(proto: StatusSnapshot, sql: HeartbeatStatus) = {
+  override def uniqueQuery(context: RequestContext, proto: StatusSnapshot, sql: HeartbeatStatus) = {
     List[Option[SearchTerm]](
       proto.processId.asParam(sql.processId === _).unique,
       proto.instanceName.map { inst =>
         // TODO: Make this better; shouldn't have to make a proto to use interface
         val nameProto = ApplicationConfig.newBuilder.setInstanceName(inst).build
-        sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(nameProto, { _.id })
+        sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(context, nameProto, { _.id })
       })
   }
 

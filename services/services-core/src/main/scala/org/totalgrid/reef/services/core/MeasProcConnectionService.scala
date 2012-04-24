@@ -108,14 +108,14 @@ trait MeasurementProcessingConnectionConversion
     map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
-  def searchQuery(proto: ConnProto, sql: MeasProcAssignment) = {
+  override def searchQuery(context: RequestContext, proto: ConnProto, sql: MeasProcAssignment) = {
     Nil
   }
 
-  def uniqueQuery(proto: ConnProto, sql: MeasProcAssignment) = {
+  override def uniqueQuery(context: RequestContext, proto: ConnProto, sql: MeasProcAssignment) = {
     List(
       proto.id.value.asParam(sql.id === _.toLong).unique,
-      proto.measProc.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })))
+      proto.measProc.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(context, app, { _.id })))
   }
 
   def isModified(entry: MeasProcAssignment, existing: MeasProcAssignment): Boolean = {
