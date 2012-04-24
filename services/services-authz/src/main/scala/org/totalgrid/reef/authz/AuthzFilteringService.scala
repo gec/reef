@@ -45,6 +45,18 @@ trait AuthzFilteringService {
 
 trait VisibilityMap {
 
+  /**
+   * when trying to select visible entries we use a two step process, the service defines a function which maps from
+   * the list of visibile entities to visible objects. If no resource specific rules are defined we bypass this step
+   * and return all entities.
+   *
+   * Usage:
+   * <pre>
+   * map.selector("agent"){ visibleEntities =>
+   *  agent.entityId in visibileEntities
+   * }
+   * </pre>
+   */
   def selector(resourceId: String)(fun: Query[UUID] => LogicalBoolean): LogicalBoolean
 }
 

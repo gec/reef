@@ -20,10 +20,6 @@ package org.totalgrid.reef.authz
 
 import com.weiglewilczek.slf4s.Logging
 import java.util.UUID
-import org.squeryl.Query
-import scala.Predef._
-import org.squeryl.dsl.ast.{ RightHandSideOfIn, BinaryOperatorNodeLogicalBoolean, ExpressionNode, LogicalBoolean }
-import org.totalgrid.reef.models.{ ApplicationSchema, SquerylConversions }
 
 object AuthzFilter extends AuthzFiltering(ResourceSpecificFilter)
 
@@ -62,61 +58,7 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
     results
   }
 
-  private def selector(permissions: => List[Permission], service: String, action: String): Option[Query[UUID]] = {
-    // first filter down to permissions that have right service+action
-    val applicablePermissions = permissions.filter(_.applicable(service, action))
-
-    //println(service + ":" + action + " " + permissions + " -> " + applicablePermissions)
-
-    import org.squeryl.PrimitiveTypeMode._
-
-    if (applicablePermissions.isEmpty) {
-      None
-    } else {
-      if (applicablePermissions.find(_.resourceDependent).isEmpty) {
-        applicablePermissions.head.allow match {
-          case true => Some(from(ApplicationSchema.entities)(sql => select(sql.id)))
-          case false => None
-        }
-      } else {
-        applicablePermissions.find(_.selector() != None) match {
-          case Some(perm) =>
-
-            def makeSelector(uuid: ExpressionNode): LogicalBoolean = {
-              SquerylConversions.combineExpressions(applicablePermissions.map { perm =>
-                val x: Option[LogicalBoolean] = (perm.selector(), perm.allow) match {
-                  case (Some(query), true) => Some(new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(query), "in", true))
-                  case (Some(query), false) => Some(new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(query), "not in", true))
-                  case _ => None
-                }
-                x
-              }.flatten)
-            }
-
-            val q = from(ApplicationSchema.entities)(sql => where(makeSelector(sql.id)) select (sql.id))
-            Some(q)
-          case None => None
-        }
-      }
-    }
-  }
-
-  def visibilityMap(permissions: => List[Permission]) = {
-    val parent = this
-    new VisibilityMap {
-      def selector(resourceId: String)(fun: (Query[UUID]) => LogicalBoolean) = {
-
-        val option = parent.selector(permissions, resourceId, "read")
-
-        if (option.isDefined) {
-          fun(option.get)
-        } else {
-          import org.squeryl.PrimitiveTypeMode._
-          (false === true)
-        }
-      }
-    }
-  }
+  def visibilityMap(permissions: => List[Permission]) = new VisiblityMapImpl(permissions)
 
   private def unmatchedServiceAction(service: String, action: String) = {
     Permission.denyAllPermission("No permission matched " + service + ":" + action + ". Assuming deny *")
