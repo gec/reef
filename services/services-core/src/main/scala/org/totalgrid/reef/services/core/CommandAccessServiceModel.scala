@@ -138,7 +138,7 @@ class CommandLockServiceModel
     val cmdIds = cmds.map { _.id }
     val blocked = areAnyBlockedById(cmdIds)
     if (!blocked.isEmpty) {
-      val msgs = blocked.map { acc =>
+      val msgs = blocked.distinct.map { acc =>
         "( " + acc.commands.map { _.entityName }.mkString(", ") +
           " locked by: " + acc.agent.value.entityName +
           " until: " + acc.expireTime.map { t => new Date(t).toString }.getOrElse(" unblocked") +
