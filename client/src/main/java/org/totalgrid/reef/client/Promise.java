@@ -57,6 +57,6 @@ public interface Promise<T>
      */
     boolean isComplete();
 
-    <U> Promise<U> transform(PromiseTransform<T, U> trans);
+    <U> Promise<U> transform( PromiseTransform<T, U> trans );
 
 }

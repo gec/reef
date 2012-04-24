@@ -36,8 +36,8 @@ import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.{ UserSettings, Version }
 import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Routable }
-import org.totalgrid.reef.client.operations.impl.FuturePromiseWrapper
-import org.totalgrid.reef.client.javaimpl.{ ResponseWrapper}
+import org.totalgrid.reef.client.operations.impl.FuturePromise
+import org.totalgrid.reef.client.javaimpl.{ ResponseWrapper }
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -115,7 +115,6 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     client
   }
 
-
   def requestJava[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): JPromise[JResponse[A]] /*Future[JResponse[A]]*/ = {
 
     val future = requestExecutor.future[JResponse[A]]
@@ -147,9 +146,8 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
       case None => future.set(ResponseWrapper.failure[A](Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
     }
 
-    FuturePromiseWrapper(future)
+    FuturePromise(future)
   }
-
 
   def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): Future[Response[A]] = {
 

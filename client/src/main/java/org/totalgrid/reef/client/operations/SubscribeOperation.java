@@ -23,6 +23,7 @@ import org.totalgrid.reef.client.Subscription;
 
 public interface SubscribeOperation
 {
-
     <T> Promise<Response<T>> execute( Subscription subscription, RestOperations operations );
+
+    String errorMessage();
 }

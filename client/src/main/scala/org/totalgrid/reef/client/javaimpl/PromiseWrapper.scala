@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.javaimpl
 
 import org.totalgrid.reef.client.sapi.client.Promise
-import org.totalgrid.reef.client.{PromiseTransform, PromiseListener, Promise => JPromise}
+import org.totalgrid.reef.client.{ PromiseTransform, PromiseListener, Promise => JPromise }
 
 class PromiseWrapper[A](prom: Promise[A]) extends JPromise[A] {
   def await() = prom.await

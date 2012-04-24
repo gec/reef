@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.SubscriptionBinding;
 
 public interface ClientServiceBindingOperation
 {
-
     <T> Promise<Response<T>> execute( SubscriptionBinding binding, RestOperations operations );
 
+    String errorMessage();
 }

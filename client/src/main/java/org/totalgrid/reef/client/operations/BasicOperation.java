@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.Promise;
 
 public interface BasicOperation
 {
-
     <T> Promise<Response<T>> execute( RestOperations operations );
 
+    String errorMessage();
 }
