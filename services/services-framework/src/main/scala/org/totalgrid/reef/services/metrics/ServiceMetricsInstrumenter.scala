@@ -37,12 +37,12 @@ class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], hoo
       metrics.countHook(1)
       metrics.timerHook(time.toInt)
       if (time > slowQueryThreshold)
-        logger.info("Slow Request: " + time + "ms to handle request: " + displayRequest(req))
+        logger.info("Slow Request: " + time + "ms to handle " + verb + " request: " + displayRequest(req))
       if (!rsp.success) metrics.errorHook(1)
       val counts = countingSource.databaseActionCounts
       metrics.actionsHook(counts.actions)
       if (counts.actions > chattyTransactionThreshold)
-        logger.info("Chatty transaction: " + counts.actions + " database queries to handle request: " + displayRequest(req))
+        logger.info("Chatty transaction: " + counts.actions + " database queries to handle " + verb + " request: " + displayRequest(req))
     }
 
     val proxyCallback = hooks(verb) match {
