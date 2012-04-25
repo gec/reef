@@ -194,9 +194,17 @@ class ReadFilterTest extends AuthTestBase {
         commandNames.toSet should equal(visibleCommands.toSet)
 
         intercept[ExpectationException] {
-          // TODO: shouldn't have been returned name of agent we can't see
+          // TODO: shouldn't have been returned name of agent we can't see and same with error message
           val agent = ops.getAgentByName(commandLock.getUser)
         }
+        val errorMessage = intercept[BadRequestException] {
+          ops.createCommandExecutionLock(ops.getCommandByName(visibleCommands.head))
+        }.getMessage
+
+        visibleCommands.foreach { cmdName => errorMessage should include(cmdName) }
+        invisibleCommands.foreach { cmdName => errorMessage should not include (cmdName) }
+
+        errorMessage should include("system")
       }
     } finally {
       client.deleteCommandLock(lock)

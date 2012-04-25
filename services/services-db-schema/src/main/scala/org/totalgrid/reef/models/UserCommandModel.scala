@@ -22,6 +22,9 @@ import org.totalgrid.reef.client.service.proto.Commands.{ CommandLock => AccessP
 
 import org.totalgrid.reef.util.LazyVar
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.Query
+import java.util.UUID
+import org.squeryl.dsl.ast.LogicalBoolean
 
 // Related to UserCommandRequest proto
 case class UserCommandModel(
@@ -79,6 +82,20 @@ object CommandLockModel {
       lock.agent.value = allAgents(lock.agentId)
     }
   }
+
+  /**
+   * in one db roundtrip go an load all of the visible commands
+   */
+  def preloadCommands(locks: List[CommandLockModel], vmap: (Query[UUID] => LogicalBoolean) => LogicalBoolean) {
+    val accessIds = locks.map { _.id }
+    val cmdsById = from(ApplicationSchema.commandAccess, ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((acc, join, cmd) =>
+      where((acc.id in accessIds) and (join.accessId === acc.id) and (join.commandId === cmd.id) and (vmap { cmd.entityId in _ }))
+        select (acc.id, cmd)).toList.groupBy { _._1 }
+
+    locks.foreach { acc =>
+      acc.commands.value = cmdsById(acc.id).map { _._2 }
+    }
+  }
 }
 
 case class CommandLockModel(
@@ -88,11 +105,9 @@ case class CommandLockModel(
     var deleted: Boolean) extends ModelWithId {
   def this() = this(0, Some(0), 0, false)
 
-  def commands: List[Command] = {
-    from(ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((join, cmd) =>
-      where(join.accessId === id and join.commandId === cmd.id)
-        select (cmd)).toList
-  }
+  val commands = LazyVar(from(ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((join, cmd) =>
+    where(join.accessId === id and join.commandId === cmd.id)
+      select (cmd)).toList)
 
   val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
 }

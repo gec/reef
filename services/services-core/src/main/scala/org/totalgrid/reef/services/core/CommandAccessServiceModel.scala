@@ -40,21 +40,18 @@ class CommandLockServiceModel
     with EventedServiceModel[AccessProto, AccessModel]
     with CommandLockConversion {
 
-  override def convertToProtos(context: RequestContext, entries: List[AccessModel]): List[AccessProto] = {
-    import org.squeryl.PrimitiveTypeMode._
-    val vmap = context.auth.visibilityMap(context).selector(Descriptors.command.id) _
-
-    val accessIds = entries.map { _.id }
-    val commands = from(ApplicationSchema.commandAccess, ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((acc, join, cmd) =>
-      where((acc.id in accessIds) and (join.accessId === acc.id) and (join.commandId === cmd.id) and (vmap { cmd.entityId in _ }))
-        select (acc.id, cmd)).toList
-
+  private def preloadAllFields(context: RequestContext, entries: List[AccessModel]) {
+    def commandVisiblity = context.auth.visibilityMap(context).selector(Descriptors.command.id) _
     AccessModel.preloadAgents(entries)
+    AccessModel.preloadCommands(entries, commandVisiblity)
+  }
 
-    val cmdsById = commands.groupBy { _._1 }
+  override def convertToProtos(context: RequestContext, entries: List[AccessModel]): List[AccessProto] = {
+
+    preloadAllFields(context, entries)
 
     entries.map { acc =>
-      convertToProto(acc, cmdsById(acc.id).map { _._2 }, acc.agent.value.entityName)
+      convertToProto(acc, acc.commands.value, acc.agent.value.entityName)
     }
   }
 
@@ -154,8 +151,13 @@ class CommandLockServiceModel
     val cmdIds = cmds.map { _.id }
     val blocked = areAnyBlockedById(cmdIds)
     if (!blocked.isEmpty) {
-      val msgs = blocked.distinct.map { acc =>
-        "( " + acc.commands.map { _.entityName }.mkString(", ") +
+
+      // make sure to only return commands visible to this user in error message
+      val locks = blocked.distinct
+      preloadAllFields(context, locks)
+
+      val msgs = locks.map { acc =>
+        "( " + acc.commands.value.map { _.entityName }.mkString(", ") +
           " locked by: " + acc.agent.value.entityName +
           " until: " + acc.expireTime.map { t => new Date(t).toString }.getOrElse(" unblocked") +
           " )"
@@ -275,7 +277,7 @@ trait CommandLockConversion
   }
 
   def convertToProto(entry: AccessModel): AccessProto = {
-    convertToProto(entry, entry.commands, entry.agent.value.entityName)
+    convertToProto(entry, entry.commands.value, entry.agent.value.entityName)
   }
 
   def convertToProto(entry: AccessModel, commands: List[CommandModel], agentName: String): AccessProto = {
