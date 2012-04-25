@@ -16,13 +16,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.operations;
+package org.totalgrid.reef.client;
 
-import org.totalgrid.reef.client.Promise;
+import org.totalgrid.reef.client.exception.ReefServiceException;
 
-public interface BasicOperation
+public interface PromiseErrorTransform
 {
-    <T> Promise<T> execute( RestOperations operations );
-
-    String errorMessage();
+    ReefServiceException transformError( ReefServiceException error );
 }

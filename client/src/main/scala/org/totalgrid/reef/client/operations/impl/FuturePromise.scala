@@ -18,11 +18,17 @@
  */
 package org.totalgrid.reef.client.operations.impl
 
-import net.agileautomata.executor4s.Future
 import org.totalgrid.reef.client._
+import exception.{ InternalClientError, ReefServiceException }
+import net.agileautomata.executor4s.{ Executor, Future }
 
 object FuturePromise {
 
+  def error[A](err: ReefServiceException, exe: Executor) = {
+    val future = exe.future[Either[ReefServiceException, A]]
+    future.set(Left(err))
+    new EitherPromise(future)
+  }
   def apply[A](fut: Future[A]) = new InitialPromise(fut)
 
   trait DefinedPromise[A] extends Promise[A] {
@@ -41,12 +47,26 @@ object FuturePromise {
 
   class DefinedInitialPromise[A](value: A, protected val original: Promise[A]) extends DefinedPromise[A] {
     def await(): A = value
+    def transformError(transform: PromiseErrorTransform): Promise[A] = this
   }
 
-  class DefinedEitherPromise[A](value: Either[Exception, A], protected val original: Promise[A]) extends DefinedPromise[A] {
+  class DefinedEitherPromise[A](value: Either[ReefServiceException, A], protected val original: Promise[A]) extends DefinedPromise[A] {
     def await(): A = value match {
       case Left(ex) => throw ex
       case Right(v) => v
+    }
+    def transformError(transform: PromiseErrorTransform): Promise[A] = value match {
+      case Right(_) => this
+      case Left(ex) => new DefinedEitherPromise(Left(transform.transformError(ex)), this)
+    }
+  }
+
+  def performTransform[A, B](v: A, trans: PromiseTransform[A, B]): Either[ReefServiceException, B] = {
+    try {
+      Right(trans.transform(v))
+    } catch {
+      case rse: ReefServiceException => Left(rse)
+      case ex: Exception => Left(new InternalClientError("Unexpected error: " + ex.getMessage, ex))
     }
   }
 
@@ -64,18 +84,14 @@ object FuturePromise {
     def isComplete: Boolean = future.isComplete
 
     def transform[B](trans: PromiseTransform[A, B]): Promise[B] = {
-      val result: Future[Either[Exception, B]] = future.map { v =>
-        try {
-          Right(trans.transform(v))
-        } catch {
-          case ex: Exception => Left(ex)
-        }
-      }
+      val result = future.map(performTransform(_, trans))
       new EitherPromise(result)
     }
+
+    def transformError(transform: PromiseErrorTransform): Promise[A] = this
   }
 
-  class EitherPromise[A](future: Future[Either[Exception, A]]) extends Promise[A] {
+  class EitherPromise[A](future: Future[Either[ReefServiceException, A]]) extends Promise[A] {
     def await(): A = future.await match {
       case Left(ex) => throw ex
       case Right(v) => v
@@ -92,10 +108,18 @@ object FuturePromise {
 
     def transform[B](trans: PromiseTransform[A, B]): Promise[B] = {
       val result = future.map {
-        case Right(v) => Right(trans.transform(v))
-        case left => left.asInstanceOf[Either[Exception, Nothing]]
+        case Right(v) => performTransform(v, trans)
+        case left => left.asInstanceOf[Either[ReefServiceException, Nothing]]
       }
       new EitherPromise[B](result)
+    }
+
+    def transformError(transform: PromiseErrorTransform): Promise[A] = {
+      val result = future.map {
+        case Left(ex) => Left(transform.transformError(ex))
+        case right => right
+      }
+      new EitherPromise[A](result)
     }
   }
 }

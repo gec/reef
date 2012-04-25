@@ -29,5 +29,5 @@ public interface BindOperations
     <T> Subscription<T> subscribe( TypeDescriptor<T> descriptor );
 
 
-    <T> SubscriptionBinding lateBindService( Service service );
+    <T> SubscriptionBinding lateBindService( Service service, TypeDescriptor<T> descriptor );
 }

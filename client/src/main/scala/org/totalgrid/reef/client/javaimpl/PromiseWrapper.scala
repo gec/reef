@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.javaimpl
 
 import org.totalgrid.reef.client.sapi.client.Promise
-import org.totalgrid.reef.client.{ PromiseTransform, PromiseListener, Promise => JPromise }
+import org.totalgrid.reef.client.{ PromiseErrorTransform, PromiseTransform, PromiseListener, Promise => JPromise }
 
 class PromiseWrapper[A](prom: Promise[A]) extends JPromise[A] {
   def await() = prom.await
@@ -30,6 +30,7 @@ class PromiseWrapper[A](prom: Promise[A]) extends JPromise[A] {
 
   // TODO: STUB BOMB (this class is slated for deletion)
   def transform[U](trans: PromiseTransform[A, U]): JPromise[U] = null
+  def transformError(transform: PromiseErrorTransform): JPromise[A] = this
 
   def isComplete = prom.isComplete
 }

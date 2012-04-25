@@ -115,7 +115,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     client
   }
 
-  def requestJava[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): JPromise[JResponse[A]] /*Future[JResponse[A]]*/ = {
+  def requestJava[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): JPromise[JResponse[A]] = {
 
     val future = requestExecutor.future[JResponse[A]]
 
