@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 @RunWith(classOf[JUnitRunner])
 class CommandAuthTest extends AuthTestBase {
 
-  override val modelFile = "../../assemblies/assembly-common/filtered-resources/samples/authorization/config.xml"
+  private val DLRC_VISIBLE_COMMANDS = List("C1", "C2", "C3", "C5", "C7", "C10", "C11")
 
   test("Regional ops can view commands and command history") {
     as("regional_op") { regionalOp =>
@@ -40,7 +40,9 @@ class CommandAuthTest extends AuthTestBase {
   test("Regional_op cant delete dlrc lock") {
     as("dlrc_app") { dlrc =>
       as("regional_op") { regionalOp =>
-        val dlrcCommandName = dlrc.getEntitiesWithType("DLRC").map { _.getName }.head
+        val dlrcCommands = dlrc.getEntitiesWithType("DLRC").map { _.getName }
+        dlrcCommands.toSet should equal(DLRC_VISIBLE_COMMANDS.toSet)
+        val dlrcCommandName = dlrcCommands.head
         val cmd = dlrc.getCommandByName(dlrcCommandName)
 
         val lock = dlrc.createCommandDenialLock(List(cmd))
@@ -79,6 +81,7 @@ class CommandAuthTest extends AuthTestBase {
     as("dlrc_app") { dlrc =>
 
       val dlrcCommands = dlrc.getEntitiesWithType("DLRC").map { _.getName }
+      dlrcCommands.toSet should equal(DLRC_VISIBLE_COMMANDS.toSet)
       val commands = dlrc.getCommands().map { _.getName }.diff(dlrcCommands)
 
       executeCommands(dlrc, dlrcCommands)
