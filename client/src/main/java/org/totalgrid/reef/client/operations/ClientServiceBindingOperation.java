@@ -22,9 +22,9 @@ import org.totalgrid.reef.client.Promise;
 import org.totalgrid.reef.client.SubscriptionBinding;
 
 
-public interface ClientServiceBindingOperation
+public interface ClientServiceBindingOperation<T>
 {
-    <T> Promise<Response<T>> execute( SubscriptionBinding binding, RestOperations operations );
+    Promise<T> execute( SubscriptionBinding binding, RestOperations operations );
 
     String errorMessage();
 }

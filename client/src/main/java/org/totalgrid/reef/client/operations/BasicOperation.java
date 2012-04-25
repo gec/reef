@@ -20,9 +20,9 @@ package org.totalgrid.reef.client.operations;
 
 import org.totalgrid.reef.client.Promise;
 
-public interface BasicOperation
+public interface BasicOperation<T>
 {
-    <T> Promise<T> execute( RestOperations operations );
+    Promise<T> execute( RestOperations operations );
 
     String errorMessage();
 }

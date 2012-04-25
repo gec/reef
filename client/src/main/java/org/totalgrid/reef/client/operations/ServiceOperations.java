@@ -27,9 +27,9 @@ import org.totalgrid.reef.client.types.TypeDescriptor;
 public interface ServiceOperations
 {
 
-    <T> Promise<T> operation( BasicOperation operation );
+    <T> Promise<T> operation( BasicOperation<T> operation );
 
-    <T, U> Promise<SubscriptionResult<T, U>> subscription( TypeDescriptor<U> descriptor, SubscribeOperation operation );
+    <T, U> Promise<SubscriptionResult<T, U>> subscription( TypeDescriptor<U> descriptor, SubscribeOperation<T> operation );
 
-    <T> Promise<SubscriptionBinding> clientServiceBinding( Service service, ClientServiceBindingOperation operation );
+    <T, U> Promise<SubscriptionBinding> clientServiceBinding( Service service, TypeDescriptor<T> descriptor, ClientServiceBindingOperation<U> operation );
 }
