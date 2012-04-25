@@ -49,6 +49,16 @@ trait ServiceModel[MessageType, ModelType]
    */
   def convertToProto(entry: ModelType): MessageType
 
+  // TODO: implement convertToProtos for all service types
+  /**
+   * convert all of the objects to protos. This is done as a list so we can effeciently load all of data in as few
+   * roundtrips to the database as possible.
+   */
+  def convertToProtos(context: RequestContext, entries: List[ModelType]): List[MessageType] =
+    entries.map { convertToProto(_) }
+
+  final def convertAProto(context: RequestContext, entry: ModelType): MessageType = convertToProtos(context, List(entry)).head
+
   /**
    * Find a unique model entry given a message request
    * @param req   Message type descriptor of model entries

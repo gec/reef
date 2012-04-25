@@ -49,7 +49,7 @@ trait HasCreate extends HasAllTypes with HasComponentId {
     val validated = preCreate(context, request)
     val sql = performCreate(context, model, validated)
     postCreate(context, sql, request)
-    (model.convertToProto(sql), Envelope.Status.CREATED)
+    (model.convertAProto(context, sql), Envelope.Status.CREATED)
   }
 }
 
@@ -86,7 +86,7 @@ trait HasRead extends HasAllTypes with HasComponentId with Logging {
     if (filtered == Nil) {
       context.auth.authorize(context, componentId, "read", Nil)
     }
-    model.sortResults(filtered.map(model.convertToProto(_)))
+    model.sortResults(model.convertToProtos(context, filtered))
   }
 }
 
@@ -114,7 +114,7 @@ trait HasUpdate extends HasAllTypes with HasComponentId {
     val (sql, updated) = performUpdate(context, model, validated, existing)
     postUpdate(context, sql, validated)
     val status = if (updated) Envelope.Status.UPDATED else Envelope.Status.NOT_MODIFIED
-    (model.convertToProto(sql), status)
+    (model.convertAProto(context, sql), status)
   }
 
   protected def performUpdate(context: RequestContext, model: ServiceModelType, request: ServiceType, existing: ModelType): Tuple2[ModelType, Boolean] = {
@@ -138,10 +138,9 @@ trait HasDelete extends HasAllTypes with HasComponentId {
   protected def postDelete(context: RequestContext, results: List[ServiceType]): List[ServiceType] = results
 
   final protected def doDelete(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ServiceType] = {
-    // TODO: consider stripping off everything but UID if UID set on delete
     val validated = preDelete(context, request)
     val existing = performDelete(context, model, validated)
-    postDelete(context, model.sortResults(existing.map(model.convertToProto(_))))
+    postDelete(context, model.sortResults(model.convertToProtos(context, existing)))
   }
 
   protected def performDelete(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ModelType] = {
