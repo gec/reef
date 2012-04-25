@@ -23,7 +23,8 @@ import org.totalgrid.reef.util.LazyVar
 import org.squeryl.annotations.Transient
 import org.squeryl.PrimitiveTypeMode._
 import java.util.UUID
-import org.squeryl.Query
+import org.squeryl.{ Table, Query }
+import org.squeryl.dsl.ast.LogicalBoolean
 
 object Point {
 
@@ -118,9 +119,7 @@ case class CommunicationEndpoint(
   val frontEndAssignment = LazyVar(ApplicationSchema.frontEndAssignments.where(p => (p.endpointId === id) and (p.active === true)).single)
   val measProcAssignment = LazyVar(ApplicationSchema.measProcAssignments.where(p => p.endpointId === id).single)
 
-  val configFiles = LazyVar(Entity
-    .asType(ApplicationSchema.configFiles, EntityQuery.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").toList,
-      Some("ConfigurationFile")))
+  val configFilesIds = LazyVar(EntityQuery.getChildrenOfType(entity.value.id, "uses", "ConfigurationFile").map { _.id }.toList)
 
   def relationship = if (dataSource) "source" else "sink"
 
@@ -128,4 +127,48 @@ case class CommunicationEndpoint(
     Entity.asType(ApplicationSchema.points, EntityQuery.getChildrenOfType(entity.value.id, relationship, "Point").toList, Some("Point")))
   val commands = LazyVar(
     Entity.asType(ApplicationSchema.commands, EntityQuery.getChildrenOfType(entity.value.id, relationship, "Command").toList, Some("Command")))
+}
+
+object CommunicationEndpoint {
+
+  def preloadConfigFileIds(entries: List[CommunicationEndpoint]) {
+    val configFileIds = PreloadQueries.childrenToEntityMap(entries.map { _.entityId }, "uses", "ConfigurationFile")
+    entries.map { entry =>
+      entry.configFilesIds.value = configFileIds.get(entry.entityId) match {
+        case Some(files) => files.map { _.id }
+        case None => Nil
+      }
+    }
+  }
+
+  def preloadPoints(entries: List[CommunicationEndpoint], vmap: (Query[UUID] => LogicalBoolean) => LogicalBoolean) {
+    val endpointIdToPointMap = preloadEndpointChildObjects(entries, ApplicationSchema.points, vmap)
+    entries.foreach { entry =>
+      entry.points.value = endpointIdToPointMap.get(entry.id).getOrElse(Nil)
+    }
+  }
+  def preloadCommands(entries: List[CommunicationEndpoint], vmap: (Query[UUID] => LogicalBoolean) => LogicalBoolean) {
+    val endpointIdToCommandMap = preloadEndpointChildObjects(entries, ApplicationSchema.commands, vmap)
+    entries.foreach { entry =>
+      entry.commands.value = endpointIdToCommandMap.get(entry.id).getOrElse(Nil)
+    }
+  }
+
+  private def preloadEndpointChildObjects[A <: EntityBasedModel](entries: List[CommunicationEndpoint], table: Table[A], vmap: (Query[UUID] => LogicalBoolean) => LogicalBoolean) = {
+    from(ApplicationSchema.edges, ApplicationSchema.endpoints, ApplicationSchema.entities, table)((edge, endpoint, payloadEntity, payload) =>
+      where(
+        (endpoint.entityId in entries.map { _.entityId }) and
+          (edge.parentId === endpoint.entityId) and
+          (edge.childId === payloadEntity.id) and
+          (((endpoint.dataSource === true) and (edge.relationship === "source")) or ((endpoint.dataSource === false) and (edge.relationship === "sink"))) and
+          (payload.entityId === payloadEntity.id) and
+          (vmap { payload.entityId in _ }))
+        select (endpoint.id, payload, payloadEntity)).toList.groupBy(_._1).mapValues {
+      _.map {
+        case (id, payload, payloadEntity) =>
+          payload.entity.value = payloadEntity
+          payload
+      }
+    }
+  }
 }
