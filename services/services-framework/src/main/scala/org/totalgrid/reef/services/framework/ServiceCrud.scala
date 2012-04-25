@@ -22,6 +22,7 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.service.HasComponentId
 import org.totalgrid.reef.authz.FilteredResult
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.exception.InternalServiceException
 
 trait HasCreate extends HasAllTypes with HasComponentId {
 
@@ -78,7 +79,8 @@ trait HasRead extends HasAllTypes with HasComponentId with Logging {
 
     val removed = results.filter(!_.isAllowed)
     if (!removed.isEmpty) {
-      logger.info("Select based filtering included items that should have been filtered: " + removed)
+      //logger.info("Select based filtering included items that should have been filtered: " + removed)
+      throw new InternalServiceException("Select based filtering included items that should have been filtered: " + removed)
     }
     val filtered: List[ModelType] = results.filter(_.isAllowed).map(_.result)
     if (filtered == Nil) {

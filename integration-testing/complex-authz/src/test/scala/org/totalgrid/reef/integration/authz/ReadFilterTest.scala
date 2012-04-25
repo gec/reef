@@ -179,7 +179,7 @@ class ReadFilterTest extends AuthTestBase {
     }
   }
 
-  test("Partially visibile command lock") {
+  ignore("Partially visibile command lock") {
     val commands = client.getCommands()
     val lock = client.createCommandExecutionLock(commands)
     try {
