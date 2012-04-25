@@ -18,8 +18,26 @@
  */
 package org.totalgrid.reef.models
 
+import java.util.UUID
 import org.totalgrid.reef.util.LazyVar
 import org.squeryl.PrimitiveTypeMode._
+
+trait HasLogicalNodeAndEndpoint extends ActiveModel {
+  def entityId: UUID
+  val logicalNode = LazyVar(mayHaveOne(EntityQuery.getParentOfType(entityId, "source", "LogicalNode")))
+
+  val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
+}
+
+object HasLogicalNodeAndEndpoint {
+  def preloadLogicalNode(entries: List[HasLogicalNodeAndEndpoint]) {
+    val commandIdToNode = PreloadQueries.parentToEntityMap(entries.map { _.entityId }, "source", "LogicalNode")
+
+    entries.foreach { entry =>
+      entry.logicalNode.value = commandIdToNode.get(entry.entityId)
+    }
+  }
+}
 
 trait HasRelatedAgent extends ActiveModel {
   def agentId: Long

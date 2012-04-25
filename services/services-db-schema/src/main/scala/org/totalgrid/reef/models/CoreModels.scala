@@ -25,8 +25,6 @@ import org.squeryl.PrimitiveTypeMode._
 import java.util.UUID
 import org.squeryl.Query
 
-import org.totalgrid.reef.client.service.proto.Model
-
 object Point {
 
   def findByName(name: String) = findByNames(name :: Nil)
@@ -39,9 +37,7 @@ case class Point(
     _entityId: UUID,
     pointType: Int,
     unit: String,
-    var abnormal: Boolean) extends EntityBasedModel(_entityId) {
-
-  val logicalNode = LazyVar(mayHaveOne(EntityQuery.getParentOfType(entityId, "source", "LogicalNode")))
+    var abnormal: Boolean) extends EntityBasedModel(_entityId) with HasLogicalNodeAndEndpoint {
 
   /**
    * updated when the abnormal state is changed so we can "tunnel" this update through
@@ -50,8 +46,6 @@ case class Point(
    */
   @Transient
   var abnormalUpdated = false
-
-  val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
 
   val triggers = LazyVar(ApplicationSchema.triggerSets.where(t => t.pointId === id).toList.map { p => p.point.value = this; p })
 
@@ -75,13 +69,9 @@ case class Command(
     val displayName: String,
     val commandType: Int,
     var lastSelectId: Option[Long],
-    var triggerId: Option[Long]) extends EntityBasedModel(_entityId) {
+    var triggerId: Option[Long]) extends EntityBasedModel(_entityId) with HasLogicalNodeAndEndpoint {
 
   def this() = this(new UUID(0, 0), "", -1, Some(0), Some(0))
-
-  val logicalNode = LazyVar(mayHaveOne(EntityQuery.getParentOfType(entityId, "source", "LogicalNode")))
-
-  val endpoint = LazyVar(logicalNode.value.map(_.asType(ApplicationSchema.endpoints, "LogicalNode")))
 
   val currentActiveSelect = LazyVar(CommandLockModel.activeSelect(lastSelectId))
 
