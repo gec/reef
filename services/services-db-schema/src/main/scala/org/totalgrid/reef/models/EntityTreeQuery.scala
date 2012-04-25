@@ -88,7 +88,7 @@ object EntityTreeQuery {
      */
     def toProto: EntityProto = {
       val b = EntityProto.newBuilder.setUuid(makeUuid(ent)).setName(ent.name)
-      types.foreach(b.addTypes(_))
+      types.sorted.foreach(b.addTypes(_))
       for ((rel, nodes) <- subNodes) {
         val r = Relationship.newBuilder
           .setRelationship(rel.rel)
