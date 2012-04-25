@@ -60,6 +60,11 @@ trait ServiceModel[MessageType, ModelType]
   final def convertAProto(context: RequestContext, entry: ModelType): MessageType = convertToProtos(context, List(entry)).head
 
   /**
+   * load all of the LazyVars needed for rendering the object.
+   */
+  def preloadAll(context: RequestContext, entries: List[ModelType]) {}
+
+  /**
    * Find a unique model entry given a message request
    * @param req   Message type descriptor of model entries
    * @return      Optional model type, None if does not exist or more than one
