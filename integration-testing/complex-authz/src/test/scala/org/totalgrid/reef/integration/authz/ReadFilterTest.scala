@@ -26,23 +26,65 @@ import org.totalgrid.reef.client.sapi.sync.ClientOperations
 import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.service.entity.EntityRelation
 
 @RunWith(classOf[JUnitRunner])
 class ReadFilterTest extends AuthTestBase {
 
   private val visibleCommands = List("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8")
   private val visiblePoints = List("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8")
-  private val visibleEquipment = List("Sub1", "Sub2", "Sub3", "Sub4", "East", "West")
+  private val visibleEquipment = List("Sub1", "Sub2", "Sub3", "Sub4")
+  private val visibleEquipmentGroups = List("East", "West")
   private val visibleEndpoints = List("EastEndpoint", "WestEndpoint", "NukeEndpoint")
   private val visibleAgents = List("limited_regional_op")
+  private val allVisibile = visibleCommands ::: visiblePoints ::: visibleEquipment ::: visibleEquipmentGroups ::: visibleEndpoints ::: visibleAgents
 
   test("See only entities we're allowed to") {
     as("limited_regional_op") { ops =>
 
       val entNames = ops.getEntities().map(_.getName)
+      entNames.toSet should equal(allVisibile.toSet)
+    }
+  }
+  test("Entity search only find visibile entries") {
+    as("limited_regional_op") { ops =>
 
-      val expected = visibleCommands ::: visiblePoints ::: visibleEquipment ::: visibleEndpoints ::: visibleAgents
-      entNames.toSet should equal(expected.toSet)
+      val entitesByType = ops.getEntitiesWithType("Command").map(_.getName)
+      entitesByType.toSet should equal(visibleCommands.toSet)
+
+      val sub1 = ops.getEntityByName("Sub1")
+      val sub1Commands = ops.getEntityRelations(sub1.getUuid, List(new EntityRelation("owns", "Command", true))).map(_.getName)
+
+      sub1Commands.toSet should equal(List("C1", "C2").toSet)
+    }
+  }
+
+  test("Multi step entity search only find visibile entries") {
+    as("limited_regional_op") { ops =>
+
+      val allCommandsAsEntityRel = ops.getEntityRelationsFromTypeRoots("Equipment", List(new EntityRelation("owns", "Command", true)))
+      allCommandsAsEntityRel.map { _.getName }.toSet should equal(visibleEquipment.toSet)
+
+      val allCommandNames = allCommandsAsEntityRel.map { _.getRelationsList.map { _.getEntitiesList.map { _.getName } }.flatten }.flatten
+
+      allCommandNames.toSet should equal(visibleCommands.toSet)
+
+      val nukeEndpoint = ops.getEntityByName("NukeEndpoint")
+      val nukeWithCommandsTree = ops.getEntityChildren(nukeEndpoint.getUuid, "source", -1, List("Command"))
+
+      val nukeCommands = nukeWithCommandsTree.getRelationsList.map { _.getEntitiesList.map { _.getName } }.flatten
+
+      nukeCommands should equal(Nil)
+    }
+  }
+
+  test("Entity search from hidden roots are blank") {
+    as("limited_regional_op") { ops =>
+
+      val rootEquipment = ops.getEntitiesWithType("Root")
+      rootEquipment should equal(Nil)
+      val queryFromInvisibleRoot = ops.getEntityRelationsFromTypeRoots("Root", List(new EntityRelation("owns", "Command", true))).map(_.getName)
+      queryFromInvisibleRoot should equal(Nil)
     }
   }
 
