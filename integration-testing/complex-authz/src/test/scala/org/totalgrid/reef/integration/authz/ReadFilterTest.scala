@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import org.totalgrid.reef.client.sapi.sync.ClientOperations
 import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
-import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.exception._
 import org.totalgrid.reef.client.service.entity.EntityRelation
 
 @RunWith(classOf[JUnitRunner])
@@ -179,25 +179,36 @@ class ReadFilterTest extends AuthTestBase {
     }
   }
 
-  ignore("Partially visibile command lock") {
+  test("Partially visibile command lock") {
     val commands = client.getCommands()
     val lock = client.createCommandExecutionLock(commands)
     try {
       as("limited_regional_op") { ops =>
-        // TODO: commandLocks should be returned but individually filtered to only show commands we can see
+        val commandLocks = ops.getCommandLocks()
+        commandLocks.map { _.getId } should equal(List(lock.getId))
+        val commandLock = commandLocks.head
 
+        val commandNames = commandLock.getCommandsList.map { _.getName }
+        commandNames.toSet should equal(visibleCommands.toSet)
+
+        intercept[ExpectationException] {
+          // TODO: shouldn't have been returned name of agent we can't see
+          val agent = ops.getAgentByName(commandLock.getUser)
+        }
+      }
+    } finally {
+      client.deleteCommandLock(lock)
+    }
+  }
+
+  test("Completely invisibile command lock") {
+    // since we can't see C9 or C10 we can't see a lock on those commands
+    val commands = client.getCommandsByNames(List("C9", "C10"))
+    val lock = client.createCommandExecutionLock(commands)
+    try {
+      as("limited_regional_op") { ops =>
         val commandLocks = ops.getCommandLocks()
         commandLocks should equal(Nil)
-
-        val limitedCommands = ops.getCommands()
-        val message = intercept[BadRequestException] {
-          ops.createCommandExecutionLock(limitedCommands)
-        }.getMessage
-
-        message should include("C9")
-        message should include("C12")
-        // TODO: should we be able to see command lock creators for agents we can't see?
-        message should include("system")
       }
     } finally {
       client.deleteCommandLock(lock)
