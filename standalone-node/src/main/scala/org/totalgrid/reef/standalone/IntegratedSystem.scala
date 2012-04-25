@@ -60,7 +60,7 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     logger.info("Resetting database and measurement store")
     val dbConnection = DbConnector.connect(sql)
     measurementStore.connect()
-    CoreServicesSchema.prepareDatabase(dbConnection)
+    CoreServicesSchema.prepareDatabase(dbConnection, true, true)
     ServiceBootstrap.seed(dbConnection, userSettings.getUserPassword)
     measurementStore.reset()
     measurementStore.disconnect()
