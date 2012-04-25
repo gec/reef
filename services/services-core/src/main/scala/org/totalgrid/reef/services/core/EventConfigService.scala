@@ -19,7 +19,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Alarms._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventConfigStore }
 
 import org.totalgrid.reef.services.framework._
 
@@ -30,6 +29,10 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models.{ Command, ApplicationSchema, EventConfigStore }
+import org.totalgrid.reef.authz.VisibilityMap
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -186,11 +189,13 @@ trait EventConfigConversion
     Nil
   }
 
-  def searchQuery(proto: EventConfig, sql: EventConfigStore) = {
+  override def selector(map: VisibilityMap, sql: EventConfigStore) = (true === true)
+
+  override def searchQuery(context: RequestContext, proto: EventConfig, sql: EventConfigStore) = {
     proto.builtIn.asParam(sql.builtIn === _) :: Nil
   }
 
-  def uniqueQuery(proto: EventConfig, sql: EventConfigStore) = {
+  override def uniqueQuery(context: RequestContext, proto: EventConfig, sql: EventConfigStore) = {
     proto.eventType.asParam(sql.eventType === _) :: Nil
   }
 

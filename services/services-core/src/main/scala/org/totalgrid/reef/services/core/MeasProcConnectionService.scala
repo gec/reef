@@ -20,8 +20,6 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Processing.{ MeasurementProcessingConnection => ConnProto, MeasurementProcessingRouting }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.models.{ ApplicationSchema, MeasProcAssignment }
-import org.totalgrid.reef.models.EntityQuery
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.exception.BadRequestException
@@ -31,6 +29,11 @@ import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Descriptors
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models.{ FrontEndAssignment, ApplicationSchema, MeasProcAssignment, EntityQuery }
+import org.totalgrid.reef.authz.VisibilityMap
+import org.squeryl.dsl.ast.LogicalBoolean
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -91,15 +94,28 @@ trait MeasurementProcessingConnectionConversion
   def relatedEntities(entries: List[MeasProcAssignment]) = {
     entries.map { _.application.value.map { _.entityId } }.flatten
   }
+  private def resourceId = Descriptors.measurementProcessingConnection.id
 
-  def searchQuery(proto: ConnProto, sql: MeasProcAssignment) = {
+  private def visibilitySelector(entitySelector: Query[UUID], sql: MeasProcAssignment) = {
+    sql.id in from(table, ApplicationSchema.endpoints)((assign, endpoint) =>
+      where(
+        (assign.endpointId === endpoint.id) and
+          (endpoint.entityId in entitySelector))
+        select (assign.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: MeasProcAssignment) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def searchQuery(context: RequestContext, proto: ConnProto, sql: MeasProcAssignment) = {
     Nil
   }
 
-  def uniqueQuery(proto: ConnProto, sql: MeasProcAssignment) = {
+  override def uniqueQuery(context: RequestContext, proto: ConnProto, sql: MeasProcAssignment) = {
     List(
       proto.id.value.asParam(sql.id === _.toLong).unique,
-      proto.measProc.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(app, { _.id })))
+      proto.measProc.map(app => sql.applicationId in ApplicationConfigConversion.uniqueQueryForId(context, app, { _.id })))
   }
 
   def isModified(entry: MeasProcAssignment, existing: MeasProcAssignment): Boolean = {

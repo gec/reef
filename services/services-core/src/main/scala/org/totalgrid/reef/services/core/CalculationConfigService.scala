@@ -32,6 +32,8 @@ import org.totalgrid.reef.client.sapi.types.Optional._
 import org.totalgrid.reef.models.UUIDConversions._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.squeryl.Query
+import org.totalgrid.reef.authz.VisibilityMap
 
 class CalculationConfigService(protected val model: CalculationConfigServiceModel)
     extends SyncModeledServiceBase[Calculation, CalculationConfig, CalculationConfigServiceModel]
@@ -168,15 +170,29 @@ trait CalculationConfigConversion
     models.map { _.outputPoint.value.entityId }
   }
 
+  private def resourceId = Descriptors.calculation.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: CalculationConfig) = {
+    sql.id in from(table, ApplicationSchema.points)((over, point) =>
+      where(
+        (over.outputPointId === point.id) and
+          (point.entityId in entitySelector))
+        select (over.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: CalculationConfig) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
   def getRoutingKey(req: Calculation) = ProtoRoutingKeys.generateRoutingKey(
     req.outputPoint.endpoint.uuid.value :: req.outputPoint.name :: Nil)
 
-  def uniqueQuery(proto: Calculation, sql: CalculationConfig) = {
+  override def uniqueQuery(context: RequestContext, proto: Calculation, sql: CalculationConfig) = {
     List(proto.uuid.value.asParam(sql.entityId === UUID.fromString(_)).unique,
-      proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })).unique)
+      proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(context, pointProto, { _.id })).unique)
   }
 
-  def searchQuery(proto: Calculation, sql: CalculationConfig) =
+  override def searchQuery(context: RequestContext, proto: Calculation, sql: CalculationConfig) =
     List(proto.outputPoint.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Calculation")))
 
   def isModified(entry: CalculationConfig, existing: CalculationConfig): Boolean = {

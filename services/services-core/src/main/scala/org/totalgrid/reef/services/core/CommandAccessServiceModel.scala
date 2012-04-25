@@ -30,13 +30,30 @@ import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.{ BadRequestException, UnauthorizedException }
 
-import org.totalgrid.reef.models.{ UserCommandModel, ApplicationSchema, CommandLockModel => AccessModel, Command => CommandModel, CommandBlockJoin }
-import java.util.Date
+import org.totalgrid.reef.models.{ ApplicationSchema, CommandLockModel => AccessModel, Command => CommandModel, CommandBlockJoin, Agent => AgentModel }
+import java.util.{ UUID, Date }
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.authz.VisibilityMap
 
 class CommandLockServiceModel
     extends SquerylServiceModel[Long, AccessProto, AccessModel]
     with EventedServiceModel[AccessProto, AccessModel]
     with CommandLockConversion {
+
+  private def preloadAllFields(context: RequestContext, entries: List[AccessModel]) {
+    def commandVisiblity = context.auth.visibilityMap(context).selector(Descriptors.command.id) _
+    AccessModel.preloadAgents(entries)
+    AccessModel.preloadCommands(entries, commandVisiblity)
+  }
+
+  override def convertToProtos(context: RequestContext, entries: List[AccessModel]): List[AccessProto] = {
+
+    preloadAllFields(context, entries)
+
+    entries.map { acc =>
+      convertToProto(acc, acc.commands.value, acc.agent.value.entityName)
+    }
+  }
 
   def commandModel = modelOption.get
   var modelOption: Option[CommandServiceModel] = None
@@ -134,8 +151,13 @@ class CommandLockServiceModel
     val cmdIds = cmds.map { _.id }
     val blocked = areAnyBlockedById(cmdIds)
     if (!blocked.isEmpty) {
-      val msgs = blocked.map { acc =>
-        "( " + acc.commands.map { _.entityName }.mkString(", ") +
+
+      // make sure to only return commands visible to this user in error message
+      val locks = blocked.distinct
+      preloadAllFields(context, locks)
+
+      val msgs = locks.map { acc =>
+        "( " + acc.commands.value.map { _.entityName }.mkString(", ") +
           " locked by: " + acc.agent.value.entityName +
           " until: " + acc.expireTime.map { t => new Date(t).toString }.getOrElse(" unblocked") +
           " )"
@@ -207,15 +229,30 @@ trait CommandLockConversion
   }
 
   def relatedEntities(entries: List[AccessModel]) = {
-    entries.map { _.commands.map { _.entityId } }.flatten
+    Nil
   }
 
-  def uniqueQuery(proto: AccessProto, sql: AccessModel) = {
+  private def resourceId = Descriptors.commandLock.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: AccessModel) = {
+    sql.id in from(table, ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((acc, join, command) =>
+      where(
+        (acc.id === join.accessId) and
+          (join.commandId === command.id) and
+          (command.entityId in entitySelector))
+        select (acc.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: AccessModel) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def uniqueQuery(context: RequestContext, proto: AccessProto, sql: AccessModel) = {
     List(
       proto.id.value.asParam(id => sql.id === id.toLong))
   }
 
-  def searchQuery(proto: AccessProto, sql: AccessModel) = {
+  override def searchQuery(context: RequestContext, proto: AccessProto, sql: AccessModel) = {
     val commandsListOption = if (proto.getCommandsCount > 0) Some(proto.getCommandsList.toList.map { _.getName }) else None
     List(
       proto.access.asParam(ac => sql.access === ac.getNumber),
@@ -240,17 +277,21 @@ trait CommandLockConversion
   }
 
   def convertToProto(entry: AccessModel): AccessProto = {
+    convertToProto(entry, entry.commands.value, entry.agent.value.entityName)
+  }
+
+  def convertToProto(entry: AccessModel, commands: List[CommandModel], agentName: String): AccessProto = {
     val b = AccessProto.newBuilder
       .setId(makeId(entry))
       .setAccess(AccessMode.valueOf(entry.access))
 
-    entry.commands.foreach { cmd =>
+    commands.foreach { cmd =>
       b.addCommands(FepCommandProto.newBuilder.setName(cmd.entityName).setUuid(makeUuid(cmd)))
     }
 
     // optional sql fields
     entry.expireTime.foreach(b.setExpireTime(_))
-    b.setUser(entry.agent.value.entityName)
+    b.setUser(agentName)
     b.setDeleted(entry.deleted)
 
     b.build

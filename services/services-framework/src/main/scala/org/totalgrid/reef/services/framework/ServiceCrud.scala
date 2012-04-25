@@ -21,6 +21,8 @@ package org.totalgrid.reef.services.framework
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.service.HasComponentId
 import org.totalgrid.reef.authz.FilteredResult
+import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.exception.InternalServiceException
 
 trait HasCreate extends HasAllTypes with HasComponentId {
 
@@ -47,11 +49,11 @@ trait HasCreate extends HasAllTypes with HasComponentId {
     val validated = preCreate(context, request)
     val sql = performCreate(context, model, validated)
     postCreate(context, sql, request)
-    (model.convertToProto(sql), Envelope.Status.CREATED)
+    (model.convertAProto(context, sql), Envelope.Status.CREATED)
   }
 }
 
-trait HasRead extends HasAllTypes with HasComponentId {
+trait HasRead extends HasAllTypes with HasComponentId with Logging {
 
   /**
    * Called before read. Default implementation does nothing.
@@ -75,11 +77,16 @@ trait HasRead extends HasAllTypes with HasComponentId {
     val relatedEntities = records.map(r => model.relatedEntities(List(r)))
     val results: List[FilteredResult[ModelType]] = context.auth.filter(context, componentId, "read", records, relatedEntities)
 
+    val removed = results.filter(!_.isAllowed)
+    if (!removed.isEmpty) {
+      //logger.info("Select based filtering included items that should have been filtered: " + removed)
+      throw new InternalServiceException("Select based filtering included items that should have been filtered: " + removed)
+    }
     val filtered: List[ModelType] = results.filter(_.isAllowed).map(_.result)
     if (filtered == Nil) {
       context.auth.authorize(context, componentId, "read", Nil)
     }
-    model.sortResults(filtered.map(model.convertToProto(_)))
+    model.sortResults(model.convertToProtos(context, filtered))
   }
 }
 
@@ -107,7 +114,7 @@ trait HasUpdate extends HasAllTypes with HasComponentId {
     val (sql, updated) = performUpdate(context, model, validated, existing)
     postUpdate(context, sql, validated)
     val status = if (updated) Envelope.Status.UPDATED else Envelope.Status.NOT_MODIFIED
-    (model.convertToProto(sql), status)
+    (model.convertAProto(context, sql), status)
   }
 
   protected def performUpdate(context: RequestContext, model: ServiceModelType, request: ServiceType, existing: ModelType): Tuple2[ModelType, Boolean] = {
@@ -131,10 +138,9 @@ trait HasDelete extends HasAllTypes with HasComponentId {
   protected def postDelete(context: RequestContext, results: List[ServiceType]): List[ServiceType] = results
 
   final protected def doDelete(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ServiceType] = {
-    // TODO: consider stripping off everything but UID if UID set on delete
     val validated = preDelete(context, request)
     val existing = performDelete(context, model, validated)
-    postDelete(context, model.sortResults(existing.map(model.convertToProto(_))))
+    postDelete(context, model.sortResults(model.convertToProtos(context, existing)))
   }
 
   protected def performDelete(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ModelType] = {

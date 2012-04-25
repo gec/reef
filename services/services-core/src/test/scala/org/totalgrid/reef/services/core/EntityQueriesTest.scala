@@ -31,6 +31,7 @@ import org.totalgrid.reef.client.service.entity.EntityRelation
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.EntityRequestBuilders
 import org.totalgrid.reef.services.SilentRequestContext
 import org.totalgrid.reef.models._
+import org.squeryl.dsl.ast.ExpressionNode
 
 object EntityTestSeed {
 
@@ -108,11 +109,14 @@ object EntityTestSeed {
 @RunWith(classOf[JUnitRunner])
 class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction {
   import EntityQuery._
+  import EntityTreeQuery._
 
   override def beforeAll() {
     super.beforeAll
     dbConnection.transaction { EntityTestSeed.seed }
   }
+
+  val allEntitySelector = { uuid: ExpressionNode => true === true }
 
   class EdgeString(me: String) {
     def owns(that: String) = EdgeResult(me, "owns", that)
@@ -176,10 +180,10 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
           .setDescendantOf(true)
           .setDistance(1))
 
-    val nodes = protoToQuery(req.build)
+    val nodes = protoToQuery(req.build, allEntitySelector)
     nodes.size should equal(1)
 
-    val desc = QueryNode(Some("owns"), Some(true), Some(1), None, Nil, Nil)
+    val desc = QueryNode(Some("owns"), Some(true), Some(1), None, Nil, Nil, allEntitySelector)
 
     nodes.head should equal(desc)
   }
@@ -203,11 +207,11 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
                   EntityProto.newBuilder
                     .addTypes("Command")))))
 
-    val nodes = protoToQuery(req.build)
+    val nodes = protoToQuery(req.build, allEntitySelector)
     nodes.size should equal(1)
 
     val desc = QueryNode(Some("owns"), Some(true), Some(1), None, List("Point"),
-      List(QueryNode(Some("owns"), Some(true), Some(1), None, List("Command"), Nil)))
+      List(QueryNode(Some("owns"), Some(true), Some(1), None, List("Command"), Nil, allEntitySelector)), allEntitySelector)
 
     nodes.head should equal(desc)
   }
@@ -228,15 +232,15 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
                 .setName("Junk01")
                 .addTypes("Junk")))
 
-    val nodes = protoToQuery(req.build)
+    val nodes = protoToQuery(req.build, allEntitySelector)
     nodes.size should equal(2)
 
     nodes.contains {
-      QueryNode(Some("owns"), Some(true), Some(1), None, List("Point"), Nil)
+      QueryNode(Some("owns"), Some(true), Some(1), None, List("Point"), Nil, allEntitySelector)
     }
 
     nodes.contains {
-      QueryNode(Some("owns"), Some(true), Some(1), Some("Junk01"), List("Junk"), Nil)
+      QueryNode(Some("owns"), Some(true), Some(1), Some("Junk01"), List("Junk"), Nil, allEntitySelector)
     }
   }
 
@@ -259,15 +263,15 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
                 .setName("Thing1")
                 .addTypes("Thing")))
 
-    val nodes = protoToQuery(req.build)
+    val nodes = protoToQuery(req.build, allEntitySelector)
     nodes.size should equal(2)
 
     nodes.contains {
-      QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil)
+      QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil, allEntitySelector)
     }
 
     nodes.contains {
-      QueryNode(Some("refs"), None, Some(4), Some("Thing1"), List("Thing"), Nil)
+      QueryNode(Some("refs"), None, Some(4), Some("Thing1"), List("Thing"), Nil, allEntitySelector)
     }
   }
 
@@ -280,7 +284,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
           .setDescendantOf(true)
           .setDistance(1))
 
-    val results = protoTreeQuery(req.build)
+    val results = protoTreeQuery(req.build, allEntitySelector)
     results.size should equal(2)
 
     val tree =
@@ -300,7 +304,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
           .setDistance(1))
 
     intercept[Exception] {
-      val results = protoTreeQuery(req.build)
+      val results = protoTreeQuery(req.build, allEntitySelector)
     }
   }
 
@@ -313,7 +317,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
           .setDescendantOf(true)
           .setDistance(1))
 
-    protoTreeQuery(req.build) should equal(Nil)
+    protoTreeQuery(req.build, allEntitySelector) should equal(Nil)
   }
 
   test("Proto query, root only") {
@@ -384,7 +388,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
   test("Tree request downwards one level") {
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA")
 
-    val req = new QueryNode(Some("owns"), Some(true), None, None, List("Line"), Nil)
+    val req = new QueryNode(Some("owns"), Some(true), None, None, List("Line"), Nil, allEntitySelector)
     val results = resultsForQuery(List(req), entRoot)
 
     val tree =
@@ -399,7 +403,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA")
 
     val req = new QueryNode(Some("owns"), Some(true), None, None, List("Line"), List(
-      new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil)))
+      new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil, allEntitySelector)), allEntitySelector)
     val results = resultsForQuery(List(req), entRoot)
 
     val tree =
@@ -418,7 +422,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
   test("Tree request derived") {
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA")
 
-    val req = new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil)
+    val req = new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil, allEntitySelector)
     val results = resultsForQuery(List(req), entRoot)
 
     val tree =
@@ -438,7 +442,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA-DeviceB-PointA")
 
     val req = new QueryNode(Some("owns"), Some(false), None, None, List("Line"), List(
-      new QueryNode(Some("owns"), Some(false), None, None, List("Substation"), Nil)))
+      new QueryNode(Some("owns"), Some(false), None, None, List("Substation"), Nil, allEntitySelector)), allEntitySelector)
     val results = resultsForQuery(List(req), entRoot)
 
     val tree =
@@ -452,8 +456,8 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA")
 
     val req = new QueryNode(Some("owns"), Some(true), None, Some("RegA-SubA-DeviceA"), Nil,
-      List(new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil),
-        new QueryNode(Some("refs"), Some(true), None, None, List("Point"), Nil)))
+      List(new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil, allEntitySelector),
+        new QueryNode(Some("refs"), Some(true), None, None, List("Point"), Nil, allEntitySelector)), allEntitySelector)
 
     val results = resultsForQuery(req, entRoot)
 
@@ -471,8 +475,8 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA")
 
     val req = new QueryNode(Some("owns"), Some(true), None, Some("RegA-SubA"), Nil,
-      List(new QueryNode(Some("owns"), Some(true), None, None, List("Line"), Nil),
-        new QueryNode(Some("owns"), Some(true), None, None, List("Breaker"), Nil)))
+      List(new QueryNode(Some("owns"), Some(true), None, None, List("Line"), Nil, allEntitySelector),
+        new QueryNode(Some("owns"), Some(true), None, None, List("Breaker"), Nil, allEntitySelector)), allEntitySelector)
 
     val results = resultsForQuery(req, entRoot)
 
@@ -561,7 +565,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
     val entRoot = ApplicationSchema.entities.where(t => t.name === "RegA-SubA")
 
     val req = new QueryNode(Some("owns"), Some(true), None, None, List("Line"), List(
-      new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil)))
+      new QueryNode(Some("owns"), Some(true), None, None, List("Point"), Nil, allEntitySelector)), allEntitySelector)
     val results = resultsForQuery(List(req), entRoot)
 
     val ids = results.flatMap(_.idsForType("Point"))
@@ -606,7 +610,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
 
     val request = EntityRequestBuilders.getRelatedEntities("magic", relations)
 
-    EntityQuery.protoTreeQuery(request)
+    EntityTreeQuery.protoTreeQuery(request)
   }
 
   test("Shortcircuit query, some children") {
@@ -615,7 +619,7 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
 
     val request = EntityRequestBuilders.getRelatedEntities("Equipment", relations)
 
-    EntityQuery.protoTreeQuery(request)
+    EntityTreeQuery.protoTreeQuery(request)
   }
 
 }

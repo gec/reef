@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.{ ApplicationSchema, Point, Entity }
-import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
@@ -36,6 +34,9 @@ import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.coordinators.CommunicationEndpointOfflineBehaviors
 import org.totalgrid.reef.models.UUIDConversions._
 import java.util.UUID
+import org.squeryl.Query
+import org.totalgrid.reef.models._
+import org.totalgrid.reef.authz.VisibilityMap
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -147,6 +148,16 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
     models.map { _.entityId }
   }
 
+  private def resourceId = Descriptors.command.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: Point) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: Point) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
   /**
    * this is the service event notifaction routingKey
    */
@@ -158,15 +169,15 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
       Nil
   }
 
-  def uniqueQuery(proto: PointProto, sql: Point) = {
+  override def uniqueQuery(context: RequestContext, proto: PointProto, sql: Point) = {
 
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Point")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique,
-      proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Point")))
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique,
+      proto.entity.map(ent => sql.entityId in EntityTreeQuery.typeIdsFromProtoQuery(ent, "Point")))
   }
 
-  def searchQuery(proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
+  override def searchQuery(context: RequestContext, proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
     proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Point")))
 
   def isModified(entry: Point, existing: Point): Boolean = {

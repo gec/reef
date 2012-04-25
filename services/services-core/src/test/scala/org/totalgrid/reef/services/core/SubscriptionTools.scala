@@ -29,6 +29,7 @@ import org.totalgrid.reef.models.{ ApplicationSchema, Entity }
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.authz._
 import org.totalgrid.reef.client.registration.EventPublisher
+import org.squeryl.Query
 
 // TODO: either extract auth stuff or rename to "context source tools" or something
 object SubscriptionTools {
@@ -136,6 +137,10 @@ object SubscriptionTools {
       filterRequestQueue.enqueue(FilterRequest(service, action, payloads, uuids))
       filterResponseQueue.dequeue.asInstanceOf[List[FilteredResult[A]]]
     }
+
+    def visibilityMap(permissions: => List[Permission]) = VisibilityMap.empty
+
+    def visibilityMap(context: RequestContext) = VisibilityMap.empty
 
     def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {
 

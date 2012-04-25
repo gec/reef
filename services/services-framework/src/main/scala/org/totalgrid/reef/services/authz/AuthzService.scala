@@ -26,6 +26,7 @@ import com.weiglewilczek.slf4s.Logging
 import java.util.UUID
 import org.totalgrid.reef.models.{ Agent, ApplicationSchema }
 import org.totalgrid.reef.client.service.proto.Auth.PermissionSet
+import org.squeryl.Query
 
 object AuthzService {
   def agent = "agent"
@@ -39,6 +40,8 @@ trait AuthzService {
 
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]): Unit
 
+  def visibilityMap(context: RequestContext): VisibilityMap
+
   // load up the permissions sets
   def prepare(context: RequestContext)
 }
@@ -48,6 +51,7 @@ class NullAuthzService extends AuthzService {
     payload.map(Allowed(_, new Permission(true, List(), List(), new WildcardMatcher)))
   }
   def authorize(context: RequestContext, componentId: String, action: String, uuids: => List[UUID]) {}
+  def visibilityMap(context: RequestContext) = VisibilityMap.empty
   def prepare(context: RequestContext) {}
 }
 
@@ -85,7 +89,7 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
 
   private def getContextPermissions(context: RequestContext) = {
     context.get[List[Permission]](AuthzService.permissions)
-      .getOrElse(throw new UnauthorizedException(context.get[String](AuthzService.authError).get))
+      .getOrElse(throw new UnauthorizedException(context.get[String](AuthzService.authError).getOrElse("Not logged in")))
   }
 
   def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]): List[FilteredResult[A]] = {
@@ -106,6 +110,12 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
       case Some(filterResult) => throw new UnauthorizedException(filterResult.toString)
       case None =>
     }
+  }
+
+  def visibilityMap(context: RequestContext) = {
+    // TODO: this is optional only to support bootstrap code
+    val permissions = context.get[List[Permission]](AuthzService.permissions)
+    permissions.map { filteringService.visibilityMap(_) }.getOrElse(VisibilityMap.empty)
   }
 
   def prepare(context: RequestContext) {

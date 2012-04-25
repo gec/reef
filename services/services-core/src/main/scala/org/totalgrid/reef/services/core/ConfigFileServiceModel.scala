@@ -18,9 +18,6 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.models.{ ConfigFile, ApplicationSchema, Entity }
-import org.totalgrid.reef.models.EntityQuery
-
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.Descriptors
 
@@ -33,6 +30,9 @@ import SquerylModel._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile => ConfigProto }
 import java.util.UUID
+import org.squeryl.Query
+import org.totalgrid.reef.models._
+import org.totalgrid.reef.authz.VisibilityMap
 
 class ConfigFileService(protected val model: ConfigFileServiceModel)
     extends SyncModeledServiceBase[ConfigProto, ConfigFile, ConfigFileServiceModel]
@@ -132,10 +132,10 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
   }
 
   def relatedEntities(entries: List[ConfigFile]) = {
-    entries.map { cf => cf.entityId :: cf.owners.value.map { _.id } }.flatten
+    entries.map { _.entityId }
   }
 
-  def searchQuery(proto: ConfigProto, sql: ConfigFile) = {
+  override def searchQuery(context: RequestContext, proto: ConfigProto, sql: ConfigFile) = {
 
     // when searching we go through all the entities in the proto constucting the intersection of the used config files
     val entities = proto.getEntitiesList.toList.map { EntityQuery.findEntity(_) }.flatten
@@ -146,10 +146,20 @@ trait ConfigFileConversion extends UniqueAndSearchQueryable[ConfigProto, ConfigF
     (proto.mimeType.asParam(sql.mimeType === _).search :: query).reverse
   }
 
-  def uniqueQuery(proto: ConfigProto, sql: ConfigFile) = {
+  override def uniqueQuery(context: RequestContext, proto: ConfigProto, sql: ConfigFile) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("ConfigurationFile")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
+  }
+
+  private def resourceId = Descriptors.configFile.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: ConfigFile) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: ConfigFile) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def isModified(entry: ConfigFile, existing: ConfigFile): Boolean = {

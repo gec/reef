@@ -80,7 +80,7 @@ object EntityRequestBuilders {
   }
 
   private def childrenRelatedWithTypeRecursive(relationship: String, types: java.util.List[String], depth: Int): Relationship.Builder = {
-    val child = if (depth == 0) {
+    val child = if (depth <= 0) {
       Entity.newBuilder.addAllTypes(types)
     } else {
       Entity.newBuilder.addAllTypes(types).addRelations(childrenRelatedWithTypeRecursive(relationship, types, depth - 1))

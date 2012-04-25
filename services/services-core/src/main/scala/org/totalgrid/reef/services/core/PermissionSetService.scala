@@ -28,8 +28,9 @@ import org.squeryl.PrimitiveTypeMode._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.client.service.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 import org.totalgrid.reef.models._
+import org.totalgrid.reef.authz.VisibilityMap
+import org.totalgrid.reef.client.service.proto.Auth.{ Permission, PermissionSet => PermissionSetProto }
 
 class PermissionSetService(protected val model: PermissionSetServiceModel)
     extends SyncModeledServiceBase[PermissionSetProto, PermissionSet, PermissionSetServiceModel]
@@ -103,13 +104,15 @@ trait PermissionSetConversions
     Nil
   }
 
-  def uniqueQuery(proto: PermissionSetProto, sql: PermissionSet) = {
+  override def selector(map: VisibilityMap, sql: PermissionSet) = (true === true)
+
+  override def uniqueQuery(context: RequestContext, proto: PermissionSetProto, sql: PermissionSet) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("PermissionSet")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })))
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })))
   }
 
-  def searchQuery(proto: PermissionSetProto, sql: PermissionSet) = Nil
+  override def searchQuery(context: RequestContext, proto: PermissionSetProto, sql: PermissionSet) = Nil
 
   def getRoutingKey(req: PermissionSetProto) = ProtoRoutingKeys.generateRoutingKey {
     req.name :: Nil

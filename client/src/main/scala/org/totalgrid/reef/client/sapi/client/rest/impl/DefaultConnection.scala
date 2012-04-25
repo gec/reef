@@ -104,7 +104,8 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   private def logout(authToken: String, strand: Executor): Promise[Boolean] = {
     DefaultAnnotatedOperations.safeOperation("Error revoking auth token.", strand) {
       val agent = AuthRequest.newBuilder.setToken(authToken).build
-      request(Envelope.Verb.DELETE, agent, BasicRequestHeaders.empty, strand).map(r => r.one.map { _ => true })
+      val headers = BasicRequestHeaders.empty.setAuthToken(authToken)
+      request(Envelope.Verb.DELETE, agent, headers, strand).map(r => r.one.map { _ => true })
     }
   }
 

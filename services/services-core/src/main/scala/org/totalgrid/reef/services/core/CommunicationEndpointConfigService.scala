@@ -20,8 +20,6 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.exception.BadRequestException
 
-import org.totalgrid.reef.models.{ CommunicationEndpoint, ApplicationSchema, Entity }
-import org.totalgrid.reef.models.EntityQuery
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection => ConnProto, Endpoint => CommEndCfgProto, EndpointOwnership, CommChannel }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto, ConfigFile }
 import org.totalgrid.reef.services.framework._
@@ -33,6 +31,9 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.coordinators.{ MeasurementStreamCoordinator }
 import java.util.UUID
+import org.squeryl.Query
+import org.totalgrid.reef.models._
+import org.totalgrid.reef.authz.VisibilityMap
 
 class CommunicationEndpointService(protected val model: CommEndCfgServiceModel)
     extends SyncModeledServiceBase[CommEndCfgProto, CommunicationEndpoint, CommEndCfgServiceModel]
@@ -159,14 +160,24 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
     entries.map { _.entityId }
   }
 
-  def uniqueQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
-    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("CommunicationEndpoint")))
-    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+  private def resourceId = Descriptors.endpoint.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: CommunicationEndpoint) = {
+    sql.entityId in entitySelector
   }
 
-  def searchQuery(proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
+  override def selector(map: VisibilityMap, sql: CommunicationEndpoint) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def uniqueQuery(context: RequestContext, proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("CommunicationEndpoint")))
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
+  }
+
+  override def searchQuery(context: RequestContext, proto: CommEndCfgProto, sql: CommunicationEndpoint) = {
     List(
-      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(channel, { _.entityId }) },
+      proto.channel.map { channel => sql.frontEndPortId in FrontEndPortConversion.searchQueryForId(context, channel, { _.entityId }) },
       proto.protocol.map { sql.protocol === _ },
       proto.autoAssigned.map { sql.autoAssigned === _ })
   }

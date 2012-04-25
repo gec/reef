@@ -51,11 +51,14 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
 
         logger.info(service + ":" + action + " -- " + EntityHelpers.getNames(uuidList.flatten.distinct).mkString("(", ",", ")"))
         resourceFilter.resourceSpecificFiltering(applicablePermissions, service, action, payloads.zip(uuidList))
+
       }
     }
 
     results
   }
+
+  def visibilityMap(permissions: => List[Permission]) = new VisibilityMapImpl(permissions)
 
   private def unmatchedServiceAction(service: String, action: String) = {
     Permission.denyAllPermission("No permission matched " + service + ":" + action + ". Assuming deny *")

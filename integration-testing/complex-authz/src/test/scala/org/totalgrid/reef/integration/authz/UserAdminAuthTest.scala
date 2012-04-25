@@ -40,7 +40,7 @@ class UserAdminAuthTest extends AuthTestBase {
       val agent = admin.getAgents().filter(_.getName == "fakeUser").headOption
       agent.foreach { admin.deleteAgent(_) }
 
-      val fakeUser = admin.createNewAgent("fakeUser", "system", List("user_role"))
+      val fakeUser = admin.createNewAgent("fakeUser", "system", List("user_role", "system_viewer"))
       try {
         // fake user can change own password
         as("fakeUser") { limitedUser =>

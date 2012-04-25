@@ -29,7 +29,11 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.event.EventType
-import org.totalgrid.reef.models.{ UUIDConversions, Agent, ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin }
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.authz.VisibilityMap
+import org.totalgrid.reef.models.{ Agent, UUIDConversions, ApplicationSchema, AuthToken => AuthTokenModel, AuthTokenPermissionSetJoin }
+import org.squeryl.dsl.ast.LogicalBoolean
 
 /**
  * auth token specific code for searching the sql table and converting from
@@ -48,17 +52,31 @@ trait AuthTokenConversions extends UniqueAndSearchQueryable[AuthToken, AuthToken
     entries.map { _.agent.value.entityId }
   }
 
-  def uniqueQuery(proto: AuthToken, sql: AuthTokenModel) = {
+  private def resourceId = Descriptors.authToken.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: AuthTokenModel) = {
+    sql.id in from(table, ApplicationSchema.agents)((auth, agent) =>
+      where(
+        (auth.agentId === agent.id) and
+          (agent.entityId in entitySelector))
+        select (auth.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: AuthTokenModel): LogicalBoolean = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def uniqueQuery(context: RequestContext, proto: AuthToken, sql: AuthTokenModel) = {
     List(
       proto.id.value.asParam(sql.id === _.toInt),
-      proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(agent, { _.id })),
+      proto.agent.map(agent => sql.agentId in AgentConversions.uniqueQueryForId(context, agent, { _.id })),
       proto.loginLocation.asParam(sql.loginLocation === _),
       proto.clientVersion.asParam(sql.clientVersion === _),
       proto.revoked.asParam(sql.revoked === _),
       proto.token.asParam(sql.token === _))
   }
 
-  def searchQuery(proto: AuthToken, sql: AuthTokenModel) = {
+  override def searchQuery(context: RequestContext, proto: AuthToken, sql: AuthTokenModel) = {
     Nil
   }
 
@@ -118,7 +136,7 @@ class AuthTokenServiceModel
     val permissionsRequested = authToken.getPermissionSetsList.toList
     val permissionSets = if (permissionsRequested.size == 1 && permissionsRequested(0).getName == "*") availableSets
     else {
-      val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(ps)).sum
+      val setQuerySize = permissionsRequested.map(ps => PermissionSetConversions.searchQuerySize(context, ps)).sum
       if (setQuerySize > 0) {
         val askedForSets = permissionsRequested.map(ps => PermissionSetConversions.findRecords(context, ps)).flatten.distinct
         val unavailableSets = askedForSets.diff(availableSets)

@@ -24,10 +24,13 @@ import org.totalgrid.reef.client.service.proto.Utils.Attribute
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.models.{ EntityQuery, Entity, ApplicationSchema, EntityAttribute => AttrModel }
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 import org.totalgrid.reef.services.framework.SquerylModel._
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models.{ Command, EntityQuery, Entity, ApplicationSchema, EntityAttribute => AttrModel }
+import org.totalgrid.reef.authz.VisibilityMap
 
 class EntityAttributeService(protected val model: EntityAttributeServiceModel)
     extends SyncModeledServiceBase[AttrProto, AttrModel, EntityAttributeServiceModel]
@@ -87,16 +90,26 @@ trait EntityAttributeConversion extends UniqueAndSearchQueryable[AttrProto, Attr
     proto.entity.uuid.value :: proto.entity.name :: proto.attribute.name :: Nil
   }
 
-  def searchQuery(proto: AttrProto, sql: AttrModel) = Nil
+  override def searchQuery(context: RequestContext, proto: AttrProto, sql: AttrModel) = Nil
 
-  def uniqueQuery(proto: AttrProto, sql: AttrModel) = {
+  override def uniqueQuery(context: RequestContext, proto: AttrProto, sql: AttrModel) = {
     List(
-      proto.entity.map(ent => sql.entityId in EntitySearches.uniqueQueryForId(ent, { _.id })),
+      proto.entity.map(ent => sql.entityId in EntitySearches.uniqueQueryForId(context, ent, { _.id })),
       proto.attribute.name.map(n => sql.attrName === n))
   }
 
   def relatedEntities(entries: List[AttrModel]) = {
     entries.map { _.entityId }
+  }
+
+  private def resourceId = Descriptors.entityAttribute.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: AttrModel) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: AttrModel) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
   }
 
   def isModified(entry: AttrModel, existing: AttrModel): Boolean = {

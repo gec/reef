@@ -34,7 +34,11 @@ import org.totalgrid.reef.client.service.proto.Model.CommandType
 import org.totalgrid.reef.event.{ SystemEventSink, EventType }
 import org.squeryl.dsl.fsm.SelectState
 import org.squeryl.dsl.QueryYield
-import org.squeryl.dsl.ast.OrderByArg
+import java.util.UUID
+import org.totalgrid.reef.client.service.proto.Descriptors
+import org.totalgrid.reef.authz.VisibilityMap
+import org.squeryl.dsl.ast.{ LogicalBoolean, OrderByArg }
+import org.squeryl.Query
 
 class UserCommandRequestServiceModel(
   accessModel: CommandLockServiceModel)
@@ -136,14 +140,28 @@ trait UserCommandRequestConversion extends UniqueAndSearchQueryable[UserCommandR
     models.map { _.command.entityId }
   }
 
+  private def resourceId = Descriptors.userCommandRequest.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: UserCommandModel) = {
+    sql.id in from(table, ApplicationSchema.commands)((request, command) =>
+      where(
+        (request.commandId === command.id) and
+          (command.entityId in entitySelector))
+        select (request.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: UserCommandModel): LogicalBoolean = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
   // Relies on implicit to combine LogicalBooleans
-  def uniqueQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
+  override def uniqueQuery(context: RequestContext, proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
       proto.id.value.asParam(sql.id === _.toLong),
       proto.commandRequest.correlationId.asParam(sql.corrolationId === _))
   }
 
-  def searchQuery(proto: UserCommandRequest, sql: UserCommandModel) = {
+  override def searchQuery(context: RequestContext, proto: UserCommandRequest, sql: UserCommandModel) = {
     List(
       proto.status.map(st => sql.status === st.getNumber),
       proto.commandRequest.command.name.asParam(cname => sql.commandId in FepCommandModel.findIdsByNames(cname :: Nil)))
