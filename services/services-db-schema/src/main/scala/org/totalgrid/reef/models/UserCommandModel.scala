@@ -71,19 +71,6 @@ object CommandLockModel {
   }
 
   /**
-   * in one db roundtrip go an load all of the agent data and store inside the lazy var
-   */
-  def preloadAgents(locks: List[CommandLockModel]) {
-    val allAgents = from(ApplicationSchema.agents)(agent =>
-      where(agent.id in locks.map { _.agentId })
-        select (agent)).toList.map { a => a.id -> a }.toMap
-
-    locks.foreach { lock =>
-      lock.agent.value = allAgents(lock.agentId)
-    }
-  }
-
-  /**
    * in one db roundtrip go an load all of the visible commands
    */
   def preloadCommands(locks: List[CommandLockModel], vmap: (Query[UUID] => LogicalBoolean) => LogicalBoolean) {
@@ -102,14 +89,13 @@ case class CommandLockModel(
     val access: Int,
     val expireTime: Option[Long],
     val agentId: Long,
-    var deleted: Boolean) extends ModelWithId {
+    var deleted: Boolean) extends ModelWithId with HasRelatedAgent {
   def this() = this(0, Some(0), 0, false)
 
   val commands = LazyVar(from(ApplicationSchema.commandToBlocks, ApplicationSchema.commands)((join, cmd) =>
     where(join.accessId === id and join.commandId === cmd.id)
       select (cmd)).toList)
 
-  val agent = LazyVar(hasOne(ApplicationSchema.agents, agentId))
 }
 
 case class CommandBlockJoin(
