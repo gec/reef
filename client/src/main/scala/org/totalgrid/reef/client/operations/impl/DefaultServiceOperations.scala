@@ -22,11 +22,11 @@ import org.totalgrid.reef.client.registration.Service
 import org.totalgrid.reef.client.types.TypeDescriptor
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.operations._
-import impl.DefaultServiceOperations.{DefaultSubscriptionResult, CancelingListener}
+import impl.DefaultServiceOperations.{ DefaultSubscriptionResult, CancelingListener }
 import java.util.concurrent.RejectedExecutionException
 import org.totalgrid.reef.client.exception.{ ServiceIOException, InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client._
-import ScalaPromise._
+import scl.ScalaPromise._
 
 object DefaultServiceOperations {
 
@@ -49,15 +49,17 @@ object DefaultServiceOperations {
 class DefaultServiceOperations(restOperations: RestOperations, bindOperations: BindOperations, exe: Executor) extends ServiceOperations {
 
   private def safeOp[A](op: () => Promise[A], err: () => String): Promise[A] = {
-    val annotateError = new PromiseErrorTransform {
+    /*val annotateError = new PromiseErrorTransform {
       def transformError(error: ReefServiceException): ReefServiceException = {
         error.addExtraInformation(err())
         error
       }
-    }
+    }*/
+
 
     try {
-      op().transformError(annotateError)
+      //op().transformError(annotateError)
+      op().mapError { rse => rse.addExtraInformation(err()); rse }
     } catch {
       case npe: NullPointerException =>
         FuturePromise.error[A](new InternalClientError("Null pointer error while making request. Check that all parameters are not null.", npe), exe)
@@ -71,7 +73,6 @@ class DefaultServiceOperations(restOperations: RestOperations, bindOperations: B
   def operation[A](operation: BasicOperation[A]): Promise[A] = {
     safeOp(() => operation.execute(restOperations), operation.errorMessage _)
   }
-
 
   def subscription[A, B](descriptor: TypeDescriptor[B], operation: SubscribeOperation[A]): Promise[SubscriptionResult[A, B]] = {
     try {

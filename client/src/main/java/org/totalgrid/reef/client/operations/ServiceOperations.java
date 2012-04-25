@@ -31,5 +31,6 @@ public interface ServiceOperations
 
     <T, U> Promise<SubscriptionResult<T, U>> subscription( TypeDescriptor<U> descriptor, SubscribeOperation<T> operation );
 
-    <T, U> Promise<SubscriptionBinding> clientServiceBinding( Service service, TypeDescriptor<T> descriptor, ClientServiceBindingOperation<U> operation );
+    <T, U> Promise<SubscriptionBinding> clientServiceBinding( Service service, TypeDescriptor<T> descriptor,
+        ClientServiceBindingOperation<U> operation );
 }

@@ -40,7 +40,7 @@ trait HasAnnotatedOperations {
   /**
    * do a set of operations as a single batch request (not for use for multi-step requests)!
    */
-  def batch[A](fun: (RestOperations) => A): A = {
+  protected def batch[A](fun: (RestOperations) => A): A = {
     val batch = buildBatchRestOps
     val result = fun(batch)
     batch.flush()
