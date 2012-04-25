@@ -66,6 +66,19 @@ object CommandLockModel {
       }
     }
   }
+
+  /**
+   * in one db roundtrip go an load all of the agent data and store inside the lazy var
+   */
+  def preloadAgents(locks: List[CommandLockModel]) {
+    val allAgents = from(ApplicationSchema.agents)(agent =>
+      where(agent.id in locks.map { _.agentId })
+        select (agent)).toList.map { a => a.id -> a }.toMap
+
+    locks.foreach { lock =>
+      lock.agent.value = allAgents(lock.agentId)
+    }
+  }
 }
 
 case class CommandLockModel(

@@ -19,15 +19,22 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc.ClientOperations
+import org.totalgrid.reef.client.sapi.sync.{ ClientOperations => SyncOperations }
 import org.totalgrid.reef.client.service.{ ClientOperations => JClientOperations }
 import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
 import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.service.impl.ClientOperationsJavaShim
+import org.totalgrid.reef.client.sapi.sync.impl.ClientOperationsSyncShim
 import org.totalgrid.reef.client.service.async.impl.ClientOperationsAsyncJavaShim
 import org.totalgrid.reef.client.service.async.ClientOperationsAsync
 import org.totalgrid.reef.client.Client
 
 class ClientOperationsWrapper(client: Client) extends ApiBase(client) with ClientOperationsImpl
+
+final class ClientOperationsSyncShimWrapper(client: Client) extends ClientOperationsSyncShim {
+  private val srv = new ClientOperationsWrapper(client)
+  override def service = srv
+}
 
 final class ClientOperationsJavaShimWrapper(client: Client) extends ClientOperationsJavaShim {
 
@@ -45,6 +52,7 @@ final class ClientOperationsAsyncJavaShimWrapper(client: Client) extends ClientO
 
 object ClientOperationsServiceProviders {
   def getScalaServiceInfo = RpcProvider(new ClientOperationsWrapper(_), List(classOf[ClientOperations]))
+  def getScalaSyncServiceInfo = RpcProvider(new ClientOperationsSyncShimWrapper(_), List(classOf[SyncOperations]))
   def getJavaServiceInfo = RpcProvider(new ClientOperationsJavaShimWrapper(_), List(classOf[JClientOperations]))
   def getJavaAsyncServiceInfo = RpcProvider(new ClientOperationsAsyncJavaShimWrapper(_), List(classOf[ClientOperationsAsync]))
 }

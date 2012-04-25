@@ -85,19 +85,19 @@ object StandardAuthSeedData {
 
     val selfAgent = seeder.makeSelector("self")
     val updatePassword = seeder.makePermission(true, List("update"), List("agent_password"), List(selfAgent))
-    val readSelfAgent = seeder.makePermission(true, List("read"), List("*"), List(selfAgent))
+    val readSelfAgent = seeder.makePermission(true, List("read"), List("agent", "auth_token", "entity"), List(selfAgent))
 
     val readAndDeleteOwnTokens = seeder.makePermission(true, List("read", "delete"), List("auth_token"), List(selfAgent))
     val denyAuthTokens = seeder.makePermission(false, List("read", "delete"), List("auth_token"))
 
     val readOnlyRole = seeder.addRole("read_only", List(readAndDeleteOwnTokens, denyAuthTokens, readOnly))
 
-    val userAdminPermission = seeder.makePermission(true, List("*"), List("agent", "agent permission_set", "agent_password", "agent_permissions"))
+    val userAdminPermission = seeder.makePermission(true, List("*"), List("agent", "permission_set", "agent_password", "agent_permissions"))
     val userAdminRole = seeder.addRole("user_setup", List(userAdminPermission))
 
     val appCreate = seeder.makePermission(true, List("create"), List("application_config"))
-    val appUpdate = seeder.makePermission(true, List("update", "delete", "read"), List("application_config"), List(selfAgent))
-    val statusUpdate = seeder.makePermission(true, List("update"), List("status_snapshot"), List(selfAgent))
+    val appUpdate = seeder.makePermission(true, List("update", "delete", "read"), List("application_config", "entity"), List(selfAgent))
+    val statusUpdate = seeder.makePermission(true, List("update", "read"), List("status_snapshot"), List(selfAgent))
     val applicationRole = seeder.addRole("application", List(appCreate, appUpdate, statusUpdate))
 
     val userRole = seeder.addRole("user_role", List(updatePassword, readSelfAgent, readAndDeleteOwnTokens))

@@ -26,9 +26,9 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
-import org.totalgrid.reef.models.{ EntityTypeMetaModel, EntityToTypeJoins, ApplicationSchema, Entity }
-import org.totalgrid.reef.models.EntityQuery
+import org.totalgrid.reef.models._
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
+import org.squeryl.dsl.ast.{ RightHandSideOfIn, BinaryOperatorNodeLogicalBoolean, ExpressionNode }
 
 object EntityService {
   def seed() {
@@ -126,15 +126,23 @@ class EntityServiceModel
   }
 
   def findRecords(context: RequestContext, req: EntityProto): List[Entity] = {
+
+    val visibilityMap = context.auth.visibilityMap(context)
+    def selector(uuid: ExpressionNode) = visibilityMap.selector("entity") { entitySelector =>
+      new BinaryOperatorNodeLogicalBoolean(uuid, new RightHandSideOfIn(entitySelector), "in", true)
+    }
+
     val results = if (req.hasUuid && req.getUuid.getValue == "*") {
-      EntityQuery.allQuery
+      // if doing an "all" query we should just return all of the visible entries
+      from(table)(ent =>
+        where(selector(ent.id))
+          select (ent)).toList
     } else {
-      EntityQuery.protoTreeQuery(req).map { resultNode =>
+      EntityTreeQuery.protoTreeQuery(req, selector).map { resultNode =>
         resultNode.ent.resultNode = Some(resultNode)
         resultNode.ent
       }
     }
-
     // TODO: Make limits non-superficial
     results.take(context.getHeaders.getResultLimit().getOrElse(100))
   }

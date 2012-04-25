@@ -31,6 +31,9 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.{ SaltedPasswordHelper, ApplicationSchema, Agent => AgentModel, AgentPermissionSetJoin }
 
 import org.totalgrid.reef.models.UUIDConversions._
+import org.totalgrid.reef.authz.VisibilityMap
+import org.squeryl.Query
+import java.util.UUID
 
 class AgentService(protected val model: AgentServiceModel)
     extends SyncModeledServiceBase[Agent, AgentModel, AgentServiceModel]
@@ -135,7 +138,7 @@ class AgentServiceModel
     }
   }
 
-  def findRequestedPermissionSets(context: RequestContext, req: Agent) = {
+  private def findRequestedPermissionSets(context: RequestContext, req: Agent) = {
     val requestedPermissions = req.getPermissionSetsList.toList
     if (requestedPermissions.exists { p => p.getName == "*" || p.getUuid == "*" }) {
       throw new BadRequestException("Cannot use wildcard in PermissionSet specifiers, must use UUIDs or names: " + requestedPermissions)
@@ -159,13 +162,23 @@ trait AgentConversions
     entries.map { _.entityId }
   }
 
-  def uniqueQuery(proto: Agent, sql: AgentModel) = {
-    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Agent")))
-    List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+  private def resourceId = Descriptors.agent.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: AgentModel) = {
+    sql.entityId in entitySelector
   }
 
-  def searchQuery(proto: Agent, sql: AgentModel) = Nil
+  override def selector(map: VisibilityMap, sql: AgentModel) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def uniqueQuery(context: RequestContext, proto: Agent, sql: AgentModel) = {
+    val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Agent")))
+    List(
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
+  }
+
+  override def searchQuery(context: RequestContext, proto: Agent, sql: AgentModel) = Nil
 
   def getRoutingKey(req: Agent) = ProtoRoutingKeys.generateRoutingKey {
     req.name :: Nil

@@ -22,6 +22,7 @@ import java.util.UUID
 import org.totalgrid.reef.client.service.proto.Auth.{ Permission => PermissionProto, PermissionSet => PermissionSetProto }
 
 import scala.collection.JavaConversions._
+import org.squeryl.Query
 
 object Permission {
   def fromProto(permissionSet: PermissionSetProto, agentName: String): List[Permission] = {
@@ -59,6 +60,8 @@ class Permission(val allow: Boolean, services: List[String], actions: List[Strin
 
   def applicable(s: String, a: String) = (services == List("*") || services.find(_ == s).isDefined) && (actions == List("*") || actions.find(_ == a).isDefined)
 
+  def isRead() = actions == List("*") || actions.find(_ == "read").isDefined
+
   def resourceDependent = matcher.resourceDependent
 
   def reason = toString
@@ -89,4 +92,6 @@ class Permission(val allow: Boolean, services: List[String], actions: List[Strin
     val pre = if (allow) "Allow" else "Deny"
     pre + " on " + services + " for " + actions + " with " + matcher.toString
   }
+
+  def selector(): Option[Query[UUID]] = matcher.selector()
 }

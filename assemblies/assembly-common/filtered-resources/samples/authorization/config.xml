@@ -32,7 +32,12 @@
             </auth:role>
 
             <auth:role name="limited_viewer">
-                <auth:allow actions="read" resources="entity" selectStyle="parent" selectArguments="West East"/>
+                <auth:allow actions="read" resources="entity command point user_command_request command_lock" selectStyle="parent" selectArguments="West East"/>
+                <auth:allow actions="create" resources="command_lock command_lock_select command_lock_block user_command_request" selectStyle="parent" selectArguments="West East"/>
+                <auth:allow actions="read" resources="calculation trigger_set meas_override" selectStyle="parent" selectArguments="West East"/>
+                <!-- TODO: Since endpoints don't have same relationships as other equipment they aren't picked up by parent selector -->
+                <auth:allow actions="read" resources="endpoint endpoint_connection"/>
+                <auth:allow actions="read" resources="entity" selectStyle="type" selectArguments="CommunicationEndpoint"/>
             </auth:role>
         </auth:roles>
 
@@ -43,7 +48,7 @@
             <auth:agent name="dlrc_app" roles="user system_viewer command_issuer dlrc application"/>
             <auth:agent name="nuke_op" roles="user system_viewer command_issuer nuke"/>
 
-            <auth:agent name="limited_regional_op" roles="user_role limited_viewer regional"/>
+            <auth:agent name="limited_regional_op" roles="user_role limited_viewer regional command_issuer"/>
         </auth:agents>
     </auth:authorization>
 
@@ -57,6 +62,13 @@
             <equip:control name="C2">
                 <equip:type name="DLRC"/>
             </equip:control>
+            <equip:status name="P1" unit="status">
+                <equip:type name="DLRC-Point"/>
+                <equip:type name="Critical-Point" />
+            </equip:status>
+            <equip:status name="P2" unit="status">
+                <equip:type name="DLRC-Point"/>
+            </equip:status>
         </equip:equipment>
         <equip:equipment name="Sub2" addParentNames="false">
             <equip:control name="C3">
@@ -65,6 +77,12 @@
             <equip:control name="C4">
                 <equip:type name="Critical"/>
             </equip:control>
+            <equip:status name="P3" unit="status">
+                <equip:type name="DLRC-Point"/>
+            </equip:status>
+            <equip:status name="P4" unit="status">
+                <equip:type name="Critical-Point"/>
+            </equip:status>
         </equip:equipment>
         <equip:equipment name="Sub3" addParentNames="false">
             <equip:control name="C5">
@@ -72,6 +90,12 @@
                 <equip:type name="Critical"/>
             </equip:control>
             <equip:control name="C6"/>
+
+            <equip:status name="P5" unit="status">
+                <equip:type name="DLRC-Point"/>
+                <equip:type name="Critical-Point"/>
+            </equip:status>
+            <equip:status name="P6" unit="status"/>
         </equip:equipment>
         <equip:equipment name="Sub4" addParentNames="false">
             <equip:control name="C7">
@@ -81,6 +105,14 @@
             <equip:control name="C8">
                 <equip:type name="Critical"/>
             </equip:control>
+
+            <equip:status name="P7" unit="status">
+                <equip:type name="DLRC-Point"/>
+
+            </equip:status>
+            <equip:status name="P8" unit="status">
+                <equip:type name="Critical-Point"/>
+            </equip:status>
         </equip:equipment>
 
         <equip:equipment name="Nuke1" addParentNames="false">
@@ -96,6 +128,19 @@
             <equip:control name="C12">
                 <equip:type name="Critical"/>
             </equip:control>
+
+            <equip:status name="P9" unit="status">
+                <equip:type name="Critical-Point"/>
+            </equip:status>
+            <equip:status name="P10" unit="status">
+                <equip:type name="DLRC-Point"/>
+            </equip:status>
+            <equip:status name="P11" unit="status">
+                <equip:type name="DLRC-Point"/>
+            </equip:status>
+            <equip:status name="P12" unit="status">
+                <equip:type name="Critical-Point"/>
+            </equip:status>
         </equip:equipment>
         <equip:equipment name="West" addParentNames="false">
             <equip:equipment name="Sub1"/>
@@ -116,24 +161,51 @@
     </equip:equipmentModel>
     <comm:communicationsModel>
 
-        <comm:endpoint name="AuthEndpoint">
+        <comm:endpoint name="WestEndpoint">
             <comm:protocol name="benchmark">
                 <comm:simOptions delay="5000"/>
             </comm:protocol>
-
             <comm:equipment name="All" addParentNames="false">
                 <comm:control name="C1"/>
                 <comm:control name="C2"/>
                 <comm:control name="C3"/>
                 <comm:control name="C4"/>
+                <comm:status name="P1"/>
+                <comm:status name="P2"/>
+                <comm:status name="P3"/>
+                <comm:status name="P4"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+        <comm:endpoint name="EastEndpoint">
+            <comm:protocol name="benchmark">
+                <comm:simOptions delay="5000"/>
+            </comm:protocol>
+            <comm:equipment name="All" addParentNames="false">
                 <comm:control name="C5"/>
                 <comm:control name="C6"/>
                 <comm:control name="C7"/>
                 <comm:control name="C8"/>
+                <comm:status name="P5"/>
+                <comm:status name="P6"/>
+                <comm:status name="P7"/>
+                <comm:status name="P8"/>
+            </comm:equipment>
+        </comm:endpoint>
+
+        <comm:endpoint name="NukeEndpoint">
+            <comm:protocol name="benchmark">
+                <comm:simOptions delay="5000"/>
+            </comm:protocol>
+            <comm:equipment name="All" addParentNames="false">
                 <comm:control name="C9"/>
                 <comm:control name="C10"/>
                 <comm:control name="C11"/>
                 <comm:control name="C12"/>
+                <comm:status name="P9"/>
+                <comm:status name="P10"/>
+                <comm:status name="P11"/>
+                <comm:status name="P12"/>
             </comm:equipment>
         </comm:endpoint>
     </comm:communicationsModel>

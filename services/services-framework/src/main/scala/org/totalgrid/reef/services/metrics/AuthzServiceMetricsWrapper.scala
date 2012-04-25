@@ -45,6 +45,8 @@ class AuthzServiceMetricsWrapper(authz: AuthzService, source: MetricsHookSource)
     }
   }
 
+  def visibilityMap(context: RequestContext) = authz.visibilityMap(context)
+
   override def prepare(context: RequestContext) = {
     prepareCount(1)
     prepareTime {

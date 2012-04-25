@@ -19,8 +19,6 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Events._
-import org.totalgrid.reef.models.{ ApplicationSchema, EventStore, AlarmModel, EventConfigStore, Entity }
-import org.totalgrid.reef.models.EntityQuery
 
 import org.totalgrid.reef.services.framework._
 
@@ -31,6 +29,10 @@ import org.squeryl.dsl.fsm.{ SelectState }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
+import java.util.UUID
+import org.squeryl.Query
+import org.totalgrid.reef.authz.VisibilityMap
+import org.totalgrid.reef.models._
 
 //import org.totalgrid.reef.services.framework.ProtoSerializer._
 import org.squeryl.PrimitiveTypeMode._
@@ -164,6 +166,16 @@ trait EventConversion
     entries.map { _.entityId }.flatten
   }
 
+  private def resourceId = Descriptors.event.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: EventStore) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: EventStore) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
   // Derive a AMQP routing key from a proto. Used by post?
   def getRoutingKey(req: Event) = ProtoRoutingKeys.generateRoutingKey {
     req.eventType ::
@@ -201,7 +213,7 @@ trait EventConversion
   def makeSubscribeKeys(req: Event): List[String] = {
 
     // just get top level entities from query, skip subscribe on descendents
-    val entities = req.entity.map { EntityQuery.protoTreeQuery(_).map { _.ent } }.getOrElse(Nil)
+    val entities = req.entity.map { EntityTreeQuery.protoTreeQuery(_).map { _.ent } }.getOrElse(Nil)
 
     val keys = if (entities.size > 0) entities.map(getRoutingKey(req, _))
     else getRoutingKey(req) :: Nil
@@ -210,16 +222,16 @@ trait EventConversion
   }
 
   // Derive a SQL expression from the proto. Used by GET. 
-  def searchQuery(proto: Event, sql: EventStore) = {
+  override def searchQuery(context: RequestContext, proto: Event, sql: EventStore) = {
     List(
       proto.eventType.asParam(sql.eventType === _),
       proto.severity.asParam(sql.severity === _),
       proto.subsystem.asParam(sql.subsystem === _),
       proto.userId.asParam(sql.userId === _),
-      proto.entity.map(ent => sql.entityId in EntityQuery.idsFromProtoQuery(ent)))
+      proto.entity.map(ent => sql.entityId in EntityTreeQuery.idsFromProtoQuery(ent)))
   }
 
-  def uniqueQuery(proto: Event, sql: EventStore) = {
+  override def uniqueQuery(context: RequestContext, proto: Event, sql: EventStore) = {
     List(
       proto.id.value.asParam(sql.id === _.toLong).unique)
   }

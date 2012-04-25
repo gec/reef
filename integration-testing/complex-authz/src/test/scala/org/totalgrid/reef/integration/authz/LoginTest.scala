@@ -54,10 +54,13 @@ class LoginTest extends AuthTestBase {
   val GUEST = "guest"
 
   test("Guest can only see own logins") {
+    (1 to 50).foreach { i => as(ADMIN) { c => } }
+
     as(GUEST) { guest =>
+      guest.setHeaders(guest.getHeaders.setResultLimit(5))
       // we dont' get any guest logins
       val allLogins = guest.getLogins(true)
-
+      allLogins should not equal (Nil)
       allAgent(GUEST, allLogins)
 
       val ownLogins = guest.getOwnLogins(true)

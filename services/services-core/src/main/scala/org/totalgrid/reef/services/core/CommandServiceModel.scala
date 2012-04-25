@@ -32,9 +32,10 @@ import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Model.{ CommandType, Command => CommandProto, Entity => EntityProto }
-import org.totalgrid.reef.models.{ Command, ApplicationSchema, Entity }
-import org.totalgrid.reef.models.EntityQuery
 import java.util.UUID
+import org.totalgrid.reef.authz.VisibilityMap
+import org.totalgrid.reef.models._
+import org.squeryl.dsl.ast.LogicalBoolean
 
 class CommandService(protected val model: CommandServiceModel)
     extends SyncModeledServiceBase[CommandProto, Command, CommandServiceModel]
@@ -63,7 +64,6 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
   val entityModel = new EntityServiceModel
 
-  val table = ApplicationSchema.commands
   def getCommands(names: List[String]): Query[Command] = {
     Command.findByNames(names)
   }
@@ -113,6 +113,8 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
 trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Command] {
 
+  val table = ApplicationSchema.commands
+
   def sortResults(list: List[CommandProto]) = list.sortBy(_.getName)
 
   def getRoutingKey(req: CommandProto) = ProtoRoutingKeys.generateRoutingKey {
@@ -123,15 +125,25 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     entries.map { _.entityId }
   }
 
-  def uniqueQuery(proto: CommandProto, sql: Command) = {
+  private def resourceId = Descriptors.command.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: Command) = {
+    sql.entityId in entitySelector
+  }
+
+  override def selector(map: VisibilityMap, sql: Command) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def uniqueQuery(context: RequestContext, proto: CommandProto, sql: Command) = {
 
     val esearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Command")))
     List(
-      esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique,
-      proto.entity.map(ent => sql.entityId in EntityQuery.typeIdsFromProtoQuery(ent, "Command")))
+      esearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique,
+      proto.entity.map(ent => sql.entityId in EntityTreeQuery.typeIdsFromProtoQuery(ent, "Command")))
   }
 
-  def searchQuery(proto: CommandProto, sql: Command) = List(
+  override def searchQuery(context: RequestContext, proto: CommandProto, sql: Command) = List(
     proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Command")))
 
   def isModified(entry: Command, existing: Command) = {
@@ -156,3 +168,5 @@ trait CommandServiceConversion extends UniqueAndSearchQueryable[CommandProto, Co
     b.build
   }
 }
+
+object CommandServiceConversion extends CommandServiceConversion

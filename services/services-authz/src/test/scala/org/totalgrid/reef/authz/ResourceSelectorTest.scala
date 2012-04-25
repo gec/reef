@@ -21,7 +21,7 @@ package org.totalgrid.reef.authz
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import java.util.UUID
-import org.totalgrid.reef.models.EntityEdge
+import org.totalgrid.reef.models.{ ApplicationSchema, EntityEdge }
 
 @RunWith(classOf[JUnitRunner])
 class ResourceSelectorTest extends AuthzTestBase {
@@ -44,9 +44,9 @@ class ResourceSelectorTest extends AuthzTestBase {
     val matcher2 = new EntityTypeIncludes(List("else"))
     val matcher3 = new EntityTypeIncludes(List("nomatch"))
 
-    matcher1.includes(uuids) should equal(List(Some(true), None, None, Some(true)))
-    matcher2.includes(uuids) should equal(List(None, Some(true), None, None))
-    matcher3.includes(uuids) should equal(List(None, None, None, None))
+    checkSelector(matcher1, uuids, List(Some(true), None, None, Some(true)))
+    checkSelector(matcher2, uuids, List(None, Some(true), None, None))
+    checkSelector(matcher3, uuids, List(None, None, None, None))
 
     matcher1.includes(uuids.slice(0, 2)) should equal(List(Some(true), None))
     matcher1.includes(uuids.slice(2, 4)) should equal(List(None, Some(true)))
@@ -60,9 +60,9 @@ class ResourceSelectorTest extends AuthzTestBase {
     val matcher2 = new EntityHasName(List("object2", "object4"))
     val matcher3 = new EntityHasName(List("nomatch"))
 
-    matcher1.includes(uuids) should equal(List(Some(true), None, None, None))
-    matcher2.includes(uuids) should equal(List(None, Some(true), None, Some(true)))
-    matcher3.includes(uuids) should equal(List(None, None, None, None))
+    checkSelector(matcher1, uuids, List(Some(true), None, None, None))
+    checkSelector(matcher2, uuids, List(None, Some(true), None, Some(true)))
+    checkSelector(matcher3, uuids, List(None, None, None, None))
 
     matcher1.includes(uuids.slice(0, 2)) should equal(List(Some(true), None))
     matcher1.includes(uuids.slice(2, 4)) should equal(List(None, None))
@@ -74,7 +74,7 @@ class ResourceSelectorTest extends AuthzTestBase {
 
     val matcher1 = new WildcardMatcher
 
-    matcher1.includes(uuids) should equal(List(Some(true), Some(true), Some(true), Some(true)))
+    checkSelector(matcher1, uuids, List(Some(true), Some(true), Some(true), Some(true)))
 
     // wildcard matcher will match an empty set as well
     matcher1.includes(List.empty[UUID]) should equal(List(Some(true)))
@@ -120,9 +120,39 @@ class ResourceSelectorTest extends AuthzTestBase {
     testCases.foreach {
       case (parentName, results) =>
         val matcher = new EntityParentIncludes(List(parentName))
-        matcher.includes(uuids) should equal(results)
+        checkSelector(matcher, uuids, results)
     }
 
+  }
+
+  test("EntityHasName (selector)") {
+
+    val uuids = prepareEntities()
+
+    val matcher1 = new EntityHasName(List("object1"))
+    val matcher2 = new EntityHasName(List("object2", "object4"))
+    val matcher3 = new EntityHasName(List("nomatch"))
+
+    checkSelector(matcher1, uuids, List(Some(true), None, None, None))
+    checkSelector(matcher2, uuids, List(None, Some(true), None, Some(true)))
+    checkSelector(matcher3, uuids, List(None, None, None, None))
+  }
+
+  import org.squeryl.PrimitiveTypeMode._
+  private def checkSelector(matcher: ResourceSelector, uuids: List[UUID], expected: List[Option[Boolean]]) = {
+
+    val matches = matcher.includes(uuids)
+
+    matches should equal(expected)
+
+    matcher.selector().foreach { subQuery =>
+
+      val selectorGeneratedUuids: List[UUID] =
+        from(ApplicationSchema.entities)(sql => where(sql.id in subQuery) select (sql.id)).toList
+
+      val matchedUuids: List[UUID] = matches.zip(uuids).filter(_._1 == Some(true)).map(_._2)
+      selectorGeneratedUuids.sorted should equal(matchedUuids.sorted)
+    }
   }
 
 }

@@ -28,6 +28,9 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.SquerylModel._
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.authz.VisibilityMap
 
 class TriggerSetService(protected val model: TriggerSetServiceModel)
     extends SyncModeledServiceBase[TriggerProto, TriggerSet, TriggerSetServiceModel]
@@ -57,11 +60,25 @@ trait TriggerSetConversion
     models.map { _.point.value.entityId }
   }
 
-  def uniqueQuery(proto: TriggerProto, sql: TriggerSet) = {
-    List(proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
+  private def resourceId = Descriptors.triggerSet.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: TriggerSet) = {
+    sql.id in from(table, ApplicationSchema.points)((over, point) =>
+      where(
+        (over.pointId === point.id) and
+          (point.entityId in entitySelector))
+        select (over.id))
   }
 
-  def searchQuery(proto: TriggerProto, sql: TriggerSet) = Nil
+  override def selector(map: VisibilityMap, sql: TriggerSet) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def uniqueQuery(context: RequestContext, proto: TriggerProto, sql: TriggerSet) = {
+    List(proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(context, pointProto, { _.id })))
+  }
+
+  override def searchQuery(context: RequestContext, proto: TriggerProto, sql: TriggerSet) = Nil
 
   def isModified(entry: TriggerSet, existing: TriggerSet): Boolean = {
     !entry.proto.sameElements(existing.proto)

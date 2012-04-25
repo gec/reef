@@ -19,13 +19,16 @@
 package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Processing._
-import org.totalgrid.reef.models.{ UUIDConversions, ApplicationSchema, OverrideConfig }
 
 import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.event.{ EventType, SystemEventSink }
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models.{ CommandLockModel, UUIDConversions, ApplicationSchema, OverrideConfig }
+import org.totalgrid.reef.authz.VisibilityMap
 
 //implicits
 import org.totalgrid.reef.services.framework.ProtoSerializer._
@@ -99,13 +102,27 @@ trait OverrideConfigConversion
     models.map { _.point.value.entityId }
   }
 
-  def uniqueQuery(proto: MeasOverride, sql: OverrideConfig) = {
-    List(
-      proto.id.value.asParam(sql.id === _.toInt).unique,
-      proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(pointProto, { _.id })))
+  private def resourceId = Descriptors.measOverride.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: OverrideConfig) = {
+    sql.id in from(table, ApplicationSchema.points)((over, point) =>
+      where(
+        (over.pointId === point.id) and
+          (point.entityId in entitySelector))
+        select (over.id))
   }
 
-  def searchQuery(proto: MeasOverride, sql: OverrideConfig) = Nil
+  override def selector(map: VisibilityMap, sql: OverrideConfig) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def uniqueQuery(context: RequestContext, proto: MeasOverride, sql: OverrideConfig) = {
+    List(
+      proto.id.value.asParam(sql.id === _.toInt).unique,
+      proto.point.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(context, pointProto, { _.id })))
+  }
+
+  override def searchQuery(context: RequestContext, proto: MeasOverride, sql: OverrideConfig) = Nil
 
   def isModified(entry: OverrideConfig, existing: OverrideConfig): Boolean = {
     !entry.protoData.sameElements(existing.protoData)

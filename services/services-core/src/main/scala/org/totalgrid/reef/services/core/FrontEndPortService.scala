@@ -31,6 +31,7 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.models.UUIDConversions._
 
 import org.totalgrid.reef.services.framework.ServiceBehaviors._
+import org.totalgrid.reef.authz.VisibilityMap
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -109,14 +110,16 @@ trait FrontEndPortConversion
     Nil
   }
 
-  def searchQuery(proto: ChannelProto, sql: FrontEndPort) = {
+  override def selector(map: VisibilityMap, sql: FrontEndPort) = (true === true)
+
+  override def searchQuery(context: RequestContext, proto: ChannelProto, sql: FrontEndPort) = {
     Nil
   }
 
-  def uniqueQuery(proto: ChannelProto, sql: FrontEndPort) = {
+  override def uniqueQuery(context: RequestContext, proto: ChannelProto, sql: FrontEndPort) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.name, proto.name.map(x => List("Channel")))
     List(
-      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+      eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
   }
 
   def isModified(entry: FrontEndPort, existing: FrontEndPort): Boolean = {

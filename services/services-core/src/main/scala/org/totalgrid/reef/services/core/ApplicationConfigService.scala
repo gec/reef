@@ -26,7 +26,10 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.models.{ ApplicationNetworkAccess, Agent => AgentModel, ApplicationInstance, ApplicationSchema, ApplicationCapability }
+import org.squeryl.Query
+import java.util.UUID
+import org.totalgrid.reef.models.{ Command, ApplicationNetworkAccess, Agent => AgentModel, ApplicationInstance, ApplicationSchema, ApplicationCapability }
+import org.totalgrid.reef.authz.VisibilityMap
 
 // implicit proto properties
 import SquerylModel._ // implict asParam
@@ -150,7 +153,20 @@ trait ApplicationConfigConversion
     entries.map { _.agent.value.entityId }
   }
 
-  def searchQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
+  private def resourceId = Descriptors.applicationConfig.id
+
+  private def visibilitySelector(entitySelector: Query[UUID], sql: ApplicationInstance) = {
+    sql.id in from(table, ApplicationSchema.agents)((app, agent) =>
+      where(
+        (app.agentId === agent.id) and (agent.entityId in entitySelector))
+        select (app.id))
+  }
+
+  override def selector(map: VisibilityMap, sql: ApplicationInstance) = {
+    map.selector(resourceId) { visibilitySelector(_, sql) }
+  }
+
+  override def searchQuery(context: RequestContext, proto: ApplicationConfig, sql: ApplicationInstance) = {
     def networkQuery(nets: List[String]) = {
       sql.id in from(ApplicationSchema.networks)(sql => where(sql.network in nets) select (sql.applicationId))
     }
@@ -161,9 +177,9 @@ trait ApplicationConfigConversion
       proto.location.asParam(sql.location === _))
   }
 
-  def uniqueQuery(proto: ApplicationConfig, sql: ApplicationInstance) = {
+  override def uniqueQuery(context: RequestContext, proto: ApplicationConfig, sql: ApplicationInstance) = {
     val eSearch = EntitySearch(proto.uuid.value, proto.instanceName, proto.instanceName.map(x => List("Application")))
-    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(es, { _.id })).unique)
+    List(eSearch.map(es => sql.entityId in EntityPartsSearches.searchQueryForId(context, es, { _.id })).unique)
   }
 
   def isModified(entry: ApplicationInstance, existing: ApplicationInstance): Boolean = {
