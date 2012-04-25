@@ -71,7 +71,7 @@ class EndpointAssignmentTest extends ServiceClientSuite {
 
   test("Claim endpoints for the wrong protocol adapter and check for errors") {
 
-    val notBenchmarkAdapter = findProtocolAdapter(_ == "dnp3")
+    val notBenchmarkAdapter = findProtocolAdapter(_ == "calculator")
 
     val endpoints = client.getEndpoints()
     endpoints.foreach { endpoint =>
