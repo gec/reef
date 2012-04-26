@@ -56,7 +56,6 @@ class DefaultServiceOperations(restOperations: RestOperations, bindOperations: B
       }
     }*/
 
-
     try {
       //op().transformError(annotateError)
       op().mapError { rse => rse.addExtraInformation(err()); rse }

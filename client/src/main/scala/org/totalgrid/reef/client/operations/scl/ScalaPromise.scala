@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.operations.scl
  */
 
 import org.totalgrid.reef.client.exception.ReefServiceException
-import org.totalgrid.reef.client.{PromiseErrorTransform, PromiseTransform, Promise}
+import org.totalgrid.reef.client.{ PromiseErrorTransform, PromiseTransform, Promise }
 
 object ScalaPromise {
 

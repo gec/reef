@@ -40,6 +40,9 @@
                             org.totalgrid.reef.client.sapi.client.*;version="${reef.version}",
                             org.totalgrid.reef.client.sapi.service;version="${reef.version}",
                             org.totalgrid.reef.client.sapi.client.factory;version="${reef.version}",
+                            org.totalgrid.reef.client.operations;version="${reef.version}",
+                            org.totalgrid.reef.client.operations.scl;version="${reef.version}",
+                            org.totalgrid.reef.client.operations.impl;version="${reef.version}",
                         </Export-Package>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <_nouses>true</_nouses>
