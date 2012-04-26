@@ -50,9 +50,6 @@ object ModelCreationUtilities {
 
   def deleteEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
     val loaderServices = client.getService(classOf[LoaderServices])
-
-    val uuid = loaderServices.getEndpointByName(endpointName).await.getUuid
-    loaderServices.disableEndpointConnection(uuid).await
     loaderServices.startBatchRequests()
 
     val names = getPointNames(endpointName, pointsPerEndpoint)
