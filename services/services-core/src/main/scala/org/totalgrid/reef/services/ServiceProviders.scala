@@ -106,11 +106,11 @@ class ServiceProviders(
     new CommandHandlerBindingService,
     new MeasurementStreamBindingService)
 
-  private val allServices = (new BatchServiceRequestService(serviceProviders) :: serviceProviders)
-
   private val metrics = new MetricsServiceWrapper(metricsPublisher, serviceConfiguration)
-  private val metricWrapped = allServices.map { s => metrics.instrumentCallback(s) }
-  val services = metricWrapped.map { s => new ServiceMiddleware(contextSource, s) }
+  private val metricWrapped = serviceProviders.map { s => metrics.instrumentCallback(s) }
+
+  private val allServices = (new BatchServiceRequestService(metricWrapped) :: metricWrapped)
+  val services = allServices.map { s => new ServiceMiddleware(contextSource, s) }
 
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus, contextSource),
