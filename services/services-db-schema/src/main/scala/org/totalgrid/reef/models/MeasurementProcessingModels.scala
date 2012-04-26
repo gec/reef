@@ -22,16 +22,16 @@ import org.totalgrid.reef.util.LazyVar
 import org.totalgrid.reef.client.service.proto.Processing.MeasOverride
 
 case class TriggerSet(
-    val pointId: Long,
-    var proto: Array[Byte]) extends ModelWithId {
+  val pointId: Long,
+  var proto: Array[Byte]) extends ModelWithId
+    with HasOwningPoint {
 
-  val point = LazyVar(hasOne(ApplicationSchema.points, pointId))
 }
 
 case class OverrideConfig(
-    val pointId: Long,
-    var protoData: Array[Byte]) extends ModelWithId {
-  val point = LazyVar(hasOne(ApplicationSchema.points, pointId))
+  val pointId: Long,
+  var protoData: Array[Byte]) extends ModelWithId
+    with HasOwningPoint {
 
   val proto = LazyVar(MeasOverride.parseFrom(protoData))
 

@@ -22,6 +22,12 @@ import java.util.UUID
 import org.totalgrid.reef.util.LazyVar
 import org.squeryl.PrimitiveTypeMode._
 
+trait HasOwningPoint extends ActiveModel {
+
+  def pointId: Long
+  val point = LazyVar(hasOne(ApplicationSchema.points, pointId))
+}
+
 trait HasLogicalNodeAndEndpoint extends ActiveModel {
   def entityId: UUID
   val logicalNode = LazyVar(mayHaveOne(EntityQuery.getParentOfType(entityId, "source", "LogicalNode")))

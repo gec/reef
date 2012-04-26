@@ -32,6 +32,35 @@ object Point {
   def findByNames(names: List[String]): Query[Point] = {
     ApplicationSchema.points.where(_.entityId in EntityQuery.findEntityIds(names, List("Point")))
   }
+
+  def preloadPointTiedObjects(entries: List[Point]) {
+    val ids = entries.map { _.id }
+    val triggers = preloadPointToModel(ids, ApplicationSchema.triggerSets)
+    val overrides = preloadPointToModel(ids, ApplicationSchema.overrides)
+    val calculations = preloadPointToModel(ids, ApplicationSchema.calculations)
+
+    def getEntry[A <: HasOwningPoint](map: Map[Long, List[A]], entry: Point): List[A] = {
+      map.get(entry.id) match {
+        case Some(l) =>
+          // link payload back to this point object
+          l.foreach { _.point.value = entry }
+          l
+        case None => Nil
+      }
+    }
+
+    entries.map { entry =>
+      entry.triggers.value = getEntry(triggers, entry)
+      entry.overrides.value = getEntry(overrides, entry)
+      entry.calculations.value = getEntry(calculations, entry)
+    }
+  }
+
+  private def preloadPointToModel[A <: HasOwningPoint](ids: List[Long], table: Table[A]): Map[Long, List[A]] = {
+    from(ApplicationSchema.points, table)((point, payload) =>
+      where((point.id in ids) and (payload.pointId === point.id))
+        select (point.id, payload)).toList.groupBy(_._1).mapValues(_.map(_._2))
+  }
 }
 
 case class Point(
@@ -52,7 +81,7 @@ case class Point(
 
   val overrides = LazyVar(ApplicationSchema.overrides.where(t => t.pointId === id).toList.map { p => p.point.value = this; p })
 
-  val calculations = LazyVar(ApplicationSchema.calculations.where(t => t.outputPointId === id).toList.map { p => p.outputPoint.value = this; p })
+  val calculations = LazyVar(ApplicationSchema.calculations.where(t => t.outputPointId === id).toList.map { p => p.point.value = this; p })
 }
 
 object Command {

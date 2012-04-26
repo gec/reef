@@ -23,11 +23,12 @@ import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import java.util.UUID
 
 case class CalculationConfig(
-    _entityId: UUID,
-    outputPointId: Long,
-    var protoData: Array[Byte]) extends EntityBasedModel(_entityId) {
+  _entityId: UUID,
+  outputPointId: Long,
+  var protoData: Array[Byte]) extends EntityBasedModel(_entityId)
+    with HasOwningPoint {
 
-  val outputPoint = LazyVar(hasOne(ApplicationSchema.points, outputPointId))
+  override def pointId = outputPointId
 
   val inputPoints = LazyVar(Entity.asType(ApplicationSchema.points, EntityQuery.getChildrenOfType(entity.value.id, "calcs", "Point").toList, Some("Point")))
 
