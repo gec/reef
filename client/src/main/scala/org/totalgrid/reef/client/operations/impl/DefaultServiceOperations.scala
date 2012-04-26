@@ -49,15 +49,8 @@ object DefaultServiceOperations {
 class DefaultServiceOperations(restOperations: RestOperations, bindOperations: BindOperations, exe: Executor) extends ServiceOperations {
 
   private def safeOp[A](op: () => Promise[A], err: () => String): Promise[A] = {
-    /*val annotateError = new PromiseErrorTransform {
-      def transformError(error: ReefServiceException): ReefServiceException = {
-        error.addExtraInformation(err())
-        error
-      }
-    }*/
 
     try {
-      //op().transformError(annotateError)
       op().mapError { rse => rse.addExtraInformation(err()); rse }
     } catch {
       case npe: NullPointerException =>
@@ -69,14 +62,14 @@ class DefaultServiceOperations(restOperations: RestOperations, bindOperations: B
     }
   }
 
-  def operation[A](operation: BasicOperation[A]): Promise[A] = {
-    safeOp(() => operation.execute(restOperations), operation.errorMessage _)
+  def request[A](request: BasicRequest[A]): Promise[A] = {
+    safeOp(() => request.execute(restOperations), request.errorMessage _)
   }
 
-  def subscription[A, B](descriptor: TypeDescriptor[B], operation: SubscribeOperation[A]): Promise[SubscriptionResult[A, B]] = {
+  def subscription[A, B](descriptor: TypeDescriptor[B], request: SubscribeRequest[A]): Promise[SubscriptionResult[A, B]] = {
     try {
       val sub: Subscription[B] = bindOperations.subscribe(descriptor)
-      val promise: Promise[A] = safeOp(() => operation.execute(sub, restOperations), operation.errorMessage _)
+      val promise: Promise[A] = safeOp(() => request.execute(sub, restOperations), request.errorMessage _)
       promise.listen(new CancelingListener(sub.cancel _))
       promise.map(v => new DefaultSubscriptionResult(v, sub))
 
@@ -85,10 +78,10 @@ class DefaultServiceOperations(restOperations: RestOperations, bindOperations: B
     }
   }
 
-  def clientServiceBinding[A, B](service: Service, descriptor: TypeDescriptor[A], operation: ClientServiceBindingOperation[B]): Promise[SubscriptionBinding] = {
+  def clientServiceBinding[A, B](service: Service, descriptor: TypeDescriptor[A], request: ClientServiceBindingRequest[B]): Promise[SubscriptionBinding] = {
     try {
       val binding = bindOperations.lateBindService(service, descriptor)
-      val promise: Promise[B] = safeOp(() => operation.execute(binding, restOperations), operation.errorMessage _)
+      val promise: Promise[B] = safeOp(() => request.execute(binding, restOperations), request.errorMessage _)
       promise.listen(new CancelingListener(binding.cancel _))
       promise.map(result => binding)
 

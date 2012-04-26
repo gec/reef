@@ -19,10 +19,12 @@
 package org.totalgrid.reef.client.operations;
 
 import org.totalgrid.reef.client.Promise;
+import org.totalgrid.reef.client.SubscriptionBinding;
 
-public interface BasicOperation<T>
+
+public interface ClientServiceBindingRequest<T>
 {
-    Promise<T> execute( RestOperations operations );
+    Promise<T> execute( SubscriptionBinding binding, RestOperations operations );
 
     String errorMessage();
 }

@@ -19,14 +19,14 @@
 package org.totalgrid.reef.client.operations.scl
 
 import org.totalgrid.reef.client.Promise
-import org.totalgrid.reef.client.operations.{ BasicOperation, RestOperations, ServiceOperations }
+import org.totalgrid.reef.client.operations.{ BasicRequest, RestOperations, ServiceOperations }
 
 trait ScalaServiceOperations {
 
   class RichServiceOperations(ops: ServiceOperations) {
 
     def operation[A](err: => String)(f: RestOperations => Promise[A]): Promise[A] = {
-      ops.operation(new BasicOperation[A] {
+      ops.request(new BasicRequest[A] {
         def errorMessage(): String = err
 
         def execute(operations: RestOperations): Promise[A] = f(operations)
@@ -34,7 +34,7 @@ trait ScalaServiceOperations {
     }
   }
 
-  implicit def _scalaServiceOperations[A](ops: ServiceOperations): RichServiceOperations = {
+  implicit def _scalaServiceOperations(ops: ServiceOperations): RichServiceOperations = {
     new RichServiceOperations(ops)
   }
 
