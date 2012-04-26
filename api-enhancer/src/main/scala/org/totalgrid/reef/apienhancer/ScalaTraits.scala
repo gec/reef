@@ -39,7 +39,7 @@ class ScalaTraits(future: Boolean) extends ApiTransformer with GeneratorFunction
 
     addScalaImports(stream, c)
 
-    if (future) stream.println("import org.totalgrid.reef.client.sapi.client.Promise")
+    if (future) stream.println("import org.totalgrid.reef.client.Promise")
     stream.println(commentString(c.getRawCommentText()))
     stream.println("trait " + c.name + "{")
 

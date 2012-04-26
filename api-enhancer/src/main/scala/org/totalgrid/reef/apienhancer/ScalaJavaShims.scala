@@ -50,8 +50,9 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
 
     if (isFuture) {
       stream.println("import org.totalgrid.reef.client.Promise")
-      stream.println("import org.totalgrid.reef.client.javaimpl.PromiseWrapper")
+      //stream.println("import org.totalgrid.reef.client.javaimpl.PromiseWrapper")
     }
+    stream.println("import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._")
 
     stream.println("trait " + c.name + exName + " extends JInterface{")
 
@@ -89,8 +90,8 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
 
       if (!isFuture) implCall += ".await"
 
-      if (!isFuture) msg += implCall
-      else msg += "new PromiseWrapper(" + implCall + ")"
+      /*if (!isFuture)*/ msg += implCall
+      /*else msg += "new PromiseWrapper(" + implCall + ")" */
 
       stream.println(msg)
     }
