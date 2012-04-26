@@ -22,19 +22,19 @@ import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.Routable
 
 import org.totalgrid.reef.client.exception.ExpectationException
 
-import org.totalgrid.reef.client.sapi.client.rest.RestOperations
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
 import scala.collection.JavaConversions._
-import net.agileautomata.executor4s.{ Failure, Success, Future, Result }
-import org.totalgrid.reef.client.sapi.client.{ Promise, Subscription, BasicRequestHeaders }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Measurements._
+import org.totalgrid.reef.client.operations.RestOperations
+import org.totalgrid.reef.client.{Subscription, Promise, Routable}
 
-trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementService {
+trait MeasurementServiceImpl extends UsesServiceOperations with MeasurementService {
 
   override def getMeasurementByName(name: String) = {
     ops.operation("Couldn't get measurement with name: " + name) { client =>
@@ -45,7 +45,7 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
 
   override def findMeasurementByName(name: String) = {
     ops.operation("Couldn't find measurement with name: " + name) {
-      _.get(MeasurementSnapshotRequestBuilders.getByName(name)).map(_.one.map(_.getMeasurementsList.toList.headOption))
+      _.get(MeasurementSnapshotRequestBuilders.getByName(name)).map(_.one).map(_.getMeasurementsList.toList.headOption)
     }
   }
 
@@ -74,19 +74,19 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
 
   override def publishMeasurements(measurements: List[Measurement]) = {
     ops.operation("Couldn't publish measurements: " + measurements.map { _.getName }.distinct) {
-      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).map(_.one.map(a => true))
+      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements)).map(_.one).map(a => true)
     }
   }
 
   override def publishMeasurements(measurements: List[Measurement], dest: Routable) = {
     ops.operation("Couldn't publish measurements: " + measurements.map { _.getName }.distinct + " dest: " + dest.getKey) {
-      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements), BasicRequestHeaders.empty.setDestination(dest)).map(_.one.map(a => true))
+      _.put(MeasurementBatchRequestBuilders.makeBatch(measurements), BasicRequestHeaders.empty.setDestination(dest)).map(_.one).map(a => true)
     }
   }
 
   override def publishMeasurements(mBatch: MeasurementBatch, dest: Routable) = {
     ops.operation("Couldn't publish measurement batch. size: " + mBatch.getMeasCount + " dest: " + dest.getKey) {
-      _.put(mBatch, BasicRequestHeaders.empty.setDestination(dest)).map(_.one.map(a => true))
+      _.put(mBatch, BasicRequestHeaders.empty.setDestination(dest)).map(_.one).map(a => true)
     }
   }
 
@@ -162,28 +162,34 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
     }
   }
 
-  private def expectSingle(f: Future[Result[List[Measurement]]]): Future[Result[Measurement]] = f.map {
+  private def expectSingle(f: Promise[List[Measurement]]): Promise[Measurement] = {
+    f.map {
+      case List(x) => x
+      case other => throw new ExpectationException("Expected a list of size 1, but got: " + other)
+    }
+  }
+  /*f.map {
     _.flatMap { list =>
       list match {
         case List(x) => Success(x)
         case x: List[_] => Failure(new ExpectationException("Expected a list of size 1, but got: " + x))
       }
     }
-  }
+  }*/
 
-  private def getMeasSnapshot(session: RestOperations, meas: MeasurementSnapshot): Future[Result[List[Measurement]]] = {
-    session.get(meas).map(_.one.map(_.getMeasurementsList.toList))
+  private def getMeasSnapshot(session: RestOperations, meas: MeasurementSnapshot): Promise[List[Measurement]] = {
+    session.get(meas).map(_.one).map(_.getMeasurementsList.toList)
   }
   private def getMeasSnapshot(session: RestOperations, meas: MeasurementSnapshot, sub: Subscription[Measurement]) = {
-    session.get(meas, sub).map(_.one.map(_.getMeasurementsList.toList))
+    session.get(meas, sub).map(_.one).map(_.getMeasurementsList.toList)
   }
 
-  private def measHistoryList(session: RestOperations, request: MeasurementHistory): Future[Result[List[Measurement]]] = {
-    session.get(request).map(_.one.map(_.getMeasurementsList.toList))
+  private def measHistoryList(session: RestOperations, request: MeasurementHistory): Promise[List[Measurement]] = {
+    session.get(request).map(_.one).map(_.getMeasurementsList.toList)
   }
 
   private def measHistoryList(session: RestOperations, request: MeasurementHistory, sub: Subscription[Measurement]) = {
-    session.get(request, sub).map(_.one.map(_.getMeasurementsList.toList))
+    session.get(request, sub).map(_.one).map(_.getMeasurementsList.toList)
   }
 
 }

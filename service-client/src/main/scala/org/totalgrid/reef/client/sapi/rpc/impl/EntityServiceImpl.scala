@@ -25,11 +25,13 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import net.agileautomata.executor4s.{ Result, Future }
 import org.totalgrid.reef.client.sapi.rpc.EntityService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.service.entity.EntityRelation
 import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.Promise
 
-trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
+trait EntityServiceImpl extends UsesServiceOperations with EntityService {
 
   override def getEntities() = ops.operation("Couldn't get list of all entities") {
     _.get(EntityRequestBuilders.getAll).map(_.many)
@@ -69,14 +71,14 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   override def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String) = {
     ops.operation("Couldn't get children of entity: " + parent.getValue + " relation: " + relationship + " type: " + typ) { session =>
 
-      val future = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootId(parent, relationship, typ)).map(_.one)
+      val promise = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootId(parent, relationship, typ)).map(_.one)
 
-      flatEntities(future)
+      flatEntities(promise)
     }
   }
 
-  private def flatEntities(result: Future[Result[Entity]]): Future[Result[List[Entity]]] = {
-    result.map(_.map(_.getRelationsList.flatMap(_.getEntitiesList).toList))
+  private def flatEntities(result: Promise[Entity]): Promise[List[Entity]] = {
+    result.map(_.getRelationsList.flatMap(_.getEntitiesList).toList)
   }
 
   override def getEntityImmediateChildren(parent: ReefUUID, relationship: String) = {

@@ -24,12 +24,17 @@ import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 import org.totalgrid.reef.client.proto.Envelope.Verb
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
-class DefaultRestOperations(client: DefaultClient) extends RestOperations {
+class DefaultRestOperations(client: DefaultClient) extends RestOperations with DerivativeRestOperations {
 
-  private def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]] = {
+  protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]] = {
     val basic = headers.map(_.asInstanceOf[BasicRequestHeaders]) // TODO: HACK HACK HACK SHOULD NOT SURVIVE TO RELEASE
     client.requestJava(verb, payload, basic)
   }
+
+}
+
+trait DerivativeRestOperations {
+  protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]]
 
   def request[A](verb: Verb, payload: A, headers: RequestHeaders): Promise[Response[A]] = {
     request(verb, payload, Some(headers))

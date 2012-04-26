@@ -25,44 +25,45 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.EventService
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ EventRequestBuilders, EventListRequestBuilders }
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.service.proto.Model.ReefID
 
-trait EventServiceImpl extends HasAnnotatedOperations with EventService {
+trait EventServiceImpl extends UsesServiceOperations with EventService {
 
   override def getEventById(id: ReefID) = ops.operation("Couldn't get event with id: " + id) {
     _.get(EventRequestBuilders.getByUID(id)).map(_.one)
   }
 
   override def getRecentEvents(limit: Int) = ops.operation("Couldn't get the last " + limit + " recent events") {
-    _.get(EventListRequestBuilders.getAll(limit)).map(_.one.map(_.getEventsList.toList))
+    _.get(EventListRequestBuilders.getAll(limit)).map(_.one).map(_.getEventsList.toList)
   }
 
   override def subscribeToRecentEvents(limit: Int) = {
     ops.subscription(Descriptors.event, "Couldn't subscribe to recent events") { (sub, client) =>
-      client.get(EventListRequestBuilders.getAll(limit), sub).map(_.one.map(_.getEventsList.toList))
+      client.get(EventListRequestBuilders.getAll(limit), sub).map(_.one).map(_.getEventsList.toList)
     }
   }
 
   override def subscribeToRecentEvents(types: List[String], limit: Int) = {
     ops.subscription(Descriptors.event, "Couldn't subscribe to recent events") { (sub, client) =>
-      client.get(EventListRequestBuilders.getAllByEventTypes(types, limit), sub).map(_.one.map(_.getEventsList.toList))
+      client.get(EventListRequestBuilders.getAllByEventTypes(types, limit), sub).map(_.one).map(_.getEventsList.toList)
     }
   }
 
   override def getRecentEvents(types: List[String], limit: Int) = {
     ops.operation("Couldn't get recent events with types: " + types) {
-      _.get(EventListRequestBuilders.getAllByEventTypes(types, limit)).map(_.one.map(_.getEventsList.toList))
+      _.get(EventListRequestBuilders.getAllByEventTypes(types, limit)).map(_.one).map(_.getEventsList.toList)
     }
   }
 
   override def searchForEvents(selector: EventSelect) = ops.operation("Couldn't get events matching: " + selector) {
-    _.get(EventListRequestBuilders.getByEventSelect(selector)).map(_.one.map(_.getEventsList.toList))
+    _.get(EventListRequestBuilders.getByEventSelect(selector)).map(_.one).map(_.getEventsList.toList)
   }
 
   override def subscribeToEvents(selector: EventSelect) = {
     ops.subscription(Descriptors.event, "Couldn't subscribe to events matching: " + selector) { (sub, client) =>
-      client.get(EventListRequestBuilders.getByEventSelect(selector), sub).map(_.one.map(_.getEventsList.toList))
+      client.get(EventListRequestBuilders.getByEventSelect(selector), sub).map(_.one).map(_.getEventsList.toList)
     }
   }
 

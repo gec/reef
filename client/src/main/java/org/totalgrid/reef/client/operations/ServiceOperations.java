@@ -29,7 +29,9 @@ public interface ServiceOperations
 
     <T> Promise<T> request( BasicRequest<T> request );
 
-    <T, U> Promise<SubscriptionResult<T, U>> subscription( TypeDescriptor<U> descriptor, SubscribeRequest<T> request );
+    <T> Promise<T> batchRequest( BasicRequest<T> request );
+
+    <T, U> Promise<SubscriptionResult<T, U>> subscriptionRequest( TypeDescriptor<U> descriptor, SubscribeRequest<T, U> request );
 
     <T, U> Promise<SubscriptionBinding> clientServiceBinding( Service service, TypeDescriptor<T> descriptor, ClientServiceBindingRequest<U> request );
 }

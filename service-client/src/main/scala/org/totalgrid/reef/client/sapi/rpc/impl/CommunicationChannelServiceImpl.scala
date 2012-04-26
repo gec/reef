@@ -23,9 +23,10 @@ import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, CommChannel }
 
 import org.totalgrid.reef.client.sapi.rpc.CommunicationChannelService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
-trait CommunicationChannelServiceImpl extends HasAnnotatedOperations with CommunicationChannelService {
+trait CommunicationChannelServiceImpl extends UsesServiceOperations with CommunicationChannelService {
 
   override def getCommunicationChannels = ops.operation("Couldn't get list of all channels") {
     _.get(CommChannel.newBuilder().setName("*").build).map(_.many)

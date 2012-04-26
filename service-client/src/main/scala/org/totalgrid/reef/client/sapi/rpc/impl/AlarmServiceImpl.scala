@@ -28,31 +28,32 @@ import org.totalgrid.reef.client.service.proto.Model.Entity
 
 import org.totalgrid.reef.client.sapi.rpc.AlarmService
 import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
-trait AlarmServiceImpl extends HasAnnotatedOperations with AlarmService {
+trait AlarmServiceImpl extends UsesServiceOperations with AlarmService {
 
   override def getAlarmById(id: String) = ops.operation("Couldn't get alarm with id: " + id) {
     _.get(AlarmRequestBuilders.getByUID(id)).map(_.one)
   }
 
   override def getActiveAlarms(limit: Int) = ops.operation("Couldn't get the last " + limit + " active alarms") {
-    _.get(AlarmListRequestBuilders.getUnacknowledged(limit)).map(_.one.map(_.getAlarmsList.toList))
+    _.get(AlarmListRequestBuilders.getUnacknowledged(limit)).map(_.one).map(_.getAlarmsList.toList)
   }
 
   override def subscribeToActiveAlarms(limit: Int) = ops.subscription(Descriptors.alarm, "Couldn't subscribe to active alarms") { (sub, client) =>
-    client.get(AlarmListRequestBuilders.getUnacknowledged(limit), sub).map(_.one.map(_.getAlarmsList.toList))
+    client.get(AlarmListRequestBuilders.getUnacknowledged(limit), sub).map(_.one).map(_.getAlarmsList.toList)
   }
 
   override def getActiveAlarms(types: List[String], limit: Int) = {
     ops.operation("Couldn't get active alarms with types: " + types) {
-      _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).map(_.one.map(_.getAlarmsList.toList))
+      _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypes(types, limit)).map(_.one).map(_.getAlarmsList.toList)
     }
   }
 
   override def getActiveAlarmsByEntity(entityTree: Entity, types: List[String], recentAlarmLimit: Int) = {
     ops.operation("Couldn't get active alarms with types: " + types + " and entity: " + entityTree) {
-      _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypesAndEntity(types, entityTree, recentAlarmLimit)).map(_.one.map(_.getAlarmsList.toList))
+      _.get(AlarmListRequestBuilders.getUnacknowledgedWithTypesAndEntity(types, entityTree, recentAlarmLimit)).map(_.one).map(_.getAlarmsList.toList)
     }
   }
 

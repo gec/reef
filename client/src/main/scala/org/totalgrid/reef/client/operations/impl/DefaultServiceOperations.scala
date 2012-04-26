@@ -66,7 +66,20 @@ class DefaultServiceOperations(restOperations: RestOperations, bindOperations: B
     safeOp(() => request.execute(restOperations), request.errorMessage _)
   }
 
-  def subscription[A, B](descriptor: TypeDescriptor[B], request: SubscribeRequest[A]): Promise[SubscriptionResult[A, B]] = {
+  def batchRequest[A](request: BasicRequest[A]): Promise[A] = null
+  /*
+  def batchRequest[A](request: BasicRequest[A]): Promise[A] = {
+    if (restOperations.isBatch) {
+      safeOp(() => request.execute(batchOps), request.errorMessage _)
+    } else {
+      val batchOps = new BatchOps()
+      val result = safeOp(() => request.execute(batchOps), request.errorMessage _)
+      batchOps.flush
+      result
+    }
+  }*/
+
+  def subscriptionRequest[A, B](descriptor: TypeDescriptor[B], request: SubscribeRequest[A, B]): Promise[SubscriptionResult[A, B]] = {
     try {
       val sub: Subscription[B] = bindOperations.subscribe(descriptor)
       val promise: Promise[A] = safeOp(() => request.execute(sub, restOperations), request.errorMessage _)

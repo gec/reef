@@ -24,13 +24,14 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.sapi.rpc.EndpointService
-import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.service.proto.FEP.{ FrontEndProcessor, Endpoint, EndpointConnection }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 
-trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
+trait EndpointServiceImpl extends UsesServiceOperations with EndpointService {
 
   override def getEndpoints() = ops.operation("Couldn't get list of all endpoints") {
     _.get(Endpoint.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).map(_.many)

@@ -20,16 +20,17 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.service.proto.Events.Event
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.RestOperations
 
 //import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.service.proto.Utils.{ AttributeList, Attribute }
 
 import org.totalgrid.reef.client.sapi.rpc.EventPublishingService
-import org.totalgrid.reef.client.sapi.client.rest.RestOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
-trait EventPublishingServiceImpl extends HasAnnotatedOperations with EventPublishingService {
+trait EventPublishingServiceImpl extends UsesServiceOperations with EventPublishingService {
 
   override def publishEvent(event: Event) = ops.operation("Couldn't publish event: " + event) {
     _.put(event).map(_.one)

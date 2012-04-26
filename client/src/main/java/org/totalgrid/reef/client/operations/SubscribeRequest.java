@@ -21,9 +21,9 @@ package org.totalgrid.reef.client.operations;
 import org.totalgrid.reef.client.Promise;
 import org.totalgrid.reef.client.Subscription;
 
-public interface SubscribeRequest<T>
+public interface SubscribeRequest<T, U>
 {
-    Promise<T> execute( Subscription subscription, RestOperations operations );
+    Promise<T> execute( Subscription<U> subscription, RestOperations operations );
 
     String errorMessage();
 }
