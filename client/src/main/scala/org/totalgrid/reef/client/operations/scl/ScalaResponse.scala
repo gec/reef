@@ -25,33 +25,34 @@ import org.totalgrid.reef.client.exception.ExpectationException
 trait ScalaResponse {
 
   class RichResponse[A](resp: Response[A]) {
-    import java.util.List
+    //import java.util.List
 
     def many: List[A] = checkGood
 
     def one: A = {
       inspect {
         case (list, 0) => throw new ExpectationException("Expected a response list of size 1, but got an empty list")
-        case (list, 1) => list.get(0)
+        case (list, 1) => list.head //list.get(0)
         case (list, count) => throw new ExpectationException("Expected a response list of size 1, but got a list of size: " + count)
       }
     }
     def oneOrNone: Option[A] = {
       inspect {
         case (list, 0) => None
-        case (list, 1) => Some(list.get(0))
+        case (list, 1) => Some(list.head) //Some(list.get(0))
         case (list, count) => throw new ExpectationException("Expected a response list of size 1, but got a list of size: " + count)
       }
     }
 
     private def inspect[B](f: (List[A], Int) => B): B = {
       val list = checkGood
-      f(list, list.size())
+      f(list, list.size)
     }
 
     private def checkGood: List[A] = {
+      import scala.collection.JavaConversions._
       resp.isSuccess match {
-        case true => resp.getList
+        case true => resp.getList.toList // resp.getList
         case false => throw StatusCodes.toException(resp.getStatus, resp.getError)
       }
     }
