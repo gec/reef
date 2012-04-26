@@ -48,6 +48,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
   val numSlaves = 1
   val portStart = 50000
   val portEnd = portStart + numSlaves - 1
+  val configFiles = makeMappingFile(10, 10, 10, 10, 10, 10, 10) :: makeConfigFile() :: Nil
 
   final override def beforeAll() {
     logger.info("starting slave")
@@ -66,23 +67,32 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
     slave.Shutdown()
   }
 
+  def addMaster(protocol: Dnp3MasterProtocol, port: Int) = {
+    val channelName = "port" + port
+
+    val endpointListener = new LastValueListener[FEP.EndpointConnection.State]
+    val measListener = new LastValueListener[MeasurementBatch](false)
+    val portListener = new LastValueListener[FEP.CommChannel.State]
+
+    protocol.addChannel(getClient(port, channelName), portListener, client)
+
+    val commandAdapter = protocol.addEndpoint("endpoint" + port, channelName, configFiles, measListener, endpointListener, client)
+
+    (portListener, endpointListener, measListener, commandAdapter)
+  }
+  def removeMaster(protocol: Dnp3MasterProtocol, port: Int) {
+    val channelName = "port" + port
+
+    protocol.removeEndpoint("endpoint" + port)
+    protocol.removeChannel(channelName)
+  }
+
   test("Endpoints online/offline") {
 
-    val configFiles = makeMappingFile(10, 10, 10, 10, 10, 10, 10) :: makeConfigFile() :: Nil
-
     val protocol = new Dnp3MasterProtocol
+
     val listeners = (portStart to portEnd).map { port =>
-      val channelName = "port" + port
-
-      val endpointListener = new LastValueListener[FEP.EndpointConnection.State]
-      val measListener = new LastValueListener[MeasurementBatch](false)
-      val portListener = new LastValueListener[FEP.CommChannel.State]
-
-      protocol.addChannel(getClient(port, channelName), portListener, client)
-
-      val commandAdapter = protocol.addEndpoint("endpoint" + port, channelName, configFiles, measListener, endpointListener, client)
-
-      (portListener, endpointListener, measListener, commandAdapter)
+      addMaster(protocol, port)
     }
 
     listeners.foreach {
@@ -96,10 +106,7 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
     }
 
     (portStart to portEnd).map { port =>
-      val channelName = "port" + port
-
-      protocol.removeEndpoint("endpoint" + port)
-      protocol.removeChannel(channelName)
+      removeMaster(protocol, port)
     }
 
     listeners.foreach {
@@ -108,6 +115,17 @@ class MasterIntegrationTest extends FunSuite with ShouldMatchers with BeforeAndA
         portListener.lastValue.waitUntil(FEP.CommChannel.State.CLOSED)
     }
 
+  }
+
+  test("Add remove master ports quickly") {
+    val protocol = new Dnp3MasterProtocol
+
+    (portStart to portEnd).map { port =>
+      addMaster(protocol, port)
+      removeMaster(protocol, port)
+      addMaster(protocol, port)
+      removeMaster(protocol, port)
+    }
   }
 
   class LastValueListener[A](verbose: Boolean = true) extends Publisher[A] {
