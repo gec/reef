@@ -22,7 +22,7 @@ package org.totalgrid.reef.client.operations.scl
 import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.{ PromiseErrorTransform, PromiseTransform, Promise }
 
-object ScalaPromise {
+trait ScalaPromise {
 
   class RichPromise[A](p: Promise[A]) {
     def map[B](f: A => B): Promise[B] = {
@@ -40,3 +40,5 @@ object ScalaPromise {
 
   implicit def _scalaPromise[A](p: Promise[A]): RichPromise[A] = new RichPromise(p)
 }
+
+object ScalaPromise extends ScalaPromise

@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.operations.scl
 import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.operations.{ BasicOperation, RestOperations, ServiceOperations }
 
-object ScalaServiceOperations {
+trait ScalaServiceOperations {
 
   class RichServiceOperations(ops: ServiceOperations) {
 
@@ -39,6 +39,8 @@ object ScalaServiceOperations {
   }
 
 }
+
+object ScalaServiceOperations extends ScalaServiceOperations with ScalaPromise with ScalaResponse
 
 /*
 /**

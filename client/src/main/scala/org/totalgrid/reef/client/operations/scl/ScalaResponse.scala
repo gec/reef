@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.proto.StatusCodes
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.ExpectationException
 
-object ScalaResponse {
+trait ScalaResponse {
 
   class RichResponse[A](resp: Response[A]) {
     import java.util.List
@@ -59,4 +59,6 @@ object ScalaResponse {
 
   implicit def _scalaResponse[A](resp: Response[A]): RichResponse[A] = new RichResponse(resp)
 }
+
+object ScalaResponse extends ScalaResponse
 
