@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.operations.scl
  */
 
 import org.totalgrid.reef.client.exception.ReefServiceException
-import org.totalgrid.reef.client.{ PromiseErrorTransform, PromiseTransform, Promise }
+import org.totalgrid.reef.client.{PromiseListener, PromiseErrorTransform, PromiseTransform, Promise}
 
 trait ScalaPromise {
 
@@ -36,6 +36,23 @@ trait ScalaPromise {
         def transformError(error: ReefServiceException): ReefServiceException = f(error)
       })
     }
+
+    // TODO: the ugliness of this and the need for OpenPromise maybe call for a scala
+    // TODO: promise type that gets used in the batch impl/other systems
+    def listenEither(f: Either[Throwable, A] => Unit) {
+      p.listen(new PromiseListener[A] {
+        def onComplete(promise: Promise[A]) {
+          val unexcept = try {
+            Right(promise.await)
+          } catch {
+            case ex => Left(ex)
+          }
+          f(unexcept)
+        }
+      })
+
+    }
+
   }
 
   implicit def _scalaPromise[A](p: Promise[A]): RichPromise[A] = new RichPromise(p)
