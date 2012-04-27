@@ -17,13 +17,20 @@ import org.totalgrid.reef.client.proto.{StatusCodes, Envelope}
 import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 import org.totalgrid.reef.client.proto.Envelope.{ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb}
 import org.totalgrid.reef.client.exception.{InternalClientError, ReefServiceException}
+import org.totalgrid.reef.client.sapi.client.rest.ServiceRegistry
 
-trait BatchRestOperations extends RestOperations {
+trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOperations {
+  def batched: Option[BatchRestOperations] = Some(this)
   def flush(): Promise[BatchServiceRequest]
   def batchedFlush(batchSize: Int): Promise[Boolean]
 }
 
-trait DefaultBatchRestOperations extends BatchRestOperations with DerivedRestOperations {
+class DefaultBatchRestOperations(protected val ops: RestOperations, protected val exe: Executor, registry: ServiceRegistry) extends BatchRestOperationsImpl {
+  protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = registry.getServiceInfo(klass)
+}
+
+
+trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperations {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _]
   protected def exe: Executor
   protected def ops: RestOperations

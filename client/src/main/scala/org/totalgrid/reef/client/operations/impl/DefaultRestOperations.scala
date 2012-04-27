@@ -24,7 +24,9 @@ import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 import org.totalgrid.reef.client.proto.Envelope.Verb
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
-class DefaultRestOperations(client: DefaultClient) extends RestOperations with DerivedRestOperations {
+class DefaultRestOperations(client: DefaultClient) extends RestOperations with DerivedRestOperations with OptionallyBatchedRestOperations  {
+
+  def batched: Option[BatchRestOperations] = None
 
   protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]] = {
     val basic = headers.map(_.asInstanceOf[BasicRequestHeaders]) // TODO: HACK HACK HACK SHOULD NOT SURVIVE TO RELEASE

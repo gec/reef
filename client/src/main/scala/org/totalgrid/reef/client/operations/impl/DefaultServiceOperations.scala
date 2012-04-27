@@ -26,6 +26,7 @@ import impl.DefaultServiceOperations.{ DefaultSubscriptionResult, CancelingListe
 import java.util.concurrent.RejectedExecutionException
 import org.totalgrid.reef.client.exception.{ ServiceIOException, InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client._
+import sapi.client.rest.ServiceRegistry
 import scl.ScalaPromise._
 
 object DefaultServiceOperations {
@@ -46,7 +47,7 @@ object DefaultServiceOperations {
   }
 }
 
-class DefaultServiceOperations(restOperations: RestOperations, bindOperations: BindOperations, exe: Executor) extends ServiceOperations {
+class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, bindOperations: BindOperations, batch: () => BatchRestOperations, exe: Executor) extends ServiceOperations {
 
   private def safeOp[A](op: () => Promise[A], err: () => String): Promise[A] = {
 
@@ -66,18 +67,16 @@ class DefaultServiceOperations(restOperations: RestOperations, bindOperations: B
     safeOp(() => request.execute(restOperations), request.errorMessage _)
   }
 
-  def batchRequest[A](request: BasicRequest[A]): Promise[A] = null
-  /*
   def batchRequest[A](request: BasicRequest[A]): Promise[A] = {
-    if (restOperations.isBatch) {
-      safeOp(() => request.execute(batchOps), request.errorMessage _)
-    } else {
-      val batchOps = new BatchOps()
-      val result = safeOp(() => request.execute(batchOps), request.errorMessage _)
-      batchOps.flush
-      result
+    restOperations.batched match {
+      case Some(_) => safeOp(() => request.execute(restOperations), request.errorMessage _)
+      case None =>
+        val batchOps = batch()
+        val result = safeOp(() => request.execute(batchOps), request.errorMessage _)
+        batchOps.flush()
+        result
     }
-  }*/
+  }
 
   def subscriptionRequest[A, B](descriptor: TypeDescriptor[B], request: SubscribeRequest[A, B]): Promise[SubscriptionResult[A, B]] = {
     try {
