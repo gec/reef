@@ -56,4 +56,4 @@ trait AllScadaService
   with CommunicationChannelService
   with CalculationService
   with LoginService
-  */
+  */ 

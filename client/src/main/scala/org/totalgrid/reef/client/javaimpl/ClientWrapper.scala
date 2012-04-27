@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.javaimpl
 
 import org.totalgrid.reef.client.exception.ServiceIOException
 import org.totalgrid.reef.client._
-import operations.impl.{DefaultServiceOperations, DefaultBindOperations, DefaultRestOperations, DefaultBatchRestOperations}
+import operations.impl.{ DefaultServiceOperations, DefaultBindOperations, DefaultRestOperations, DefaultBatchRestOperations }
 import operations.ServiceOperations
 import org.totalgrid.reef.client.ServiceProviderInfo
 import net.agileautomata.executor4s.Executor
