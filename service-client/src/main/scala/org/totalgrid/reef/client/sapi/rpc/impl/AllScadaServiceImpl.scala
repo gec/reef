@@ -26,26 +26,9 @@ import org.totalgrid.reef.client.operations.scl.ServiceOperationsProvider
 /**
  * "Super" implementation of all of the service interfaces
  */
-/*trait AllScadaServiceImpl
+trait AllScadaServiceImpl
   extends AllScadaService
   with EntityServiceImpl
-  with ConfigFileServiceImpl
-  with MeasurementServiceImpl
-  with MeasurementOverrideServiceImpl
-  with EventServiceImpl
-  with EventPublishingServiceImpl
-  with EventConfigServiceImpl
-  with CommandServiceImpl
-  with PointServiceImpl
-  with AlarmServiceImpl
-  with AgentServiceImpl
-  with EndpointServiceImpl
-  with ApplicationServiceImpl
-  with CommunicationChannelServiceImpl
-  with CalculationServiceImpl
-  with LoginServiceImpl*/
-trait AllScadaServiceImpl
-  extends EntityServiceImpl
   with ConfigFileServiceImpl
   with MeasurementServiceImpl
   with MeasurementOverrideServiceImpl

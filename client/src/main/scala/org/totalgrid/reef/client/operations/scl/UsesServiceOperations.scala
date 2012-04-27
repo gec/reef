@@ -25,5 +25,5 @@ trait UsesServiceOperations {
   protected def ops: ServiceOperations
 
   // HACK
-  def batchGets[A](gets: List[A]): Promise[List[A]]
+  def batchGets[A](gets: List[A]): Promise[List[A]] = null
 }

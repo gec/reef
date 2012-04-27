@@ -20,7 +20,9 @@ package org.totalgrid.reef.client.operations.scl
 
 import org.totalgrid.reef.client.operations.ServiceOperations
 import org.totalgrid.reef.client.Client
+import org.totalgrid.reef.client.types.ServiceTypeInformation
 
-abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOperations {
+abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOperations with UsesServiceRegistry {
   protected def ops: ServiceOperations = client.getServiceOperations
+  protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getInternal.getServiceRegistry.getServiceInfo(klass)
 }
