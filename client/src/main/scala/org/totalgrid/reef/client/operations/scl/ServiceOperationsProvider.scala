@@ -19,7 +19,8 @@
 package org.totalgrid.reef.client.operations.scl
 
 import org.totalgrid.reef.client.operations.ServiceOperations
+import org.totalgrid.reef.client.Client
 
-abstract class ServiceOperationsProvider(protected val ops: ServiceOperations) extends UsesServiceOperations {
-
+abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOperations {
+  protected def ops: ServiceOperations = client.getServiceOperations
 }

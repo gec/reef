@@ -20,9 +20,13 @@ package org.totalgrid.reef.client.javaimpl
 
 import org.totalgrid.reef.client.exception.ServiceIOException
 import org.totalgrid.reef.client._
+import operations.impl.{DefaultServiceOperations, DefaultBindOperations, DefaultRestOperations, DefaultBatchRestOperations}
+import operations.ServiceOperations
 import org.totalgrid.reef.client.ServiceProviderInfo
 import net.agileautomata.executor4s.Executor
-import sapi.client.rest.{ ClientBindOperations, ServiceRegistry, RestOperations, Client => SClient }
+import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
+import sapi.client.rest.{ ClientBindOperations, ServiceRegistry, RestOperations }
+
 import sapi.client.{ RequestSpyHook, BasicRequestHeaders, RequestSpy }
 
 class ClientWrapper(client: SClient) extends Client {
@@ -78,4 +82,14 @@ class ClientWrapper(client: SClient) extends Client {
   }
 
   def spawn(): Client = new ClientWrapper(client.spawn())
+
+  def getServiceOperations: ServiceOperations = {
+    val restOperations = new DefaultRestOperations(client)
+    def createBatch() = {
+      new DefaultBatchRestOperations(restOperations, client, client)
+    }
+    val bindOperations = new DefaultBindOperations(client)
+
+    new DefaultServiceOperations(restOperations, bindOperations, createBatch _, client)
+  }
 }

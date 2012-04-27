@@ -20,6 +20,9 @@ package org.totalgrid.reef.client.sapi.client.rest
 
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.sapi.client._
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.{ Promise => JPromise }
+import org.totalgrid.reef.client.operations.{ Response => JResponse }
 
 trait Client
     extends Executor
@@ -39,4 +42,6 @@ trait Client
    * No listeners are copied, only the auth token.
    */
   def spawn(): Client
+
+  def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[BasicRequestHeaders]): JPromise[JResponse[A]]
 }

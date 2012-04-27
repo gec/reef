@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.client.operations.impl
 
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultClient
+import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
 import org.totalgrid.reef.client.operations.BindOperations
 import org.totalgrid.reef.client.registration.Service
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.{ Subscription, SubscriptionBinding }
 import org.totalgrid.reef.client.javaimpl.{ SubscriptionWrapper, ServiceWrapper }
 
-class DefaultBindOperations(client: DefaultClient) extends BindOperations {
+class DefaultBindOperations(client: SClient) extends BindOperations {
   def subscribe[A](descriptor: TypeDescriptor[A]): Subscription[A] = {
     new SubscriptionWrapper(client.subscribe(descriptor))
   }

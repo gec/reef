@@ -20,6 +20,7 @@ package org.totalgrid.reef.client;
 
 import net.agileautomata.executor4s.Executor;
 import net.agileautomata.executor4s.Executor$class;
+import org.totalgrid.reef.client.operations.ServiceOperations;
 
 /**
  * A client represents an authenticated link with a Reef server.
@@ -82,4 +83,6 @@ public interface Client
     ClientInternal getInternal();
 
     Client spawn();
+
+    ServiceOperations getServiceOperations();
 }

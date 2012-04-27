@@ -19,11 +19,11 @@
 package org.totalgrid.reef.client.sapi.sync.impl
 
 import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
-import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.sync._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AsyncAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
 import org.totalgrid.reef.client.Client
+import org.totalgrid.reef.client.operations.scl.ServiceOperationsProvider
 
 trait AllScadaServiceSyncImpl
     extends AllScadaService
@@ -47,7 +47,7 @@ trait AllScadaServiceSyncImpl
   def service: AsyncAllScadaService
 }
 
-class AllScadaServiceSyncWrapper(client: Client) extends ApiBase(client) with AllScadaServiceSyncImpl {
+class AllScadaServiceSyncWrapper(client: Client) extends ServiceOperationsProvider(client) with AllScadaServiceSyncImpl {
   private val srv = new AllScadaServiceWrapper(client)
 
   override def service = srv

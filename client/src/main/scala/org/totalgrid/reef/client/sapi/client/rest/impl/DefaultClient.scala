@@ -43,7 +43,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
     future
   }
 
-  def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[BasicRequestHeaders]): JPromise[JResponse[A]] = {
+  override def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[BasicRequestHeaders]): JPromise[JResponse[A]] = {
     val usedHeaders = headers.map(getHeaders.merge(_)).getOrElse(getHeaders)
     val promise = conn.requestJava(verb, payload, usedHeaders, strand)
     // TODO: request spys

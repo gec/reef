@@ -20,13 +20,13 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc._
 import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
-import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.Client
+import org.totalgrid.reef.client.operations.scl.ServiceOperationsProvider
 
 /**
  * "Super" implementation of all of the service interfaces
  */
-trait AllScadaServiceImpl
+/*trait AllScadaServiceImpl
   extends AllScadaService
   with EntityServiceImpl
   with ConfigFileServiceImpl
@@ -43,9 +43,26 @@ trait AllScadaServiceImpl
   with ApplicationServiceImpl
   with CommunicationChannelServiceImpl
   with CalculationServiceImpl
+  with LoginServiceImpl*/
+trait AllScadaServiceImpl
+  extends EntityServiceImpl
+  with ConfigFileServiceImpl
+  with MeasurementServiceImpl
+  with MeasurementOverrideServiceImpl
+  with EventServiceImpl
+  with EventPublishingServiceImpl
+  with EventConfigServiceImpl
+  with CommandServiceImpl
+  with PointServiceImpl
+  with AlarmServiceImpl
+  with AgentServiceImpl
+  with EndpointServiceImpl
+  with ApplicationServiceImpl
+  with CommunicationChannelServiceImpl
+  with CalculationServiceImpl
   with LoginServiceImpl
 
-class AllScadaServiceWrapper(client: Client) extends ApiBase(client) with AllScadaServiceImpl
+class AllScadaServiceWrapper(client: Client) extends ServiceOperationsProvider(client) with AllScadaServiceImpl
 
 object AllScadaServiceImplServiceList {
   def getServiceInfo = RpcProvider(new AllScadaServiceWrapper(_),

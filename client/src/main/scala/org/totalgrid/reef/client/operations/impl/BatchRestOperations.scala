@@ -1,22 +1,40 @@
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.totalgrid.reef.client.operations.impl
 
-import org.totalgrid.reef.client.{Promise, RequestHeaders}
+import org.totalgrid.reef.client.{ Promise, RequestHeaders }
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.operations.RestOperations
 import org.totalgrid.reef.client.sapi.client.rest.impl.ClassLookup
 import java.util.UUID
 import com.google.protobuf.ByteString
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.types.{TypeDescriptor, ServiceTypeInformation}
+import org.totalgrid.reef.client.types.{ TypeDescriptor, ServiceTypeInformation }
 import collection.mutable.Queue
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.operations.scl.ScalaPromise._
 import org.totalgrid.reef.client.operations.scl.ScalaResponse._
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.proto.{StatusCodes, Envelope}
+import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 import org.totalgrid.reef.client.javaimpl.ResponseWrapper
-import org.totalgrid.reef.client.proto.Envelope.{ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb}
-import org.totalgrid.reef.client.exception.{InternalClientError, ReefServiceException}
+import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb }
+import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client.sapi.client.rest.ServiceRegistry
 
 trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOperations {
@@ -28,7 +46,6 @@ trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOpera
 class DefaultBatchRestOperations(protected val ops: RestOperations, protected val exe: Executor, registry: ServiceRegistry) extends BatchRestOperationsImpl {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = registry.getServiceInfo(klass)
 }
-
 
 trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperations {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _]
@@ -58,11 +75,9 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
     promise
   }
 
-
   def flush(): Promise[BatchServiceRequest] = {
     sendBatch(popRequests(), None)
   }
-
 
   def batchedFlush(batchSize: Int): Promise[Boolean] = {
 
@@ -127,12 +142,10 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
     batchPromise.map(_.one)
   }
 
-
   private def popRequests(): List[QueuedRequest[_]] = {
     val list = requestQueue.toList
     requestQueue.clear()
     list
   }
 }
-
 

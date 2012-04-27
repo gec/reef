@@ -32,7 +32,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Measurements._
 import org.totalgrid.reef.client.operations.RestOperations
-import org.totalgrid.reef.client.{Subscription, Promise, Routable}
+import org.totalgrid.reef.client.{ Subscription, Promise, Routable }
 
 trait MeasurementServiceImpl extends UsesServiceOperations with MeasurementService {
 

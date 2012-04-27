@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc.ClientOperations
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
-import org.totalgrid.reef.client.operations.scl.{UsesServiceRegistry, UsesServiceOperations}
+import org.totalgrid.reef.client.operations.scl.{ UsesServiceRegistry, UsesServiceOperations }
 
 trait ClientOperationsImpl extends UsesServiceOperations with UsesServiceRegistry with ClientOperations {
   def getOne[T](request: T) = ops.operation("Cannot getOne with request: " + request) {

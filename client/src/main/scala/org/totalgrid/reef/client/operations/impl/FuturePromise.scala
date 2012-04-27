@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.operations.impl
 
 import org.totalgrid.reef.client._
 import exception.{ InternalClientError, ReefServiceException }
-import net.agileautomata.executor4s.{SettableFuture, Executor, Future}
+import net.agileautomata.executor4s.{ SettableFuture, Executor, Future }
 
 trait OpenPromise[A] extends Promise[A] {
   def setSuccess(v: A)
@@ -39,7 +39,6 @@ object FuturePromise {
 
   def open[A](settable: SettableFuture[Either[ReefServiceException, A]]): OpenPromise[A] = new OpenEitherPromise[A](settable)
   def open[A](exe: Executor): OpenPromise[A] = new OpenEitherPromise[A](exe.future[Either[ReefServiceException, A]])
-
 
   trait DefinedPromise[A] extends Promise[A] {
     protected def original: Promise[A]
