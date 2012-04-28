@@ -37,6 +37,14 @@ trait ScalaPromise {
       })
     }
 
+    def listenFor(f: Promise[A] => Unit) {
+      p.listen(new PromiseListener[A] {
+        def onComplete(promise: Promise[A]) {
+          f(promise)
+        }
+      })
+    }
+
     // TODO: the ugliness of this and the need for OpenPromise maybe call for a scala
     // TODO: promise type that gets used in the batch impl/other systems
     def listenEither(f: Either[Throwable, A] => Unit) {

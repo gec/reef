@@ -22,14 +22,16 @@ import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 
 import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.FEP._
-import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.{ Client, ServicesList }
+import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.operations.scl.{ BatchOperations, ServiceOperationsProvider, UsesServiceOperations, StubBatchOperations }
 
-trait LoaderServices extends AllScadaService {
+trait LoaderServices extends AllScadaService with BatchOperations with UsesServiceOperations {
   def addEquipment(entity: Entity): Promise[Entity]
   def addPoint(point: Point): Promise[Point]
   def addCommand(cmd: Command): Promise[Command]
@@ -56,7 +58,7 @@ class LoaderServicesList extends ServicesList {
       classOf[LoaderServices])) :: Nil
 }
 
-class LoaderServicesImpl(client: Client) extends ApiBase(client) with LoaderServices with AllScadaServiceImpl {
+class LoaderServicesImpl(client: Client) extends ServiceOperationsProvider(client) with LoaderServices with AllScadaServiceImpl with StubBatchOperations {
   def addEquipment(eq: Entity) = ops.operation("Can't add equipment: " + eq.getUuid.getValue + " name: " + eq.getName) {
     _.put(eq).map { _.one }
   }
@@ -102,7 +104,7 @@ class LoaderServicesImpl(client: Client) extends ApiBase(client) with LoaderServ
     ops.operation("Couldn't get feedback commands for point: " + uuid.getValue) { session =>
       val request = Entity.newBuilder.setUuid(uuid).addRelations(Relationship.newBuilder
         .setDescendantOf(true).setRelationship("feedback").setDistance(1)).build
-      session.get(request).map { _.one.map { _.getRelationsList.toList.map { _.getEntitiesList.toList }.flatten.toList } }
+      session.get(request).map(_.one).map(_.getRelationsList.toList.flatMap(_.getEntitiesList.toList).toList)
     }
   }
 }

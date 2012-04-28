@@ -25,4 +25,7 @@ import org.totalgrid.reef.client.types.ServiceTypeInformation
 abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOperations with UsesServiceRegistry {
   protected def ops: ServiceOperations = client.getServiceOperations
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getInternal.getServiceRegistry.getServiceInfo(klass)
+
+  // PSEUDO-HACK
+  def setResultLimit(limit: Int) { client.getHeaders.setResultLimit(limit) }
 }

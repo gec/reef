@@ -65,7 +65,7 @@ class FepConnectedApplication(protocolName: String, manager: ProtocolManager, pr
     // protocol masters in response to events
     new FrontEndManager(
       services,
-      services,
+      client.getInternal.getExecutor,
       connectionContext,
       appConfig,
       List(protocolName),

@@ -20,9 +20,9 @@ package org.totalgrid.reef.loader.commons
 
 import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.FEP._
-import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.client.service.proto.Alarms.EventConfig
+import org.totalgrid.reef.client.operations.scl.BatchOperations
 
 class EquipmentRemoverCache extends ModelDeleterCache
 

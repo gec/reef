@@ -22,17 +22,16 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.Processing._
 
-import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
-import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
-import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionResult }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
-import org.totalgrid.reef.client.{ Client, SubscriptionResult, AddressableDestination }
 import org.totalgrid.reef.client.registration.EventPublisher
+import org.totalgrid.reef.client.operations.scl.ServiceOperationsProvider
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client._
 
 trait MeasurementProcessorServices extends AllScadaServiceImpl {
   def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig): Promise[SubscriptionResult[List[MeasurementProcessingConnection], MeasurementProcessingConnection]]
@@ -51,7 +50,7 @@ trait MeasurementProcessorServices extends AllScadaServiceImpl {
 }
 
 class MeasurementProcessorServicesImpl(client: Client, eventPub: EventPublisher)
-    extends ApiBase(client) with MeasurementProcessorServices {
+    extends ServiceOperationsProvider(client) with MeasurementProcessorServices {
 
   override def subscribeToConnectionsForMeasurementProcessor(measProc: ApplicationConfig) = {
     ops.subscription(Descriptors.measurementProcessingConnection, "Couldn't subscribe for endpoints assigned to: " + measProc.getInstanceName) { (sub, client) =>

@@ -57,6 +57,6 @@ class MeasurementProcessorConnectedApplication(measStore: MeasurementStore) exte
     val connectionHandler = new ProcessingNodeMap(connector)
 
     val services = new MeasurementProcessorServicesImpl(client, eventPub)
-    new FullProcessor(services, connectionHandler, appConfig, services)
+    new FullProcessor(services, connectionHandler, appConfig, client.getInternal.getExecutor)
   }
 }

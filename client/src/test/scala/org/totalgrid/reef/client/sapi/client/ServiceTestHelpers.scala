@@ -19,8 +19,8 @@
 package org.totalgrid.reef.client.sapi.client
 
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.{ PromiseListener, PromiseTransform, PromiseErrorTransform, Subscription => JavaSubscription, SubscriptionEventAcceptor, SubscriptionResult, Promise => JPromise}
-import org.totalgrid.reef.client.exception.{UnknownServiceException, ReefServiceException}
+import org.totalgrid.reef.client.{ PromiseListener, PromiseTransform, PromiseErrorTransform, Subscription => JavaSubscription, SubscriptionEventAcceptor, SubscriptionResult, Promise => JPromise }
+import org.totalgrid.reef.client.exception.{ UnknownServiceException, ReefServiceException }
 
 object ServiceTestHelpers {
 
@@ -79,11 +79,15 @@ object ServiceTestHelpers {
   def subSuccess[A](a: List[A]) = new FixedSuccessPromise(new MockSubscriptionResult[A](a))
   def subFailure[A](ex: ReefServiceException) = new FixedFailurePromise(ex)
 
-  /*def success[A](a: A) = new FixedPromise(Success(a))
-  def failure[A](ex: Exception) = new FixedPromise(Failure(ex))
-  def failure[A](msg: String) = new FixedPromise(Failure(msg))
+  // TODO: Figure out the right type hinting to make this unnecessary in FrontEndManagerTest
+  def subSuccessInterface[A](a: List[A]): JPromise[SubscriptionResult[List[A], A]] = new FixedSuccessPromise(new MockSubscriptionResult[A](a))
+  def subFailureInterface[A](ex: ReefServiceException): JPromise[SubscriptionResult[List[A], A]] = new FixedFailurePromise[SubscriptionResult[List[A], A]](ex)
 
-  def subSuccess[A](a: A) = new FixedPromise(Success(new MockSubscriptionResult[A](a :: Nil)))
-  def subSuccess[A](a: List[A]) = new FixedPromise(Success(new MockSubscriptionResult[A](a)))
-  def subFailure[A](ex: Exception) = new FixedPromise(Failure(ex))*/
+  /*def success[A](a: A) = new FixedPromise(Success(a))
+def failure[A](ex: Exception) = new FixedPromise(Failure(ex))
+def failure[A](msg: String) = new FixedPromise(Failure(msg))
+
+def subSuccess[A](a: A) = new FixedPromise(Success(new MockSubscriptionResult[A](a :: Nil)))
+def subSuccess[A](a: List[A]) = new FixedPromise(Success(new MockSubscriptionResult[A](a)))
+def subFailure[A](ex: Exception) = new FixedPromise(Failure(ex))*/
 }

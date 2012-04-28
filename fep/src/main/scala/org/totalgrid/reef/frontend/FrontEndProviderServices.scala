@@ -26,13 +26,13 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.client.sapi.client.rest.RpcProvider
 
 import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.{ Client, SubscriptionResult }
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.operations.scl.ServiceOperationsProvider
+import org.totalgrid.reef.client.{ Promise, Client, SubscriptionResult }
 
 // TODO: Move FrontEndProviderServices functions into service-client ProtocolAdapaterServices
 trait FrontEndProviderServices extends AllScadaService {
@@ -47,7 +47,7 @@ object FrontEndProviderServices {
 }
 
 class FrontEndProviderServicesImpl(client: Client)
-    extends ApiBase(client) with FrontEndProviderServices with AllScadaServiceImpl {
+    extends ServiceOperationsProvider(client) with FrontEndProviderServices with AllScadaServiceImpl {
 
   override def subscribeToEndpointConnectionsForFrontEnd(fep: FrontEndProcessor): Promise[SubscriptionResult[List[EndpointConnection], EndpointConnection]] = {
     ops.subscription(Descriptors.endpointConnection, "Couldn't subscribe for endpoints assigned to: " + fep.getAppConfig.getInstanceName) { (sub, client) =>

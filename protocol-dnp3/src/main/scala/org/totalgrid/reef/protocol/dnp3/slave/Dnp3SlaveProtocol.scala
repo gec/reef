@@ -61,7 +61,7 @@ class Dnp3SlaveProtocol extends Dnp3ProtocolBase[SlaveObjectsContainer] {
 
     val measAcceptor = dnp3.AddSlave(channelName, endpointName, filterLevel, commandReceiver, slaveConfig)
 
-    val measProxy = new SlaveMeasurementProxy(services, mapping, measAcceptor)
+    val measProxy = new SlaveMeasurementProxy(services, mapping, measAcceptor, client.getInternal.getExecutor)
     map += endpointName -> SlaveObjectsContainer(stackObserver, commandReceiver, measProxy)
 
     // do nothing, no commands associated with "dnp3-slave" endpoint

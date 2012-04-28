@@ -18,24 +18,40 @@
  */
 package org.totalgrid.reef.client.operations.scl
 
-import org.totalgrid.reef.client.operations.ServiceOperations
 import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.proto.Envelope.BatchServiceRequest
 
-trait StubBatchOperations extends BatchOperations {
-  def startBatchRequests() {}
-  def stopBatchRequests() {}
-  def flushBatchRequests(): Promise[BatchServiceRequest] = null
-  def batchedFlushBatchRequests(batchSize: Int): Promise[Boolean] = null
+trait BatchOperations {
+
+  def startBatchRequests()
+  def stopBatchRequests()
+  def flushBatchRequests(): Promise[BatchServiceRequest]
+  def batchedFlushBatchRequests(batchSize: Int): Promise[Boolean]
 }
 
-trait UsesServiceOperations {
-  protected def ops: ServiceOperations
+object BatchOperations {
 
-  // PSEUDO-HACK
-  def setResultLimit(limit: Int)
+  // TODO: replace BatchOperations.batchOperations with batchedFlushBatchRequests()
+  def batchOperations[A <: BatchOperations](client: A, uploadActions: scala.List[A => Promise[_]], batchSize: Int) {
 
-  // HACK
-  def batchGets[A](gets: List[A]): Promise[List[A]] = null
-
+    try {
+      if (batchSize > 0) client.startBatchRequests()
+      var i = 0
+      uploadActions.foreach { action =>
+        i = i + 1
+        if (batchSize > 0) {
+          action(client)
+          if (i % batchSize == 0) client.flushBatchRequests().await
+        } else {
+          action(client).await
+        }
+      }
+      if (batchSize > 0) {
+        client.flushBatchRequests().await
+      }
+    } finally {
+      if (batchSize > 0) client.stopBatchRequests()
+    }
+  }
 }
+

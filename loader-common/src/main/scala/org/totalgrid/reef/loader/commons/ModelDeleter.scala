@@ -62,9 +62,9 @@ object ModelDeleter {
         if (!endpoints.isEmpty) EndpointStopper.stopEndpoints(local, endpoints, stream, forceOffline)
 
         val viewer = stream.map { new RequestViewer(_, cachingImporter.size) }
-        RequestSpy.withRequestSpy(local, viewer) {
-          cachingImporter.doDeletes(local, batchSize)
-        }
+        //RequestSpy.withRequestSpy(local, viewer) {  //TODO: PUT BACK
+        cachingImporter.doDeletes(local, batchSize)
+        //}
         viewer.foreach { _.finish }
 
         stream.foreach { _.println("Deleted " + itemsToDelete + " objects successfully.") }
@@ -77,7 +77,7 @@ object ModelDeleter {
 
   def deleteEverything(local: LoaderServices, dryRun: Boolean, forceOffline: Boolean, stream: Option[PrintStream], batchSize: Int = 25): Long = {
     deleteChildren(local, Nil, dryRun, forceOffline, stream, batchSize) { (traverse, collector) =>
-      local.modifyHeaders(_.setResultLimit(50000))
+      local.setResultLimit(50000)
 
       // since we never look at entities when we are deleting we dont need to look them up
       val fakeEntity = Entity.newBuilder.build

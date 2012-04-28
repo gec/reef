@@ -66,28 +66,34 @@ class ProtocolTraitToManagerShim(protocol: Protocol) extends ProtocolManager wit
   }
 
   private def newMeasBatchPublisher(services: FrontEndProviderServices, routingKey: String) = new Publisher[MeasurementBatch] {
-    def publish(value: MeasurementBatch) = {
-      services.publishMeasurements(value, new AddressableDestination(routingKey)).extract match {
-        case Success(x) => logger.debug("Published a measurement batch of size: " + value.getMeasCount)
-        case Failure(ex) => logger.error("Couldn't publish measurements: " + ex.getMessage)
+    def publish(value: MeasurementBatch) {
+      try {
+        services.publishMeasurements(value, new AddressableDestination(routingKey)).await()
+        logger.debug("Published a measurement batch of size: " + value.getMeasCount)
+      } catch {
+        case ex => logger.error("Couldn't publish measurements: " + ex.getMessage)
       }
     }
   }
 
   private def newEndpointStatePublisher(services: FrontEndProviderServices, connectionId: ReefID, endpointName: String) = new Publisher[EndpointConnection.State] {
-    def publish(state: EndpointConnection.State) = {
-      services.alterEndpointConnectionState(connectionId, state).extract match {
-        case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
-        case Failure(ex) => logger.error("Couldn't update endpointState: " + ex.getMessage)
+    def publish(state: EndpointConnection.State) {
+      try {
+        val result = services.alterEndpointConnectionState(connectionId, state).await()
+        logger.info("Updated endpoint state: " + endpointName + " state: " + result.getState)
+      } catch {
+        case ex => logger.error("Couldn't update endpointState: " + ex.getMessage)
       }
     }
   }
 
   private def newChannelStatePublisher(services: FrontEndProviderServices, channelUuid: ReefUUID, channelName: String) = new Publisher[CommChannel.State] {
-    def publish(state: CommChannel.State) = {
-      services.alterCommunicationChannelState(channelUuid, state).extract match {
-        case Success(x) => logger.info("Updated channel state: " + x.getName + " state: " + x.getState)
-        case Failure(ex) => logger.error("Couldn't update channelState: " + ex.getMessage)
+    def publish(state: CommChannel.State) {
+      try {
+        val result = services.alterCommunicationChannelState(channelUuid, state).await()
+        logger.info("Updated channel state: " + result.getName + " state: " + result.getState)
+      } catch {
+        case ex => logger.error("Couldn't update channelState: " + ex.getMessage)
       }
     }
   }

@@ -100,9 +100,11 @@ class FrontEndConnections(protocolManagers: Map[String, ProtocolManager], newCli
 
     val endpointName = c.getEndpoint.getName
 
-    services.alterEndpointConnectionState(c.getId, EndpointConnection.State.ERROR).extract match {
-      case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
-      case Failure(ex) => logger.error("Couldn't update endpointState: " + ex.getMessage)
+    try {
+      val result = services.alterEndpointConnectionState(c.getId, EndpointConnection.State.ERROR).await()
+      logger.info("Updated endpoint state: " + endpointName + " state: " + result.getState)
+    } catch {
+      case ex => logger.error("Couldn't update endpointState: " + ex.getMessage)
     }
   }
 }
