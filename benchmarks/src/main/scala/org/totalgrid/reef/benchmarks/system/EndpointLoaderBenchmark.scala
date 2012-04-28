@@ -20,9 +20,8 @@ package org.totalgrid.reef.benchmarks.system
 
 import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
 import java.io.PrintStream
-import org.totalgrid.reef.client.Client
-import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.util.Timing.Stopwatch
+import org.totalgrid.reef.client.{ Promise, Client }
 
 case class EndpointLoadingReading(request: String, endpoints: Int, pointsPerEndpoint: Int,
     time: Long, parallelism: Int, batchSize: Int) extends BenchmarkReading {

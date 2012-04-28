@@ -79,7 +79,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
     clientOption = Some(session.getService(classOf[AllScadaService]))
     asyncClientOption = Some(session.getService(classOf[AsyncAllScadaService]))
 
-    client.addSubscriptionCreationListener(canceler)
+    session.addSubscriptionCreationListener(canceler)
 
     client.setHeaders(client.getHeaders.setTimeout(50000))
     // TODO: filtering is done after the result limit is applied

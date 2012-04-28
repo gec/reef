@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.operations.scl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,22 +18,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.operations.scl
 
-import org.totalgrid.reef.client.operations.ServiceOperations
+import org.totalgrid.reef.client.sapi.client.rest.ServiceRegistry
 import org.totalgrid.reef.client.types.ServiceTypeInformation
-import org.totalgrid.reef.client.{ RequestHeaders, Client }
+import org.totalgrid.reef.client.RequestHeaders
 
-abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOperations with UsesServiceRegistry with StubBatchOperations with HasHeaders {
-  protected def ops: ServiceOperations = client.getServiceOperations
-  protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getInternal.getServiceRegistry.getServiceInfo(klass)
-
-  def getHeaders() = client.getHeaders
-
-  def setHeaders(hdrs: RequestHeaders) {
-    client.setHeaders(hdrs)
-  }
-
-  // PSEUDO-HACK
-  def setResultLimit(limit: Int) { client.getHeaders.setResultLimit(limit) }
+trait HasHeaders {
+  def getHeaders(): RequestHeaders
+  def setHeaders(hdrs: RequestHeaders)
 }

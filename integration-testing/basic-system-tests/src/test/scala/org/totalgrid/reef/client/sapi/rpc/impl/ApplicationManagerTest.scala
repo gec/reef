@@ -42,7 +42,7 @@ class ApplicationManagerTest extends ServiceClientSuite with Logging {
 
   test("ApplicationConnectionManager integration test") {
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    val appManager = new SimpleConnectedApplicationManager(client, connectionProvider, settings)
+    val appManager = new SimpleConnectedApplicationManager(session.getInternal.getExecutor, connectionProvider, settings)
 
     val connected = new SynchronizedVariable(false)
 

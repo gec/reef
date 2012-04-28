@@ -18,14 +18,16 @@
  */
 package org.totalgrid.reef.benchmarks.system
 
-import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointOwnership }
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.util.Timing.Stopwatch
+import org.totalgrid.reef.client.{ Promise, Client }
+import org.totalgrid.reef.client.operations.impl.{ OpenPromise, FuturePromise }
+import org.totalgrid.reef.client.exception.{ UnknownServiceException, ReefServiceException }
+import org.totalgrid.reef.client.operations.scl.ScalaPromise._
 
 object ModelCreationUtilities {
 
@@ -74,18 +76,30 @@ object ModelCreationUtilities {
 
     val exe = client.getInternal.getExecutor
 
-    val f = exe.future[Result[List[(Long, A)]]]
-    val prom = Promise.from(f)
+    val f = exe.future[Either[ReefServiceException, List[(Long, A)]]]
+    val prom: OpenPromise[List[(Long, A)]] = FuturePromise.open(f)
 
-    def completed(stopwatch: Stopwatch, a: Promise[A]): Unit = f.synchronized {
-      val result = a.extract
-      if (result.isSuccess) {
-        inProgressOps -= 1
-        timingResults ::= (stopwatch.elapsed, result.get)
-        if (timingResults.size == batchableOperations.size) f.set(Success(timingResults))
-        else startNext()
-      } else {
-        f.set(Failure(result.toString))
+    def completed(stopwatch: Stopwatch, a: Promise[A]) {
+      f.synchronized {
+        try {
+          val result = a.await()
+          inProgressOps -= 1
+          timingResults ::= (stopwatch.elapsed, result)
+          if (timingResults.size == batchableOperations.size) prom.setSuccess(timingResults)
+          else startNext()
+        } catch {
+          case rse: ReefServiceException => prom.setFailure(rse)
+          case ex => prom.setFailure(new UnknownServiceException(ex.toString))
+        }
+        /*val result = a.extract
+        if (result.isSuccess) {
+          inProgressOps -= 1
+          timingResults ::= (stopwatch.elapsed, result.get)
+          if (timingResults.size == batchableOperations.size) f.set(Success(timingResults))
+          else startNext()
+        } else {
+          f.set(Failure(result.toString))
+        }*/
       }
     }
 
@@ -96,7 +110,7 @@ object ModelCreationUtilities {
         val nextOperationToStart = remainingOps.headOption
         if (nextOperationToStart.isDefined) {
           remainingOps = remainingOps.tail
-          nextOperationToStart.get().listen(completed(stopwatch, _))
+          nextOperationToStart.get().listenFor(completed(stopwatch, _))
           startNext()
         }
       }

@@ -35,7 +35,7 @@ class PointDeleteTest extends ServiceClientSuite {
 
   test("Add " + numberOfPoints + " points on test endpoint") {
 
-    client.setHeaders(client.getHeaders.setTimeout(100000))
+    session.setHeaders(session.getHeaders.setTimeout(100000))
 
     val loaderServices = session.getService(classOf[LoaderServices])
 

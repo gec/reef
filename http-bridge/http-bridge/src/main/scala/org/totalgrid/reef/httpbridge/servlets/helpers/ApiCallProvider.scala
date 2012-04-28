@@ -19,10 +19,8 @@
 package org.totalgrid.reef.httpbridge.servlets.helpers
 
 import com.google.protobuf.Message
-import org.totalgrid.reef.client.sapi.client.Promise
-import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.client.SubscriptionResult
+import org.totalgrid.reef.client.{ Promise, Client, SubscriptionResult }
 
 /**
  * ApiCall and its implementations are used to encapsulate an action we can take with a Client

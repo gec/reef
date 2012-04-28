@@ -85,7 +85,7 @@ class StampedingApplicationsTest extends ServiceClientSuite with Logging {
     val nodeSettings = new NodeSettings("node", "location", "network")
     val settings = new ApplicationManagerSettings(userConfig, nodeSettings, Some(10), 50, 50)
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    new SimpleConnectedApplicationManager(client, connectionProvider, settings)
+    new SimpleConnectedApplicationManager(session.getInternal.getExecutor, connectionProvider, settings)
   }
 
   private def makeApplication(name: String) = new ConnectedApplication {

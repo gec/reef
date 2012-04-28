@@ -19,9 +19,12 @@
 package org.totalgrid.reef.client.sapi.rpc
 
 import org.totalgrid.reef.client.sapi.client.rpc.framework.{ ClientOperations => ApiClientOperations }
+import org.totalgrid.reef.client.operations.scl.{ HasHeaders, BatchOperations }
 
 trait AllScadaService
-  extends EntityService
+  extends BatchOperations
+  with HasHeaders
+  with EntityService
   with ConfigFileService
   with MeasurementService
   with MeasurementOverrideService

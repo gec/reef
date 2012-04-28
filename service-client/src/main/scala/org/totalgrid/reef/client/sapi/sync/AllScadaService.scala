@@ -19,27 +19,10 @@
 package org.totalgrid.reef.client.sapi.sync
 
 import org.totalgrid.reef.client.sapi.client.rpc.framework.{ ClientOperations => ApiClientOperations }
+import org.totalgrid.reef.client.operations.scl.HasHeaders
 
 trait AllScadaService
-  extends EntityService
-  with ConfigFileService
-  with MeasurementService
-  with MeasurementOverrideService
-  with EventService
-  with EventPublishingService
-  with EventConfigService
-  with CommandService
-  with PointService
-  with AlarmService
-  with AgentService
-  with EndpointService
-  with ApplicationService
-  with CommunicationChannelService
-  with CalculationService
-  with LoginService
-/*
-trait AllScadaService
-  extends ApiClientOperations
+  extends HasHeaders
   with EntityService
   with ConfigFileService
   with MeasurementService
@@ -56,4 +39,3 @@ trait AllScadaService
   with CommunicationChannelService
   with CalculationService
   with LoginService
-  */ 

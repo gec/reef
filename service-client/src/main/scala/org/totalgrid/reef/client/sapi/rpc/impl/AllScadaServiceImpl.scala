@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.totalgrid.reef.client.sapi.rpc._
 import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
 import org.totalgrid.reef.client.Client
-import org.totalgrid.reef.client.operations.scl.ServiceOperationsProvider
+import org.totalgrid.reef.client.operations.scl.{ StubBatchOperations, ServiceOperationsProvider }
 
 /**
  * "Super" implementation of all of the service interfaces
@@ -45,7 +45,7 @@ trait AllScadaServiceImpl
   with CalculationServiceImpl
   with LoginServiceImpl
 
-class AllScadaServiceWrapper(client: Client) extends ServiceOperationsProvider(client) with AllScadaServiceImpl
+class AllScadaServiceWrapper(client: Client) extends ServiceOperationsProvider(client) with StubBatchOperations with AllScadaServiceImpl
 
 object AllScadaServiceImplServiceList {
   def getServiceInfo = RpcProvider(new AllScadaServiceWrapper(_),
