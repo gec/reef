@@ -92,18 +92,18 @@ class UserAuthorizationTest extends ServiceClientSuite {
 
     asGuestUserAsync("test-agent", "test-password") { (guestClient, guestServices) =>
       // test that we can use batch service to do allowed operations
-      guestServices.startBatchRequests()
+      guestServices.batching.start()
       val commandPromise = guestServices.getCommands()
-      guestServices.flushBatchRequests().await
+      guestServices.batching.flush().await
 
       val commands = commandPromise.await
 
       intercept[UnauthorizedException] {
-        guestServices.startBatchRequests()
+        guestServices.batching.start()
         // should fail overall batch, since we can read but not create
         guestServices.getCommands()
         guestServices.createCommandExecutionLock(commands.head :: Nil)
-        guestServices.flushBatchRequests().await
+        guestServices.batching.flush().await
       }
     }
 

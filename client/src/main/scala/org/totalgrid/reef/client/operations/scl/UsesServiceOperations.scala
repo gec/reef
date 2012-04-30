@@ -22,13 +22,6 @@ import org.totalgrid.reef.client.operations.ServiceOperations
 import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.proto.Envelope.BatchServiceRequest
 
-trait StubBatchOperations extends BatchOperations {
-  def startBatchRequests() {}
-  def stopBatchRequests() {}
-  def flushBatchRequests(): Promise[BatchServiceRequest] = null
-  def batchedFlushBatchRequests(batchSize: Int): Promise[Boolean] = null
-}
-
 trait UsesServiceOperations {
   protected def ops: ServiceOperations
 

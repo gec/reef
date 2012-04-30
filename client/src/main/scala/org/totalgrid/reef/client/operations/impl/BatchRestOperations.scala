@@ -40,7 +40,7 @@ import org.totalgrid.reef.client.sapi.client.rest.ServiceRegistry
 trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOperations {
   def batched: Option[BatchRestOperations] = Some(this)
   def flush(): Promise[BatchServiceRequest]
-  def batchedFlush(batchSize: Int): Promise[Boolean]
+  def batchedFlush(batchSize: Int): Promise[java.lang.Boolean]
 }
 
 class DefaultBatchRestOperations(protected val ops: RestOperations, protected val exe: Executor, registry: ServiceRegistry) extends BatchRestOperationsImpl {
@@ -79,9 +79,9 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
     sendBatch(popRequests(), None)
   }
 
-  def batchedFlush(batchSize: Int): Promise[Boolean] = {
+  def batchedFlush(batchSize: Int): Promise[java.lang.Boolean] = {
 
-    def nextBatch(prevFailed: Option[ReefServiceException], pending: List[QueuedRequest[_]], promise: OpenPromise[Boolean]) {
+    def nextBatch(prevFailed: Option[ReefServiceException], pending: List[QueuedRequest[_]], promise: OpenPromise[java.lang.Boolean]) {
       prevFailed match {
         case Some(rse) => promise.setFailure(rse)
         case None => pending match {
@@ -93,7 +93,7 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
       }
     }
 
-    val promise = FuturePromise.open[Boolean](exe)
+    val promise = FuturePromise.open[java.lang.Boolean](exe)
 
     nextBatch(None, popRequests(), promise)
 

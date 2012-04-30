@@ -85,4 +85,6 @@ public interface Client
     Client spawn();
 
     ServiceOperations getServiceOperations();
+
+    Batching getBatching();
 }

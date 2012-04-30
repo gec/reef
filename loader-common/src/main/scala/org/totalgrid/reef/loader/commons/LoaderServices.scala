@@ -29,9 +29,9 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.{ Client, ServicesList }
 import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
-import org.totalgrid.reef.client.operations.scl.{ BatchOperations, ServiceOperationsProvider, UsesServiceOperations, StubBatchOperations }
+import org.totalgrid.reef.client.operations.scl._
 
-trait LoaderServices extends AllScadaService with BatchOperations with UsesServiceOperations {
+trait LoaderServices extends AllScadaService {
   def addEquipment(entity: Entity): Promise[Entity]
   def addPoint(point: Point): Promise[Point]
   def addCommand(cmd: Command): Promise[Command]
@@ -58,7 +58,7 @@ class LoaderServicesList extends ServicesList {
       classOf[LoaderServices])) :: Nil
 }
 
-class LoaderServicesImpl(client: Client) extends ServiceOperationsProvider(client) with LoaderServices with AllScadaServiceImpl with StubBatchOperations {
+class LoaderServicesImpl(client: Client) extends ServiceOperationsProvider(client) with LoaderServices with AllScadaServiceImpl {
   def addEquipment(eq: Entity) = ops.operation("Can't add equipment: " + eq.getUuid.getValue + " name: " + eq.getName) {
     _.put(eq).map { _.one }
   }

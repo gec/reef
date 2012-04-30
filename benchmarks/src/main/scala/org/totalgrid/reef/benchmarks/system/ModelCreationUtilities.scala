@@ -37,7 +37,7 @@ object ModelCreationUtilities {
 
   def addEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
     val loaderServices = client.getService(classOf[LoaderServices])
-    loaderServices.startBatchRequests()
+    loaderServices.batching.start()
 
     val names = getPointNames(endpointName, pointsPerEndpoint)
 
@@ -47,7 +47,7 @@ object ModelCreationUtilities {
 
     val putEndpoint = Endpoint.newBuilder.setName(endpointName).setProtocol("null").setOwnerships(owner).build
     loaderServices.addEndpoint(putEndpoint)
-    () => loaderServices.batchedFlushBatchRequests(batchSize)
+    () => loaderServices.batching.flush(batchSize)
   }
 
   def deleteEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
@@ -55,13 +55,13 @@ object ModelCreationUtilities {
 
     val uuid = loaderServices.getEndpointByName(endpointName).await.getUuid
     loaderServices.disableEndpointConnection(uuid).await
-    loaderServices.startBatchRequests()
+    loaderServices.batching.start()
 
     val names = getPointNames(endpointName, pointsPerEndpoint)
 
     loaderServices.delete(Endpoint.newBuilder.setName(endpointName).build)
     names.map { n => loaderServices.delete(Point.newBuilder.setName(n).build) }
-    () => loaderServices.batchedFlushBatchRequests(batchSize)
+    () => loaderServices.batching.flush(batchSize)
   }
 
   /**

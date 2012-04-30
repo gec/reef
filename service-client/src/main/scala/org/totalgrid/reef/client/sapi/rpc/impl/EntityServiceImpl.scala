@@ -210,7 +210,7 @@ trait EntityServiceImpl extends UsesServiceOperations with EntityService {
       results.await
 
       val delReq = EntityAttribute.newBuilder.setEntity(Entity.newBuilder.setUuid(id)).build
-      session.delete(delReq).map(_.oneOrNone).await
+      session.delete(delReq).map(_.many).await
 
       results
     }

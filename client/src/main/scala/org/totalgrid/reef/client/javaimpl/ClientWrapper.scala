@@ -18,14 +18,14 @@
  */
 package org.totalgrid.reef.client.javaimpl
 
-import org.totalgrid.reef.client.exception.ServiceIOException
 import org.totalgrid.reef.client._
-import operations.impl.{ DefaultServiceOperations, DefaultBindOperations, DefaultRestOperations, DefaultBatchRestOperations }
-import operations.ServiceOperations
+import exception.{ BadRequestException, ServiceIOException }
+import operations.impl._
+import operations.{ RestOperations, ServiceOperations }
 import org.totalgrid.reef.client.ServiceProviderInfo
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
-import sapi.client.rest.{ ClientBindOperations, ServiceRegistry, RestOperations }
+import sapi.client.rest.{ ClientBindOperations, ServiceRegistry, RestOperations => SRestOperations }
 
 import sapi.client.{ RequestSpyHook, BasicRequestHeaders, RequestSpy }
 
@@ -70,7 +70,7 @@ class ClientWrapper(client: SClient) extends Client {
   def getInternal: ClientInternal = {
     new ClientInternal {
       def getExecutor: Executor = client
-      def getOperations: RestOperations = client
+      def getOperations: SRestOperations = client
       def getBindings: ClientBindOperations = client
       def getRequestSpyHook: RequestSpyHook = client
       def getServiceRegistry: ServiceRegistry = client
@@ -83,13 +83,47 @@ class ClientWrapper(client: SClient) extends Client {
 
   def spawn(): Client = new ClientWrapper(client.spawn())
 
+  class BatchModeManager extends Batching {
+    protected var currentOpsMode: OptionallyBatchedRestOperations = regular
+
+    protected def regular = new DefaultRestOperations(client)
+
+    def getOps: OptionallyBatchedRestOperations = currentOpsMode
+
+    def start() {
+      currentOpsMode = new DefaultBatchRestOperations(regular, client, client)
+    }
+
+    def exit() {
+      currentOpsMode = regular
+    }
+
+    def flush() = {
+      currentOpsMode.batched match {
+        case None => throw new BadRequestException("No batch requests configured")
+        case Some(batched) => batched.flush()
+      }
+    }
+
+    def flush(chunkSize: Int) = {
+      currentOpsMode.batched match {
+        case None => throw new BadRequestException("No batch requests configured")
+        case Some(batched) => batched.batchedFlush(chunkSize)
+      }
+    }
+  }
+
+  protected val batchMgr = new BatchModeManager
+
   def getServiceOperations: ServiceOperations = {
-    val restOperations = new DefaultRestOperations(client)
-    def createBatch() = {
+    val restOperations = batchMgr.getOps
+    def createSingleOpsBatch() = {
       new DefaultBatchRestOperations(restOperations, client, client)
     }
     val bindOperations = new DefaultBindOperations(client)
 
-    new DefaultServiceOperations(restOperations, bindOperations, createBatch _, client)
+    new DefaultServiceOperations(restOperations, bindOperations, createSingleOpsBatch _, client)
   }
+
+  def getBatching: Batching = batchMgr
 }

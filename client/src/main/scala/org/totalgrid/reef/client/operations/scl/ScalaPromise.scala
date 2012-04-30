@@ -25,6 +25,9 @@ import org.totalgrid.reef.client.{ PromiseListener, PromiseErrorTransform, Promi
 trait ScalaPromise {
 
   class RichPromise[A](p: Promise[A]) {
+    // TODO: TAKE OUT
+    assert(p != null)
+
     def map[B](f: A => B): Promise[B] = {
       p.transform(new PromiseTransform[A, B] {
         def transform(value: A): B = f(value)

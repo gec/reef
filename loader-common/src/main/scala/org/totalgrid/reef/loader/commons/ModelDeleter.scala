@@ -77,7 +77,7 @@ object ModelDeleter {
 
   def deleteEverything(local: LoaderServices, dryRun: Boolean, forceOffline: Boolean, stream: Option[PrintStream], batchSize: Int = 25): Long = {
     deleteChildren(local, Nil, dryRun, forceOffline, stream, batchSize) { (traverse, collector) =>
-      local.setResultLimit(50000)
+      local.setHeaders(local.getHeaders().setResultLimit(50000))
 
       // since we never look at entities when we are deleting we dont need to look them up
       val fakeEntity = Entity.newBuilder.build

@@ -53,8 +53,8 @@ trait ScalaServiceOperations {
     }
 
     def clientSideService[A, B](handler: AsyncService[B], err: => String)(fun: (SubscriptionBinding, RestOperations) => Promise[A]): Promise[SubscriptionBinding] = {
-      ops.clientServiceBinding(handler, handler.descriptor, new ClientServiceBindingRequest[B] {
-        def execute(binding: SubscriptionBinding, operations: RestOperations): Promise[B] = null
+      ops.clientServiceBinding(handler, handler.descriptor, new ClientServiceBindingRequest[A] {
+        def execute(binding: SubscriptionBinding, operations: RestOperations): Promise[A] = fun(binding, operations)
 
         def errorMessage(): String = err
       })

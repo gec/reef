@@ -18,23 +18,8 @@
  */
 package org.totalgrid.reef.client.operations.scl
 
-import org.totalgrid.reef.client.operations.ServiceOperations
-import org.totalgrid.reef.client.types.ServiceTypeInformation
-import org.totalgrid.reef.client.proto.Envelope.BatchServiceRequest
-import org.totalgrid.reef.client.{ Batching, Promise, RequestHeaders, Client }
+import org.totalgrid.reef.client.Batching
 
-abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOperations with UsesServiceRegistry with HasHeaders with HasBatching {
-  protected def ops: ServiceOperations = client.getServiceOperations
-  def batching: Batching = client.getBatching
-
-  protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getInternal.getServiceRegistry.getServiceInfo(klass)
-
-  def getHeaders() = client.getHeaders
-
-  def setHeaders(hdrs: RequestHeaders) {
-    client.setHeaders(hdrs)
-  }
-
-  // PSEUDO-HACK
-  def setResultLimit(limit: Int) { client.getHeaders.setResultLimit(limit) }
+trait HasBatching {
+  def batching: Batching
 }

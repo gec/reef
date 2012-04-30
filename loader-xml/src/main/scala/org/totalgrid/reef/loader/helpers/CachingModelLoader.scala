@@ -129,8 +129,13 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
 
     try {
       //RequestSpy.withRequestSpy(client, viewer) {  // TODO: PUT IT BAAAAACK
-      BatchOperations.batchOperations(client, uploadActions, batchSize)
+      //BatchOperations.batchOperations(client, uploadActions, batchSize)
       //}
+
+      client.batching.start()
+      uploadOrder.foreach { client.put(_) }
+      client.batching.flush(batchSize).await()
+      client.batching.exit()
     } finally {
       viewer.foreach { _.finish }
     }
