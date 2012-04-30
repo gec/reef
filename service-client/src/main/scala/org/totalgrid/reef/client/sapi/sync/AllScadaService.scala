@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.client.sapi.sync
 
-import org.totalgrid.reef.client.sapi.client.rpc.framework.{ ClientOperations => ApiClientOperations }
 import org.totalgrid.reef.client.operations.scl.HasHeaders
 
 trait AllScadaService

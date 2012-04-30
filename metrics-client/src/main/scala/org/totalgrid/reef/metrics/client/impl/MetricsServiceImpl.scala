@@ -21,9 +21,10 @@ package org.totalgrid.reef.metrics.client.impl
 import org.totalgrid.reef.metrics.client.MetricsService
 import org.totalgrid.reef.metrics.client.proto.Metrics.MetricsRead
 import org.totalgrid.reef.client.Client
-import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
+import org.totalgrid.reef.client.operations.scl.ServiceOperationsProvider
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
-class MetricsServiceImpl(client: Client) extends ApiBase(client) with MetricsService {
+class MetricsServiceImpl(client: Client) extends ServiceOperationsProvider(client) with MetricsService {
 
   def getMetrics(): MetricsRead = {
     ops.operation("getMetrics failed") { rest =>

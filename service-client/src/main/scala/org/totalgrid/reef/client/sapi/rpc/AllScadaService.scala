@@ -18,8 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc
 
-import org.totalgrid.reef.client.sapi.client.rpc.framework.{ ClientOperations => ApiClientOperations }
-import org.totalgrid.reef.client.operations.scl.{ HasBatching, HasHeaders, BatchOperations }
+import org.totalgrid.reef.client.operations.scl.{ HasBatching, HasHeaders }
 
 trait AllScadaService
   extends HasBatching
