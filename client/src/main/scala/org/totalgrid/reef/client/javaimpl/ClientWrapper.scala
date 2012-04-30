@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.javaimpl
 import org.totalgrid.reef.client._
 import exception.{ BadRequestException, ServiceIOException }
 import operations.impl._
-import operations.{ RestOperations, ServiceOperations }
+import operations.{ RequestListener, RequestListenerManager, RestOperations, ServiceOperations }
 import org.totalgrid.reef.client.ServiceProviderInfo
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
@@ -126,4 +126,20 @@ class ClientWrapper(client: SClient) extends Client {
   }
 
   def getBatching: Batching = batchMgr
+
+  protected var spyMap = scala.collection.mutable.Map.empty[RequestListener, RequestSpy]
+
+  def getRequestListenerManager: RequestListenerManager = new RequestListenerManager {
+    def addRequestListener(listener: RequestListener) {
+      val spy = new RequestListenerWrapper(listener)
+      spyMap += ((listener, spy))
+      client.addRequestSpy(spy)
+    }
+
+    def removeRequestListener(listener: RequestListener) {
+      val spyOpt = spyMap.get(listener)
+      spyMap -= listener
+      spyOpt.foreach(spy => client.removeRequestSpy(spy))
+    }
+  }
 }

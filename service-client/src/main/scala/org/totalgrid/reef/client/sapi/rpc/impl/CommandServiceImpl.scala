@@ -23,12 +23,9 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID, Command
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.MultiRequestHelper
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
-import org.totalgrid.reef.client.sapi.client.rest.impl.BatchServiceRestOperations
 import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
-import org.totalgrid.reef.client.{ Promise, SubscriptionBinding }
 
 trait CommandServiceImpl extends UsesServiceOperations with CommandService {
 

@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import org.totalgrid.reef.client.sapi.client.rpc.framework.ApiBase
-
 import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.client.Promise

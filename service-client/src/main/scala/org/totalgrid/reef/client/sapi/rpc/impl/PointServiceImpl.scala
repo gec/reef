@@ -23,8 +23,6 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.PointService
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID, Point }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
-import org.totalgrid.reef.client.sapi.client.rpc.framework.MultiRequestHelper
-import org.totalgrid.reef.client.sapi.client.rest.impl.BatchServiceRestOperations
 import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 

@@ -18,8 +18,7 @@
  */
 package org.totalgrid.reef.client;
 
-import net.agileautomata.executor4s.Executor;
-import net.agileautomata.executor4s.Executor$class;
+import org.totalgrid.reef.client.operations.RequestListenerManager;
 import org.totalgrid.reef.client.operations.ServiceOperations;
 
 /**
@@ -87,4 +86,6 @@ public interface Client
     ServiceOperations getServiceOperations();
 
     Batching getBatching();
+
+    RequestListenerManager getRequestListenerManager();
 }
