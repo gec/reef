@@ -32,6 +32,7 @@ class RequestSpyTest extends ServiceClientSuite {
   class CountingRequestListener extends RequestListener {
     var count = 0
     def onRequest[A](verb: Verb, request: A, response: Promise[Response[A]]) {
+      println("Request: " + verb + " " + request)
       count += 1
     }
     def reset() {

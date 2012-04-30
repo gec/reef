@@ -37,7 +37,7 @@ trait ScalaServiceOperations {
     }
 
     def batchOperation[A](err: => String)(f: RestOperations => Promise[A]): Promise[A] = {
-      ops.request(new BasicRequest[A] {
+      ops.batchRequest(new BasicRequest[A] {
         def errorMessage(): String = err
 
         def execute(operations: RestOperations): Promise[A] = f(operations)

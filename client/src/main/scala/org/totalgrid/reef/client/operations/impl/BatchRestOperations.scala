@@ -121,7 +121,6 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
     }
 
     val batchPromise: Promise[Response[BatchServiceRequest]] = ops.request(Envelope.Verb.POST, batch)
-    notifyListeners(Envelope.Verb.POST, batch, batchPromise)
 
     batchPromise.listenEither {
       case Right(resp) => {
