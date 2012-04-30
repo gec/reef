@@ -18,9 +18,6 @@
  */
 package org.totalgrid.reef.client.operations.impl
 
-import org.totalgrid.reef.client.{ Promise, RequestHeaders }
-import org.totalgrid.reef.client.operations.Response
-import org.totalgrid.reef.client.operations.RestOperations
 import org.totalgrid.reef.client.sapi.client.rest.impl.ClassLookup
 import java.util.UUID
 import com.google.protobuf.ByteString
@@ -35,7 +32,9 @@ import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb }
 import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
-import org.totalgrid.reef.client.sapi.client.rest.ServiceRegistry
+import org.totalgrid.reef.client.{ Promise, RequestHeaders }
+import org.totalgrid.reef.client.operations.{ Response, RestOperations }
+import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient, ServiceRegistry }
 
 trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOperations {
   def batched: Option[BatchRestOperations] = Some(this)
@@ -43,14 +42,18 @@ trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOpera
   def batchedFlush(batchSize: Int): Promise[java.lang.Boolean]
 }
 
-class DefaultBatchRestOperations(protected val ops: RestOperations, protected val exe: Executor, registry: ServiceRegistry) extends BatchRestOperationsImpl {
-  protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = registry.getServiceInfo(klass)
+class DefaultBatchRestOperations(protected val ops: RestOperations, client: SClient) extends BatchRestOperationsImpl {
+  protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getServiceInfo(klass)
+  protected def exe = client
+  protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]]) = client.notifyListeners(verb, payload, promise)
+
 }
 
 trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperations {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _]
   protected def exe: Executor
   protected def ops: RestOperations
+  protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]])
 
   case class QueuedRequest[A](request: SelfIdentityingServiceRequest, descriptor: TypeDescriptor[A], promise: OpenPromise[Response[A]])
   private val requestQueue = Queue.empty[QueuedRequest[_]]
@@ -66,12 +69,11 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
 
     val request = SelfIdentityingServiceRequest.newBuilder.setExchange(descriptor.id).setRequest(builder).build
 
-    //val promise: OpenPromise[Response[A]] = FuturePromise.open(exe.future[Either[ReefServiceException, Response[A]]])
     val promise: OpenPromise[Response[A]] = FuturePromise.open[Response[A]](exe)
 
     requestQueue.enqueue(QueuedRequest[A](request, descriptor, promise))
 
-    //hook.notifyRequestSpys(verb, payload, future)  // TODO: put this back in
+    notifyListeners(verb, payload, promise)
     promise
   }
 
@@ -119,6 +121,7 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
     }
 
     val batchPromise: Promise[Response[BatchServiceRequest]] = ops.request(Envelope.Verb.POST, batch)
+    notifyListeners(Envelope.Verb.POST, batch, batchPromise)
 
     batchPromise.listenEither {
       case Right(resp) => {

@@ -83,7 +83,7 @@ class ClientWrapper(client: SClient) extends Client {
     def getOps: OptionallyBatchedRestOperations = currentOpsMode
 
     def start() {
-      currentOpsMode = new DefaultBatchRestOperations(regular, client, client)
+      currentOpsMode = new DefaultBatchRestOperations(regular, client)
     }
 
     def exit() {
@@ -110,7 +110,7 @@ class ClientWrapper(client: SClient) extends Client {
   def getServiceOperations: ServiceOperations = {
     val restOperations = batchMgr.getOps
     def createSingleOpsBatch() = {
-      new DefaultBatchRestOperations(restOperations, client, client)
+      new DefaultBatchRestOperations(restOperations, client)
     }
     val bindOperations = new DefaultBindOperations(client)
 
@@ -119,19 +119,6 @@ class ClientWrapper(client: SClient) extends Client {
 
   def getBatching: Batching = batchMgr
 
-  protected var spyMap = scala.collection.mutable.Map.empty[RequestListener, RequestSpy]
+  def getRequestListenerManager: RequestListenerManager = client.listenerManager
 
-  def getRequestListenerManager: RequestListenerManager = new RequestListenerManager {
-    def addRequestListener(listener: RequestListener) {
-      val spy = new RequestListenerWrapper(listener)
-      spyMap += ((listener, spy))
-      client.addRequestSpy(spy)
-    }
-
-    def removeRequestListener(listener: RequestListener) {
-      val spyOpt = spyMap.get(listener)
-      spyMap -= listener
-      spyOpt.foreach(spy => client.removeRequestSpy(spy))
-    }
-  }
 }

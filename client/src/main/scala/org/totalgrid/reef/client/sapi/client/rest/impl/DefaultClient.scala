@@ -28,13 +28,29 @@ import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor 
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.client.javaimpl.ClientWrapper
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.operations.{ Response => JResponse }
 import org.totalgrid.reef.client.{ Promise => JPromise }
 import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo, Routable }
+import org.totalgrid.reef.client.operations.{ RequestListenerManager, RequestListener, Response => JResponse }
 
 class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RequestSpyHook with ExecutorDelegate {
 
   protected def executor = strand
+
+  private var listeners = Set.empty[RequestListener]
+
+  def listenerManager: RequestListenerManager = new RequestListenerManager {
+    def addRequestListener(listener: RequestListener) {
+      listeners += listener
+    }
+
+    def removeRequestListener(listener: RequestListener) {
+      listeners -= listener
+    }
+  }
+
+  def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: JPromise[JResponse[A]]) {
+    listeners.foreach(_.onRequest(verb, payload, promise))
+  }
 
   override def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
     val usedHeaders = headers.map { getHeaders.merge(_) }.getOrElse(getHeaders)
@@ -46,7 +62,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
   override def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[BasicRequestHeaders]): JPromise[JResponse[A]] = {
     val usedHeaders = headers.map(getHeaders.merge(_)).getOrElse(getHeaders)
     val promise = conn.requestJava(verb, payload, usedHeaders, strand)
-    // TODO: request spys
+    notifyListeners(verb, payload, promise)
     promise
   }
 
