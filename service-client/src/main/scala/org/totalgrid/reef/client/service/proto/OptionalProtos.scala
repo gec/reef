@@ -373,6 +373,7 @@ object OptionalProtos {
   }
   implicit def proto2OptMeasurementsMeasurement(a: org.totalgrid.reef.client.service.proto.Measurements.Measurement): OptMeasurementsMeasurement = new OptMeasurementsMeasurement(Some(a))
   class OptMeasurementsMeasurement(real: Option[org.totalgrid.reef.client.service.proto.Measurements.Measurement]) extends OptionalStruct(real) {
+    val pointUuid = new OptModelReefUUID(optionally(_.hasPointUuid, _.getPointUuid))
     val name = optionally(_.hasName, _.getName)
     val _type = optionally(_.getType)
     val intVal = optionally(_.hasIntVal, _.getIntVal)

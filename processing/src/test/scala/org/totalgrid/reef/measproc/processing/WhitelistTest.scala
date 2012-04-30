@@ -26,13 +26,16 @@ import scala.collection.mutable
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 import org.totalgrid.reef.measproc.ProtoHelper._
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 
 @RunWith(classOf[JUnitRunner])
 class WhitelistTest extends FunSuite with ShouldMatchers {
   test("Ignores meases") {
     val queue = mutable.Queue.empty[String]
     val enqueue = { m: Measurement => queue.enqueue(m.getName) }
-    val filter = new MeasurementWhiteList(enqueue, List("ok1", "ok2"))
+
+    def makePoint(name: String) = Point.newBuilder.setName(name).setUuid(ReefUUID.newBuilder.setValue(name)).build
+    val filter = new MeasurementWhiteList(enqueue, List(makePoint("ok1"), makePoint("ok2")))
 
     filter.process(makeAnalog("ok1", 100))
     filter.process(makeAnalog("ok2", 100))

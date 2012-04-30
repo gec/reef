@@ -37,6 +37,7 @@ object ProtoHelper {
     m.setTime(time)
     m.setSystemTime(time)
     m.setName(name)
+    m.setPointUuid(ReefUUID.newBuilder.setValue(name))
     m.setType(Measurement.Type.DOUBLE)
     m.setDoubleVal(value)
     m.setQuality(makeNominalQuality)

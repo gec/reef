@@ -53,7 +53,13 @@ class OverrideConfigServiceModel
 
   def createModelEntry(context: RequestContext, rawProto: MeasOverride): OverrideConfig = {
     val point = PointServiceConversion.findRecord(context, rawProto.getPoint).getOrElse(throw new BadRequestException("Point unknown: " + rawProto.getPoint))
-    val proto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point)).build
+    val rebuiltProto = rawProto.toBuilder.setPoint(PointTiedModel.populatedPointProto(point))
+    if (rawProto.hasMeas) {
+      // if we are setting an override we need to add the point uuid to the override measurement
+      val measProto = rawProto.getMeas.toBuilder.setPointUuid(UUIDConversions.makeUuid(point))
+      rebuiltProto.setMeas(measProto)
+    }
+    val proto = rebuiltProto.build
     val over = new OverrideConfig(
       point.id,
       proto.toByteString.toByteArray)

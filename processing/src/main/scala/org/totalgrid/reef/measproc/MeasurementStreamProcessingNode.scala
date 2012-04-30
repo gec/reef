@@ -58,8 +58,9 @@ class MeasurementStreamProcessingNode(
 
   val endpoint = client.getEndpointByUuid(connection.getLogicalNode.getUuid).await
   val expectedPoints = endpoint.getOwnerships.getPointsList.toList
+  val points = client.getPointsByNames(expectedPoints).await
 
-  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, expectedPoints, endpoint.getName)
+  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, points, endpoint.getName)
 
   addHookedObject(processingPipeline)
 
