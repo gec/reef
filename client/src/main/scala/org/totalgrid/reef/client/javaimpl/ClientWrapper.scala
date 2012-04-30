@@ -41,14 +41,6 @@ class ClientWrapper(client: SClient) extends Client {
     }
   }
 
-  def addRequestSpy(spy: RequestSpy) {
-    client.addRequestSpy(spy)
-  }
-
-  def removeRequestSpy(spy: RequestSpy) {
-    client.removeRequestSpy(spy)
-  }
-
   def addSubscriptionCreationListener(listener: SubscriptionCreationListener) {
     client.addSubscriptionCreationListener(listener)
   }

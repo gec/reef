@@ -18,16 +18,17 @@
  */
 package org.totalgrid.reef.client.operations.scl
 
-import org.totalgrid.reef.client.operations.ServiceOperations
 import org.totalgrid.reef.client.types.ServiceTypeInformation
-import org.totalgrid.reef.client.proto.Envelope.BatchServiceRequest
 import org.totalgrid.reef.client.{ Batching, Promise, RequestHeaders, Client }
 import ScalaServiceOperations._
 import org.totalgrid.reef.client.operations.impl.FuturePromise
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.exception.ReefServiceException
+import org.totalgrid.reef.client.operations.{ RequestListener, RequestListenerManager, ServiceOperations }
 
-abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOperations with UsesServiceRegistry with HasHeaders with HasBatching {
+abstract class ServiceOperationsProvider(client: Client)
+    extends UsesServiceOperations with UsesServiceRegistry with HasHeaders with HasBatching with RequestListenerManager {
+
   protected def ops: ServiceOperations = client.getServiceOperations
   def batching: Batching = client.getBatching
 
@@ -72,4 +73,11 @@ abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOper
     f
   }
 
+  def addRequestListener(listener: RequestListener) {
+    client.getRequestListenerManager.addRequestListener(listener)
+  }
+
+  def removeRequestListener(listener: RequestListener) {
+    client.getRequestListenerManager.removeRequestListener(listener)
+  }
 }

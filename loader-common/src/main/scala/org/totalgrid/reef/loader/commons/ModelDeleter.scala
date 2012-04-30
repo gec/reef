@@ -21,10 +21,9 @@ package org.totalgrid.reef.loader.commons
 import java.io.PrintStream
 
 import scala.collection.JavaConversions._
-
 import org.totalgrid.reef.loader.commons.ui.{ RequestViewer, SimpleTraversalProgressNotifier }
-import org.totalgrid.reef.client.sapi.client.RequestSpy
 import org.totalgrid.reef.client.service.proto.Model.Entity
+import org.totalgrid.reef.client.operations.scl.ScalaRequestListener._
 
 object ModelDeleter {
   def deleteChildren(local: LoaderServices, roots: List[String], dryRun: Boolean, forceOffline: Boolean, stream: Option[PrintStream], batchSize: Int = 25)(additionalDelete: (EquipmentModelTraverser, ModelCollector) => Unit): Long = {
@@ -62,9 +61,9 @@ object ModelDeleter {
         if (!endpoints.isEmpty) EndpointStopper.stopEndpoints(local, endpoints, stream, forceOffline)
 
         val viewer = stream.map { new RequestViewer(_, cachingImporter.size) }
-        //RequestSpy.withRequestSpy(local, viewer) {  //TODO: PUT BACK
-        cachingImporter.doDeletes(local, batchSize)
-        //}
+        withRequestListener(local, viewer) {
+          cachingImporter.doDeletes(local, batchSize)
+        }
         viewer.foreach { _.finish }
 
         stream.foreach { _.println("Deleted " + itemsToDelete + " objects successfully.") }

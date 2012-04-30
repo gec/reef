@@ -28,8 +28,9 @@ import org.totalgrid.reef.client.{ Client, ServicesList }
 import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.operations.scl._
+import org.totalgrid.reef.client.operations.RequestListenerManager
 
-trait LoaderServices extends AllScadaService {
+trait LoaderServices extends AllScadaService with RequestListenerManager {
   def addEquipment(entity: Entity): Promise[Entity]
   def addPoint(point: Point): Promise[Point]
   def addCommand(cmd: Command): Promise[Command]
