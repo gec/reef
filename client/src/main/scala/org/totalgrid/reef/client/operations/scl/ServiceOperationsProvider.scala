@@ -22,6 +22,10 @@ import org.totalgrid.reef.client.operations.ServiceOperations
 import org.totalgrid.reef.client.types.ServiceTypeInformation
 import org.totalgrid.reef.client.proto.Envelope.BatchServiceRequest
 import org.totalgrid.reef.client.{ Batching, Promise, RequestHeaders, Client }
+import ScalaServiceOperations._
+import org.totalgrid.reef.client.operations.impl.FuturePromise
+import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOperations with UsesServiceRegistry with HasHeaders with HasBatching {
   protected def ops: ServiceOperations = client.getServiceOperations
@@ -35,6 +39,37 @@ abstract class ServiceOperationsProvider(client: Client) extends UsesServiceOper
     client.setHeaders(hdrs)
   }
 
-  // PSEUDO-HACK
-  def setResultLimit(limit: Int) { client.getHeaders.setResultLimit(limit) }
+  def collate[A](promises: List[Promise[A]]): Promise[List[A]] = {
+    gather(client.getInternal.getExecutor, promises)
+  }
+
+  def batchGets[A](gets: List[A]): Promise[List[A]] = {
+    ops.batchOperation("error") { session =>
+      collate(gets.map(session.get(_).map(_.one)))
+    }
+  }
+
+  protected def gather[A](exe: Executor, promises: List[Promise[A]]): Promise[List[A]] = {
+
+    val f = FuturePromise.open[List[A]](exe)
+    val size = promises.size
+    val map = collection.mutable.Map.empty[Int, Promise[A]]
+
+    def gather(i: Int)(prom: Promise[A]) = map.synchronized {
+      map.put(i, prom)
+      if (map.size == size) {
+        val all = promises.indices.map(map(_))
+        try {
+          f.setSuccess(all.map(_.await()).toList)
+        } catch {
+          case ex: ReefServiceException => f.setFailure(ex)
+        }
+      }
+    }
+
+    if (promises.isEmpty) f.setSuccess(Nil)
+    else promises.zipWithIndex.foreach { case (f, i) => f.listenFor(gather(i)) }
+    f
+  }
+
 }

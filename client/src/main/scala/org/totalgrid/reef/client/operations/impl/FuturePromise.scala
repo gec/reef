@@ -98,19 +98,11 @@ object FuturePromise {
       new ClosedEitherPromise(result)
     }
 
+    // TODO: FIX THIS?
     def transformError(transform: PromiseErrorTransform): Promise[A] = this
   }
 
-  class ClosedInitialPromise[A](protected val future: Future[A])
-    extends InitialPromise[A]
-
-  // Not being used at the moment
-  /*class OpenInitialPromise[A](protected val future: SettableFuture[A]) extends InitialPromise[A] with OpenPromise[A] {
-    def set(v: A) {
-      future.set(v)
-    }
-    def setFailure(ex: ReefServiceException)
-  }*/
+  class ClosedInitialPromise[A](protected val future: Future[A]) extends InitialPromise[A]
 
   class OpenEitherPromise[A](protected val future: SettableFuture[Either[ReefServiceException, A]]) extends EitherPromise[A] with OpenPromise[A] {
     def setSuccess(v: A) { future.set(Right(v)) }

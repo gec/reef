@@ -25,10 +25,6 @@ import org.totalgrid.reef.client.proto.Envelope.BatchServiceRequest
 trait UsesServiceOperations {
   protected def ops: ServiceOperations
 
-  // PSEUDO-HACK
-  def setResultLimit(limit: Int)
-
-  // HACK
-  def batchGets[A](gets: List[A]): Promise[List[A]] = null
+  def batchGets[A](gets: List[A]): Promise[List[A]]
 
 }
