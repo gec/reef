@@ -25,21 +25,22 @@ import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
-import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
 
-import net.agileautomata.executor4s.Futures
 import org.totalgrid.reef.client.AddressableDestination
 
 import org.totalgrid.reef.client.sapi.client._
+import org.totalgrid.reef.client.operations.scl.ScalaPromise
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
+import org.totalgrid.reef.client.proto.Envelope
 
 class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] {
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def putAsync(contextSource: RequestContextSource, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) = {
+  override def putAsync(contextSource: RequestContextSource, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) {
 
     val future = contextSource.transaction { context =>
 
@@ -73,18 +74,28 @@ class MeasurementBatchService
           Request(Envelope.Verb.PUT, req, addressedHeaders) :: Nil
         case _ => getRequests(req, commonHeaders, commEndpoints)
       }
-      val futures = requests.map(req => context.client.getInternal.getOperations.request(req.verb, req.payload, Some(req.env)))
-      Futures.gather(context.client.getInternal.getExecutor, futures)
+
+      val exe = context.client.getInternal.getExecutor
+      val ops = context.client.getServiceOperations
+
+      val promises = requests.map { req =>
+        ops.operation("Couldn't scatter measurement updates in MeasurementBatchService") { rest =>
+          rest.request(req.verb, req.payload, req.env)
+        }
+      }
+
+      ScalaPromise.collate(exe, promises)
     }
 
-    future.listen { results =>
-      val failures = results.filterNot(_.success)
-      val response: Response[MeasurementBatch] =
-        if (failures.size == 0) SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
-        else FailureResponse(Envelope.Status.INTERNAL_ERROR, failures.mkString(","))
+    future.listenFor { results =>
+      val response = try {
+        results.await()
+        SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
+      } catch {
+        case rse: ReefServiceException => FailureResponse(rse.getStatus, rse.getMessage)
+      }
       callback(response)
     }
-
   }
 
   private def convertEndpointToDestination(ce: CommunicationEndpoint) = ce.frontEndAssignment.value.serviceRoutingKey match {
