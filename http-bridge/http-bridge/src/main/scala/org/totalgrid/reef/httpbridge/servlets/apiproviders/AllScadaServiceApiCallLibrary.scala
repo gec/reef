@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 
 /**
  * Auto Generated, do not alter!
- * 131 of 211 calls ported
+ * 140 of 220 calls ported
  */
 class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   override val serviceClass = classOf[AllScadaService]
@@ -621,6 +621,10 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   // MeasurementService
   ////////////////////
   // Can't encode getMeasurementByPoint : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+  single("getMeasurementByUuid", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getUuid("pointUuid")
+    (c) => c.getMeasurementByUuid(a0)
+  })
   single("getMeasurementByName", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
     val a0 = args.getString("pointName")
     (c) => c.getMeasurementByName(a0)
@@ -634,10 +638,18 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     (c) => c.getMeasurementsByNames(a0)
   })
   // Can't encode getMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+  multi("getMeasurementsByUuids", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getUuids("pointUuids")
+    (c) => c.getMeasurementsByUuids(a0)
+  })
   // Can't encode subscribeToMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
   subscription("subscribeToMeasurementsByNames", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
     val a0 = args.getStrings("pointNames")
     (c) => c.subscribeToMeasurementsByNames(a0)
+  })
+  subscription("subscribeToMeasurementsByUuids", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getUuids("pointUuids")
+    (c) => c.subscribeToMeasurementsByUuids(a0)
   })
   // Can't encode getMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
   // Can't encode getMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
@@ -661,6 +673,25 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a4 = args.getInt("limit")
     (c) => c.getMeasurementHistoryByName(a0, a1, a2, a3, a4)
   })
+  multi("getMeasurementHistoryByUuid", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getUuid("pointUuid")
+    val a1 = args.getInt("limit")
+    (c) => c.getMeasurementHistoryByUuid(a0, a1)
+  })
+  multi("getMeasurementHistoryByUuid", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getUuid("pointUuid")
+    val a1 = args.getLong("since")
+    val a2 = args.getInt("limit")
+    (c) => c.getMeasurementHistoryByUuid(a0, a1, a2)
+  })
+  multi("getMeasurementHistoryByUuid", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getUuid("pointUuid")
+    val a1 = args.getLong("from")
+    val a2 = args.getLong("to")
+    val a3 = args.getBoolean("returnNewest")
+    val a4 = args.getInt("limit")
+    (c) => c.getMeasurementHistoryByUuid(a0, a1, a2, a3, a4)
+  })
   // Can't encode subscribeToMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
   // Can't encode subscribeToMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
   subscription("subscribeToMeasurementHistoryByName", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
@@ -674,6 +705,17 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
     val a2 = args.getInt("limit")
     (c) => c.subscribeToMeasurementHistoryByName(a0, a1, a2)
   })
+  subscription("subscribeToMeasurementHistoryByUuid", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getUuid("pointUuid")
+    val a1 = args.getInt("limit")
+    (c) => c.subscribeToMeasurementHistoryByUuid(a0, a1)
+  })
+  subscription("subscribeToMeasurementHistoryByUuid", classOf[org.totalgrid.reef.client.service.proto.Measurements.Measurement], args => {
+    val a0 = args.getUuid("pointUuid")
+    val a1 = args.getLong("since")
+    val a2 = args.getInt("limit")
+    (c) => c.subscribeToMeasurementHistoryByUuid(a0, a1, a2)
+  })
   // Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
   // Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
   // Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
@@ -681,6 +723,10 @@ class AllScadaServiceApiCallLibrary extends ApiCallLibrary[AllScadaService] {
   single("getMeasurementStatisticsByName", classOf[org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics], args => {
     val a0 = args.getString("pointName")
     (c) => c.getMeasurementStatisticsByName(a0)
+  })
+  single("getMeasurementStatisticsByUuid", classOf[org.totalgrid.reef.client.service.proto.Measurements.MeasurementStatistics], args => {
+    val a0 = args.getUuid("pointUuid")
+    (c) => c.getMeasurementStatisticsByUuid(a0)
   })
   ////////////////////
   // PointService

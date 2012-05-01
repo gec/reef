@@ -413,7 +413,7 @@ object OptionalProtos {
   implicit def proto2OptMeasurementsMeasurementHistory(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory): OptMeasurementsMeasurementHistory = new OptMeasurementsMeasurementHistory(Some(a))
   class OptMeasurementsMeasurementHistory(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory]) extends OptionalStruct(real) {
     val point = new OptModelPoint(optionally(_.hasPoint, _.getPoint))
-    val pointName = optionally(_.getPointName)
+    val pointName = optionally(_.hasPointName, _.getPointName)
     val startTime = optionally(_.hasStartTime, _.getStartTime)
     val endTime = optionally(_.hasEndTime, _.getEndTime)
     val limit = optionally(_.hasLimit, _.getLimit)

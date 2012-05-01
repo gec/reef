@@ -25,8 +25,11 @@ import org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import scala.collection.JavaConversions._
+
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.DatabaseUsingTestBase
+import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 
 class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
   def get(names: Seq[String]): Map[String, Meas] = {
@@ -37,12 +40,23 @@ class FakeRTDatabase(map: Map[String, Meas]) extends RTDatabase {
 @RunWith(classOf[JUnitRunner])
 class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
-  def makeMeas(name: String, time: Int) = {
-    val meas = Measurements.Measurement.newBuilder
-    meas.setName(name).setType(Measurements.Measurement.Type.INT).setIntVal(0)
-    meas.setQuality(Measurements.Quality.newBuilder.build)
-    meas.setTime(time)
-    meas.build
+  class Fixture {
+    val factories = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
+    val pointService = sync(new PointService(factories.points))
+    val points = Map("meas1" -> makeMeas("meas1", 0, "type1"), "meas2" -> makeMeas("meas2", 0, "type2"))
+    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
+
+    private def makeMeas(name: String, time: Int, unit: String) = {
+
+      val basicPoint = Point.newBuilder.setName(name).setType(PointType.ANALOG).setUnit(unit).build
+      pointService.put(basicPoint).expectOne()
+
+      val meas = Measurements.Measurement.newBuilder
+      meas.setName(name).setType(Measurements.Measurement.Type.INT).setIntVal(0)
+      meas.setQuality(Measurements.Quality.newBuilder.build)
+      meas.setTime(time)
+      meas.build
+    }
   }
 
   def getMeas(names: String*) = {
@@ -51,44 +65,64 @@ class MeasurementSnapshotServiceTest extends DatabaseUsingTestBase with SyncServ
   }
 
   test("Get Measurements from RTDB") {
-    val points = Map("meas1" -> makeMeas("meas1", 0), "meas2" -> makeMeas("meas2", 0))
-    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
-
-    val getMeas1 = service.get(getMeas("meas1")).expectOne()
+    val f = new Fixture
+    val getMeas1 = f.service.get(getMeas("meas1")).expectOne()
     getMeas1.getMeasurementsCount() should equal(1)
 
-    val getMeas1and2 = service.get(getMeas("meas1", "meas2")).expectOne()
+    val getMeas1and2 = f.service.get(getMeas("meas1", "meas2")).expectOne()
     getMeas1and2.getMeasurementsCount() should equal(2)
 
-    val getAllMeas = service.get(getMeas("*")).expectOne()
+    val getAllMeas = f.service.get(getMeas("*")).expectOne()
     getAllMeas.getMeasurementsCount() should equal(0)
   }
 
   test("Bad Request for unknown points") {
-    val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
-
+    val f = new Fixture
     val exception = intercept[BadRequestException] {
-      service.get(getMeas("crazyName")).expectOne()
+      f.service.get(getMeas("crazyName")).expectOne()
     }
     exception.getMessage should include("crazyName")
   }
 
   test("Bad Request for some unknown points") {
-    val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
-
+    val f = new Fixture
     val exception = intercept[BadRequestException] {
-      service.get(getMeas("meas", "crazyName")).expectOne()
+      f.service.get(getMeas("meas", "crazyName")).expectOne()
     }
     exception.getMessage should include("crazyName")
   }
 
   test("Blank Request returns ok") {
-    val points = Map("meas" -> makeMeas("meas1", 0))
-    val service = sync(new MeasurementSnapshotService(new FakeRTDatabase(points)))
-
-    val result = service.get(getMeas()).expectOne()
+    val f = new Fixture
+    val result = f.service.get(getMeas()).expectOne()
     result.getPointNamesCount should equal(0)
+  }
+
+  test("Request measurements using Point objects") {
+    val f = new Fixture
+    val point = f.pointService.get(Point.newBuilder.setName("meas1").build).expectOne()
+
+    def sameMeas(name: String, point: Point) {
+      sameMeases(List(name), List(point))
+    }
+
+    def sameMeases(names: List[String], pointProtos: List[Point]) {
+      val result = f.service.get(MeasurementSnapshot.newBuilder.addAllPoint(pointProtos).build).expectOne()
+
+      result.getMeasurementsList.toList should equal(names.map { f.points(_) })
+    }
+
+    sameMeas("meas1", point)
+    sameMeas("meas1", Point.newBuilder.setName("meas1").build)
+    sameMeas("meas1", Point.newBuilder.setUuid(point.getUuid).build)
+
+    sameMeas("meas1", Point.newBuilder.setUnit("type1").build)
+    sameMeas("meas2", Point.newBuilder.setUnit("type2").build)
+
+    sameMeases(List("meas1", "meas2"), List(Point.newBuilder.setName("meas1").build, Point.newBuilder.setUnit("type2").build))
+    sameMeases(List("meas2", "meas2"), List(Point.newBuilder.setUnit("type2").build, Point.newBuilder.setUnit("type2").build))
+    sameMeases(List("meas1", "meas2"), List(Point.newBuilder.setType(PointType.ANALOG).build))
+
+    sameMeases(List("meas1", "meas2"), List(Point.newBuilder.setName("*").build))
   }
 }

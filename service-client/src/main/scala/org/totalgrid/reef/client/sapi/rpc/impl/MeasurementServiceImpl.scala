@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.client.service.proto.Model.Point
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.{ MeasurementHistoryRequestBuilders, MeasurementBatchRequestBuilders, MeasurementSnapshotRequestBuilders }
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.client.service.proto.Descriptors
@@ -41,7 +41,17 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
       expectSingle(getMeasSnapshot(client, MeasurementSnapshotRequestBuilders.getByName(name)))
     }
   }
-  override def getMeasurementByPoint(point: Point) = getMeasurementByName(point.getName)
+  override def getMeasurementByPoint(point: Point) = {
+    ops.operation("Couldn't get measurement with point: " + point) { client =>
+      expectSingle(getMeasSnapshot(client, MeasurementSnapshotRequestBuilders.getByPoint(point)))
+    }
+  }
+
+  override def getMeasurementByUuid(pointUuid: ReefUUID) = {
+    ops.operation("Couldn't get measurement with uuid: " + pointUuid.getValue) { client =>
+      expectSingle(getMeasSnapshot(client, MeasurementSnapshotRequestBuilders.getByUuid(pointUuid)))
+    }
+  }
 
   override def findMeasurementByName(name: String) = {
     ops.operation("Couldn't find measurement with name: " + name) {
@@ -59,6 +69,11 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
       getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByPoints(points))
     }
   }
+  override def getMeasurementsByUuids(uuids: List[ReefUUID]) = {
+    ops.operation("Couldn't get measurements by uuids: " + uuids) { session =>
+      getMeasSnapshot(session, MeasurementSnapshotRequestBuilders.getByUuids(uuids))
+    }
+  }
 
   override def subscribeToMeasurementsByNames(names: List[String]) = {
     ops.subscription(Descriptors.measurement, "Couldn't subscribe to measurements by names: " + names) { (sub, client) =>
@@ -69,6 +84,12 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
   override def subscribeToMeasurementsByPoints(points: List[Point]) = {
     ops.subscription(Descriptors.measurement, "Couldn't subscribe to measurements by points: " + points) { (sub, client) =>
       getMeasSnapshot(client, MeasurementSnapshotRequestBuilders.getByPoints(points), sub)
+    }
+  }
+
+  override def subscribeToMeasurementsByUuids(uuids: List[ReefUUID]) = {
+    ops.subscription(Descriptors.measurement, "Couldn't subscribe to measurements by uuids: " + uuids) { (sub, client) =>
+      getMeasSnapshot(client, MeasurementSnapshotRequestBuilders.getByUuids(uuids), sub)
     }
   }
 
@@ -126,6 +147,24 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
     }
   }
 
+  override def getMeasurementHistoryByUuid(pointUuid: ReefUUID, limit: Int) = {
+    ops.operation("Couldn't get measurement history for point: " + pointUuid.getValue + " limit: " + limit) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByUuid(pointUuid, limit))
+    }
+  }
+
+  override def getMeasurementHistoryByUuid(pointUuid: ReefUUID, since: Long, limit: Int) = {
+    ops.operation("Couldn't get measurement history for point: " + pointUuid.getValue + " since: " + since + " limit: " + limit) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByUuidSince(pointUuid, since, limit))
+    }
+  }
+
+  override def getMeasurementHistoryByUuid(pointUuid: ReefUUID, since: Long, before: Long, returnNewest: Boolean, limit: Int) = {
+    ops.operation("Couldn't get measurement history for point: " + pointUuid.getValue + " between: " + since + " and: " + before + " limit: " + limit + " returnNewest: " + returnNewest) {
+      measHistoryList(_, MeasurementHistoryRequestBuilders.getByUuidBetween(pointUuid, since, before, returnNewest, limit))
+    }
+  }
+
   override def subscribeToMeasurementHistory(point: Point, limit: Int) = {
     ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + point.getName + " limit: " + limit) { (sub, client) =>
       measHistoryList(client, MeasurementHistoryRequestBuilders.getByName(point.getName, limit), sub)
@@ -150,15 +189,33 @@ trait MeasurementServiceImpl extends HasAnnotatedOperations with MeasurementServ
     }
   }
 
-  def getMeasurementStatisticsByPoint(point: Point): Promise[MeasurementStatistics] = {
+  override def subscribeToMeasurementHistoryByUuid(pointUuid: ReefUUID, limit: Int) = {
+    ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + pointUuid.getValue + " limit: " + limit) { (sub, client) =>
+      measHistoryList(client, MeasurementHistoryRequestBuilders.getByUuid(pointUuid, limit), sub)
+    }
+  }
+
+  override def subscribeToMeasurementHistoryByUuid(pointUuid: ReefUUID, since: Long, limit: Int) = {
+    ops.subscription(Descriptors.measurement, "Couldn't subscibe to measurement history for point: " + pointUuid.getValue + " since: " + since + " limit: " + limit) { (sub, client) =>
+      measHistoryList(client, MeasurementHistoryRequestBuilders.getByUuidSince(pointUuid, since, limit), sub)
+    }
+  }
+
+  override def getMeasurementStatisticsByPoint(point: Point): Promise[MeasurementStatistics] = {
     ops.operation("Couldn't get measurement statistics for point: " + point) { c =>
       c.get(MeasurementStatistics.newBuilder.setPoint(point).build).map(_.one)
     }
   }
 
-  def getMeasurementStatisticsByName(name: String): Promise[MeasurementStatistics] = {
+  override def getMeasurementStatisticsByName(name: String): Promise[MeasurementStatistics] = {
     ops.operation("Couldn't get measurement statistics for point name: " + name) { c =>
       c.get(MeasurementStatistics.newBuilder.setPoint(Point.newBuilder.setName(name)).build).map(_.one)
+    }
+  }
+
+  override def getMeasurementStatisticsByUuid(uuid: ReefUUID): Promise[MeasurementStatistics] = {
+    ops.operation("Couldn't get measurement statistics for point name: " + uuid.getValue) { c =>
+      c.get(MeasurementStatistics.newBuilder.setPoint(Point.newBuilder.setUuid(uuid)).build).map(_.one)
     }
   }
 

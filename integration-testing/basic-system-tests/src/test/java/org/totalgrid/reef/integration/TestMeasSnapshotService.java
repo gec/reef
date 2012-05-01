@@ -29,6 +29,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.*;
 import org.totalgrid.reef.client.service.proto.Model.*;
 import org.totalgrid.reef.integration.helpers.ReefConnectionTestBase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
@@ -47,6 +48,15 @@ public class TestMeasSnapshotService extends ReefConnectionTestBase
         List<Point> plist = ps.getPoints();
         List<Measurement> mlist = ms.getMeasurementsByPoints( plist );
         assertEquals( plist.size(), mlist.size() );
+
+        List<ReefUUID> uuidList = new ArrayList<ReefUUID>( plist.size() );
+        for ( Point p : plist )
+        {
+            uuidList.add( p.getUuid() );
+        }
+        List<Measurement> mlist2 = ms.getMeasurementsByUuids( uuidList );
+        assertEquals( plist.size(), mlist2.size() );
+
     }
 
 

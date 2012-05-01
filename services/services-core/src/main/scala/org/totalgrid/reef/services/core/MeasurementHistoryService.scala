@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.measurementstore.Historian
-import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleRead
+import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleReadAndSubscribe
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.framework.{ RequestContext, ServiceEntryPoint }
@@ -28,7 +28,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement, Measu
 
 class MeasurementHistoryService(cm: Historian)
     extends ServiceEntryPoint[MeasurementHistory]
-    with SimpleRead {
+    with SimpleReadAndSubscribe {
 
   val HISTORY_LIMIT = 10000
 
@@ -36,20 +36,34 @@ class MeasurementHistoryService(cm: Historian)
 
   override val descriptor = Descriptors.measurementHistory
 
-  override def getSubscribeKeys(req: ServiceType): List[String] = {
+  private def getSubscribeKeys(req: ServiceType, pointName: String): List[String] = {
     if (req.hasEndTime) throw new BadRequestException("Cannot subscribe to measurement when endTime has been set.")
     if (req.hasSampling && req.getSampling != MeasurementHistory.Sampling.NONE)
       throw new BadRequestException("Cannot subscribe to \"sampled\" data stream, leave sampling field blank or NONE")
-    req.getPointName :: Nil
+    List(pointName)
   }
 
-  override def doGet(context: RequestContext, req: ServiceType): ServiceType = {
+  override def doGetAndSubscribe(context: RequestContext, req: ServiceType): ServiceType = {
 
-    val pointName = req.getPointName()
+    if ((req.hasPoint && req.hasPointName) || (!req.hasPoint && !req.hasPointName)) {
+      throw new BadRequestException("Must include a pointName or point proto")
+    }
 
-    val entity = entityModel.findEntityByName(context, pointName).getOrElse(throw new BadRequestException("Unknown point: " + pointName))
+    val (pointName, entity) = if (req.hasPointName) {
+      entityModel.findEntityByName(context, req.getPointName, "Point") match {
+        case Some(e) => (req.getPointName, e)
+        case None => throw new BadRequestException("Unknown point: " + req.getPointName)
+      }
+    } else {
+      PointServiceConversion.findRecord(context, req.getPoint) match {
+        case Some(p) => (p.entityName, p.entity.value)
+        case None => throw new BadRequestException("Unknown point: " + req.getPoint)
+      }
+    }
 
     context.auth.authorize(context, Descriptors.measurement.id, "read", List(entity.id))
+
+    subscribe(context, getSubscribeKeys(req, pointName), classOf[Measurement])
 
     val keepNewest = req.getKeepNewest()
     val begin = req.getStartTime()
@@ -77,6 +91,8 @@ class MeasurementHistoryService(cm: Historian)
 
     val b = MeasurementHistory.newBuilder(req)
     history.foreach { m => b.addMeasurements(m) }
+    // allways set point_name (was required field before 0.4.8), remove in 0.5.0
+    b.setPointName(pointName)
 
     b.build
   }

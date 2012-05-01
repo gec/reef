@@ -78,14 +78,7 @@ class AlarmQueryService
   override def getSubscribeKeys(req: AlarmList) = {
     createSubscriptionPermutations(makeSubscriptionKeyParts(req.getSelect)).map { ProtoRoutingKeys.generateRoutingKey(_) }
   }
-
-  override def subscribe(context: RequestContext, req: ServiceType) = {
-    context.getHeaders.subQueue.foreach { subQueue =>
-      val keys = getSubscribeKeys(req)
-      // have to pass an alarm object so the binding is done to the correct queue
-      keys.foreach(context.eventPublisher.bindQueueByClass(subQueue, _, classOf[Alarm]))
-    }
-  }
+  override val subscriptionClass = classOf[Alarm]
 
   override def doGet(context: RequestContext, req: AlarmList): AlarmList = {
     import ApplicationSchema._

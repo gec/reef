@@ -34,7 +34,7 @@ import net.agileautomata.commons.testing.SynchronizedList
 class MeasurementHistoryTest extends ServiceClientSuite {
 
   test("Get History") {
-    val point = PointRequestBuilders.getByName("StaticSubstation.Line02.Current")
+    val point = client.getPointByName("StaticSubstation.Line02.Current")
 
     // make sure a left over override doesn't stop our published values
     client.clearMeasurementOverridesOnPoint(point)
@@ -55,7 +55,7 @@ class MeasurementHistoryTest extends ServiceClientSuite {
     val list = new SynchronizedList[Double]
 
     // "Should be only two measurements since we limited since to the last 2 fake entries we made."
-    val last2 = client.subscribeToMeasurementHistory(point, now + 9, 100)
+    val last2 = client.subscribeToMeasurementHistoryByUuid(point.getUuid, now + 9, 100)
     last2.getResult.map { _.getDoubleVal } should equal(List(startValue + 9, startValue + 10))
 
     last2.getSubscription.start(new SubscriptionEventAcceptorShim[Measurement]({ ea: SubscriptionEvent[Measurement] => list.append(ea.getValue.getDoubleVal) }))
@@ -84,7 +84,11 @@ class MeasurementHistoryTest extends ServiceClientSuite {
     val point = client.getPoints().head
 
     intercept[BadRequestException] {
-      client.getMeasurementHistory(point, 1000000000)
+      client.getMeasurementHistoryByName(point.getName, 1000000000)
+    }
+
+    intercept[BadRequestException] {
+      client.getMeasurementHistoryByName("not a real point name with spaces", 100)
     }
   }
 }

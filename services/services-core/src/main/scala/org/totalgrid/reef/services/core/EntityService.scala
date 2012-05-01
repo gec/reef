@@ -88,12 +88,15 @@ class EntityServiceModel
     }
   }
 
-  def findEntityByName(context: RequestContext, name: String): Option[Entity] = {
-    EntityQuery.returnSingleOption(table.where(t => t.name === name).toList, "Entity")
+  def findEntityByName(context: RequestContext, name: String, typ: String = "Entity"): Option[Entity] = {
+    EntityQuery.returnSingleOption(table.where(t => t.name === name).toList, typ)
   }
 
-  def findEntitiesByNames(context: RequestContext, names: List[String]): List[Entity] = {
-    EntityQuery.findEntities(names, List("Entity")).toList
+  def findEntitiesByNames(context: RequestContext, names: List[String], typ: String = "Entity"): List[Entity] = {
+    EntityQuery.findEntities(names, List(typ)).toList
+  }
+  def findEntitiesByType(context: RequestContext, typ: String): List[Entity] = {
+    EntityQuery.findEntitiesByType(List(typ)).toList
   }
 
   def removeTypes(context: RequestContext, entity: Entity, entityTypes: List[String]): Entity = {

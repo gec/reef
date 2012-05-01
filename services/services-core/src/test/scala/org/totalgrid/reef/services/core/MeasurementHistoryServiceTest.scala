@@ -28,6 +28,8 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.SilentRequestContext
+import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
+import org.totalgrid.reef.client.exception.BadRequestException
 
 class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
   var begin: Long = -1
@@ -49,37 +51,88 @@ class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
 @RunWith(classOf[JUnitRunner])
 class MeasurementHistoryServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 
-  def getMeas(name: String, time: Int, value: Int) = {
-    val meas = Measurements.Measurement.newBuilder
-    meas.setName(name).setType(Measurements.Measurement.Type.INT).setIntVal(value)
-    meas.setQuality(Measurements.Quality.newBuilder.build)
-    meas.setTime(time)
-    meas.build
-  }
-
-  def validateHistorian(historian: FakeHistorian, begin: Long, end: Long, max: Int, ascending: Boolean) = {
-    historian.begin should equal(begin)
-    historian.end should equal(end)
-    historian.max should equal(max)
-    historian.ascending should equal(ascending)
-  }
-
-  test("History Service defaults are sensible") {
-    (new EntityServiceModel).findOrCreate(new SilentRequestContext, "meas1", List("Point"), None)
-    val points = Map("meas1" -> List(getMeas("meas1", 0, 1), getMeas("meas1", 1, 1)))
+  class Fixture {
+    val factories = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
+    val pointService = sync(new PointService(factories.points))
+    val points = Map("meas1" -> List(makeMeas("meas1", 0, 1), makeMeas("meas1", 1, 1)),
+      "meas2" -> List(makeMeas("meas2", 100, 1), makeMeas("meas2", 200, 2), makeMeas("meas2", 300, 3)))
     val historian = new FakeHistorian(points)
     val service = sync(new MeasurementHistoryService(historian))
 
-    val getMeas1 = service.get(MeasurementHistory.newBuilder.setPointName("meas1").build).expectOne()
+    private def makeMeas(name: String, time: Int, value: Int) = {
+
+      val basicPoint = Point.newBuilder.setName(name).setType(PointType.ANALOG).setUnit("raw").build
+      pointService.put(basicPoint).expectOne()
+
+      val meas = Measurements.Measurement.newBuilder.setUnit("raw")
+      meas.setName(name).setType(Measurements.Measurement.Type.INT).setIntVal(value)
+      meas.setQuality(Measurements.Quality.newBuilder.build)
+      meas.setTime(time)
+      meas.build
+    }
+
+    def validateHistorian(begin: Long, end: Long, max: Int, ascending: Boolean) = {
+      historian.begin should equal(begin)
+      historian.end should equal(end)
+      historian.max should equal(max)
+      historian.ascending should equal(ascending)
+    }
+  }
+
+  test("History Service defaults are sensible") {
+    val f = new Fixture
+
+    val getMeas1 = f.service.get(MeasurementHistory.newBuilder.setPointName("meas1").build).expectOne()
     getMeas1.getMeasurementsCount() should equal(2)
 
-    validateHistorian(historian, 0, Long.MaxValue, 10000, false)
+    f.validateHistorian(0, Long.MaxValue, 10000, false)
 
-    service.get(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build).expectOne()
-    validateHistorian(historian, 10, 1000, 10000, false)
+    f.service.get(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build).expectOne()
+    f.validateHistorian(10, 1000, 10000, false)
 
-    service.get(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build).expectOne()
-    validateHistorian(historian, 0, Long.MaxValue, 99, false)
+    f.service.get(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build).expectOne()
+    f.validateHistorian(0, Long.MaxValue, 99, false)
+  }
 
+  test("History Service request by pointName") {
+    val f = new Fixture
+
+    val getMeas1 = f.service.get(MeasurementHistory.newBuilder.setPointName("meas1").build).expectOne()
+    getMeas1.getMeasurementsCount() should equal(2)
+
+    val getMeas2 = f.service.get(MeasurementHistory.newBuilder.setPointName("meas2").build).expectOne()
+    getMeas2.getMeasurementsCount() should equal(3)
+  }
+
+  test("History Service request by uuid") {
+    val f = new Fixture
+
+    val point = f.pointService.get(Point.newBuilder.setName("meas1").build).expectOne()
+
+    val getMeas1 = f.service.get(MeasurementHistory.newBuilder.setPoint(point).build).expectOne()
+    getMeas1.getMeasurementsCount() should equal(2)
+
+    val getMeas2 = f.service.get(MeasurementHistory.newBuilder.setPoint(Point.newBuilder.setUuid(point.getUuid)).build).expectOne()
+    getMeas2.getMeasurementsCount() should equal(2)
+  }
+
+  test("History Service unknown Point") {
+    val f = new Fixture
+
+    intercept[BadRequestException] {
+      f.service.get(MeasurementHistory.newBuilder.setPointName("meas3").build).expectOne()
+    }
+
+    intercept[BadRequestException] {
+      f.service.get(MeasurementHistory.newBuilder.setPoint(Point.newBuilder.setName("asdasd")).build).expectOne()
+    }
+  }
+
+  test("History Service overerly specified") {
+    val f = new Fixture
+
+    intercept[BadRequestException] {
+      f.service.get(MeasurementHistory.newBuilder.setPointName("meas1").setPoint(Point.newBuilder.setName("meas1")).build).expectOne()
+    }
   }
 }
