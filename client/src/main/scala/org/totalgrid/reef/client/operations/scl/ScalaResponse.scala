@@ -72,5 +72,14 @@ object ScalaResponse extends ScalaResponse {
   def failure[A](status: Status, error: String): Response[A] = {
     new ResponseWrapper[A](status, null, error, false)
   }
+
+  import org.totalgrid.reef.client.sapi.client.{ FailureResponse, SuccessResponse }
+  import scala.collection.JavaConversions._
+  def convert[A](resp: Response[A]): org.totalgrid.reef.client.sapi.client.Response[A] = {
+    resp.isSuccess match {
+      case true => SuccessResponse(resp.getStatus, resp.getList.toList)
+      case false => FailureResponse(resp.getStatus, resp.getError)
+    }
+  }
 }
 

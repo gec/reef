@@ -22,16 +22,17 @@ import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.service.ServiceTypeIs
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, UserCommandRequest }
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.{ AddressableDestination, Routable }
+import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
+import org.totalgrid.reef.client.sapi.client.{ FailureResponse, BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel)
@@ -72,30 +73,44 @@ class UserCommandRequestService(
   }
 
   private def requestCommand(client: Client, request: UserCommandRequest, address: Routable, contextSource: RequestContextSource, callback: Response[UserCommandRequest] => Unit) {
-    client.getInternal.getOperations.put(request, BasicRequestHeaders.empty.setDestination(address)).listen { response =>
+
+    import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+    val promise = client.getServiceOperations.operation("Could not make UserCommandRequest") { ops =>
+      ops.put(request, BasicRequestHeaders.empty.setDestination(address))
+    }
+    import scala.collection.JavaConversions._
+
+    promise.listenFor { respPromise =>
       try {
-        contextSource.transaction { context =>
-          model.findRecord(context, request) match {
-            case Some(record) =>
-              val (updatedStatus, errorMessage) = if (response.success) {
-                val commandResponse = response.list.head
-                import org.totalgrid.reef.client.service.proto.OptionalProtos._
-                (commandResponse.getStatus, commandResponse.errorMessage)
-              } else {
-                val msg = "Got non successful response to command request: " + request + " dest: " + address + " status: " + response.status + " error: " + response.error
-                logger.warn { msg }
-                (CommandStatus.UNDEFINED, Some(msg))
-              }
-              model.update(context, record.copy(status = updatedStatus.getNumber, errorMessage = errorMessage), record)
-            case None =>
-              logger.warn { "Couldn't find command request record to update" }
+        val response = respPromise.await()
+
+        try {
+          contextSource.transaction { context =>
+            model.findRecord(context, request) match {
+              case Some(record) =>
+                val (updatedStatus, errorMessage) = if (response.isSuccess) {
+                  val commandResponse = response.getList.head
+                  import org.totalgrid.reef.client.service.proto.OptionalProtos._
+                  (commandResponse.getStatus, commandResponse.errorMessage)
+                } else {
+                  val msg = "Got non successful response to command request: " + request + " dest: " + address + " status: " + response.getStatus + " error: " + response.getError
+                  logger.warn { msg }
+                  (CommandStatus.UNDEFINED, Some(msg))
+                }
+                model.update(context, record.copy(status = updatedStatus.getNumber, errorMessage = errorMessage), record)
+              case None =>
+                logger.warn { "Couldn't find command request record to update" }
+            }
           }
+        } catch {
+          case ex: Exception =>
+            logger.error("Error handling command response callback: " + ex.getMessage, ex)
+        } finally {
+          callback(ScalaResponse.convert(response))
         }
       } catch {
-        case ex: Exception =>
-          logger.error("Error handling command response callback: " + ex.getMessage, ex)
-      } finally {
-        callback(response)
+        case rse: ReefServiceException => callback(FailureResponse(rse.getStatus, rse.getMessage))
+        case ex => callback(FailureResponse(error = "Unknown error in UserCommandRequest"))
       }
     }
   }
