@@ -91,15 +91,6 @@ object ModelCreationUtilities {
           case rse: ReefServiceException => prom.setFailure(rse)
           case ex => prom.setFailure(new UnknownServiceException(ex.toString))
         }
-        /*val result = a.extract
-        if (result.isSuccess) {
-          inProgressOps -= 1
-          timingResults ::= (stopwatch.elapsed, result.get)
-          if (timingResults.size == batchableOperations.size) f.set(Success(timingResults))
-          else startNext()
-        } else {
-          f.set(Failure(result.toString))
-        }*/
       }
     }
 

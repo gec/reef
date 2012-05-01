@@ -137,3 +137,18 @@ class EntityBasedModel(val entityId: UUID) extends ModelWithId {
 
   def entityName = entity.value.name
 }
+
+object EntityBasedModel {
+  def preloadEntities(entries: List[EntityBasedModel]) {
+    val entitiesWithTypes = from(ApplicationSchema.entities, ApplicationSchema.entityTypes)((ent, typ) =>
+      where(ent.id in entries.map { _.entityId } and (typ.entityId === ent.id))
+        select (ent, typ.entType)).toList.groupBy(_._1.id)
+
+    entries.foreach { entry =>
+      val listOfEntityWithTypes = entitiesWithTypes(entry.entityId)
+      val entity = listOfEntityWithTypes.head._1
+      entry.entity.value = entity
+      entity.types.value = listOfEntityWithTypes.map { _._2 }
+    }
+  }
+}

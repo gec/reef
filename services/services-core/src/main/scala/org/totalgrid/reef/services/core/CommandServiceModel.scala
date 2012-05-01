@@ -64,6 +64,11 @@ class CommandServiceModel(commandHistoryModel: UserCommandRequestServiceModel,
 
   val entityModel = new EntityServiceModel
 
+  override def preloadAll(context: RequestContext, entries: List[Command]) {
+    EntityBasedModel.preloadEntities(entries)
+    HasLogicalNodeAndEndpoint.preloadLogicalNode(entries)
+  }
+
   def getCommands(names: List[String]): Query[Command] = {
     Command.findByNames(names)
   }

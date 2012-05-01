@@ -55,6 +55,15 @@ class CommEndCfgServiceModel(
   val entityModel = new EntityServiceModel
   val edgeModel = new EntityEdgeServiceModel
 
+  override def preloadAll(context: RequestContext, entries: List[CommunicationEndpoint]) {
+    val map = context.auth.visibilityMap(context)
+
+    EntityBasedModel.preloadEntities(entries)
+    CommunicationEndpoint.preloadPoints(entries, map.selector(Descriptors.point.id) _)
+    CommunicationEndpoint.preloadCommands(entries, map.selector(Descriptors.command.id) _)
+    CommunicationEndpoint.preloadConfigFileIds(entries)
+  }
+
   override def createFromProto(context: RequestContext, proto: CommEndCfgProto): CommunicationEndpoint = {
     import org.totalgrid.reef.models.UUIDConversions._
     val ent = entityModel.findOrCreate(context, proto.getName, "CommunicationEndpoint" :: "LogicalNode" :: Nil, proto.uuid)
@@ -195,7 +204,8 @@ trait CommEndCfgServiceConversion extends UniqueAndSearchQueryable[CommEndCfgPro
     b.setAutoAssigned(sql.autoAssigned)
     sql.frontEndPortId.foreach(id => b.setChannel(CommChannel.newBuilder().setUuid(makeUuid(id)).build))
 
-    sql.configFiles.value.sortBy(_.entityName).foreach(cf => b.addConfigFiles(ConfigFile.newBuilder().setUuid(makeUuid(cf)).build))
+    // add just uuid of related config files
+    sql.configFilesIds.value.foreach(cfUuid => b.addConfigFiles(ConfigFile.newBuilder().setUuid(makeUuid(cfUuid)).build))
 
     val o = EndpointOwnership.newBuilder
     sql.points.value.sortBy(_.entityName).foreach(p => o.addPoints(p.entityName))

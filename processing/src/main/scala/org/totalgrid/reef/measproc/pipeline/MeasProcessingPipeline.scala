@@ -22,12 +22,13 @@ import org.totalgrid.reef.client.service.proto.Events
 import org.totalgrid.reef.metrics.MetricsHookContainer
 import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementBatch, Measurement }
 import org.totalgrid.reef.measproc._
+import org.totalgrid.reef.client.service.proto.Model.Point
 
 class MeasProcessingPipeline(
     caches: MeasProcObjectCaches,
     publish: Measurement => Unit,
     eventSink: Events.Event.Builder => Unit,
-    pointNames: List[String],
+    points: List[Point],
     endpointName: String) extends MeasBatchProcessor with MetricsHookContainer {
 
   // pipeline ends up being defined backwards, output from each step is wired into input of previous step
@@ -40,7 +41,7 @@ class MeasProcessingPipeline(
   val triggerFactory = new processing.TriggerProcessingFactory(batchOutput.delayedEventSink, lastCacheManager.cache)
   val triggerProc = new processing.TriggerProcessor(batchOutput.pubMeas, triggerFactory, caches.stateCache)
   val overProc = new processing.OverrideProcessor(overrideProcess, caches.overCache, caches.measCache.get)
-  val measWhiteList = new processing.MeasurementWhiteList(overProc.process, pointNames)
+  val measWhiteList = new processing.MeasurementWhiteList(overProc.process, points)
 
   // start the pipeline
   val processor = new MeasPipelinePump(measWhiteList.process, batchOutput.flushCache)

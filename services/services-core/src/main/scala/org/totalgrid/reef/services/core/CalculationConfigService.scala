@@ -62,7 +62,7 @@ class CalculationConfigServiceModel
       val existing = entityModel.findRecord(context, EntityProto.newBuilder.setUuid(uuid.get).build)
       if (!existing.isEmpty) {
         val existingCalc = existing.get.asType(ApplicationSchema.calculations, "Calculation")
-        throw new BadRequestException("Can't change OutputPoint from: " + existingCalc.outputPoint.value.entityName)
+        throw new BadRequestException("Can't change OutputPoint from: " + existingCalc.point.value.entityName)
       }
     }
 
@@ -108,7 +108,7 @@ class CalculationConfigServiceModel
     val over = new CalculationConfig(entity.id, outputPoint.id, proto.toByteString.toByteArray)
 
     over.entity.value = entity
-    over.outputPoint.value = outputPoint
+    over.point.value = outputPoint
     over.proto.value = proto
     over.inputPoints.value = inputPoints.flatten
 
@@ -121,7 +121,7 @@ class CalculationConfigServiceModel
     entry.inputPoints.value.foreach { p =>
       edgeModel.addEdges(context, p.entity.value, List(ent), "calcs", false)
     }
-    val outputPoint = entry.outputPoint.value
+    val outputPoint = entry.point.value
     edgeModel.addEdges(context, ent, List(outputPoint.entity.value), "calcs", false)
     edgeModel.addEdges(context, outputPoint.entity.value, List(ent), "source", false)
 
@@ -130,7 +130,7 @@ class CalculationConfigServiceModel
 
   override def preDelete(context: RequestContext, entry: CalculationConfig) {
 
-    entityModel.removeTypes(context, entry.outputPoint.value.entity.value, List("CalculatedPoint"))
+    entityModel.removeTypes(context, entry.point.value.entity.value, List("CalculatedPoint"))
 
     entityModel.delete(context, entry.entity.value)
   }
@@ -139,7 +139,7 @@ class CalculationConfigServiceModel
   override protected def preUpdate(context: RequestContext, entry: CalculationConfig, previous: CalculationConfig) = {
     val calcEntity = entry.entity.value
     if (entry.outputPointId != previous.outputPointId) {
-      val previousOutputPoint = previous.outputPoint.value.entity.value
+      val previousOutputPoint = previous.point.value.entity.value
       edgeModel.deleteEdges(context, calcEntity, List(previousOutputPoint), "calcs")
       edgeModel.deleteEdges(context, previousOutputPoint, List(calcEntity), "source")
       entityModel.removeTypes(context, previousOutputPoint, List("CalculatedPoint"))
@@ -167,7 +167,7 @@ trait CalculationConfigConversion
   def sortResults(list: List[Calculation]) = list.sortBy(_.getOutputPoint.getName)
 
   def relatedEntities(models: List[CalculationConfig]) = {
-    models.map { _.outputPoint.value.entityId }
+    models.map { _.point.value.entityId }
   }
 
   private def resourceId = Descriptors.calculation.id
@@ -175,7 +175,7 @@ trait CalculationConfigConversion
   private def visibilitySelector(entitySelector: Query[UUID], sql: CalculationConfig) = {
     sql.id in from(table, ApplicationSchema.points)((over, point) =>
       where(
-        (over.outputPointId === point.id) and
+        (over.pointId === point.id) and
           (point.entityId in entitySelector))
         select (over.id))
   }
@@ -189,7 +189,7 @@ trait CalculationConfigConversion
 
   override def uniqueQuery(context: RequestContext, proto: Calculation, sql: CalculationConfig) = {
     List(proto.uuid.value.asParam(sql.entityId === UUID.fromString(_)).unique,
-      proto.outputPoint.map(pointProto => sql.outputPointId in PointServiceConversion.searchQueryForId(context, pointProto, { _.id })).unique)
+      proto.outputPoint.map(pointProto => sql.pointId in PointServiceConversion.searchQueryForId(context, pointProto, { _.id })).unique)
   }
 
   override def searchQuery(context: RequestContext, proto: Calculation, sql: CalculationConfig) =
@@ -203,7 +203,7 @@ trait CalculationConfigConversion
     val builder = sql.proto.value.toBuilder
 
     // the endpoint is not going to be set when we make the calculation
-    builder.setOutputPoint(PointServiceConversion.convertToProto(sql.outputPoint.value))
+    builder.setOutputPoint(PointServiceConversion.convertToProto(sql.point.value))
 
     builder.build
   }

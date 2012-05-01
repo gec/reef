@@ -73,6 +73,7 @@ trait HasRead extends HasAllTypes with HasComponentId with Logging {
 
   protected def performRead(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ServiceType] = {
     val records: List[ModelType] = model.findRecords(context, request)
+    model.preloadAll(context, records)
 
     val relatedEntities = records.map(r => model.relatedEntities(List(r)))
     val results: List[FilteredResult[ModelType]] = context.auth.filter(context, componentId, "read", records, relatedEntities)
@@ -145,6 +146,7 @@ trait HasDelete extends HasAllTypes with HasComponentId {
 
   protected def performDelete(context: RequestContext, model: ServiceModelType, request: ServiceType): List[ModelType] = {
     val existing = model.findRecords(context, request)
+    model.preloadAll(context, existing)
     context.auth.authorize(context, componentId, "delete", model.relatedEntities(existing))
     existing.foreach(model.delete(context, _))
     existing

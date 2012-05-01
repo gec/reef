@@ -38,7 +38,7 @@ object EntityQuery extends Logging {
 
   def entityToProto(entry: Entity): EntityProto.Builder = {
     val b = minimalEntityToProto(entry)
-    entry.types.value.foreach(t => b.addTypes(t))
+    entry.types.value.sorted.foreach(t => b.addTypes(t))
     b
   }
 

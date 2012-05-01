@@ -44,7 +44,7 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
 {
     private Measurement clearTime( Measurement m )
     {
-        return m.toBuilder().clearTime().clearSystemTime().build();
+        return m.toBuilder().clearTime().clearSystemTime().clearPointUuid().build();
     }
 
     /** Test that the measurement overrides work correctly */
@@ -54,7 +54,8 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
 
         // use a point we know will be static
         String pointName = "StaticSubstation.Line02.Current";
-        Point p = Point.newBuilder().setName( pointName ).build();
+        Point p = helpers.getPointByName( pointName );
+        final ReefUUID pointUuid = p.getUuid();
         List<Point> ps = new LinkedList<Point>();
         ps.add( p );
 
@@ -137,6 +138,7 @@ public class TestMeasOverrideService extends ReefConnectionTestBase
         LinkedList<Measurement> measurements = new LinkedList<Measurement>();
         for ( Measurement m1 : measurementsWithTime )
         {
+            assertEquals( m1.getPointUuid(), pointUuid );
             measurements.add( clearTime( m1 ) );
         }
         assertTrue( measurements.contains( clearTime( cachedValue ) ) );

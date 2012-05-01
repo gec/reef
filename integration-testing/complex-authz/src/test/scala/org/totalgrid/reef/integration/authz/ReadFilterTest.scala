@@ -40,6 +40,7 @@ class ReadFilterTest extends AuthTestBase {
   private val allVisibile = visibleCommands ::: visiblePoints ::: visibleEquipment ::: visibleEquipmentGroups ::: visibleEndpoints ::: visibleAgents
 
   private val invisibleCommands = List("C9", "C10", "C11", "C12")
+  private val invisiblePoints = List("P9", "P10", "P11", "P12")
 
   test("See only entities we're allowed to") {
     as("limited_regional_op") { ops =>
@@ -232,15 +233,17 @@ class ReadFilterTest extends AuthTestBase {
     as("limited_regional_op") { ops =>
       val endpoints = ops.getEndpoints()
 
-      endpoints should equal(allEndpoints)
-
-      // TODO: endpoint ownership should be filtered to show only visible elements for each user
+      endpoints.map { _.getUuid }.toSet should equal(allEndpoints.map { _.getUuid }.toSet)
 
       val pointNames = endpoints.map { _.getOwnerships.getPointsList.toList }.flatten.distinct
-      pointNames.toSet should not equal (visiblePoints.toSet)
+      pointNames.toSet should equal(visiblePoints.toSet)
 
       val commandNames = endpoints.map { _.getOwnerships.getCommandsList.toList }.flatten.distinct
-      commandNames.toSet should not equal (visibleCommands.toSet)
+      commandNames.toSet should equal(visibleCommands.toSet)
+
+      val endpoint = ops.getEndpointByName("NukeEndpoint")
+      endpoint.getOwnerships.getPointsCount should equal(0)
+      endpoint.getOwnerships.getCommandsCount should equal(0)
     }
 
   }

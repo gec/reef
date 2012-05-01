@@ -30,7 +30,7 @@ import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.exception.{ BadRequestException, UnauthorizedException }
 
-import org.totalgrid.reef.models.{ ApplicationSchema, CommandLockModel => AccessModel, Command => CommandModel, CommandBlockJoin, Agent => AgentModel }
+import org.totalgrid.reef.models.{ HasRelatedAgent, ApplicationSchema, CommandLockModel => AccessModel, Command => CommandModel, CommandBlockJoin, Agent => AgentModel }
 import java.util.{ UUID, Date }
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.authz.VisibilityMap
@@ -40,19 +40,10 @@ class CommandLockServiceModel
     with EventedServiceModel[AccessProto, AccessModel]
     with CommandLockConversion {
 
-  private def preloadAllFields(context: RequestContext, entries: List[AccessModel]) {
+  override def preloadAll(context: RequestContext, entries: List[AccessModel]) {
     def commandVisiblity = context.auth.visibilityMap(context).selector(Descriptors.command.id) _
-    AccessModel.preloadAgents(entries)
+    HasRelatedAgent.preloadAgents(entries)
     AccessModel.preloadCommands(entries, commandVisiblity)
-  }
-
-  override def convertToProtos(context: RequestContext, entries: List[AccessModel]): List[AccessProto] = {
-
-    preloadAllFields(context, entries)
-
-    entries.map { acc =>
-      convertToProto(acc, acc.commands.value, acc.agent.value.entityName)
-    }
   }
 
   def commandModel = modelOption.get
@@ -154,7 +145,7 @@ class CommandLockServiceModel
 
       // make sure to only return commands visible to this user in error message
       val locks = blocked.distinct
-      preloadAllFields(context, locks)
+      preloadAll(context, locks)
 
       val msgs = locks.map { acc =>
         "( " + acc.commands.value.map { _.entityName }.mkString(", ") +

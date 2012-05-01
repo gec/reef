@@ -56,6 +56,17 @@ object Entity {
     if (ids.size > 0) from(table)(t => where(t.entityId in ids) select (t)).toList
     else Nil
   }
+
+  def preloadEntityTypes(entries: List[Entity]) {
+    val entitiesWithTypes = from(ApplicationSchema.entities, ApplicationSchema.entityTypes)((ent, typ) =>
+      where(ent.id in entries.map { _.id } and (typ.entityId === ent.id))
+        select (ent.id, typ.entType)).toList.groupBy(_._1)
+
+    entries.foreach { entry =>
+      val listOfEntityWithTypes = entitiesWithTypes(entry.id)
+      entry.types.value = listOfEntityWithTypes.map { _._2 }
+    }
+  }
 }
 
 case class EntityToTypeJoins(

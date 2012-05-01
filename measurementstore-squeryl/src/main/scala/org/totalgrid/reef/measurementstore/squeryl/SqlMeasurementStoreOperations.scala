@@ -102,17 +102,9 @@ trait SqlMeasurementStoreOperations {
   }
 
   def get(names: Seq[String]): Map[String, Meas] = {
-    var m = Map.empty[String, Meas]
-    var insertedMeas = Map.empty[Long, String]
-    val pNames = SqlMeasurementStoreSchema.names.where(n => n.name in names).toList
-    pNames.foreach { p => insertedMeas = insertedMeas - p.id + (p.id -> p.name) }
-
-    val ids = insertedMeas.keys.toList
-    val cvs = from(SqlMeasurementStoreSchema.currentValues)(cv =>
-      where(cv.pointId in ids) select (cv.pointId, cv.proto))
-    cvs.foreach { case (pid, proto) => m = m + (insertedMeas.get(pid).get -> Meas.parseFrom(proto)) }
-
-    m
+    from(SqlMeasurementStoreSchema.names, SqlMeasurementStoreSchema.currentValues)((name, cv) =>
+      where((name.name in names) and (cv.pointId === name.id))
+        select (name.name, cv.proto)).toList.map { t => (t._1, Meas.parseFrom(t._2)) }.toMap
   }
 
   def numValues(meas_name: String): Int = {

@@ -21,6 +21,9 @@ package org.totalgrid.reef.benchmarks.system
 import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
 import java.io.PrintStream
 import org.totalgrid.reef.util.Timing.Stopwatch
+import org.totalgrid.reef.benchmarks.endpoints.EndpointStateTransitionTimer
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
+import org.totalgrid.reef.client.sapi.sync.AllScadaService
 import org.totalgrid.reef.client.{ Promise, Client }
 
 case class EndpointLoadingReading(request: String, endpoints: Int, pointsPerEndpoint: Int,
@@ -62,6 +65,12 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
     }
 
     if (delete) {
+      val services = client.getService(classOf[AllScadaService])
+      val endpointUuids = services.getEndpointsByNames(endpointNames).map { _.getUuid }
+      endpointUuids.foreach { services.disableEndpointConnection(_) }
+      val map = new EndpointStateTransitionTimer(services.subscribeToEndpointConnections(), endpointUuids)
+      map.checkAllState(false, State.COMMS_DOWN)
+
       val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client, n, pointsPerEndpoint, batchSize) }
       stream.foreach { _.println("Deleting " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points using " + parallelism + " writers.") }
       addReadings("deleteEndpoint", preparedDeleters)

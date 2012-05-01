@@ -60,8 +60,9 @@
  * }
  * 
  * // fundamental measurement type used in the system
- * message Measurement {   
- * 	
+ * message Measurement {
+ * 
+ * 	optional org.totalgrid.reef.client.service.proto.Model.ReefUUID point_uuid = 12;
  * 	optional string name = 1;	// name of the measurement, specific to the system's modeling conventions
  * 
  * 	enum Type {

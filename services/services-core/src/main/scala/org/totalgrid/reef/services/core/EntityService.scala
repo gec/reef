@@ -144,7 +144,11 @@ class EntityServiceModel
       }
     }
     // TODO: Make limits non-superficial
-    results.take(context.getHeaders.getResultLimit().getOrElse(100))
+    val entityResults = results.take(context.getHeaders.getResultLimit().getOrElse(100))
+
+    Entity.preloadEntityTypes(entityResults)
+
+    entityResults
   }
 
   def createFromProto(context: RequestContext, req: EntityProto): Entity = {

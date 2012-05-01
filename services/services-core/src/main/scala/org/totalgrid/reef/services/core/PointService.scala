@@ -87,6 +87,11 @@ class PointServiceModel(triggerModel: TriggerSetServiceModel,
     createModelEntry(context, proto.getName, proto.getType, proto.getUnit, proto.uuid)
   }
 
+  override def preloadAll(context: RequestContext, entries: List[Point]) {
+    EntityBasedModel.preloadEntities(entries)
+    HasLogicalNodeAndEndpoint.preloadLogicalNode(entries)
+  }
+
   def createModelEntry(context: RequestContext, name: String, _type: PointType, unit: String, uuid: Option[UUID]): Point = {
     val baseType = _type match {
       case PointType.ANALOG => "Analog"

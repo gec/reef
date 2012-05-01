@@ -21,23 +21,24 @@ package org.totalgrid.reef.measproc.processing
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.metrics.{ MetricsHooks, MetricsHookFunctions }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.service.proto.Model.Point
 
 /**
  * checks to see if the measurements are on the whitelist provided with the endpoint and filters
  * out the unexpected measurements and adds a log message indicating what is being ignored.
  */
-class MeasurementWhiteList(protected val next: Measurement => Unit, allowedPointNames: List[String])
+class MeasurementWhiteList(protected val next: Measurement => Unit, expectedPoints: List[Point])
     extends MetricsHooks
     with Logging {
 
-  val allowedPointNamesLookup = allowedPointNames.map { name => name -> true }.toMap
+  val allowedPointNamesLookup = expectedPoints.map { p => p.getName -> p }.toMap
   var ignored = Map.empty[String, Boolean]
 
   private lazy val ignoredMeasurements = counterHook("ignoredMeasurements")
 
   def process(meas: Measurement) {
     allowedPointNamesLookup.get(meas.getName) match {
-      case Some(_) => next(meas)
+      case Some(p) => next(meas.toBuilder.setPointUuid(p.getUuid).build)
       case None =>
         ignoredMeasurements(1)
         ignored.get(meas.getName) match {
