@@ -406,11 +406,13 @@ object OptionalProtos {
   }
   implicit def proto2OptMeasurementsMeasurementSnapshot(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot): OptMeasurementsMeasurementSnapshot = new OptMeasurementsMeasurementSnapshot(Some(a))
   class OptMeasurementsMeasurementSnapshot(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot]) extends OptionalStruct(real) {
+    val point = optionally(_.getPointList.toList.map { i => new OptModelPoint(Some(i)) })
     val pointNames = optionally(_.getPointNamesList.toList)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptMeasurementsMeasurement(Some(i)) })
   }
   implicit def proto2OptMeasurementsMeasurementHistory(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory): OptMeasurementsMeasurementHistory = new OptMeasurementsMeasurementHistory(Some(a))
   class OptMeasurementsMeasurementHistory(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory]) extends OptionalStruct(real) {
+    val point = new OptModelPoint(optionally(_.hasPoint, _.getPoint))
     val pointName = optionally(_.getPointName)
     val startTime = optionally(_.hasStartTime, _.getStartTime)
     val endTime = optionally(_.hasEndTime, _.getEndTime)

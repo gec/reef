@@ -123,12 +123,18 @@
  * 
  * // Service type that returns the current state of N points by Name
  * message MeasurementSnapshot{
+ *     // point object allows doing same sorts of searches as we have for point object
+ *     repeated org.totalgrid.reef.client.service.proto.Model.Point point = 4;
+ *     // point_names are being deprecated in 0.5.0, use point object instead
  *     repeated string      point_names  = 2;
  *     repeated Measurement measurements = 3;
  * }
  * 
  * // Service type that returns a time slice for a single measurement
  * message MeasurementHistory{
+ *     // search for a
+ *     optional org.totalgrid.reef.client.service.proto.Model.Point point = 8;
+ *     // point_name is being deprecated in 0.5.0
  *     required string      point_name   = 1;
  *     optional uint64      start_time   = 2 [default = 0];
  *     optional uint64      end_time     = 3 [default = 0];
