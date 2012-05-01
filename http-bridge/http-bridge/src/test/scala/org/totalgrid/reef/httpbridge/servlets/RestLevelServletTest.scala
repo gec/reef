@@ -23,31 +23,26 @@ import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ServiceIOException }
-import org.totalgrid.reef.client.sapi.client.rest.RestOperations
-import org.totalgrid.reef.client.{ ClientInternal, Client }
 import org.totalgrid.reef.test.MockitoStubbedOnly
-import net.agileautomata.executor4s.testing.MockFuture
 import org.totalgrid.reef.client.service.proto.Model.Entity
 import org.mockito.{ ArgumentCaptor, Matchers, Mockito }
 import org.totalgrid.reef.client.proto.Envelope.{ Status, Verb }
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, SuccessResponse, FailureResponse }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.operations.scl.{ ScalaResponse, ScalaPromise }
+import org.totalgrid.reef.client.{ RequestHeaders, Client }
 
 @RunWith(classOf[JUnitRunner])
 class RestLevelServletTest extends BaseServletTest {
 
   var service: RestLevelServlet = null
   var client: Client = null
-  var requestHandler: RestOperations = null
-  var internals: ClientInternal = null
+  var requestDelegate: ServiceRequestDelegate = null
 
   override def beforeEach() {
     super.beforeEach()
-    service = new RestLevelServlet(connection, builderLocator)
+    requestDelegate = Mockito.mock(classOf[ServiceRequestDelegate], new MockitoStubbedOnly())
+    service = new RestLevelServlet(connection, builderLocator, requestDelegate)
     client = Mockito.mock(classOf[Client], new MockitoStubbedOnly())
-    internals = Mockito.mock(classOf[ClientInternal], new MockitoStubbedOnly())
-    requestHandler = Mockito.mock(classOf[RestOperations], new MockitoStubbedOnly())
-    Mockito.doReturn(requestHandler).when(internals).getOperations
-    Mockito.doReturn(internals).when(client).getInternal
     Mockito.doReturn(client).when(connection).getAuthenticatedClient(fakeAuthToken)
     Mockito.doReturn(None).when(connection).getSharedBridgeAuthToken()
     request.addHeader(CONTENT_TYPE_HEADER, JSON_FORMAT)
@@ -185,8 +180,8 @@ class RestLevelServletTest extends BaseServletTest {
 
     goodRequest()
 
-    val future = new MockFuture(Some(FailureResponse(status = Status.BAD_REQUEST, error = "entity not known")))
-    Mockito.doReturn(future).when(requestHandler).request(Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
+    val promise = ScalaPromise.fixed(ScalaResponse.failure(Status.BAD_REQUEST, "entity not known"))
+    Mockito.doReturn(promise).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
 
     service.doPost(request, response)
 
@@ -198,8 +193,8 @@ class RestLevelServletTest extends BaseServletTest {
 
     goodRequest()
 
-    val future = new MockFuture(Some(SuccessResponse(list = List(entityResult1Proto, entityResult2Proto))))
-    Mockito.doReturn(future).when(requestHandler).request(Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
+    val promise = ScalaPromise.fixed(ScalaResponse.success(Status.OK, List(entityResult1Proto, entityResult2Proto)))
+    Mockito.doReturn(promise).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
 
     service.doPost(request, response)
 
@@ -208,15 +203,14 @@ class RestLevelServletTest extends BaseServletTest {
     response.getHeader(CONTENT_TYPE_HEADER) should equal(JSON_FORMAT)
   }
 
-  def captureHeaders() = {
-    // get the headers we called the client with, we throw an exception since we aren't checking the results
-    val argument = ArgumentCaptor.forClass(classOf[Option[BasicRequestHeaders]])
+  def captureHeaders(): BasicRequestHeaders = {
+    val argument = ArgumentCaptor.forClass(classOf[RequestHeaders])
 
-    Mockito.doThrow(new RuntimeException("intentional io failure")).when(requestHandler).request(Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), argument.capture())
+    Mockito.doThrow(new RuntimeException("intentional io failure")).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), argument.capture())
 
     service.doPost(request, response)
 
-    argument.getValue.get
+    argument.getValue.asInstanceOf[BasicRequestHeaders] // TODO: BasicRequestHeaders HACK
   }
 
   test("POST: Default Headers") {

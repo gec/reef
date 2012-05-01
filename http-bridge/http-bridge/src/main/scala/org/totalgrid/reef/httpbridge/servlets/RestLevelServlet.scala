@@ -24,11 +24,12 @@ import org.totalgrid.reef.client.proto.Envelope.Verb
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.httpbridge.servlets.helpers.ClientUsingServletBase
 import org.totalgrid.reef.httpbridge.{ JsonBridgeConstants, BuilderLocator, ManagedConnection }
+import scala.collection.JavaConversions._
 
 /**
  * Provides low-level Rest operations like the ClientOperations api in java.
  */
-class RestLevelServlet(connection: ManagedConnection, builderLocator: BuilderLocator) extends ClientUsingServletBase(connection) {
+class RestLevelServlet(connection: ManagedConnection, builderLocator: BuilderLocator, requester: ServiceRequestDelegate = ServiceRequestDelegate) extends ClientUsingServletBase(connection) {
 
   import JsonBridgeConstants._
 
@@ -51,18 +52,19 @@ class RestLevelServlet(connection: ManagedConnection, builderLocator: BuilderLoc
 
     // make the request to reef, will fail if we don't have valid connection to reef
     val client = connection.getAuthenticatedClient(authToken)
-    val future = client.getInternal.getOperations.request(verb, requestProto, Some(headers))
+
+    val promise = requester.makeRequest(client, verb, requestProto, headers)
 
     // once we have an async servlet we could use .listen on the future, for now we can use .await
-    val response = future.await
+    val response = promise.await()
 
     // handle response. (note: status code map 1-to-1 with HTTP codes)
-    if (response.success) {
-      printOutput(req, resp, response.list)
-      resp.setStatus(response.status.getNumber)
+    if (response.isSuccess) {
+      printOutput(req, resp, response.getList.toList)
+      resp.setStatus(response.getStatus.getNumber)
     } else {
       // on error pipe the message out to the client
-      resp.sendError(response.status.getNumber, response.error)
+      resp.sendError(response.getStatus.getNumber, response.getError)
     }
   }
 

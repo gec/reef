@@ -69,4 +69,41 @@ trait ScalaPromise {
   implicit def _scalaPromise[A](p: Promise[A]): RichPromise[A] = new RichPromise(p)
 }
 
-object ScalaPromise extends ScalaPromise
+object ScalaPromise extends ScalaPromise {
+
+  private class FixedPromise[A](v: A) extends Promise[A] {
+    def transform[B](transform: PromiseTransform[A, B]): Promise[B] = {
+      new FixedPromise(transform.transform(v))
+    }
+
+    def isComplete: Boolean = true
+
+    def listen(listener: PromiseListener[A]) {
+      listener.onComplete(this)
+    }
+
+    def transformError(transform: PromiseErrorTransform): Promise[A] = this
+
+    def await(): A = v
+
+  }
+
+  private class FixedErrorPromise[A](rse: ReefServiceException) extends Promise[A] {
+    def await(): A = throw rse
+
+    def listen(listener: PromiseListener[A]) {
+      listener.onComplete(this)
+    }
+
+    def isComplete: Boolean = true
+
+    def transform[B](transform: PromiseTransform[A, B]): Promise[B] = this.asInstanceOf[FixedErrorPromise[B]]
+
+    def transformError(transform: PromiseErrorTransform): Promise[A] = {
+      new FixedErrorPromise[A](transform.transformError(rse))
+    }
+  }
+
+  def fixed[A](v: A): Promise[A] = new FixedPromise[A](v)
+  def fixedError[A](rse: ReefServiceException): Promise[A] = new FixedErrorPromise[A](rse)
+}

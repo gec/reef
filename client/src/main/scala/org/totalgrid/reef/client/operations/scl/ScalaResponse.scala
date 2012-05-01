@@ -21,6 +21,8 @@ package org.totalgrid.reef.client.operations.scl
 import org.totalgrid.reef.client.proto.StatusCodes
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.ExpectationException
+import org.totalgrid.reef.client.proto.Envelope.Status
+import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 
 trait ScalaResponse {
 
@@ -61,5 +63,14 @@ trait ScalaResponse {
   implicit def _scalaResponse[A](resp: Response[A]): RichResponse[A] = new RichResponse(resp)
 }
 
-object ScalaResponse extends ScalaResponse
+object ScalaResponse extends ScalaResponse {
+
+  def success[A](status: Status, results: List[A]): Response[A] = {
+    import scala.collection.JavaConversions._
+    new ResponseWrapper[A](status, results.toList, "", true)
+  }
+  def failure[A](status: Status, error: String): Response[A] = {
+    new ResponseWrapper[A](status, null, error, false)
+  }
+}
 
