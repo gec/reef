@@ -89,7 +89,11 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
         case None => pending match {
           case Nil => promise.setSuccess(true)
           case remains =>
-            val (now, later) = remains.splitAt(batchSize)
+            val (now, later) = if (batchSize > 0) {
+              remains.splitAt(batchSize)
+            } else {
+              (remains, Nil)
+            }
             sendBatch(now, Some(nextBatch(_, later, promise)))
         }
       }
