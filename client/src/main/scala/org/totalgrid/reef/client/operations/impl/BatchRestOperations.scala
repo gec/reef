@@ -128,11 +128,19 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
 
     batchPromise.listenEither {
       case Right(resp) => {
-        val responses = resp.getList.get(0).getRequestsList.toList.map(_.getResponse)
-        responses.zip(requests).foreach {
-          case (servResp, QueuedRequest(_, desc, promise)) => applyResponseToPromise(servResp, desc, promise)
+        resp.isSuccess match {
+          case true => {
+            val responses = resp.getList.get(0).getRequestsList.toList.map(_.getResponse)
+            responses.zip(requests).foreach {
+              case (servResp, QueuedRequest(_, desc, promise)) => applyResponseToPromise(servResp, desc, promise)
+            }
+            chain.foreach(_(None))
+          }
+          case false =>
+            val rse = StatusCodes.toException(resp.getStatus, resp.getError)
+            requests.foreach(_.promise.setFailure(rse))
+            chain.foreach(_(Some(rse)))
         }
-        chain.foreach(_(None))
       }
       case Left(ex) => {
         val rse = ex match {
@@ -140,7 +148,6 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
           case other => new InternalClientError("Problem with batch request", ex)
         }
         requests.foreach(_.promise.setFailure(rse))
-        requests.foreach(_.promise.await) // make sure all of the sub future listen() calls have fired
         chain.foreach(_(Some(rse)))
       }
     }

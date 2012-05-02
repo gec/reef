@@ -95,7 +95,7 @@ class CommEndCfgServiceModel(
       throw new BadRequestException("Cannot delete endpoint that is still enabled, disable before deleting.  Try running karaf command: endpoint:disable *")
 
     if (frontEndAssignment.state == ConnProto.State.COMMS_UP.getNumber)
-      throw new BadRequestException("Cannot delete endpoint that is not in COMMS_UP state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
+      throw new BadRequestException("Cannot delete endpoint that is in COMMS_UP state; currently: " + ConnProto.State.valueOf(frontEndAssignment.state))
 
     sql.entity.value // preload lazy entity since it will be deleted by the time event is rendered
     coordinator.onEndpointDeleted(context, sql)

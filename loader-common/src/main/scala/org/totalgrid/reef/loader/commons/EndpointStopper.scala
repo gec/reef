@@ -94,7 +94,7 @@ object EndpointStopper extends Logging {
             println("Forcing endpoints offline.")
             stillOnline.foreach {
               case (id, name) =>
-                local.alterEndpointConnectionState(id, EndpointConnection.State.ERROR)
+                local.alterEndpointConnectionState(id, EndpointConnection.State.ERROR).await()
             }
           }
         }
