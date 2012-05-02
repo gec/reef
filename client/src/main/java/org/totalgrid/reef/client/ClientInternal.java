@@ -30,15 +30,9 @@ public interface ClientInternal
 
     Executor getExecutor();
 
-    RestOperations getOperations();
-
     ClientBindOperations getBindings();
-
-    RequestSpyHook getRequestSpyHook();
 
     ServiceRegistry getServiceRegistry();
 
     BasicRequestHeaders getHeaders();
-
-    void setHeaders( BasicRequestHeaders headers );
 }
