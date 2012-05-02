@@ -110,8 +110,8 @@ class ReefHeadersCommand extends ReefCommandSupport {
   @GogoOption(name = "-r", description = "Reset headers to default state.")
   var reset: Boolean = false
 
-  def doCommand() = {
-    var headers = reefClient.getInternal.getHeaders
+  def doCommand() {
+    var headers = reefClient.getHeaders
 
     if (reset) headers = headers.clearResultLimit().clearTimeout()
     if (resultLimit > 0) headers = headers.setResultLimit(resultLimit)

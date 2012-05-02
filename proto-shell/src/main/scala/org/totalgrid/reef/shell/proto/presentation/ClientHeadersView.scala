@@ -19,6 +19,7 @@
 package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.util.Table
+import org.totalgrid.reef.client.RequestHeaders
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
 object ClientHeadersView {
@@ -31,7 +32,7 @@ object ClientHeadersView {
       List("ResultLimit", headers.getResultLimit().map { _.toString }.getOrElse("default")) :: Nil
   }
 
-  def displayHeaders(headers: BasicRequestHeaders) = {
-    Table.printTable(headerRow, getRows(headers))
+  def displayHeaders(headers: RequestHeaders) = {
+    Table.printTable(headerRow, getRows(headers.asInstanceOf[BasicRequestHeaders])) // TODO: HEADERS HACK
   }
 }

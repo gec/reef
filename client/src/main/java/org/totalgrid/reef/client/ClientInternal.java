@@ -30,9 +30,5 @@ public interface ClientInternal
 
     Executor getExecutor();
 
-    ClientBindOperations getBindings();
-
     ServiceRegistry getServiceRegistry();
-
-    BasicRequestHeaders getHeaders();
 }
