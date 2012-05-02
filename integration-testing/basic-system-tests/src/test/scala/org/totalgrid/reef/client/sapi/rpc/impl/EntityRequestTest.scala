@@ -51,7 +51,7 @@ class EntityRequestTest extends ServiceClientSuite {
     val loaderServices = session.getService(classOf[LoaderServices])
 
     loaderServices.findEntityByName("MagicTestObject").await.foreach { e =>
-      loaderServices.delete(e)
+      loaderServices.delete(e).await
     }
 
     val uuid = UUID.randomUUID.toString
