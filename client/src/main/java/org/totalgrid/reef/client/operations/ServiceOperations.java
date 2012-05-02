@@ -34,4 +34,6 @@ public interface ServiceOperations
     <T, U> Promise<SubscriptionResult<T, U>> subscriptionRequest( TypeDescriptor<U> descriptor, SubscribeRequest<T, U> request );
 
     <T, U> Promise<SubscriptionBinding> clientServiceBinding( Service service, TypeDescriptor<T> descriptor, ClientServiceBindingRequest<U> request );
+
+    BindOperations getBindOperations();
 }

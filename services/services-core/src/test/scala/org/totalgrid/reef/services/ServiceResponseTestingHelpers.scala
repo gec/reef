@@ -20,10 +20,11 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.test.BlockingQueue
 
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Event }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
+import org.totalgrid.reef.client.operations.scl.Event
 
 object ServiceResponseTestingHelpers {
 
@@ -51,7 +52,9 @@ object ServiceResponseTestingHelpers {
 
   def getSubscriptionQueue[A <: Any](client: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
 
-    val sub = client.getInternal.getBindings.subscribe(descriptor)
+    import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
+
+    val sub = client.getServiceOperations.getBindOperations.subscribe(descriptor)
 
     sub.start(func)
 

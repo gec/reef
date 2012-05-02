@@ -26,7 +26,6 @@ import impl.DefaultServiceOperations.{ DefaultSubscriptionResult, CancelingListe
 import java.util.concurrent.RejectedExecutionException
 import org.totalgrid.reef.client.exception.{ ServiceIOException, InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client._
-import sapi.client.rest.ServiceRegistry
 import scl.ScalaPromise._
 
 object DefaultServiceOperations {
@@ -103,4 +102,5 @@ class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, 
     }
   }
 
+  def getBindOperations = bindOperations
 }

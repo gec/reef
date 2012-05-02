@@ -26,8 +26,7 @@ import org.totalgrid.reef.client.service.proto.ProcessStatus._
 
 import org.totalgrid.reef.client.service.proto.Application.{ ApplicationConfig, HeartbeatConfig }
 
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.sapi.client.Event
+import org.totalgrid.reef.client.operations.scl.Event
 
 import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.service.proto.Descriptors
@@ -35,7 +34,6 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.ConnectionFixture
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 import org.totalgrid.reef.models.{ CoreServicesSchema, DatabaseUsingTestNotTransactionSafe }
-import org.totalgrid.reef.client.settings.UserSettings
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagementIntegrationTest extends DatabaseUsingTestNotTransactionSafe {
