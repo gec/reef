@@ -19,6 +19,7 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 
 object MeasurementHistoryRequestBuilders {
   def getByName(pointName: String, limit: Int) =
@@ -29,4 +30,13 @@ object MeasurementHistoryRequestBuilders {
 
   def getByNameBetween(pointName: String, since: Long, before: Long, returnNewest: Boolean, limit: Int) =
     MeasurementHistory.newBuilder.setPointName(pointName).setLimit(limit).setStartTime(since).setEndTime(before).setKeepNewest(returnNewest).build
+
+  def getByUuid(uuid: ReefUUID, limit: Int) =
+    MeasurementHistory.newBuilder.setPoint(Point.newBuilder.setUuid(uuid)).setLimit(limit).build
+
+  def getByUuidSince(uuid: ReefUUID, since: Long, limit: Int) =
+    MeasurementHistory.newBuilder.setPoint(Point.newBuilder.setUuid(uuid)).setLimit(limit).setStartTime(since).build
+
+  def getByUuidBetween(uuid: ReefUUID, since: Long, before: Long, returnNewest: Boolean, limit: Int) =
+    MeasurementHistory.newBuilder.setPoint(Point.newBuilder.setUuid(uuid)).setLimit(limit).setStartTime(since).setEndTime(before).setKeepNewest(returnNewest).build
 }

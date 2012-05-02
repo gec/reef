@@ -23,27 +23,37 @@ import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.proto.Envelope
 
 object SimpleServiceBehaviors {
-  trait SimpleRead extends HasServiceType with AsyncContextRestGet {
+  trait SimpleReadAndSubscribe extends HasServiceType with AsyncContextRestGet {
 
-    override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit) {
+    final override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit) {
       val response = contextSource.transaction { context =>
-        subscribe(context, req)
-        val result = doGet(context, req)
+        val result = doGetAndSubscribe(context, req)
         Response(Envelope.Status.OK, result)
       }
       callback(response)
     }
 
-    def subscribe(context: RequestContext, req: ServiceType) = {
+    protected def subscribe(context: RequestContext, keys: => List[String], klass: Class[_]) = {
       context.getHeaders.subQueue.foreach { subQueue =>
-        val keys = getSubscribeKeys(req)
-        keys.foreach(context.eventPublisher.bindQueueByClass(subQueue, _, req.getClass))
+        keys.foreach(context.eventPublisher.bindQueueByClass(subQueue, _, klass))
       }
     }
 
+    def doGetAndSubscribe(context: RequestContext, req: ServiceType): ServiceType
+  }
+
+  trait SimpleRead extends SimpleReadAndSubscribe {
+
     def getSubscribeKeys(req: ServiceType): List[String]
 
+    def subscriptionClass: Class[_]
+
     def doGet(context: RequestContext, req: ServiceType): ServiceType
+
+    final override def doGetAndSubscribe(context: RequestContext, req: ServiceType): ServiceType = {
+      subscribe(context, getSubscribeKeys(req), subscriptionClass)
+      doGet(context, req)
+    }
   }
 
   trait SimplePost extends HasServiceType with AsyncContextRestPost {

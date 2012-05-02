@@ -182,8 +182,12 @@ trait PointServiceConversion extends UniqueAndSearchQueryable[PointProto, Point]
       proto.entity.map(ent => sql.entityId in EntityTreeQuery.typeIdsFromProtoQuery(ent, "Point")))
   }
 
-  override def searchQuery(context: RequestContext, proto: PointProto, sql: Point) = List(proto.abnormal.asParam(sql.abnormal === _),
-    proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Point")))
+  override def searchQuery(context: RequestContext, proto: PointProto, sql: Point) = {
+    List(proto.abnormal.asParam(sql.abnormal === _),
+      proto._type.asParam(sql.pointType === _.getNumber),
+      proto.unit.asParam(sql.unit === _),
+      proto.endpoint.map(logicalNode => sql.entityId in EntityQuery.findIdsOfChildren(logicalNode, "source", "Point")))
+  }
 
   def isModified(entry: Point, existing: Point): Boolean = {
     entry.abnormal != existing.abnormal

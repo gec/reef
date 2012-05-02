@@ -2217,6 +2217,20 @@
 		/**
 		 * Get the most recent measurement for a point.
 		*/
+		calls.getMeasurementByUuid = function(pointUuid) {
+			if(pointUuid.value != undefined) pointUuid = pointUuid.value;
+			return client.apiRequest({
+				request: "getMeasurementByUuid",
+				data: {
+					pointUuid: pointUuid
+				},
+				style: "SINGLE",
+				resultType: "measurement"
+			});
+		};
+		/**
+		 * Get the most recent measurement for a point.
+		*/
 		calls.getMeasurementByName = function(pointName) {
 			return client.apiRequest({
 				request: "getMeasurementByName",
@@ -2255,6 +2269,20 @@
 			});
 		};
 		// Can't encode getMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
+		/**
+		 * Get the most recent measurement for a set of points. If any points are unknown, the
+		 * call will throw a bad request exception.
+		*/
+		calls.getMeasurementsByUuids = function(pointUuids) {
+			return client.apiRequest({
+				request: "getMeasurementsByUuids",
+				data: {
+					pointUuids: pointUuids
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
 		// Can't encode subscribeToMeasurementsByPoints : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		/**
 		 * Gets the most recent measurement for a set of points and subscribe to receive updates for
@@ -2265,6 +2293,20 @@
 				request: "subscribeToMeasurementsByNames",
 				data: {
 					pointNames: pointNames
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
+		/**
+		 * Gets the most recent measurement for a set of points and subscribe to receive updates for
+		 * measurement changes.
+		*/
+		calls.subscribeToMeasurementsByUuids = function(pointUuids) {
+			return client.subscribeApiRequest({
+				request: "subscribeToMeasurementsByUuids",
+				data: {
+					pointUuids: pointUuids
 				},
 				style: "MULTI",
 				resultType: "measurement"
@@ -2329,6 +2371,65 @@
 				resultType: "measurement"
 			});
 		};
+		/**
+		 * Get a list of recent measurements for a point.
+		 *
+		 * @param limit  Max number of measurements returned
+		*/
+		calls.getMeasurementHistoryByUuid = function(pointUuid, limit) {
+			if(pointUuid.value != undefined) pointUuid = pointUuid.value;
+			return client.apiRequest({
+				request: "getMeasurementHistoryByUuid",
+				data: {
+					pointUuid: pointUuid,
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
+		/**
+		 * Get a list of historical measurements that were recorded on or after the specified time.
+		 *
+		 * @param since  Return measurements on or after this date/time (in milliseconds).
+		 * @param limit  max number of measurements returned
+		*/
+		calls.getMeasurementHistoryByUuid1 = function(pointUuid, since, limit) {
+			if(pointUuid.value != undefined) pointUuid = pointUuid.value;
+			return client.apiRequest({
+				request: "getMeasurementHistoryByUuid",
+				data: {
+					pointUuid: pointUuid,
+					since: since,
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
+		/**
+		 * Get a list of historical measurements for the specified time span.
+		 *
+		 * @param from         Return measurements on or after this time (milliseconds)
+		 * @param to           Return measurements on or before this time (milliseconds)
+		 * @param returnNewest If there are more measurements than the specified limit, return the newest (true) or oldest (false).
+		 * @param limit        Max number of measurements returned
+		*/
+		calls.getMeasurementHistoryByUuid2 = function(pointUuid, from, to, returnNewest, limit) {
+			if(pointUuid.value != undefined) pointUuid = pointUuid.value;
+			return client.apiRequest({
+				request: "getMeasurementHistoryByUuid",
+				data: {
+					pointUuid: pointUuid,
+					from: from,
+					to: to,
+					returnNewest: returnNewest,
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
 		// Can't encode subscribeToMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		// Can't encode subscribeToMeasurementHistory : Can't encode type: org.totalgrid.reef.client.service.proto.Model.Point
 		/**
@@ -2367,6 +2468,44 @@
 				resultType: "measurement"
 			});
 		};
+		/**
+		 * Get the most recent measurements for a point and subscribe to receive updates for
+		 * measurement changes.
+		 *
+		 * @param limit  Max number of measurements returned
+		*/
+		calls.subscribeToMeasurementHistoryByUuid = function(pointUuid, limit) {
+			if(pointUuid.value != undefined) pointUuid = pointUuid.value;
+			return client.subscribeApiRequest({
+				request: "subscribeToMeasurementHistoryByUuid",
+				data: {
+					pointUuid: pointUuid,
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
+		/**
+		 * Get the most recent measurements for a point and subscribe to receive updates for
+		 * measurement changes.
+		 *
+		 * @param since  Return measurements on or after this time (milliseconds)
+		 * @param limit  Max number of measurements returned
+		*/
+		calls.subscribeToMeasurementHistoryByUuid1 = function(pointUuid, since, limit) {
+			if(pointUuid.value != undefined) pointUuid = pointUuid.value;
+			return client.subscribeApiRequest({
+				request: "subscribeToMeasurementHistoryByUuid",
+				data: {
+					pointUuid: pointUuid,
+					since: since,
+					limit: limit
+				},
+				style: "MULTI",
+				resultType: "measurement"
+			});
+		};
 		// Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
 		// Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
 		// Can't encode publishMeasurements : Can't serialize non-protobuf response: java.lang.Boolean
@@ -2380,6 +2519,21 @@
 				request: "getMeasurementStatisticsByName",
 				data: {
 					pointName: pointName
+				},
+				style: "SINGLE",
+				resultType: "measurement_statistics"
+			});
+		};
+		/**
+		 * returns statistics on the point including oldest measurement, and total count
+		 * @return measurement statistics proto
+		*/
+		calls.getMeasurementStatisticsByUuid = function(pointUuid) {
+			if(pointUuid.value != undefined) pointUuid = pointUuid.value;
+			return client.apiRequest({
+				request: "getMeasurementStatisticsByUuid",
+				data: {
+					pointUuid: pointUuid
 				},
 				style: "SINGLE",
 				resultType: "measurement_statistics"
