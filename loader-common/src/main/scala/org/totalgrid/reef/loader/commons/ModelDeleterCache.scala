@@ -22,7 +22,6 @@ import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.FEP._
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.client.service.proto.Alarms.EventConfig
-import org.totalgrid.reef.client.operations.scl.BatchOperations
 
 class EquipmentRemoverCache extends ModelDeleterCache
 
