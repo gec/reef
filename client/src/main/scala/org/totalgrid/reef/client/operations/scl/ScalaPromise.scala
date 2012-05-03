@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.operations.scl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,6 +16,7 @@ package org.totalgrid.reef.client.operations.scl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.operations.scl
 
 import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.{ PromiseListener, PromiseErrorTransform, PromiseTransform, Promise }
@@ -72,44 +71,6 @@ trait ScalaPromise {
 }
 
 object ScalaPromise extends ScalaPromise {
-
-  // This needs to be call by value so we don't try to apply transformation until
-  // await is called otherwise exception will be thrown on calling thread
-  private class FixedPromise[A](v: => A) extends Promise[A] {
-    def transform[B](transform: PromiseTransform[A, B]): Promise[B] = {
-      new FixedPromise(transform.transform(v))
-    }
-
-    def isComplete: Boolean = true
-
-    def listen(listener: PromiseListener[A]) {
-      listener.onComplete(this)
-    }
-
-    def transformError(transform: PromiseErrorTransform): Promise[A] = this
-
-    def await(): A = v
-
-  }
-
-  private class FixedErrorPromise[A](rse: ReefServiceException) extends Promise[A] {
-    def await(): A = throw rse
-
-    def listen(listener: PromiseListener[A]) {
-      listener.onComplete(this)
-    }
-
-    def isComplete: Boolean = true
-
-    def transform[B](transform: PromiseTransform[A, B]): Promise[B] = this.asInstanceOf[FixedErrorPromise[B]]
-
-    def transformError(transform: PromiseErrorTransform): Promise[A] = {
-      new FixedErrorPromise[A](transform.transformError(rse))
-    }
-  }
-
-  def fixed[A](v: => A): Promise[A] = new FixedPromise[A](v)
-  def fixedError[A](rse: ReefServiceException): Promise[A] = new FixedErrorPromise[A](rse)
 
   // Gathers, using the first error as its failure case
   def collate[A](exe: Executor, promises: List[Promise[A]]): Promise[List[A]] = {

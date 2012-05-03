@@ -28,8 +28,9 @@ import org.totalgrid.reef.client.service.proto.Model.Entity
 import org.mockito.{ ArgumentCaptor, Matchers, Mockito }
 import org.totalgrid.reef.client.proto.Envelope.{ Status, Verb }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.operations.scl.{ ScalaResponse, ScalaPromise }
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 import org.totalgrid.reef.client.{ RequestHeaders, Client }
+import org.totalgrid.reef.client.operations.impl.TestPromises
 
 @RunWith(classOf[JUnitRunner])
 class RestLevelServletTest extends BaseServletTest {
@@ -180,7 +181,7 @@ class RestLevelServletTest extends BaseServletTest {
 
     goodRequest()
 
-    val promise = ScalaPromise.fixed(ScalaResponse.failure(Status.BAD_REQUEST, "entity not known"))
+    val promise = TestPromises.fixed(ScalaResponse.failure(Status.BAD_REQUEST, "entity not known"))
     Mockito.doReturn(promise).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
 
     service.doPost(request, response)
@@ -193,7 +194,7 @@ class RestLevelServletTest extends BaseServletTest {
 
     goodRequest()
 
-    val promise = ScalaPromise.fixed(ScalaResponse.success(Status.OK, List(entityResult1Proto, entityResult2Proto)))
+    val promise = TestPromises.fixed(ScalaResponse.success(Status.OK, List(entityResult1Proto, entityResult2Proto)))
     Mockito.doReturn(promise).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
 
     service.doPost(request, response)

@@ -91,7 +91,7 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
         val batchRequest = payload.asInstanceOf[BatchServiceRequest]
         val response = responseFun(batchRequest).asInstanceOf[Response[A]]
 
-        ScalaPromise.fixed(response)
+        TestPromises.fixed(response)
       }
     }
 
