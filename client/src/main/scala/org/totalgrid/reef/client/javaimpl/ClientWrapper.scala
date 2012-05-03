@@ -21,13 +21,12 @@ package org.totalgrid.reef.client.javaimpl
 import org.totalgrid.reef.client._
 import exception.{ BadRequestException, ServiceIOException }
 import operations.impl._
-import operations.{ RequestListener, RequestListenerManager, RestOperations, ServiceOperations }
+import operations.{ RequestListenerManager, ServiceOperations }
 import org.totalgrid.reef.client.ServiceProviderInfo
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
-import sapi.client.rest.{ ClientBindOperations, ServiceRegistry, RestOperations => SRestOperations }
 
-import sapi.client.{ RequestSpyHook, BasicRequestHeaders, RequestSpy }
+import sapi.client.BasicRequestHeaders
 
 class ClientWrapper(client: SClient) extends Client {
 
@@ -62,14 +61,6 @@ class ClientWrapper(client: SClient) extends Client {
   def getInternal: ClientInternal = {
     new ClientInternal {
       def getExecutor: Executor = client
-      def getOperations: SRestOperations = client
-      def getBindings: ClientBindOperations = client
-      def getRequestSpyHook: RequestSpyHook = client
-      def getServiceRegistry: ServiceRegistry = client
-
-      def getHeaders: BasicRequestHeaders = client.getHeaders
-
-      def setHeaders(headers: BasicRequestHeaders) { client.setHeaders(headers) }
     }
   }
 
@@ -120,5 +111,7 @@ class ClientWrapper(client: SClient) extends Client {
   def getBatching: Batching = batchMgr
 
   def getRequestListenerManager: RequestListenerManager = client.listenerManager
+
+  def getServiceRegistry: ServiceRegistry = new ServiceRegistryWrapper(client)
 
 }

@@ -85,9 +85,12 @@ public interface Connection
      * apis we need to call. More than one list can be added if desired.
      * @param servicesList ServicesList implementation included with the specific client package.
      */
+    @Deprecated
     void addServicesList( ServicesList servicesList );
 
     ServiceRegistration getServiceRegistration();
 
     ConnectionInternal getInternal();
+
+    ServiceRegistry getServiceRegistry();
 }

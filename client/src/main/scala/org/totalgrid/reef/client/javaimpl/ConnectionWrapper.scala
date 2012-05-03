@@ -56,4 +56,6 @@ class ConnectionWrapper(conn: SConnection, exe: Executor) extends Connection {
       def getExecutor: Executor = exe
     }
   }
+
+  def getServiceRegistry: ServiceRegistry = new ServiceRegistryWrapper(conn)
 }

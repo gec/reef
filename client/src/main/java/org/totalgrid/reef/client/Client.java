@@ -82,4 +82,6 @@ public interface Client
     Batching getBatching();
 
     RequestListenerManager getRequestListenerManager();
+
+    ServiceRegistry getServiceRegistry();
 }
