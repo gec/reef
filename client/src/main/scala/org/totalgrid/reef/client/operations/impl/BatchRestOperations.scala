@@ -44,14 +44,14 @@ trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOpera
 
 class DefaultBatchRestOperations(protected val ops: RestOperations, client: SClient) extends BatchRestOperationsImpl {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getServiceInfo(klass)
-  protected def exe = client
+  protected def futureSource[A] = FuturePromise.open[A](client)
   protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]]) = client.notifyListeners(verb, payload, promise)
 
 }
 
 trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperations {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _]
-  protected def exe: Executor
+  protected def futureSource[A]: OpenPromise[A]
   protected def ops: RestOperations
   protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]])
 
@@ -69,7 +69,7 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
 
     val request = SelfIdentityingServiceRequest.newBuilder.setExchange(descriptor.id).setRequest(builder).build
 
-    val promise: OpenPromise[Response[A]] = FuturePromise.open[Response[A]](exe)
+    val promise: OpenPromise[Response[A]] = futureSource[Response[A]]
 
     requestQueue.enqueue(QueuedRequest[A](request, descriptor, promise))
 
@@ -99,7 +99,7 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
       }
     }
 
-    val promise = FuturePromise.open[java.lang.Boolean](exe)
+    val promise = futureSource[java.lang.Boolean]
 
     nextBatch(None, popRequests(), promise)
 

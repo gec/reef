@@ -73,7 +73,9 @@ trait ScalaPromise {
 
 object ScalaPromise extends ScalaPromise {
 
-  private class FixedPromise[A](v: A) extends Promise[A] {
+  // This needs to be call by value so we don't try to apply transformation until
+  // await is called otherwise exception will be thrown on calling thread
+  private class FixedPromise[A](v: => A) extends Promise[A] {
     def transform[B](transform: PromiseTransform[A, B]): Promise[B] = {
       new FixedPromise(transform.transform(v))
     }
@@ -106,7 +108,7 @@ object ScalaPromise extends ScalaPromise {
     }
   }
 
-  def fixed[A](v: A): Promise[A] = new FixedPromise[A](v)
+  def fixed[A](v: => A): Promise[A] = new FixedPromise[A](v)
   def fixedError[A](rse: ReefServiceException): Promise[A] = new FixedErrorPromise[A](rse)
 
   // Gathers, using the first error as its failure case
