@@ -29,8 +29,6 @@ trait OpenPromise[A] extends Promise[A] {
 
 object FuturePromise {
 
-  def apply[A](fut: Future[A]): Promise[A] = new ClosedInitialPromise(fut)
-
   def error[A](err: ReefServiceException, exe: Executor): Promise[A] = {
     val future = exe.future[Either[ReefServiceException, A]]
     future.set(Left(err))
@@ -70,7 +68,7 @@ object FuturePromise {
     }
   }
 
-  def performTransform[A, B](v: A, trans: PromiseTransform[A, B]): Either[ReefServiceException, B] = {
+  private def performTransform[A, B](v: A, trans: PromiseTransform[A, B]): Either[ReefServiceException, B] = {
     try {
       Right(trans.transform(v))
     } catch {
@@ -78,31 +76,6 @@ object FuturePromise {
       case ex: Exception => Left(new InternalClientError("Unexpected error: " + ex.getMessage, ex))
     }
   }
-
-  trait InitialPromise[A] extends Promise[A] {
-    protected def future: Future[A]
-
-    def await(): A = future.await
-
-    def listen(listener: PromiseListener[A]) {
-      // we can't pass our listeners this promise because if try to extract
-      // or await on the value it will deadlock the future which is waiting
-      // for the all of the listen callbacks to complete.
-      future.listen(result => listener.onComplete(new DefinedInitialPromise[A](result, this)))
-    }
-
-    def isComplete: Boolean = future.isComplete
-
-    def transform[B](trans: PromiseTransform[A, B]): Promise[B] = {
-      val result = future.map(performTransform(_, trans))
-      new ClosedEitherPromise(result)
-    }
-
-    // TODO: FIX THIS?
-    def transformError(transform: PromiseErrorTransform): Promise[A] = this
-  }
-
-  class ClosedInitialPromise[A](protected val future: Future[A]) extends InitialPromise[A]
 
   class OpenEitherPromise[A](protected val future: SettableFuture[Either[ReefServiceException, A]]) extends EitherPromise[A] with OpenPromise[A] {
     def setSuccess(v: A) { future.set(Right(v)) }

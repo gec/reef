@@ -118,11 +118,11 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
   def requestJava[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): JPromise[JResponse[A]] = {
 
-    val future = requestExecutor.future[JResponse[A]]
+    val promise = FuturePromise.open[JResponse[A]](requestExecutor)
 
     def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) = result match {
-      case Left(response) => future.set(ResponseWrapper.convert(response))
-      case Right(envelope) => future.set(ResponseWrapper.convert(RestHelpers.readServiceResponse(descriptor, envelope)))
+      case Left(response) => promise.setSuccess(ResponseWrapper.convert(response))
+      case Right(envelope) => promise.setSuccess(ResponseWrapper.convert(RestHelpers.readServiceResponse(descriptor, envelope)))
     }
 
     def send(info: ServiceTypeInformation[A, _]) = {
@@ -144,10 +144,10 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
     ClassLookup(payload).flatMap(getServiceOption) match {
       case Some(info) => send(info)
-      case None => future.set(ResponseWrapper.failure[A](Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
+      case None => promise.setSuccess(ResponseWrapper.failure[A](Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
     }
 
-    FuturePromise(future)
+    promise
   }
 
   def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): Future[Response[A]] = {
