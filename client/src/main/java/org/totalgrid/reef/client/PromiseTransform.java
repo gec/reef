@@ -18,7 +18,15 @@
  */
 package org.totalgrid.reef.client;
 
+import org.totalgrid.reef.client.exception.ReefServiceException;
+
+/**
+ * converts a value of one type to another type. If for any reason the conversion cannot
+ * be done the transformer may throw a ReefServiceException which will be stored and
+ * returned to callers of Promise.await. If any exception other than ReefServiceException
+ * is throw it will be converted to an InternalClientError exception.
+ */
 public interface PromiseTransform<T, U>
 {
-    U transform( T value ) throws Exception;
+    U transform( T value ) throws ReefServiceException;
 }

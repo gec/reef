@@ -20,7 +20,16 @@ package org.totalgrid.reef.client;
 
 import org.totalgrid.reef.client.exception.ReefServiceException;
 
+/**
+ * when a promise is representing a failed value we may want to add some additional contextual information
+ * to the error message a client will see. We can add that context by operating on the exception.
+ */
 public interface PromiseErrorTransform
 {
+    /**
+     * transform exception message
+     * @param error original error, can be updated with addExtraInformation
+     * @return new or updated error
+     */
     ReefServiceException transformError( ReefServiceException error );
 }

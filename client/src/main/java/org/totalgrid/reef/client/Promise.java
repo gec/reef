@@ -57,8 +57,21 @@ public interface Promise<T>
      */
     boolean isComplete();
 
+    /**
+     * operate on the promise's value and convert it to a new value. If the value is unacceptable
+     * and we want to report a failure throw any ReefServiceException and caller will see that
+     * exception when they call await.
+     * @param transform transformer function
+     * @param <U> new promise payload type
+     * @return new promise
+     */
     <U> Promise<U> transform( PromiseTransform<T, U> transform );
 
+    /**
+     * Update an error message with the correct
+     * @param transform exception transformer
+     * @return new promise with updated error transform
+     */
     Promise<T> transformError( PromiseErrorTransform transform );
 
 }

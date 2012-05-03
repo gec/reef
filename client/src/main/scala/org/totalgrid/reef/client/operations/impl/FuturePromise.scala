@@ -52,11 +52,6 @@ object FuturePromise {
     }
   }
 
-  class DefinedInitialPromise[A](value: A, protected val original: Promise[A]) extends DefinedPromise[A] {
-    def await(): A = value
-    def transformError(transform: PromiseErrorTransform): Promise[A] = this
-  }
-
   class DefinedEitherPromise[A](value: Either[ReefServiceException, A], protected val original: Promise[A]) extends DefinedPromise[A] {
     def await(): A = value match {
       case Left(ex) => throw ex
@@ -64,23 +59,8 @@ object FuturePromise {
     }
     def transformError(transform: PromiseErrorTransform): Promise[A] = value match {
       case Right(_) => this
-      case Left(ex) => new DefinedEitherPromise(Left(transform.transformError(ex)), this)
+      case Left(ex) => new DefinedEitherPromise(Left(performErrorTransform(ex, transform)), this)
     }
-  }
-
-  private def performTransform[A, B](v: A, trans: PromiseTransform[A, B]): Either[ReefServiceException, B] = {
-    try {
-      Right(trans.transform(v))
-    } catch {
-      case rse: ReefServiceException => Left(rse)
-      case ex: Exception => Left(new InternalClientError("Unexpected error: " + ex.getMessage, ex))
-    }
-  }
-
-  class OpenEitherPromise[A](protected val future: SettableFuture[Either[ReefServiceException, A]]) extends EitherPromise[A] with OpenPromise[A] {
-    def setSuccess(v: A) { future.set(Right(v)) }
-
-    def setFailure(ex: ReefServiceException) { future.set(Left(ex)) }
   }
 
   trait EitherPromise[A] extends Promise[A] {
@@ -110,13 +90,39 @@ object FuturePromise {
 
     def transformError(transform: PromiseErrorTransform): Promise[A] = {
       val result = future.map {
-        case Left(ex) => Left(transform.transformError(ex))
+        case Left(ex) => Left(performErrorTransform(ex, transform))
         case right => right
       }
       new ClosedEitherPromise[A](result)
     }
   }
 
+  /**
+   * only the initial promise is open and settable, any derived promies are closed
+   */
+  class OpenEitherPromise[A](protected val future: SettableFuture[Either[ReefServiceException, A]]) extends EitherPromise[A] with OpenPromise[A] {
+    def setSuccess(v: A) { future.set(Right(v)) }
+
+    def setFailure(ex: ReefServiceException) { future.set(Left(ex)) }
+  }
+
   class ClosedEitherPromise[A](protected val future: Future[Either[ReefServiceException, A]]) extends EitherPromise[A]
+
+  private def performTransform[A, B](v: A, trans: PromiseTransform[A, B]): Either[ReefServiceException, B] = {
+    try {
+      Right(trans.transform(v))
+    } catch {
+      case rse: ReefServiceException => Left(rse)
+      case ex: Exception => Left(new InternalClientError("Unexpected error trasforming value: " + ex.getMessage, ex))
+    }
+  }
+  private def performErrorTransform(originalError: ReefServiceException, trans: PromiseErrorTransform): ReefServiceException = {
+    try {
+      trans.transformError(originalError)
+    } catch {
+      case ex: Exception => new InternalClientError("Unexpected error transforming error: " + ex.getMessage
+        + " original message: " + originalError.getMessage, ex)
+    }
+  }
 }
 

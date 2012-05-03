@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import net.agileautomata.executor4s.testing.MockFuture
 
 import org.totalgrid.reef.client.operations.scl.ScalaPromise._
-import org.totalgrid.reef.client.exception.{ BadRequestException, ExpectationException, ReefServiceException }
+import org.totalgrid.reef.client.exception._
 
 @RunWith(classOf[JUnitRunner])
 class FuturePromiseTest extends FunSuite with ShouldMatchers {
@@ -122,5 +122,40 @@ class FuturePromiseTest extends FunSuite with ShouldMatchers {
 
     promiseListener.result should equal(5)
     doubledListener.result should equal(10)
+  }
+
+  test("Listen failure") {
+    val promise = FuturePromise.open(future[java.lang.Integer]())
+
+    val doubled = promise.map(doubleFun)
+    val doubledAndAnnotated = doubled.mapError { rse => rse.addExtraInformation("annotated"); rse }
+
+    val doubledListener = new IntListener
+    doubledAndAnnotated.listenEither(doubledListener.listen _)
+
+    promise.setFailure(new BadRequestException("bad stuff"))
+
+    doubledListener.complete should equal(true)
+
+    val promiseListener = new IntListener
+    promise.listenEither(promiseListener.listen _)
+    promiseListener.complete should equal(true)
+
+    promiseListener.error.getMessage should include("bad stuff")
+    doubledListener.error.getMessage should include("annotated")
+  }
+
+  test("Exception in errorTransform Failure") {
+    val promise = FuturePromise.open(future[java.lang.Integer]())
+
+    val annotated = promise.mapError(rse => throw new ExpectationException("Bleh"))
+
+    promise.setFailure(new BadRequestException("bad stuff"))
+
+    val msg = intercept[InternalClientError] {
+      annotated.await
+    }.getMessage
+    msg should include("bad stuff")
+    msg should include("Bleh")
   }
 }
