@@ -68,12 +68,6 @@ public interface Client
     <A> A getService( Class<A> klass );
 
     /**
-     * adds a factory for an RpcClass
-     * @param info defines the impl and the interfaces it implements
-     */
-    void addServiceProvider( ServiceProviderInfo info );
-
-    /**
      * Delete the authToken associated with this client, all future requests will fail with an
      * UnauthorizedException.
      */

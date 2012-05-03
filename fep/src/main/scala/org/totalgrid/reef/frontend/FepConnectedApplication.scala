@@ -20,10 +20,20 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.{ Client, Connection }
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.protocol.api.ProtocolManager
+import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList, Client, Connection }
+import org.totalgrid.reef.client.types.ServiceTypeInformation
+
+object FepConnectedApplication {
+  object FepServiceProvider extends ServicesList {
+    import scala.collection.JavaConversions._
+    def getServiceTypeInformation: java.util.List[ServiceTypeInformation[_, _]] = Nil
+
+    def getServiceProviders: java.util.List[ServiceProviderInfo] = List(FrontEndProviderServices.serviceInfo)
+  }
+}
 
 class FepConnectedApplication(protocolName: String, manager: ProtocolManager, protocolSpecificUser: UserSettings)
     extends ConnectedApplication with Logging {
@@ -35,23 +45,24 @@ class FepConnectedApplication(protocolName: String, manager: ProtocolManager, pr
 
   def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
 
+    connection.addServicesList(FepConnectedApplication.FepServiceProvider)
+
     client = Some(connection.login(protocolSpecificUser))
 
     fem = Some(makeFepNode(client.get, appConfig))
     fem.foreach { _.start() }
   }
 
-  def onApplicationShutdown() = {
+  def onApplicationShutdown() {
     fem.foreach { _.stop() }
     client.foreach { _.logout() }
   }
 
-  def onConnectionError(msg: String) = {
+  def onConnectionError(msg: String) {
     logger.info("FEP Error connecting: " + msg)
   }
 
   private def makeFepNode(client: Client, appConfig: ApplicationConfig) = {
-    client.addServiceProvider(FrontEndProviderServices.serviceInfo)
 
     val services = client.getService(classOf[FrontEndProviderServices])
 
