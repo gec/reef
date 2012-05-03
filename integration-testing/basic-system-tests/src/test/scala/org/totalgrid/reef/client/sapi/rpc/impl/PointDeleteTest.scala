@@ -51,9 +51,9 @@ class PointDeleteTest extends ServiceClientSuite {
     var connection = client.getEndpointConnectionByUuid(endpoint.getUuid)
 
     var count = 0
-    while (connection.getRouting.getServiceRoutingKey == "" && count < 5) {
+    while (connection.getRouting.getServiceRoutingKey == "" && count < 10) {
       println("Waiting for meas processor to come online.")
-      Thread.sleep(100)
+      Thread.sleep(200)
       count += 1
       client.enableEndpointConnection(endpoint.getUuid)
       connection = client.getEndpointConnectionByUuid(endpoint.getUuid)

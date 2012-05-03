@@ -37,9 +37,13 @@ object ModelPreparer {
       ModelDeleter.deleteEverything(loaderServices, false, true, Some(Console.out))
       LoadManager.loadFile(loaderServices, modelFile, false, false, false)
       // wait for all endpoints to be up before continuing
-      val result = scadaServices.subscribeToEndpointConnections().await
-      val map = new EndpointConnectionStateMap(result)
-      map.checkAllState(true, EndpointConnection.State.COMMS_UP)
+      waitForEndpointsOnline(scadaServices)
     }
+  }
+
+  def waitForEndpointsOnline(scadaServices: AllScadaService) {
+    val result = scadaServices.subscribeToEndpointConnections().await
+    val map = new EndpointConnectionStateMap(result)
+    map.checkAllState(true, EndpointConnection.State.COMMS_UP)
   }
 }

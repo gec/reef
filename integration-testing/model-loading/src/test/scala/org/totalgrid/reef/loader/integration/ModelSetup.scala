@@ -27,7 +27,7 @@ import org.totalgrid.reef.loader.commons.{ LoaderServices, ModelDeleter }
 import org.totalgrid.reef.util.Timing
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
-import org.totalgrid.reef.client.sapi.rpc.impl.util.{ EndpointConnectionStateMap, ServiceClientSuite }
+import org.totalgrid.reef.client.sapi.rpc.impl.util.{ ModelPreparer, EndpointConnectionStateMap, ServiceClientSuite }
 
 @RunWith(classOf[JUnitRunner])
 class ModelSetup extends ServiceClientSuite {
@@ -69,6 +69,7 @@ class ModelSetup extends ServiceClientSuite {
     Timing.time("No batching") {
       LoadManager.loadFile(loaderServices, fileName, true, false, false, 0)
     }
+    ModelPreparer.waitForEndpointsOnline(async)
     ModelDeleter.deleteEverything(loaderServices, false, true, Some(Console.out))
     Timing.time("25 entry batch") {
       LoadManager.loadFile(loaderServices, fileName, false, false, false, 25)
