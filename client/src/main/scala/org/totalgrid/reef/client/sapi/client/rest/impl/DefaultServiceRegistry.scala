@@ -31,35 +31,55 @@ trait DefaultServiceRegistry {
 
   private var servicemap = Map.empty[Class[_], ServiceTypeInformation[_, _]]
 
-  def addRpcProvider(info: ServiceProviderInfo) = this.synchronized {
+  def addRpcProvider(info: ServiceProviderInfo) {
+    this.synchronized { doAddRpcProvider(info) }
+  }
+
+  private def doAddRpcProvider(info: ServiceProviderInfo) {
     import scala.collection.JavaConversions._
     info.getInterfacesImplemented.foreach { i =>
-      providers += i -> info.getFactory
+      if (!providers.contains(i)) {
+        providers += i -> info.getFactory
+      }
     }
   }
 
   def getRpcInterface[A](klass: Class[A], sclient: => Client, jclient: => JClient): A = this.synchronized {
     providers.get(klass) match {
-      //case Some(creator) => creator.createRpcProvider(client).asInstanceOf[A]
       case Some(creator) => creator match {
-        case jfac: JavaProviderFactory => jfac.createRpcProvider(jclient).asInstanceOf[A] //throw new UnknownServiceException("Java interface for: " + klass + "not supported")
+        case jfac: JavaProviderFactory => jfac.createRpcProvider(jclient).asInstanceOf[A]
         case sfac: ServiceProviderFactory => sfac.createRpcProvider(jclient).asInstanceOf[A]
       }
-      case None => throw new UnknownServiceException("Unknown rpc interface for: " + klass)
+      case None => throw new UnknownServiceException("Unknown service interface for: " + klass)
     }
   }
 
-  def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = servicemap.get(klass) match {
-    case Some(info) => info.asInstanceOf[ServiceTypeInformation[A, Any]]
-    case None => throw new UnknownServiceException("Unknown service for klass: " + klass + ". Have you added a servicesList?")
+  def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = this.synchronized {
+    servicemap.get(klass) match {
+      case Some(info) => info.asInstanceOf[ServiceTypeInformation[A, Any]]
+      case None => throw new UnknownServiceException("Unknown service for klass: " + klass + ". Have you added a servicesList?")
+    }
   }
-  def getServiceOption[A](klass: Class[A]): Option[ServiceTypeInformation[A, _]] = servicemap.get(klass).asInstanceOf[Option[ServiceTypeInformation[A, _]]]
+  def getServiceOption[A](klass: Class[A]): Option[ServiceTypeInformation[A, _]] = this.synchronized {
+    servicemap.get(klass).asInstanceOf[Option[ServiceTypeInformation[A, _]]]
+  }
 
-  def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = servicemap += info.getDescriptor.getKlass -> info
+  def addServiceInfo[A](info: ServiceTypeInformation[A, _]) {
+    this.synchronized { doAddServiceInfo(info) }
+  }
+
+  private def doAddServiceInfo[A](info: ServiceTypeInformation[A, _]) {
+    val klass = info.getDescriptor.getKlass
+    if (!servicemap.contains(klass)) {
+      servicemap += klass -> info
+    }
+  }
 
   def addServicesList(serviceList: ServicesList) {
     import scala.collection.JavaConversions._
-    serviceList.getServiceTypeInformation.foreach { addServiceInfo(_) }
-    serviceList.getServiceProviders.foreach { addRpcProvider(_) }
+    this.synchronized {
+      serviceList.getServiceTypeInformation.foreach { addServiceInfo(_) }
+      serviceList.getServiceProviders.foreach { addRpcProvider(_) }
+    }
   }
 }
