@@ -20,6 +20,8 @@ package org.totalgrid.reef.client.javaimpl
 
 import org.totalgrid.reef.client.operations.Response
 import java.util.List
+import scala.collection.immutable.{ List => SList }
+import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.sapi.client.{ Response => SResponse }
 import org.totalgrid.reef.client.exception.ReefServiceException
@@ -28,6 +30,9 @@ import org.totalgrid.reef.client.proto.StatusCodes
 object ResponseWrapper {
 
   def success[A](status: Status, results: List[A]): Response[A] = {
+    new ResponseWrapper(status, results, "", true)
+  }
+  def success[A](status: Status, results: SList[A]): Response[A] = {
     new ResponseWrapper(status, results, "", true)
   }
   def failure[A](status: Status, error: String): Response[A] = {
