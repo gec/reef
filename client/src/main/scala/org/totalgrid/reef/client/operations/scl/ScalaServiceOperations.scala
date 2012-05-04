@@ -44,16 +44,16 @@ trait ScalaServiceOperations {
       })
     }
 
-    def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (Subscription[B], RestOperations) => Promise[A]): Promise[SubscriptionResult[A, B]] = {
-      ops.subscriptionRequest(desc, new SubscribeRequest[A, B] {
-        def execute(subscription: Subscription[B], operations: RestOperations): Promise[A] = fun(subscription, operations)
+    def subscription[A, B](desc: TypeDescriptor[B], err: => String)(fun: (SubscriptionBinding, RestOperations) => Promise[A]): Promise[SubscriptionResult[A, B]] = {
+      ops.subscriptionRequest(desc, new SubscriptionBindingRequest[A] {
+        def execute(subscription: SubscriptionBinding, operations: RestOperations): Promise[A] = fun(subscription, operations)
 
         def errorMessage(): String = err
       })
     }
 
     def clientSideService[A, B](handler: AsyncService[B], err: => String)(fun: (SubscriptionBinding, RestOperations) => Promise[A]): Promise[SubscriptionBinding] = {
-      ops.clientServiceBinding(handler, handler.descriptor, new ClientServiceBindingRequest[A] {
+      ops.clientServiceBinding(handler, handler.descriptor, new SubscriptionBindingRequest[A] {
         def execute(binding: SubscriptionBinding, operations: RestOperations): Promise[A] = fun(binding, operations)
 
         def errorMessage(): String = err

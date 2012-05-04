@@ -66,13 +66,11 @@ public interface ServiceOperations
      * on the server. To do this we send the name of our subscription queue along with our request, the server will then
      * use that name to setup the bindings for the client (if authorized and a legal request of course).
      *
-     * TODO: add subscription overloads to RestOperations
-     *
      * @param descriptor type for the subscription events
      * @param request request subscription request handler that makes a request to the server to setup a subscription queue
      * @return subscription result which includes the converted promise and the Subscription object.
      */
-    <T, U> Promise<SubscriptionResult<T, U>> subscriptionRequest( TypeDescriptor<U> descriptor, SubscribeRequest<T, U> request );
+    <T, U> Promise<SubscriptionResult<T, U>> subscriptionRequest( TypeDescriptor<U> descriptor, SubscriptionBindingRequest<T> request );
 
     /**
      * Very similar to the subscription subscriptionRequest operation, a broker queue for our client side service is
@@ -85,7 +83,7 @@ public interface ServiceOperations
      * @param request handler that sends our bind request to the server
      * @return binding to the local queue that allows us to cancel our service when we are done with it
      */
-    <T, U> Promise<SubscriptionBinding> clientServiceBinding( Service service, TypeDescriptor<T> descriptor, ClientServiceBindingRequest<U> request );
+    <T, U> Promise<SubscriptionBinding> clientServiceBinding( Service service, TypeDescriptor<U> descriptor, SubscriptionBindingRequest<T> request );
 
     BindOperations getBindOperations();
 }

@@ -77,7 +77,7 @@ class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, 
     }
   }
 
-  def subscriptionRequest[A, B](descriptor: TypeDescriptor[B], request: SubscribeRequest[A, B]): Promise[SubscriptionResult[A, B]] = {
+  def subscriptionRequest[A, B](descriptor: TypeDescriptor[B], request: SubscriptionBindingRequest[A]): Promise[SubscriptionResult[A, B]] = {
     try {
       val sub: Subscription[B] = bindOperations.subscribe(descriptor)
       val promise: Promise[A] = safeOp(() => request.execute(sub, restOperations), request.errorMessage _)
@@ -89,10 +89,10 @@ class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, 
     }
   }
 
-  def clientServiceBinding[A, B](service: Service, descriptor: TypeDescriptor[A], request: ClientServiceBindingRequest[B]): Promise[SubscriptionBinding] = {
+  def clientServiceBinding[A, B](service: Service, descriptor: TypeDescriptor[B], request: SubscriptionBindingRequest[A]): Promise[SubscriptionBinding] = {
     try {
       val binding = bindOperations.lateBindService(service, descriptor)
-      val promise: Promise[B] = safeOp(() => request.execute(binding, restOperations), request.errorMessage _)
+      val promise: Promise[A] = safeOp(() => request.execute(binding, restOperations), request.errorMessage _)
       promise.listen(new CancelingListener(binding.cancel _))
       promise.map(result => binding)
 
