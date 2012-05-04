@@ -24,6 +24,19 @@ import org.totalgrid.reef.client.operations.ServiceOperations;
 /**
  * A client represents an authenticated link with a Reef server.
  *
+ * Each client is fundamentally a container of state:
+ *
+ * - reference to the underlying connection
+ * - authToken
+ * - common RequestHeaders sent with every request
+ * - a background thread that promises and subscription events are executed
+ * - the current batching state
+ * - RequestListener maps and managers
+ * - SubscriptionCreation listener
+ *
+ * If there are multiple threads (or contexts) in the application each thread should get its own client
+ * to control its own state. The only state copied over to a new client is the authToken.
+ *
  * Clients are NOT thread-safe as they carry specific state such as the RequestHeaders
  * and SubscriptionCreationListener instances.
  */
@@ -73,12 +86,22 @@ public interface Client
      */
     void logout();
 
-    ClientInternal getInternal();
-
+    /**
+     * create a new client based on this one that has seperate state
+     * @return a new client with just the authToken and connection reference copied
+     */
     Client spawn();
 
+    ClientInternal getInternal();
+
+    /**
+     * @return interface for making low-level requests to the client
+     */
     ServiceOperations getServiceOperations();
 
+    /**
+     * @return a controller for the BatchMode of the client
+     */
     Batching getBatching();
 
     RequestListenerManager getRequestListenerManager();

@@ -53,10 +53,10 @@ public interface ServiceOperations
      * Note that we will be making a number of requests to the server, each of which will return its own Promise, we
      * will need to merge those Promises together into a single promise using one of the helper functions to join
      * multiple promises.
-     * TODO: make java visible helpers for Promise collation
      *
      * @param request request object that issues a number of RestOperation requests and fuses the results into a single promise
      * @return single promise that reflects success/failure of the whole batch of requests
+     * @see Batching
      */
     <T> Promise<T> batchRequest( BasicRequest<T> request );
 
