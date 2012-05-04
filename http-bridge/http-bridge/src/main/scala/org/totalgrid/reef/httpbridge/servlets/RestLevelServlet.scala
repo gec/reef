@@ -64,7 +64,7 @@ class RestLevelServlet(connection: ManagedConnection, builderLocator: BuilderLoc
       resp.setStatus(response.getStatus.getNumber)
     } else {
       // on error pipe the message out to the client
-      resp.sendError(response.getStatus.getNumber, response.getError)
+      resp.sendError(response.getStatus.getNumber, response.getErrorMessage)
     }
   }
 

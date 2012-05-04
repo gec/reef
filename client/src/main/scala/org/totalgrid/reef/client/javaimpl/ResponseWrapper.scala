@@ -22,6 +22,8 @@ import org.totalgrid.reef.client.operations.Response
 import java.util.List
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.sapi.client.{ Response => SResponse }
+import org.totalgrid.reef.client.exception.ReefServiceException
+import org.totalgrid.reef.client.proto.StatusCodes
 
 object ResponseWrapper {
 
@@ -44,7 +46,12 @@ class ResponseWrapper[A](status: Status, results: List[A], error: String, succes
 
   def getList: List[A] = results
 
-  def getError: String = error
+  def getErrorMessage: String = error
 
   def isSuccess: Boolean = success
+
+  lazy val getException: ReefServiceException = {
+    if (isSuccess) throw new IllegalArgumentException("Response was successful, no exception available")
+    StatusCodes.toException(status, error)
+  }
 }

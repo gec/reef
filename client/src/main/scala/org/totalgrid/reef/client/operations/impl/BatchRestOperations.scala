@@ -137,7 +137,7 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
             chain.foreach(_(None))
           }
           case false =>
-            val rse = StatusCodes.toException(resp.getStatus, resp.getError)
+            val rse = resp.getException
             requests.foreach(_.promise.setFailure(rse))
             chain.foreach(_(Some(rse)))
         }

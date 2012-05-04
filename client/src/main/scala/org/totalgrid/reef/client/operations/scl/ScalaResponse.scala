@@ -55,7 +55,7 @@ trait ScalaResponse {
       import scala.collection.JavaConversions._
       resp.isSuccess match {
         case true => resp.getList.toList // resp.getList
-        case false => throw StatusCodes.toException(resp.getStatus, resp.getError)
+        case false => throw resp.getException
       }
     }
   }
@@ -78,7 +78,7 @@ object ScalaResponse extends ScalaResponse {
   def convert[A](resp: Response[A]): org.totalgrid.reef.client.sapi.client.Response[A] = {
     resp.isSuccess match {
       case true => SuccessResponse(resp.getStatus, resp.getList.toList)
-      case false => FailureResponse(resp.getStatus, resp.getError)
+      case false => FailureResponse(resp.getStatus, resp.getErrorMessage)
     }
   }
 }

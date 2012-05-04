@@ -93,7 +93,7 @@ class UserCommandRequestService(
                   import org.totalgrid.reef.client.service.proto.OptionalProtos._
                   (commandResponse.getStatus, commandResponse.errorMessage)
                 } else {
-                  val msg = "Got non successful response to command request: " + request + " dest: " + address + " status: " + response.getStatus + " error: " + response.getError
+                  val msg = "Got non successful response to command request: " + request + " dest: " + address + " status: " + response.getStatus + " error: " + response.getErrorMessage
                   logger.warn { msg }
                   (CommandStatus.UNDEFINED, Some(msg))
                 }

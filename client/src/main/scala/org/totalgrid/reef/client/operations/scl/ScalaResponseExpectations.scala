@@ -29,7 +29,6 @@ object ScalaResponseExpectations {
     def expectMany(num: Option[Int], expected: Option[Envelope.Status], errorFun: Option[(Int, Int) => String]): List[A] = {
       lazy val status = resp.getStatus
       lazy val list = resp.getList
-      lazy val error = resp.getError
 
       expected match {
         case Some(stat) => {
@@ -39,7 +38,7 @@ object ScalaResponseExpectations {
         }
         case None => resp.isSuccess match {
           case true =>
-          case false => throw StatusCodes.toException(status, error)
+          case false => throw resp.getException
         }
       }
 
