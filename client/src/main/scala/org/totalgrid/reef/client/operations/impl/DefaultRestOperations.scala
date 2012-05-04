@@ -18,10 +18,9 @@
  */
 package org.totalgrid.reef.client.operations.impl
 
-//import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultClient
 import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
 import org.totalgrid.reef.client.operations.{ Response, RestOperations }
-import org.totalgrid.reef.client.{ RequestHeaders, Promise }
+import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionBinding, Promise }
 import org.totalgrid.reef.client.proto.Envelope.Verb
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
@@ -29,37 +28,47 @@ class DefaultRestOperations(client: SClient) extends RestOperations with Derived
 
   def batched: Option[BatchRestOperations] = None
 
-  protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]] = {
-    val basic = headers.map(_.asInstanceOf[BasicRequestHeaders]) // TODO: HACK HACK HACK SHOULD NOT SURVIVE TO RELEASE
-    client.requestJava(verb, payload, basic)
+  protected def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]): Promise[Response[A]] = {
+    client.requestJava(verb, payload, headers)
   }
 
 }
 
 trait DerivedRestOperations {
-  protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]]
+  protected def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]): Promise[Response[A]]
 
+  def request[A](verb: Verb, payload: A, subscriptionBinding: Option[SubscriptionBinding], headers: Option[RequestHeaders]): Promise[Response[A]] = {
+    val converted = headers.map(_.asInstanceOf[BasicRequestHeaders]) // TODO: HACK HACK HACK SHOULD NOT SURVIVE TO RELEASE
+    val basic = subscriptionBinding.map(sb => converted.getOrElse(BasicRequestHeaders.empty).setSubscribeQueue(sb.getId)).orElse(converted)
+
+    request(verb, payload, basic)
+  }
+
+  def request[A](verb: Verb, payload: A, subscriptionBinding: SubscriptionBinding): Promise[Response[A]] = {
+    request(verb, payload, Some(subscriptionBinding), None)
+  }
+  def request[A](verb: Verb, payload: A, subscriptionBinding: SubscriptionBinding, headers: RequestHeaders): Promise[Response[A]] = {
+    request(verb, payload, Some(subscriptionBinding), Some(headers))
+  }
   def request[A](verb: Verb, payload: A, headers: RequestHeaders): Promise[Response[A]] = {
-    request(verb, payload, Some(headers))
+    request(verb, payload, None, Some(headers))
   }
-
   def request[A](verb: Verb, payload: A): Promise[Response[A]] = {
-    request(verb, payload, None)
+    request(verb, payload, None, None)
   }
 
-  def get[A](payload: A, headers: RequestHeaders): Promise[Response[A]] = request(Verb.GET, payload, Some(headers))
+  def get[A](payload: A, subscriptionBinding: SubscriptionBinding): Promise[Response[A]] = request(Verb.GET, payload, Some(subscriptionBinding), None)
+  def delete[A](payload: A, subscriptionBinding: SubscriptionBinding): Promise[Response[A]] = request(Verb.DELETE, payload, Some(subscriptionBinding), None)
+  def put[A](payload: A, subscriptionBinding: SubscriptionBinding): Promise[Response[A]] = request(Verb.PUT, payload, Some(subscriptionBinding), None)
+  def post[A](payload: A, subscriptionBinding: SubscriptionBinding): Promise[Response[A]] = request(Verb.POST, payload, Some(subscriptionBinding), None)
 
-  def delete[A](payload: A, headers: RequestHeaders): Promise[Response[A]] = request(Verb.DELETE, payload, Some(headers))
+  def get[A](payload: A, headers: RequestHeaders): Promise[Response[A]] = request(Verb.GET, payload, None, Some(headers))
+  def delete[A](payload: A, headers: RequestHeaders): Promise[Response[A]] = request(Verb.DELETE, payload, None, Some(headers))
+  def put[A](payload: A, headers: RequestHeaders): Promise[Response[A]] = request(Verb.PUT, payload, None, Some(headers))
+  def post[A](payload: A, headers: RequestHeaders): Promise[Response[A]] = request(Verb.POST, payload, None, Some(headers))
 
-  def put[A](payload: A, headers: RequestHeaders): Promise[Response[A]] = request(Verb.PUT, payload, Some(headers))
-
-  def post[A](payload: A, headers: RequestHeaders): Promise[Response[A]] = request(Verb.POST, payload, Some(headers))
-
-  def get[A](payload: A): Promise[Response[A]] = request(Verb.GET, payload, None)
-
-  def delete[A](payload: A): Promise[Response[A]] = request(Verb.DELETE, payload, None)
-
-  def put[A](payload: A): Promise[Response[A]] = request(Verb.PUT, payload, None)
-
-  def post[A](payload: A): Promise[Response[A]] = request(Verb.POST, payload, None)
+  def get[A](payload: A): Promise[Response[A]] = request(Verb.GET, payload, None, None)
+  def delete[A](payload: A): Promise[Response[A]] = request(Verb.DELETE, payload, None, None)
+  def put[A](payload: A): Promise[Response[A]] = request(Verb.PUT, payload, None, None)
+  def post[A](payload: A): Promise[Response[A]] = request(Verb.POST, payload, None, None)
 }

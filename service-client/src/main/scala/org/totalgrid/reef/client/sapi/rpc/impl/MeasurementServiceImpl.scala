@@ -32,7 +32,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.service.proto.Measurements._
 import org.totalgrid.reef.client.operations.RestOperations
-import org.totalgrid.reef.client.{ Subscription, Promise, Routable }
+import org.totalgrid.reef.client.{ SubscriptionBinding, Promise, Routable }
 
 trait MeasurementServiceImpl extends UsesServiceOperations with MeasurementService {
 
@@ -237,7 +237,7 @@ trait MeasurementServiceImpl extends UsesServiceOperations with MeasurementServi
   private def getMeasSnapshot(session: RestOperations, meas: MeasurementSnapshot): Promise[List[Measurement]] = {
     session.get(meas).map(_.one).map(_.getMeasurementsList.toList)
   }
-  private def getMeasSnapshot(session: RestOperations, meas: MeasurementSnapshot, sub: Subscription[Measurement]) = {
+  private def getMeasSnapshot(session: RestOperations, meas: MeasurementSnapshot, sub: SubscriptionBinding) = {
     session.get(meas, sub).map(_.one).map(_.getMeasurementsList.toList)
   }
 
@@ -245,7 +245,7 @@ trait MeasurementServiceImpl extends UsesServiceOperations with MeasurementServi
     session.get(request).map(_.one).map(_.getMeasurementsList.toList)
   }
 
-  private def measHistoryList(session: RestOperations, request: MeasurementHistory, sub: Subscription[Measurement]) = {
+  private def measHistoryList(session: RestOperations, request: MeasurementHistory, sub: SubscriptionBinding) = {
     session.get(request, sub).map(_.one).map(_.getMeasurementsList.toList)
   }
 

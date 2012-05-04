@@ -29,14 +29,13 @@ import org.totalgrid.reef.client.types.ServiceTypeInformation
 import org.totalgrid.reef.client.proto.Envelope.{ BatchServiceRequest, Verb }
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.sapi.client._
-import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 import org.totalgrid.reef.client.operations.{ RestOperations, Response }
 import org.totalgrid.reef.client.sapi.client.rest.impl.ClassLookup
-import org.totalgrid.reef.client.operations.scl.ScalaPromise
 import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 import org.totalgrid.reef.client.operations.impl.FuturePromise.OpenEitherPromise
 import org.totalgrid.reef.client.exception._
+import org.totalgrid.reef.client.Promise
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
@@ -85,7 +84,7 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
     protected def futureSource[A] = new OpenEitherPromise[A](new MockFuture[Either[ReefServiceException, A]](None))
 
     protected def ops = new DerivedRestOperations with RestOperations {
-      protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]) = {
+      protected def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
         ClassLookup(payload) should equal(Some(classOf[BatchServiceRequest]))
 
         val batchRequest = payload.asInstanceOf[BatchServiceRequest]
@@ -102,7 +101,7 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
     val requestCounter = new RealRequestCounter()
     val ops = new MockBatch(duplicatePayload(requestCounter.increment _, _))
 
-    val future = ops.request(Envelope.Verb.PUT, SomeInteger(100), BasicRequestHeaders.empty)
+    val future = ops.request(Envelope.Verb.PUT, SomeInteger(100))
 
     future.isComplete should equal(false)
 
@@ -118,7 +117,7 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
     val requestCounter = new RealRequestCounter()
     val ops = new MockBatch(duplicatePayload(requestCounter.increment _, _))
 
-    val futures = (0 to 100).map { i => ops.request(Envelope.Verb.PUT, SomeInteger(i), BasicRequestHeaders.empty) }
+    val futures = (0 to 100).map { i => ops.request(Envelope.Verb.PUT, SomeInteger(i)) }
 
     futures.map { _.isComplete }.distinct should equal(List(false))
 
@@ -135,7 +134,7 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
   test("Handles General Batch Level Failure") {
     val ops = new MockBatch(badAuthFailure _)
 
-    val future = ops.request(Envelope.Verb.PUT, SomeInteger(100), BasicRequestHeaders.empty)
+    val future = ops.request(Envelope.Verb.PUT, SomeInteger(100))
 
     future.isComplete should equal(false)
 
@@ -155,8 +154,8 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
   test("Handles Partial Failures") {
     val ops = new MockBatch(conditionalSuccess(List(None, Some("partial failure"))))
 
-    val successFuture = ops.request(Envelope.Verb.PUT, SomeInteger(100), BasicRequestHeaders.empty)
-    val failureFuture = ops.request(Envelope.Verb.PUT, SomeInteger(200), BasicRequestHeaders.empty)
+    val successFuture = ops.request(Envelope.Verb.PUT, SomeInteger(100))
+    val failureFuture = ops.request(Envelope.Verb.PUT, SomeInteger(200))
 
     val batchResult = ops.flush()
 
@@ -180,7 +179,7 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
     val requestCounter = new RealRequestCounter()
     val ops = new MockBatch(duplicatePayload(requestCounter.increment _, _))
 
-    (1 to 13).map { i => ops.request(Envelope.Verb.PUT, SomeInteger(i), BasicRequestHeaders.empty) }
+    (1 to 13).map { i => ops.request(Envelope.Verb.PUT, SomeInteger(i)) }
 
     val batchResult = ops.batchedFlush(4).await
 
