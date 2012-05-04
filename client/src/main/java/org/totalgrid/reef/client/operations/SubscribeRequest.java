@@ -21,9 +21,22 @@ package org.totalgrid.reef.client.operations;
 import org.totalgrid.reef.client.Promise;
 import org.totalgrid.reef.client.Subscription;
 
+/**
+ * Similar to BasicRequest with the added argument of a subscription object so we can tell the server
+ * our locally generated queue name to make the bindings. The execute block needs to make atleast one
+ * request to the server with the subscription name attached to actually setup the subscription so it
+ * will receive events.
+ *
+ * TODO: merge SubscribeRequest and ClientServiceBindingRequest
+ *
+ * @see BasicRequest
+ */
 public interface SubscribeRequest<T, U>
 {
     Promise<T> execute( Subscription<U> subscription, RestOperations operations );
 
+    /**
+     * @see BasicRequest
+     */
     String errorMessage();
 }

@@ -22,27 +22,64 @@ import org.totalgrid.reef.client.Promise;
 import org.totalgrid.reef.client.RequestHeaders;
 import org.totalgrid.reef.client.proto.Envelope;
 
-
+/**
+ * Lowest level interface to the client requests. The request object is packaged up with a verb and any extra
+ * request headers and sent to the server (or queued in a batch). A promise of a Response is returned from all functions
+ * and should be converted to a more usable object by a PromiseTransfomer.
+ */
 public interface RestOperations
 {
-
+    /**
+     * low level function to make a request.
+     * @param verb  what REST verb we are using
+     * @param payload object we will seralize and send to server (protobuf)
+     * @param headers extra headers we will merge with the client level headers (overwriting on conflicts)
+     * @return a Promise containing the evental response or error
+     */
     <T> Promise<Response<T>> request( Envelope.Verb verb, T payload, RequestHeaders headers );
 
+    /**
+     * helper just calls request(verb, payload, {empty headers})
+     */
     <T> Promise<Response<T>> request( Envelope.Verb verb, T payload );
 
+    /**
+     * helper just calls request(GET, payload, headers)
+     */
     <T> Promise<Response<T>> get( T payload, RequestHeaders headers );
 
+    /**
+     * helper just calls request(DELETE, payload, headers)
+     */
     <T> Promise<Response<T>> delete( T payload, RequestHeaders headers );
 
+    /**
+     * helper just calls request(PUT, payload, headers)
+     */
     <T> Promise<Response<T>> put( T payload, RequestHeaders headers );
 
+    /**
+     * helper just calls request(POST, payload, headers)
+     */
     <T> Promise<Response<T>> post( T payload, RequestHeaders headers );
 
+    /**
+     * helper just calls request(GET, payload)
+     */
     <T> Promise<Response<T>> get( T payload );
 
+    /**
+     * helper just calls request(DELETE, payload)
+     */
     <T> Promise<Response<T>> delete( T payload );
 
+    /**
+     * helper just calls request(PUT, payload)
+     */
     <T> Promise<Response<T>> put( T payload );
 
+    /**
+     * helper just calls request(POST, payload)
+     */
     <T> Promise<Response<T>> post( T payload );
 }

@@ -22,9 +22,21 @@ import org.totalgrid.reef.client.Promise;
 import org.totalgrid.reef.client.SubscriptionBinding;
 
 
+/**
+ * nearly identical to SubscribeRequest, only difference is the local type is a subscription binding not a
+ * subscription object.
+ *
+ * @see SubscribeRequest
+ */
 public interface ClientServiceBindingRequest<T>
 {
+    /**
+     * @see SubscribeRequest
+     */
     Promise<T> execute( SubscriptionBinding binding, RestOperations operations );
 
+    /**
+     * @see SubscribeRequest
+     */
     String errorMessage();
 }
