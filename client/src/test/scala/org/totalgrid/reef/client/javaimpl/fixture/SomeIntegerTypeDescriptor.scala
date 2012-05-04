@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.javaimpl.fixture
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.fixture
 
 import java.io._
 import java.util.List
@@ -30,6 +31,7 @@ case class SomeInteger(num: Int) extends Serializable {
 
 object SomeIntegerTypeDescriptor extends SerializableTypeDescriptor[SomeInteger] {
   def id = "SomeInteger"
+
   def getKlass = classOf[SomeInteger]
 }
 
