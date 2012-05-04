@@ -21,10 +21,13 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.test.BlockingQueue
 
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 import org.totalgrid.reef.client.operations.scl.Event
+import org.totalgrid.reef.client.operations.{ RestOperations, SubscriptionBindingRequest }
+import org.totalgrid.reef.client.operations.impl.TestPromises
+import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
+import org.totalgrid.reef.client._
 
 object ServiceResponseTestingHelpers {
 
@@ -52,13 +55,16 @@ object ServiceResponseTestingHelpers {
 
   def getSubscriptionQueue[A <: Any](client: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
 
-    import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
+    // slightly naughty "escaping" of the subscription object for this test only code
+    val headers = client.getServiceOperations.subscriptionRequest(descriptor, new SubscriptionBindingRequest[BasicRequestHeaders] {
+      def errorMessage() = ""
 
-    val sub = client.getServiceOperations.getBindOperations.subscribe(descriptor)
+      def execute(subscription: SubscriptionBinding, operations: RestOperations) = {
+        subscription.asInstanceOf[Subscription[A]].onEvent(func)
+        TestPromises.fixed(BasicRequestHeaders.empty.setSubscribeQueue(subscription.getId))
+      }
+    }).await.getResult
 
-    sub.start(func)
-
-    BasicRequestHeaders.empty.setSubscribeQueue(sub.getId)
-
+    headers
   }
 }

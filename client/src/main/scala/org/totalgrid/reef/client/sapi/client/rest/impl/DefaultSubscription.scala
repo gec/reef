@@ -18,12 +18,13 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
-import org.totalgrid.reef.client.sapi.client.{ Subscription, Event }
+import org.totalgrid.reef.client.{ Subscription, SubscriptionEventAcceptor }
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.broker.{ BrokerMessageConsumer, BrokerMessage, BrokerSubscription }
 import org.totalgrid.reef.client.proto.Envelope
 
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.operations.scl.Event
 
 /**
  * synchronous subscription object, allows canceling and a delayed starting
@@ -33,14 +34,14 @@ final class DefaultSubscription[A](subscription: BrokerSubscription, executor: E
   override def getId() = subscription.getQueue
   override def cancel() = subscription.close()
 
-  override def start(callback: Event[A] => Unit): Subscription[A] = {
+  override def start(callback: SubscriptionEventAcceptor[A]): Subscription[A] = {
     val consumer = new BrokerMessageConsumer {
       def onMessage(msg: BrokerMessage) {
         try {
           val event = Envelope.ServiceNotification.parseFrom(msg.bytes)
           val value = deserialize(event.getPayload.toByteArray)
           executor.execute(try {
-            callback(Event(event.getEvent, value))
+            callback.onEvent(Event[A](event.getEvent, value))
           } catch {
             case ex: Exception =>
               logger.error("Subscription event caused exception: " + ex.getMessage, ex)

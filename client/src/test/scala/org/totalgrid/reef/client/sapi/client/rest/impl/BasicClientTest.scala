@@ -29,7 +29,8 @@ import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
 import org.totalgrid.reef.client.sapi.client.rest.fixture._
 import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.client.sapi.client.Event
+import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
+import org.totalgrid.reef.client.operations.scl.Event
 
 @RunWith(classOf[JUnitRunner])
 class QpidServiceClientTest extends BasicClientTest with QpidBrokerTestFixture
@@ -60,7 +61,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
       conn.bindQueueByClass(sub.getId(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
       conn.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")
       val events = new SynchronizedList[Event[SomeInteger]]
-      sub.start(events.append)
+      sub.onEvent(events.append _)
       events shouldBecome Event(Envelope.SubscriptionEventType.ADDED, si) within 5000
     }
   }
@@ -71,7 +72,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
       val sub = client.subscribe(SomeIntegerTypeDescriptor, client) // gets us an unbound queue, doesn't listen yet
       conn.bindQueueByClass(sub.getId(), "#", classOf[SomeInteger]) //binds the queue to the correct exchange
       val events = new SynchronizedList[Event[SomeInteger]]
-      sub.start(events.append(_))
+      sub.onEvent(events.append _)
       conn.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")
       events shouldBecome Event(Envelope.SubscriptionEventType.ADDED, si) within 5000
     }

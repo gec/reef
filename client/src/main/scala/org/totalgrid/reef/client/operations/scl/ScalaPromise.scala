@@ -22,6 +22,7 @@ import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.{ PromiseListener, PromiseErrorTransform, PromiseTransform, Promise }
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.operations.impl.FuturePromise
+import com.weiglewilczek.slf4s.Logging
 
 trait ScalaPromise {
 
@@ -70,7 +71,7 @@ trait ScalaPromise {
   implicit def _scalaPromise[A](p: Promise[A]): RichPromise[A] = new RichPromise(p)
 }
 
-object ScalaPromise extends ScalaPromise {
+object ScalaPromise extends ScalaPromise with Logging {
 
   // Gathers, using the first error as its failure case
   def collate[A](exe: Executor, promises: List[Promise[A]]): Promise[List[A]] = {
@@ -88,6 +89,8 @@ object ScalaPromise extends ScalaPromise {
             promise.setSuccess(all.map(_.await()).toList)
           } catch {
             case ex: ReefServiceException => promise.setFailure(ex)
+            case x: Exception =>
+              logger.error("Unhandled exception: " + x, x)
           }
         }
       }

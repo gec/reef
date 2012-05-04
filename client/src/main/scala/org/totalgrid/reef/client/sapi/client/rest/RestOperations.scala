@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.proto.Envelope.Verb
 import net.agileautomata.executor4s.Future
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.service.AsyncService
-import org.totalgrid.reef.client.SubscriptionBinding
+import org.totalgrid.reef.client.{ Subscription, SubscriptionBinding }
 
 /**
  * api-implementer facing interface that encapsulates the get/put/post/delete operations without revealing which

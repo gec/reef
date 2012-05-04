@@ -19,9 +19,8 @@
 package org.totalgrid.reef.client.sapi.client.rest
 
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.client.{ SubscriptionBinding, Routable }
+import org.totalgrid.reef.client.{ Subscription, SubscriptionBinding, Routable }
 import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.client.sapi.client.Subscription
 import org.totalgrid.reef.client.sapi.service.AsyncService
 
 trait Bindable {

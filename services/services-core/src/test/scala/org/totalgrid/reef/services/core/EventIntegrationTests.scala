@@ -37,7 +37,7 @@ import org.totalgrid.reef.services.{ SilentRequestContext, ConnectionFixture }
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.util.SyncVar
 
-class EventIntegrationTestsBase extends DatabaseUsingTestBase {
+abstract class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
 
   class AlarmTestFixture(amqp: Connection) {

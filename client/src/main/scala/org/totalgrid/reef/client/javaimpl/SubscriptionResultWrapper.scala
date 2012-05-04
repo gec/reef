@@ -18,13 +18,10 @@
  */
 package org.totalgrid.reef.client.javaimpl
 
-import org.totalgrid.reef.client.sapi.client.{ Subscription => ScalaSubscription }
-import org.totalgrid.reef.client.SubscriptionResult
+import org.totalgrid.reef.client.{ Subscription, SubscriptionResult }
 
-class SubscriptionResultWrapper[A, B](result: A, sub: ScalaSubscription[B]) extends SubscriptionResult[A, B] {
-
-  private val wrapper = new SubscriptionWrapper(sub)
+class SubscriptionResultWrapper[A, B](result: A, sub: Subscription[B]) extends SubscriptionResult[A, B] {
 
   override def getResult = result
-  override def getSubscription = wrapper
+  override def getSubscription = sub
 }

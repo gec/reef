@@ -31,7 +31,7 @@ trait ScalaSubscription {
         def onEvent(event: SubscriptionEvent[A]) { f(event)}
       })
     }*/
-    def start(f: (Event[A]) => Unit) {
+    def onEvent(f: Event[A] => Unit) {
       sub.start(new SubscriptionEventAcceptor[A] {
         def onEvent(event: SubscriptionEvent[A]) { f(Event(event.getEventType, event.getValue)) }
       })
@@ -43,4 +43,8 @@ trait ScalaSubscription {
 
 object ScalaSubscription extends ScalaSubscription
 
-case class Event[A](event: Envelope.SubscriptionEventType, value: A)
+case class Event[A](event: Envelope.SubscriptionEventType, value: A) extends SubscriptionEvent[A] {
+
+  final override def getEventType() = event
+  final override def getValue() = value
+}

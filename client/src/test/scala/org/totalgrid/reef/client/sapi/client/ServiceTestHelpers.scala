@@ -28,7 +28,7 @@ object ServiceTestHelpers {
     def getId = id
     var canceled = false
     var acceptor = Option.empty[SubscriptionEventAcceptor[A]]
-    def start(acc: SubscriptionEventAcceptor[A]) {
+    def start(acc: SubscriptionEventAcceptor[A]) = {
       acceptor = Some(acc)
       this
     }
@@ -45,6 +45,7 @@ object ServiceTestHelpers {
     def this(many: List[A]) = this(many, new MockSubscription[A]())
   }
 
+  // TODO: merge away these fixed promises
   class FixedSuccessPromise[A](v: A) extends JPromise[A] {
     def await(): A = v
     def isComplete: Boolean = true

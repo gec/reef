@@ -82,6 +82,7 @@ class UserCommandRequestService(
 
     promise.listenFor { respPromise =>
       try {
+        println("Promise result received")
         val response = respPromise.await()
 
         try {

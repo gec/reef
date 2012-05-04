@@ -23,11 +23,11 @@ import org.totalgrid.reef.client.operations.BindOperations
 import org.totalgrid.reef.client.registration.Service
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.{ Subscription, SubscriptionBinding }
-import org.totalgrid.reef.client.javaimpl.{ SubscriptionWrapper, ServiceWrapper }
+import org.totalgrid.reef.client.javaimpl.ServiceWrapper
 
 class DefaultBindOperations(client: SClient) extends BindOperations {
   def subscribe[A](descriptor: TypeDescriptor[A]): Subscription[A] = {
-    new SubscriptionWrapper(client.subscribe(descriptor))
+    client.subscribe(descriptor)
   }
 
   def lateBindService[A](service: Service, descriptor: TypeDescriptor[A]): SubscriptionBinding = {

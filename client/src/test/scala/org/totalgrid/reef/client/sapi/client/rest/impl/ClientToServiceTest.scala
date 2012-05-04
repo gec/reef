@@ -32,6 +32,8 @@ import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Promise, Suc
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.rest.fixture._
 
+import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
+
 @RunWith(classOf[JUnitRunner])
 class QpidClientToService extends ClientToServiceTest with QpidBrokerTestFixture
 
@@ -115,7 +117,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
       val sub = c.subscribe(SomeIntegerTypeDescriptor)
       val headers = BasicRequestHeaders.empty.setSubscribeQueue(sub.getId)
       c.put(SomeInteger(1), headers).await should equal(SuccessResponse(list = List(SomeInteger(2))))
-      sub.start(e => events.append(e.value))
+      sub.onEvent(e => events.append(e.value))
       events shouldBecome SomeInteger(2) within 5000
       sub.cancel()
 
@@ -141,7 +143,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
       val events = new SynchronizedList[Int]
       val sub = c.subscribe(SomeIntegerTypeDescriptor)
       c.bindQueueByClass(sub.getId(), "#", classOf[SomeInteger])
-      sub.start(e => events.append(e.value.num))
+      sub.onEvent(e => events.append(e.value.num))
 
       val range = 0 to 1500
 
