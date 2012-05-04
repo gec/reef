@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.sapi.client.impl.SynchronizedPromise
+import org.totalgrid.reef.client.sapi.client.impl.SynchronizedResult
 import org.totalgrid.reef.services.{ SilentRequestContext, ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent, DatabaseUsingTestBaseNoTransaction }
 
@@ -29,7 +29,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
 
   def get(req: A): Response[A] = get(req, BasicRequestHeaders.empty)
   def get(req: A, env: BasicRequestHeaders): Response[A] = {
-    val response = new SynchronizedPromise[Response[A]]()
+    val response = new SynchronizedResult[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
     service.getAsync(cm, req)(response.set _)
     response.await
@@ -37,7 +37,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
 
   def put(req: A): Response[A] = put(req, BasicRequestHeaders.empty)
   def put(req: A, env: BasicRequestHeaders): Response[A] = {
-    val response = new SynchronizedPromise[Response[A]]()
+    val response = new SynchronizedResult[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
     service.putAsync(cm, req)(response.set _)
     response.await
@@ -45,7 +45,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
 
   def post(req: A): Response[A] = post(req, BasicRequestHeaders.empty)
   def post(req: A, env: BasicRequestHeaders): Response[A] = {
-    val response = new SynchronizedPromise[Response[A]]()
+    val response = new SynchronizedResult[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
     service.postAsync(cm, req)(response.set _)
     response.await
@@ -53,7 +53,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
 
   def delete(req: A): Response[A] = delete(req, BasicRequestHeaders.empty)
   def delete(req: A, env: BasicRequestHeaders): Response[A] = {
-    val response = new SynchronizedPromise[Response[A]]()
+    val response = new SynchronizedResult[Response[A]]()
     val cm = new RequestContextSourceWithHeaders(contextSource, env)
     service.deleteAsync(cm, req)(response.set _)
     response.await

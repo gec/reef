@@ -18,16 +18,38 @@
  */
 package org.totalgrid.reef.client.sapi.client.impl
 
-import org.totalgrid.reef.client.sapi.client.Promise
-import net.agileautomata.executor4s.Result
+import net.agileautomata.executor4s.{ Success, Result }
 
-class FixedPromise[A](result: Result[A]) extends Promise[A] {
-  def await: A = result.get
-  def listen(fun: Promise[A] => Unit): Promise[A] = {
-    fun(this)
-    this
+final class SynchronizedResult[A] private (private var result: Option[A]) {
+
+  def this(result: A) = this(Some(result))
+  def this() = this(None)
+
+  private val mutex = new Object
+
+  def isComplete = result.isDefined
+
+  def set(value: A) {
+    mutex.synchronized {
+      result match {
+        case Some(x) =>
+          throw new IllegalStateException("Result already defined to be: " + result + ", tried to set it to: " + value)
+        case None =>
+          result = Some(value)
+          mutex.notifyAll()
+      }
+    }
   }
-  def extract: Result[A] = result
-  def map[B](fun: A => B): Promise[B] = new FixedPromise[B](result.map(fun))
-  def isComplete: Boolean = true
+
+  def await: A = extract.get
+
+  def extract: Result[A] = mutex.synchronized {
+    result match {
+      case None =>
+        mutex.wait()
+        extract
+      case Some(x) => Success(x)
+    }
+  }
+
 }

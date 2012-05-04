@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
-import org.totalgrid.reef.client.sapi.client.impl.SynchronizedPromise
+import org.totalgrid.reef.client.sapi.client.impl.SynchronizedResult
 import org.totalgrid.reef.client.sapi.client._
 import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, ServiceHelpers }
 import org.totalgrid.reef.client.exception.BadRequestException
@@ -79,7 +79,7 @@ class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
 
     val value = service.descriptor.deserialize(request.getPayload.toByteArray)
 
-    val promise = new SynchronizedPromise[ServiceResponse]
+    val promise = new SynchronizedResult[ServiceResponse]
 
     def onResponse(rsp: Response[A]) = {
       promise.set(ServiceHelpers.getResponse(request.getId, rsp, service.descriptor))
