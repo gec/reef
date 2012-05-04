@@ -18,10 +18,12 @@
  */
 package org.totalgrid.reef.client.operations;
 
+import net.agileautomata.executor4s.Executor;
 import org.totalgrid.reef.client.Promise;
 import org.totalgrid.reef.client.PromiseTransform;
 import org.totalgrid.reef.client.exception.ExpectationException;
 import org.totalgrid.reef.client.exception.ReefServiceException;
+import org.totalgrid.reef.client.operations.scl.PromiseCollators;
 
 import java.util.List;
 
@@ -98,6 +100,16 @@ public class CommonResponseTransformations
                 return response.getList();
             }
         } );
+    }
+
+    /**
+     * takes a list of Promise of T and converts it into a single promise that contains a list of T. If any individual
+     * promise is a failure the entire promise will be considered to be a failure as well.
+     * @return "super promise" that contains the results of the passed in list of promises.
+     */
+    public static <T> Promise<List<T>> collatePromises( Executor exe, List<Promise<T>> promises )
+    {
+        return PromiseCollators.collate( exe, promises );
     }
 
     private static <T> void throwIfNotSuccess( Response<T> response ) throws ReefServiceException

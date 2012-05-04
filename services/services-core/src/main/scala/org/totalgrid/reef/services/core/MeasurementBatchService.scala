@@ -30,7 +30,7 @@ import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntr
 import org.totalgrid.reef.client.AddressableDestination
 
 import org.totalgrid.reef.client.sapi.client._
-import org.totalgrid.reef.client.operations.scl.ScalaPromise
+import org.totalgrid.reef.client.operations.scl.PromiseCollators
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 import org.totalgrid.reef.client.proto.Envelope
@@ -84,7 +84,7 @@ class MeasurementBatchService
         }
       }
 
-      ScalaPromise.collate(exe, promises)
+      PromiseCollators.collate(exe, promises)
     }
 
     future.listenFor { results =>

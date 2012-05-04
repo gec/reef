@@ -39,7 +39,7 @@ abstract class ServiceOperationsProvider(client: Client)
 
   def batchGets[A](gets: List[A]): Promise[List[A]] = {
     ops.batchOperation("Error during batched 'get' request") { session =>
-      ScalaPromise.collate(client.getInternal.getExecutor, gets.map(session.get(_).map(_.one)))
+      PromiseCollators.collate(client.getInternal.getExecutor, gets.map(session.get(_).map(_.one)))
     }
   }
 

@@ -20,9 +20,6 @@ package org.totalgrid.reef.client.operations.scl
 
 import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.{ PromiseListener, PromiseErrorTransform, PromiseTransform, Promise }
-import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.client.operations.impl.FuturePromise
-import com.weiglewilczek.slf4s.Logging
 
 trait ScalaPromise {
 
@@ -71,33 +68,4 @@ trait ScalaPromise {
   implicit def _scalaPromise[A](p: Promise[A]): RichPromise[A] = new RichPromise(p)
 }
 
-object ScalaPromise extends ScalaPromise with Logging {
-
-  // Gathers, using the first error as its failure case
-  def collate[A](exe: Executor, promises: List[Promise[A]]): Promise[List[A]] = {
-
-    val promise = FuturePromise.open[List[A]](exe)
-    val size = promises.size
-    val map = collection.mutable.Map.empty[Int, Promise[A]]
-
-    def gather(i: Int)(prom: Promise[A]) {
-      map.synchronized {
-        map.put(i, prom)
-        if (map.size == size) {
-          val all = promises.indices.map(map(_))
-          try {
-            promise.setSuccess(all.map(_.await()).toList)
-          } catch {
-            case ex: ReefServiceException => promise.setFailure(ex)
-            case x: Exception =>
-              logger.error("Unhandled exception: " + x, x)
-          }
-        }
-      }
-    }
-
-    if (promises.isEmpty) promise.setSuccess(Nil)
-    else promises.zipWithIndex.foreach { case (prom, i) => prom.listenFor(gather(i)) }
-    promise
-  }
-}
+object ScalaPromise extends ScalaPromise
