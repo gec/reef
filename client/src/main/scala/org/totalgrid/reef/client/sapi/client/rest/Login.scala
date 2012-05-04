@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest
 
-import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.settings.UserSettings
 
 trait Login {

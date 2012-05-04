@@ -36,8 +36,10 @@ import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.{ UserSettings, Version }
 import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Routable }
-import org.totalgrid.reef.client.operations.impl.FuturePromise
 import org.totalgrid.reef.client.javaimpl.{ ResponseWrapper }
+import org.totalgrid.reef.client.operations.impl.{ DefaultServiceOperations, FuturePromise }
+
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -81,31 +83,29 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
   def login(userSettings: UserSettings) = login(userSettings.getUserName, userSettings.getUserPassword)
 
-  def login(userName: String, password: String): Promise[Client] = {
+  def login(userName: String, password: String): JPromise[Client] = {
     val strand = Strand(executor)
-    DefaultAnnotatedOperations.safeOperation("Error logging in with name: " + userName, strand) {
+    DefaultServiceOperations.safeOp("Error logging in with name: " + userName, strand) {
       val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).setClientVersion(Version.getClientVersion).build
-      def convert(response: Response[AuthRequest]): Result[Client] = {
-        response.one.map { r =>
-          if (!r.hasServerVersion) logger.warn("Login response did not include the server version")
-          else if (r.getServerVersion != Version.getClientVersion) {
-            logger.warn("The server is running " + r.getServerVersion + ", but the client is " + Version.getClientVersion)
-          }
-          createClient(r.getToken, strand)
+      def convert(r: AuthRequest): Client = {
+        if (!r.hasServerVersion) logger.warn("Login response did not include the server version")
+        else if (r.getServerVersion != Version.getClientVersion) {
+          logger.warn("The server is running " + r.getServerVersion + ", but the client is " + Version.getClientVersion)
         }
+        createClient(r.getToken, strand)
       }
-      request(Envelope.Verb.POST, agent, BasicRequestHeaders.empty, strand).map(convert)
+      requestJava(Envelope.Verb.POST, agent, BasicRequestHeaders.empty, strand).map(_.one).map(convert)
     }
   }
 
-  def logout(authToken: String): Promise[Boolean] = logout(authToken, Strand(executor))
-  def logout(client: Client): Promise[Boolean] = logout(client.getHeaders.getAuthToken, client)
+  def logout(authToken: String): JPromise[Boolean] = logout(authToken, Strand(executor))
+  def logout(client: Client): JPromise[Boolean] = logout(client.getHeaders.getAuthToken, client)
 
-  private def logout(authToken: String, strand: Executor): Promise[Boolean] = {
-    DefaultAnnotatedOperations.safeOperation("Error revoking auth token.", strand) {
+  private def logout(authToken: String, strand: Executor): JPromise[Boolean] = {
+    DefaultServiceOperations.safeOp("Error revoking auth token.", strand) {
       val agent = AuthRequest.newBuilder.setToken(authToken).build
       val headers = BasicRequestHeaders.empty.setAuthToken(authToken)
-      request(Envelope.Verb.DELETE, agent, headers, strand).map(r => r.one.map { _ => true })
+      requestJava(Envelope.Verb.DELETE, agent, headers, strand).map(_.one).map(e => true)
     }
   }
 

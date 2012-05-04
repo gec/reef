@@ -44,14 +44,11 @@ object DefaultServiceOperations {
     def getResult: A = result
     def getSubscription: Subscription[B] = sub
   }
-}
 
-class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, bindOperations: BindOperations, batch: () => BatchRestOperations, exe: Executor) extends ServiceOperations {
-
-  private def safeOp[A](op: () => Promise[A], err: () => String): Promise[A] = {
+  def safeOp[A](err: => String, exe: Executor)(op: => Promise[A]): Promise[A] = {
 
     try {
-      op().mapError { rse => rse.addExtraInformation(err()); rse }
+      op.mapError { rse => rse.addExtraInformation(err); rse }
     } catch {
       case npe: NullPointerException =>
         FuturePromise.error[A](new InternalClientError("Null pointer error while making request. Check that all parameters are not null.", npe), exe)
@@ -61,17 +58,22 @@ class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, 
       case ex: Exception => FuturePromise.error[A](new InternalClientError("Unexpected error: " + ex.getMessage, ex), exe)
     }
   }
+}
+
+class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, bindOperations: BindOperations, batch: () => BatchRestOperations, exe: Executor) extends ServiceOperations {
+
+  import DefaultServiceOperations._
 
   def request[A](request: BasicRequest[A]): Promise[A] = {
-    safeOp(() => request.execute(restOperations), request.errorMessage _)
+    safeOp(request.errorMessage, exe) { request.execute(restOperations) }
   }
 
   def batchRequest[A](request: BasicRequest[A]): Promise[A] = {
     restOperations.batched match {
-      case Some(_) => safeOp(() => request.execute(restOperations), request.errorMessage _)
+      case Some(_) => safeOp(request.errorMessage, exe) { request.execute(restOperations) }
       case None =>
         val batchOps = batch()
-        val result = safeOp(() => request.execute(batchOps), request.errorMessage _)
+        val result = safeOp(request.errorMessage, exe) { request.execute(batchOps) }
         batchOps.flush()
         result
     }
@@ -80,7 +82,7 @@ class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, 
   def subscriptionRequest[A, B](descriptor: TypeDescriptor[B], request: SubscriptionBindingRequest[A]): Promise[SubscriptionResult[A, B]] = {
     try {
       val sub: Subscription[B] = bindOperations.subscribe(descriptor)
-      val promise: Promise[A] = safeOp(() => request.execute(sub, restOperations), request.errorMessage _)
+      val promise: Promise[A] = safeOp(request.errorMessage, exe) { request.execute(sub, restOperations) }
       promise.listen(new CancelingListener(sub.cancel _))
       promise.map(v => new DefaultSubscriptionResult(v, sub))
 
@@ -92,7 +94,7 @@ class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, 
   def clientServiceBinding[A, B](service: Service, descriptor: TypeDescriptor[B], request: SubscriptionBindingRequest[A]): Promise[SubscriptionBinding] = {
     try {
       val binding = bindOperations.lateBindService(service, descriptor)
-      val promise: Promise[A] = safeOp(() => request.execute(binding, restOperations), request.errorMessage _)
+      val promise: Promise[A] = safeOp(request.errorMessage, exe) { request.execute(binding, restOperations) }
       promise.listen(new CancelingListener(binding.cancel _))
       promise.map(result => binding)
 
