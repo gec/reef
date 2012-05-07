@@ -26,7 +26,8 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.client.sapi.client.rest.RpcProvider
+import org.totalgrid.reef.client.sapi.rpc.util.RpcProvider
+import org.totalgrid.reef.client.sapi.rpc.util.RpcProvider
 
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService

@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.totalgrid.reef.client.sapi.rpc.ClientOperations
 import org.totalgrid.reef.client.sapi.sync.{ ClientOperations => SyncOperations }
 import org.totalgrid.reef.client.service.{ ClientOperations => JClientOperations }
-import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
+import org.totalgrid.reef.client.sapi.rpc.util.RpcProvider
 import org.totalgrid.reef.client.service.impl.ClientOperationsJavaShim
 import org.totalgrid.reef.client.sapi.sync.impl.ClientOperationsSyncShim
 import org.totalgrid.reef.client.service.async.impl.ClientOperationsAsyncJavaShim

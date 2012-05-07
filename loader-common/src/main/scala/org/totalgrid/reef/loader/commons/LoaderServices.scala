@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceImpl
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.client.{ Client, ServicesList }
-import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
+import org.totalgrid.reef.client.sapi.rpc.util.RpcProvider
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.operations.scl._
 import org.totalgrid.reef.client.operations.RequestListenerManager

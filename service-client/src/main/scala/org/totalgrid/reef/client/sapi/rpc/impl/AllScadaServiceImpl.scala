@@ -19,7 +19,8 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc._
-import org.totalgrid.reef.client.sapi.client.rest.RpcProvider
+import org.totalgrid.reef.client.sapi.rpc.util.RpcProvider
+import org.totalgrid.reef.client.sapi.rpc.util.RpcProvider
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.operations.scl.ServiceOperationsProvider
 

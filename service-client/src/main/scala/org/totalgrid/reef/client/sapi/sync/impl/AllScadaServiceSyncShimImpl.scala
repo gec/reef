@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.sync.impl
 
-import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider }
+import org.totalgrid.reef.client.sapi.rpc.util.RpcProvider
 import org.totalgrid.reef.client.sapi.sync._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => AsyncAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
