@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import java.io.File
 
-import org.totalgrid.reef.loader.helpers.{ MockSyncOperations, CachingModelLoader }
+import org.totalgrid.reef.loader.helpers.CachingModelLoader
 
 @RunWith(classOf[JUnitRunner])
 class CommonsLoaderTest extends FunSuite with ShouldMatchers {

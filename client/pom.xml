@@ -33,13 +33,11 @@
                         <Bundle-Name>Reef Client API</Bundle-Name>
                         <Export-Package>
                             org.totalgrid.reef.client;version="${reef.version}",
-                            org.totalgrid.reef.client.internal;version="${reef.version}",
                             org.totalgrid.reef.client.registration;version="${reef.version}",
                             org.totalgrid.reef.client.factory;version="${reef.version}",
                             org.totalgrid.reef.client.javaimpl;version="${reef.version}",
                             org.totalgrid.reef.client.sapi.client.*;version="${reef.version}",
                             org.totalgrid.reef.client.sapi.service;version="${reef.version}",
-                            org.totalgrid.reef.client.sapi.client.factory;version="${reef.version}",
                             org.totalgrid.reef.client.operations;version="${reef.version}",
                             org.totalgrid.reef.client.operations.scl;version="${reef.version}",
                             org.totalgrid.reef.client.operations.impl;version="${reef.version}",
