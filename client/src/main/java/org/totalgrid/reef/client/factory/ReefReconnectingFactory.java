@@ -44,7 +44,7 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory
 {
     // TODO: Make this a static factory class, put implementations in scala
 
-    private class Watcher implements org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
+    private class Watcher implements org.totalgrid.reef.client.sapi.client.rest.impl.ConnectionWatcher
     {
         @Override
         public synchronized void onConnectionClosed( boolean expected )

@@ -22,12 +22,10 @@ import net.agileautomata.executor4s._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.util.IdempotentLifecycle
 import org.totalgrid.reef.client.exception.ReefServiceException
-import org.totalgrid.reef.client.sapi.client.rest.{ ConnectionWatcher, ReconnectingConnectionFactory }
 import org.totalgrid.reef.broker.{ BrokerConnectionFactory, BrokerConnectionListener, BrokerConnection }
 
 class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor, startDelay: Long, maxDelay: Long)
-    extends ReconnectingConnectionFactory
-    with BrokerConnectionListener
+    extends BrokerConnectionListener
     with IdempotentLifecycle
     with Logging {
 
@@ -36,15 +34,25 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
 
   private var watchers = Set.empty[ConnectionWatcher]
 
-  def addConnectionWatcher(watcher: ConnectionWatcher) = this.synchronized { watchers += watcher }
-  def removeConnectionWatcher(watcher: ConnectionWatcher) = this.synchronized { watchers -= watcher }
-
-  override def afterStart() = this.synchronized {
-    logger.info("Starting Persistent Connection")
-    scheduleReconnect(0, startDelay)
+  def addConnectionWatcher(watcher: ConnectionWatcher) {
+    this.synchronized {
+      watchers += watcher
+    }
+  }
+  def removeConnectionWatcher(watcher: ConnectionWatcher) {
+    this.synchronized {
+      watchers -= watcher
+    }
   }
 
-  override def beforeStop() = {
+  override def afterStart() {
+    this.synchronized {
+      logger.info("Starting Persistent Connection")
+      scheduleReconnect(0, startDelay)
+    }
+  }
+
+  override def beforeStop() {
     // can't hold lock while canceling because it blocks until wither we connect or the connection fails
     this.synchronized(reconnectDelay).foreach { _.cancel() }
     // if we're connected call the disconnect function, otherwise inform the watchers of failure
@@ -75,18 +83,22 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
     }
   }
 
-  def onDisconnect(expected: Boolean) = this.synchronized {
-    logger.info("Disconnected from broker, expected: " + expected)
-    broker.foreach(_.removeListener(this))
-    broker = None
-    watchers.foreach { _.onConnectionClosed(expected) }
-    if (!expected) {
-      logger.warn("Unexpected disconnection. Attempting reconnect.")
-      scheduleReconnect(0, startDelay)
+  def onDisconnect(expected: Boolean) {
+    this.synchronized {
+      logger.info("Disconnected from broker, expected: " + expected)
+      broker.foreach(_.removeListener(this))
+      broker = None
+      watchers.foreach {
+        _.onConnectionClosed(expected)
+      }
+      if (!expected) {
+        logger.warn("Unexpected disconnection. Attempting reconnect.")
+        scheduleReconnect(0, startDelay)
+      }
     }
   }
 
-  private def scheduleReconnect(delay: Long, nextDelay: Long) = {
+  private def scheduleReconnect(delay: Long, nextDelay: Long) {
     reconnectDelay = Some(exe.schedule(delay.milliseconds) {
       tryConnection(nextDelay.min(maxDelay))
     })

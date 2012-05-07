@@ -25,7 +25,6 @@ import org.scalatest.matchers.ShouldMatchers
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.{ BrokerConnection, BrokerConnectionFactory, BrokerDestination }
-import org.totalgrid.reef.client.sapi.client.rest.ConnectionWatcher
 import org.mockito.Mockito
 import org.totalgrid.reef.client.exception.ServiceIOException
 
@@ -40,7 +39,7 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
     }
 
     val connection = new BrokerConnection {
-      def unexpectedDisconnect() = {
+      def unexpectedDisconnect() {
         onDisconnect(false)
       }
       def disconnect() = {

@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.sapi.client.rest.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,14 +18,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest
 
-import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.broker.BrokerConnection
 
-trait SubscriptionHandler {
+trait ConnectionWatcher {
+  def onConnectionClosed(expected: Boolean)
 
-  def publishEvent[A](typ: Envelope.SubscriptionEventType, value: A, key: String): Unit
-
-  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit
+  def onConnectionOpened(connection: BrokerConnection)
 }
-
