@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.javaimpl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -24,15 +25,18 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import net.agileautomata.commons.testing._
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.proto.Envelope
-
-import org.totalgrid.reef.client.{ AddressableDestination, SubscriptionCreationListener, SubscriptionBinding, AnyNodeDestination }
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Promise, SuccessResponse, Response }
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.sapi.client.rest.fixture._
+import org.totalgrid.reef.client.javaimpl.fixture._
+import org.totalgrid.reef.client.factory.ReefConnectionFactory
+import org.totalgrid.reef.client._
+import operations.Response
 
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
+import sapi.client.BasicRequestHeaders
+import scala.collection.JavaConversions._
+import types.TypeDescriptor
 
 @RunWith(classOf[JUnitRunner])
 class QpidClientToService extends ClientToServiceTest with QpidBrokerTestFixture
@@ -40,43 +44,83 @@ class QpidClientToService extends ClientToServiceTest with QpidBrokerTestFixture
 @RunWith(classOf[JUnitRunner])
 class MemoryClientToService extends ClientToServiceTest with MemoryBrokerTestFixture
 
+object SimpleRestAccess {
+  class ClientWrap(c: Client) {
+    def put[A](v: A): Promise[Response[A]] = c.getServiceOperations.operation("Failure doing put") { rest =>
+      rest.put(v)
+    }
+    def put[A](v: A, hdrs: RequestHeaders): Promise[Response[A]] = c.getServiceOperations.operation("Failure doing put") { rest =>
+      rest.put(v, hdrs)
+    }
+    def subscribe[A](desc: TypeDescriptor[A]): Subscription[A] = {
+      c.getServiceOperations.getBindOperations.subscribe(desc)
+    }
+
+    def attempt[A](f: => A) = c.getInternal.getExecutor.attempt(f)
+  }
+  implicit def implClient(c: Client): ClientWrap = new ClientWrap(c)
+}
+
 // provides a specification for how the client should interact with brokers. testable on multiple brokers via minx
 trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
+  import SimpleRestAccess._
 
-  def fixture[A](attachService: Boolean)(fun: Client => A) = broker { b =>
-    val executor = Executors.newResizingThreadPool(5.minutes)
+  def fixture[A](attachService: Boolean)(fun: (Client, Connection) => A) = {
+    val (brokerFac, kill) = getFactory
+    val exe = Executors.newResizingThreadPool(5.minutes)
+    val fac = new ReefConnectionFactory(brokerFac, exe, ExampleServiceList)
     var binding: Option[SubscriptionBinding] = None
     try {
-      val conn = new DefaultConnection(b, executor, if (attachService) 1000 else 100)
-      conn.addServiceInfo(ExampleServiceList.info)
-      binding = if (attachService) Some(conn.bindService(new SomeIntegerIncrementService(conn), executor, new AnyNodeDestination, true))
-      else Some(conn.bindService(new BlackHoleService(SomeIntegerTypeDescriptor), executor, new AnyNodeDestination, true))
-      fun(conn.login("foo"))
+      val conn = fac.connect()
+      binding = if (attachService) {
+        val srv = new SomeIntegerIncrementService(conn.getServiceRegistration.getEventPublisher)
+        Some(conn.getServiceRegistration.bindService(srv, srv.descriptor, new AnyNodeDestination, true))
+      } else {
+        val srv = new BlackHoleService(SomeIntegerTypeDescriptor)
+        Some(conn.getServiceRegistration.bindService(srv, srv.descriptor, new AnyNodeDestination, true))
+      }
+      fun(conn.createClient("foo"), conn)
     } finally {
       binding.foreach(_.cancel())
-      executor.terminate()
+      fac.terminate()
+      exe.terminate()
+      kill()
     }
+
   }
 
   def testSuccess(c: Client) {
     val i = SomeInteger(1)
-    c.put(i).await should equal(Response(Envelope.Status.OK, i.increment))
+    checkResp(c.put(i).await, Envelope.Status.OK, i.increment)
   }
 
   test("Service calls are successful") {
-    fixture(true) { c =>
+    fixture(true) { (c, _) =>
       testSuccess(c)
     }
   }
 
+  def checkResp[A](resp: Response[A], status: Envelope.Status, v: A) {
+    resp.isSuccess should equal(true)
+    resp.getStatus should equal(status)
+    resp.getList.get(0) should equal(v)
+  }
+
+  def checkResp[A](resp: Response[A], list: List[A]) {
+    resp.isSuccess should equal(true)
+    val respList = resp.getList.toList
+    respList should equal(list)
+  }
+
   test("Service calls can be listened for") {
-    fixture(true) { c =>
+    fixture(true) { (c, _) =>
       val i = SomeInteger(1)
       val future = c.put(i)
       val events = new SynchronizedList[SomeInteger]
-      future.listen { result =>
-        result should equal(Response(Envelope.Status.OK, i.increment))
-        events.append(result.list.head)
+      future.listenFor { prom =>
+        val resp = prom.await()
+        checkResp(resp, Envelope.Status.OK, i.increment)
+        events.append(resp.getList.head)
       }
       events shouldBecome (i.increment) within (100)
     }
@@ -84,9 +128,9 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
 
   def testPromiseAwait(c: Client) {
     val i = SomeInteger(1)
-    val promise = Promise.from(c.put(i).map { _.one })
+    val promise = c.put(i).map(_.one)
     val events = new SynchronizedList[SomeInteger]
-    promise.listen { prom =>
+    promise.listenFor { prom =>
       prom.await should equal(i.increment)
       events.append(prom.await)
     }
@@ -94,29 +138,31 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
   }
 
   test("Service calls can be listened for (promise)") {
-    fixture(true) { c =>
-      testPromiseAwait(c)
-    }
+    fixture(true) { (c, _) => testPromiseAwait(c) }
   }
 
   test("Service calls promises can be listened for (inside strand)") {
-    fixture(true) { c =>
+    fixture(true) { (c, _) =>
       c.attempt {
         testPromiseAwait(c)
-      }.await
+      }
     }
   }
 
   test("Subscription calls work") {
-    fixture(true) { c =>
+    fixture(true) { (c, _) =>
       val events = new SynchronizedList[SomeInteger]
       val bindings = new SynchronizedList[SubscriptionBinding]
       c.addSubscriptionCreationListener(new SubscriptionCreationListener {
-        def onSubscriptionCreated(binding: SubscriptionBinding) { bindings.append(binding) }
+        def onSubscriptionCreated(binding: SubscriptionBinding) {
+          bindings.append(binding)
+        }
       })
       val sub = c.subscribe(SomeIntegerTypeDescriptor)
       val headers = BasicRequestHeaders.empty.setSubscribeQueue(sub.getId)
-      c.put(SomeInteger(1), headers).await should equal(SuccessResponse(list = List(SomeInteger(2))))
+
+      checkResp(c.put(SomeInteger(1), headers).await, List(SomeInteger(2)))
+
       sub.onEvent(e => events.append(e.value))
       events shouldBecome SomeInteger(2) within 5000
       sub.cancel()
@@ -125,29 +171,35 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     }
   }
 
-  test("Service bindings work") {
-    fixture(true) { c =>
+  /*test("Service bindings work") {
+    fixture(true) { (c, conn) =>
       val bindings = new SynchronizedList[SubscriptionBinding]
       c.addSubscriptionCreationListener(new SubscriptionCreationListener {
-        def onSubscriptionCreated(binding: SubscriptionBinding) { bindings.append(binding) }
+        def onSubscriptionCreated(binding: SubscriptionBinding) {
+          bindings.append(binding)
+        }
       })
-      val sub = c.bindService(new BlackHoleService(SomeIntegerTypeDescriptor), c, new AnyNodeDestination, true)
+      val sub = conn.getServiceRegistration.bindService(new BlackHoleService(SomeIntegerTypeDescriptor), SomeIntegerTypeDescriptor, new AnyNodeDestination, true)
       sub.cancel()
 
       bindings.get.size should equal(1)
     }
-  }
+  }*/
 
   test("Events come in right order") {
-    fixture(true) { c =>
+    fixture(true) { (c, conn) =>
+      val eventPub = conn.getServiceRegistration.getEventPublisher
+
       val events = new SynchronizedList[Int]
       val sub = c.subscribe(SomeIntegerTypeDescriptor)
-      c.bindQueueByClass(sub.getId(), "#", classOf[SomeInteger])
+      eventPub.bindQueueByClass(sub.getId, "#", classOf[SomeInteger])
       sub.onEvent(e => events.append(e.value.num))
 
       val range = 0 to 1500
 
-      range.foreach { i => c.publishEvent(Envelope.SubscriptionEventType.MODIFIED, SomeInteger(i), "key") }
+      range.foreach { i =>
+        eventPub.publishEvent(Envelope.SubscriptionEventType.MODIFIED, SomeInteger(i), "key")
+      }
 
       events shouldBecome range.toList within 5000
       sub.cancel()
@@ -156,15 +208,15 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
 
   def testTimeout(c: Client) {
     val i = SomeInteger(1)
-    c.put(i).await.status should equal(Envelope.Status.RESPONSE_TIMEOUT)
+    c.put(i).await.getStatus should equal(Envelope.Status.RESPONSE_TIMEOUT)
   }
 
   test("Failures timeout sucessfully") {
-    fixture(false) { c =>
+    fixture(false) { (c, _) =>
       testTimeout(c)
     }
   }
-
+  /*
   def testFlatmapSuccess(c: Client) {
     val i = SomeInteger(1)
     // this test simulates an API call where we do 2 steps
@@ -184,16 +236,17 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
   }
 
   test("Flatmapped service calls are successful") {
-    fixture(true) { c =>
-      testFlatmapSuccess(c)
+    fixture(true) {
+      c =>
+        testFlatmapSuccess(c)
     }
-  }
+  }*/
 
   // below show that these operations will succeed when run inside the strand (like on a subscription
   // callback)
 
   test("Service calls are successful (inside strand)") {
-    fixture(true) { c =>
+    fixture(true) { (c, _) =>
       c.attempt {
         testSuccess(c)
       }.await
@@ -201,33 +254,36 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
   }
 
   test("Failures timeout sucessfully (inside strand)") {
-    fixture(false) { c =>
+    fixture(false) { (c, _) =>
       c.attempt {
         testTimeout(c)
       }.await
     }
   }
 
-  test("Flatmap services calls are successfull (inside strand)") {
+  /*test("Flatmap services calls are successfull (inside strand)") {
     // currently deadlocks because flatMap is implemented with a listen call that gets marshalled
     // to this same strand and therefore can never be run (since we are inside that thread already)
-    fixture(true) { c =>
+    fixture(true) { (c, _) =>
       c.attempt {
         testFlatmapSuccess(c)
       }.await
     }
-  }
+  } */
 
   test("Services can be late bound using queue names") {
-    fixture(false) { c =>
+    fixture(false) { (c, conn) =>
+      val reg = conn.getServiceRegistration
+      val binding = c.getServiceOperations.getBindOperations
+      val pub = conn.getServiceRegistration.getEventPublisher
 
       val address = new AddressableDestination("magic-key")
 
-      val sub = c.lateBindService(new SomeIntegerIncrementService(c), c)
+      val sub = binding.lateBindService(new SomeIntegerIncrementService(pub), SomeIntegerTypeDescriptor)
 
-      c.bindServiceQueue(sub.getId, address.getKey, classOf[SomeInteger])
+      reg.bindServiceQueue(sub.getId, address.getKey, classOf[SomeInteger])
       val request = c.put(SomeInteger(1), BasicRequestHeaders.empty.setDestination(address))
-      request.await should equal(SuccessResponse(list = List(SomeInteger(2))))
+      checkResp(request.await, List(SomeInteger(2)))
     }
   }
 }

@@ -34,7 +34,7 @@ import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.Subscription
-import org.totalgrid.reef.client.sapi.client.rest.fixture.{ SomeInteger, SomeIntegerTypeDescriptor }
+import org.totalgrid.reef.client.javaimpl.fixture.{ SomeInteger, SomeIntegerTypeDescriptor }
 import org.totalgrid.reef.client.exception._
 
 @RunWith(classOf[JUnitRunner])

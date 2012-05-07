@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.javaimpl.fixture
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import net.agileautomata.executor4s.Executors
@@ -44,6 +45,7 @@ trait BrokerTestFixture {
 
 trait QpidBrokerTestFixture extends BrokerTestFixture {
   lazy val config = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"))
+
   def getFactory = (new QpidBrokerConnectionFactory(config), () => {})
 }
 

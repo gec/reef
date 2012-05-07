@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.javaimpl.fixture
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.fixture
 
 import net.agileautomata.executor4s.Executors
 
@@ -25,24 +26,27 @@ import org.totalgrid.reef.broker.BrokerConnectionFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.sapi.client.rest.fixture._
 import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.client.settings.util.PropertyReader
 
 trait BrokerFixture {
   def factory: BrokerConnectionFactory
+
   def cleanup(): Unit = {}
 }
 
 class QpidBrokerFixture(config: AmqpSettings) extends BrokerFixture {
   private val fac = new QpidBrokerConnectionFactory(config)
+
   def factory = fac
 }
 
 class MemoryBrokerFixture extends BrokerFixture {
   private val exe = Executors.newScheduledThreadPool()
   private val fac = new MemoryBrokerConnectionFactory(exe)
+
   override def factory = fac
+
   override def cleanup() = exe.terminate()
 }
 

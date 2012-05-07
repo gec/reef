@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.javaimpl.fixture
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,22 +18,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.fixture
 
-import org.totalgrid.reef.client.sapi.client.rest.SubscriptionHandler
-import org.totalgrid.reef.client.sapi.service.SyncServiceBase
-
+import org.totalgrid.reef.client.types.TypeDescriptor
+import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
 
-import org.totalgrid.reef.client.proto.Envelope
+class BlackHoleService[A <: AnyRef](val descriptor: TypeDescriptor[A]) extends AsyncServiceBase[A] {
+  override def getAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
 
-class SomeIntegerIncrementService(handler: SubscriptionHandler) extends SyncServiceBase[SomeInteger] {
-  val descriptor = SomeIntegerTypeDescriptor
+  override def putAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
 
-  final override def put(req: SomeInteger, headers: BasicRequestHeaders): Response[ServiceType] = {
-    val rsp = req.increment
-    headers.subQueue.foreach(q => handler.bindQueueByClass(q, "#", req.getClass))
-    handler.publishEvent(Envelope.SubscriptionEventType.MODIFIED, req.increment, "all")
-    Response(Envelope.Status.OK, rsp)
-  }
+  override def deleteAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
+
+  override def postAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
 }

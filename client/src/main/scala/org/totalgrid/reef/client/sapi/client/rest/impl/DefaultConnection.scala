@@ -193,7 +193,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     val serviceInfo = getServiceInfo(service.descriptor.getKlass)
     val descriptor = serviceInfo.getDescriptor
 
-    def subscribe[A](competing: Boolean) = {
+    def subscribe(competing: Boolean) = {
       conn.declareExchange(serviceInfo.getEventExchange)
       conn.declareExchange(descriptor.id)
       val sub = if (competing) conn.listen(descriptor.id + "_server")

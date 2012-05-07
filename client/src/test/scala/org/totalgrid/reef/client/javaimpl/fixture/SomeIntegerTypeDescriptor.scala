@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.javaimpl.fixture
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,10 +18,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.fixture
 
 import java.io._
-import org.totalgrid.reef.client.types.{ ServiceInfo, TypeDescriptor }
+import java.util.List
+import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList }
+import org.totalgrid.reef.client.types.{ ServiceTypeInformation, ServiceInfo, TypeDescriptor }
+import scala.collection.JavaConversions._
 
 case class SomeInteger(num: Int) extends Serializable {
   def increment = SomeInteger(num + 1)
@@ -27,11 +31,25 @@ case class SomeInteger(num: Int) extends Serializable {
 
 object SomeIntegerTypeDescriptor extends SerializableTypeDescriptor[SomeInteger] {
   def id = "SomeInteger"
+
   def getKlass = classOf[SomeInteger]
 }
 
-object ExampleServiceList {
+/*class SomeIntegerTypeInformation extends ServiceTypeInformation[SomeInteger, SomeInteger] {
+  def getDescriptor: TypeDescriptor[SomeInteger] = SomeIntegerTypeDescriptor
+
+  def getSubscriptionDescriptor: TypeDescriptor[SomeInteger] = SomeIntegerTypeDescriptor
+
+  def getEventExchange: String = SomeIntegerTypeDescriptor.id
+}*/
+class SomeIntegerTypeInformation extends ServiceInfo(SomeIntegerTypeDescriptor, SomeIntegerTypeDescriptor)
+
+object ExampleServiceList extends ServicesList {
   def info = new ServiceInfo(SomeIntegerTypeDescriptor, SomeIntegerTypeDescriptor)
+
+  def getServiceTypeInformation: List[ServiceTypeInformation[_, _]] = scala.List(new SomeIntegerTypeInformation).toList
+
+  def getServiceProviders: List[ServiceProviderInfo] = Nil
 }
 
 trait SerializableTypeDescriptor[A <: Serializable] extends TypeDescriptor[A] {
