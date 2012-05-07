@@ -45,7 +45,7 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
 
     c.importedClasses().toList.foreach(p => stream.println("import " + p.qualifiedTypeName()))
     stream.println("import scala.collection.JavaConversions._")
-    stream.println("import org.totalgrid.reef.client.sapi.client.rpc.framework.Converters._")
+    stream.println("import org.totalgrid.reef.client.sapi.rpc.util.Converters._")
     stream.println("import org.totalgrid.reef.client.service." + japiPackage + "{" + c.name + targetEx + "=> JInterface }")
 
     if (isFuture) {
@@ -81,6 +81,8 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
         if (p.`type`().simpleTypeName == "List") p.name + ".toList"
         else p.name
       }.mkString(", ")
+      implCall += ")"
+      implCall += ")"
       implCall += ")"
 
       if ((m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List") implCall = implCall + ".map(a => convert(a))"

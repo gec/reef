@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rpc.framework
+package org.totalgrid.reef.client.sapi.rpc.util
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.SubscriptionResult
@@ -26,6 +26,7 @@ object Converters {
   def convert[A](result: SubscriptionResult[List[A], A]) = {
     new SubscriptionResult[java.util.List[A], A] {
       def getSubscription = result.getSubscription
+
       def getResult = result.getResult
     }
   }
