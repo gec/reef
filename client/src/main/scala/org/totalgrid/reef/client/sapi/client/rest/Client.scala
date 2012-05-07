@@ -28,7 +28,6 @@ trait Client
     extends Executor
     with RestOperations
     with ClientBindOperations
-    with RequestSpyHook
     with DefaultHeaders
     with Connection
     with RpcProvider

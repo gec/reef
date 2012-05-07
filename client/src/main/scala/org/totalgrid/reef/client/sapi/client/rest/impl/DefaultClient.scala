@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.sapi.client.{ RequestSpyHook, BasicRequestHeaders }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.proto.Envelope.{ SubscriptionEventType, Verb }
 import org.totalgrid.reef.client.sapi.service.AsyncService
 
@@ -32,7 +32,7 @@ import org.totalgrid.reef.client.{ Promise => JPromise }
 import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo, Routable }
 import org.totalgrid.reef.client.operations.{ RequestListenerManager, RequestListener, Response => JResponse }
 
-class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with RequestSpyHook with ExecutorDelegate {
+class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with ExecutorDelegate {
 
   protected def executor = strand
 
@@ -52,10 +52,11 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
     listeners.foreach(_.onRequest(verb, payload, promise))
   }
 
+  @Deprecated
   override def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
     val usedHeaders = headers.map { getHeaders.merge(_) }.getOrElse(getHeaders)
     val future = conn.request(verb, payload, usedHeaders, strand)
-    notifyRequestSpys(verb, payload, future)
+    //notifyRequestSpys(verb, payload, future)
     future
   }
 
