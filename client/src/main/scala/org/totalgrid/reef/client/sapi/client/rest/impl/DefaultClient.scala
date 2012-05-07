@@ -52,14 +52,6 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
     listeners.foreach(_.onRequest(verb, payload, promise))
   }
 
-  @Deprecated
-  override def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
-    val usedHeaders = headers.map { getHeaders.merge(_) }.getOrElse(getHeaders)
-    val future = conn.request(verb, payload, usedHeaders, strand)
-    //notifyRequestSpys(verb, payload, future)
-    future
-  }
-
   override def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[BasicRequestHeaders]): JPromise[JResponse[A]] = {
     val usedHeaders = headers.map(getHeaders.merge(_)).getOrElse(getHeaders)
     val promise = conn.requestJava(verb, payload, usedHeaders, strand)

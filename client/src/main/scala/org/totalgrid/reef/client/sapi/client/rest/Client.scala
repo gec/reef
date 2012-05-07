@@ -26,7 +26,6 @@ import org.totalgrid.reef.client.operations.{ RequestListenerManager, Response =
 
 trait Client
     extends Executor
-    with RestOperations
     with ClientBindOperations
     with DefaultHeaders
     with Connection

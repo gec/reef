@@ -18,33 +18,9 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest
 
-import org.totalgrid.reef.client.sapi.client._
-import org.totalgrid.reef.client.proto.Envelope.Verb
-
-import net.agileautomata.executor4s.Future
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.{ Subscription, SubscriptionBinding }
-
-/**
- * api-implementer facing interface that encapsulates the get/put/post/delete operations without revealing which
- * executor our request is going to be returned to
- */
-trait RestOperations {
-
-  def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]): Future[Response[A]]
-
-  final def get[A](payload: A, headers: BasicRequestHeaders) = request(Verb.GET, payload, Some(headers))
-  final def delete[A](payload: A, headers: BasicRequestHeaders) = request(Verb.DELETE, payload, Some(headers))
-  final def post[A](payload: A, headers: BasicRequestHeaders) = request(Verb.POST, payload, Some(headers))
-  final def put[A](payload: A, headers: BasicRequestHeaders) = request(Verb.PUT, payload, Some(headers))
-
-  final def get[A](payload: A) = request(Verb.GET, payload, None)
-  final def delete[A](payload: A) = request(Verb.DELETE, payload, None)
-  final def post[A](payload: A) = request(Verb.POST, payload, None)
-  final def put[A](payload: A) = request(Verb.PUT, payload, None)
-
-}
 
 /**
  * api-implementer facing interface that allows us to ask for a subscription or serviceBinding without worrying
