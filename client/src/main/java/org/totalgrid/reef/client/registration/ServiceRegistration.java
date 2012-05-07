@@ -23,16 +23,17 @@ import org.totalgrid.reef.client.SubscriptionBinding;
 import org.totalgrid.reef.client.types.TypeDescriptor;
 
 /**
- * Client-based interface for implementers of services. Provides the ability to bind services (listen for service
+ * Interface for implementers of services. Provides the ability to bind services (listen for service
  * requests) and publish service subscription events.
  *
+ * Only should be used by applications wanting to expose services to other clients/applications.
+ * Most of capabilities exposed by this class require "high level" broker access with the ability to declare exchanges
+ * perform bind operations.
  */
 public interface ServiceRegistration
 {
     /**
      * Gets interface for publishing service subscription events.
-     *
-     * @return
      */
     EventPublisher getEventPublisher();
 
@@ -42,7 +43,7 @@ public interface ServiceRegistration
      * @param service Service implementation requests will be forwarded to.
      * @param descriptor Type descriptor for service request/response type.
      * @param destination Destination type that determines request forwarding (AddressableDestination/AnyNodeDestination).
-     * @param competing
+     * @param competing whether each message should be consumed once or sent to all listeners
      * @param <T> Service request/response type.
      * @return Handle to manage the lifecycle of the binding.
      */

@@ -44,6 +44,7 @@ public interface Client
 {
 
     /**
+     * Get current common RequestHeaders object.
      * @return current immutable RequestHeaders for the Client
      */
     RequestHeaders getHeaders();
@@ -74,20 +75,19 @@ public interface Client
     /**
      * Get an active service interface by class.
      * @param klass The class of interface to return. Valid interfaces are found in org.totalgrid.reef.client.service
-     * @param <A>
-     * @return
      * @throws org.totalgrid.reef.client.exception.ReefServiceException If the interface can not be found
      */
     <A> A getService( Class<A> klass );
 
     /**
      * Delete the authToken associated with this client, all future requests will fail with an
-     * UnauthorizedException.
+     * UnauthorizedException. This will also logout all other clients created using the same authToken including
+     * all sibling clients generated with spawn.
      */
     void logout();
 
     /**
-     * create a new client based on this one that has seperate state
+     * create a new client based on this one that has seperate state and subscription threading.
      * @return a new client with just the authToken and connection reference copied
      */
     Client spawn();
@@ -95,16 +95,22 @@ public interface Client
     ClientInternal getInternal();
 
     /**
-     * @return interface for making low-level requests to the client
+     * interface for making low-level requests to the server when creating a new "service" class
      */
     ServiceOperations getServiceOperations();
 
     /**
-     * @return a controller for the BatchMode of the client
+     * a controller for the BatchMode of the client
      */
     Batching getBatching();
 
+    /**
+     * controller for adding/removing RequestListeners to this client
+     */
     RequestListenerManager getRequestListenerManager();
 
+    /**
+     * shortcut to connection level service registry, shared by all clients on same connection
+     */
     ServiceRegistry getServiceRegistry();
 }

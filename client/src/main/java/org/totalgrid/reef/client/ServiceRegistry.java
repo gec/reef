@@ -20,13 +20,28 @@ package org.totalgrid.reef.client;
 
 import org.totalgrid.reef.client.types.ServiceTypeInformation;
 
+/**
+ * the service registry keeps the low-level details of routing and type information for the types that are sent
+ * over the wire to the server. It is also where we keep the factories for creating the "semantic" high level
+ * api classes (PointService, EntityService etc.).
+ */
 public interface ServiceRegistry
 {
     void addServicesList( ServicesList servicesList );
 
+    /**
+     * add a factory for creating a high level api class
+     * @param info describes the interfaces implemented and the implementing class
+     */
     void addServiceProvider( ServiceProviderInfo info );
 
+    /**
+     * add the low-level information on a type we plan on sending over the wire
+     */
     <T, U> void addServiceTypeInformation( ServiceTypeInformation<T, U> typeInformation );
 
+    /**
+     * gets the ServiceTypeInformation for an objects class.
+     */
     <T> ServiceTypeInformation<T, ?> getServiceTypeInformation( Class<T> klass );
 }

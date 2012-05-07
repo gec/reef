@@ -24,10 +24,30 @@ import org.totalgrid.reef.client.types.TypeDescriptor;
 import org.totalgrid.reef.client.registration.Service;
 
 
+/**
+ * Low-level interface to create a channel to receive events (either subscriptions or service requests).
+ *
+ * Subscriptions and Service created using this class will be serviced using the clients thread and therefore
+ * no service response or subscription handling should block or take a long time. If much processing is necessary
+ * a dedicated client (and therefore thread) can be used or the work should be pushed out to seperate worker
+ * thread.
+ */
 public interface BindOperations
 {
+    /**
+     * Creates a subscription queue for objects of a particular type. The id of this queue should be sent
+     * to the server so it can do the binding.
+     * @param descriptor object that includes the class info and deseralization code.
+     * @return subscription reference for starting or canceling.
+     */
     <T> Subscription<T> subscribe( TypeDescriptor<T> descriptor );
 
-
+    /**
+     * Similar to a subscription but tracks who sent the message to us so we can send the response back to the
+     * correct client. No binding is done in the client, we send the id to the server so it can bind it correctly.
+     * @param service service object that takes a typed request and provides a response to the caller
+     * @param descriptor object that includes the class info and deseralization code.
+     * @return binding that we can then cancel when we are done with the server.
+     */
     <T> SubscriptionBinding lateBindService( Service service, TypeDescriptor<T> descriptor );
 }

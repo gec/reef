@@ -85,5 +85,10 @@ public interface ServiceOperations
      */
     <T, U> Promise<SubscriptionBinding> clientServiceBinding( Service service, TypeDescriptor<U> descriptor, SubscriptionBindingRequest<T> request );
 
+    /**
+     * Most clients should be able to use subscriptionRequest or clientServiceBinding but in some cases a client may
+     * need direct access to the binding operations.
+     * @return low-level binding operations to create subscription and service queues
+     */
     BindOperations getBindOperations();
 }

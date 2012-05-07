@@ -18,9 +18,21 @@
  */
 package org.totalgrid.reef.client.operations;
 
+/**
+ * We can attach a listener that is notified of every request low-level to the server
+ * this allows creating useful logging or state tracking objects.
+ *
+ * Requests listeners are client-only state and are not copied by spawn.
+ */
 public interface RequestListenerManager
 {
+    /**
+     * @param listener new listener to add, adding the same listener more than once has no effect
+     */
     void addRequestListener( RequestListener listener );
 
+    /**
+     * @param listener listener to remove, silently ignores a remove of an unknown object
+     */
     void removeRequestListener( RequestListener listener );
 }
