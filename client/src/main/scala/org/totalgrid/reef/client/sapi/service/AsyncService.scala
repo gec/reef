@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.service
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import java.util.{ List, Map }
-import org.totalgrid.reef.client.registration.{ ServiceResponseCallback => JCallback, Service }
+import org.totalgrid.reef.client.registration.{ ServiceResponseCallback, Service }
 import org.totalgrid.reef.client.proto.Envelope.ServiceResponse
 
 /**
@@ -30,7 +30,7 @@ import org.totalgrid.reef.client.proto.Envelope.ServiceResponse
 trait AsyncService[A] extends ServiceDescriptor[A] with Service {
   def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback): Unit
 
-  def respond(request: Envelope.ServiceRequest, headers: Map[String, List[String]], callback: JCallback) {
+  def respond(request: Envelope.ServiceRequest, headers: Map[String, List[String]], callback: ServiceResponseCallback) {
     respond(request, BasicRequestHeaders.from(headers), new ServiceResponseCallback {
       def onResponse(rsp: ServiceResponse) { callback.onResponse(rsp) }
     })

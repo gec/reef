@@ -96,9 +96,4 @@ sealed case class FailureResponse(status: Envelope.Status = Envelope.Status.INTE
 sealed case class ResponseTimeout(interval: TimeInterval) extends FailureResponse(Envelope.Status.RESPONSE_TIMEOUT,
   "Timed out waiting for response after: " + interval)
 
-case class Event[A](event: Envelope.SubscriptionEventType, value: A) extends SubscriptionEvent[A] {
-
-  final override def getEventType() = event
-  final override def getValue() = value
-}
 

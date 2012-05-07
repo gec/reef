@@ -30,7 +30,8 @@ import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Lifecycle
 import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
+import org.totalgrid.reef.client.sapi.service.{ AsyncService }
+import org.totalgrid.reef.client.registration.ServiceResponseCallback
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.services.authz.NullAuthzService

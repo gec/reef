@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.operations.scl
 
 import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.client.sapi.service.AsyncService
+import org.totalgrid.reef.client.registration.Service
 import org.totalgrid.reef.client.operations._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client._
@@ -52,8 +52,8 @@ trait ScalaServiceOperations {
       })
     }
 
-    def clientSideService[A, B](handler: AsyncService[B], err: => String)(fun: (SubscriptionBinding, RestOperations) => Promise[A]): Promise[SubscriptionBinding] = {
-      ops.clientServiceBinding(handler, handler.descriptor, new SubscriptionBindingRequest[A] {
+    def clientSideService[A, B](handler: Service, desc: TypeDescriptor[B], err: => String)(fun: (SubscriptionBinding, RestOperations) => Promise[A]): Promise[SubscriptionBinding] = {
+      ops.clientServiceBinding(handler, desc, new SubscriptionBindingRequest[A] {
         def execute(binding: SubscriptionBinding, operations: RestOperations): Promise[A] = fun(binding, operations)
 
         def errorMessage(): String = err

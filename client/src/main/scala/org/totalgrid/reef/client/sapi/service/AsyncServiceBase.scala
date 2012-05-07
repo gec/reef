@@ -21,6 +21,7 @@ package org.totalgrid.reef.client.sapi.service
 import org.totalgrid.reef.client.proto.Envelope
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.registration.ServiceResponseCallback
 
 trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
     with ServiceHelpers[A]

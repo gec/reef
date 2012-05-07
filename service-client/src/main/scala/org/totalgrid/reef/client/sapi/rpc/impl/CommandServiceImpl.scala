@@ -26,6 +26,7 @@ import org.totalgrid.reef.client.sapi.rpc.CommandService
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
 import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
 trait CommandServiceImpl extends UsesServiceOperations with CommandService {
 
@@ -183,7 +184,7 @@ trait CommandServiceImpl extends UsesServiceOperations with CommandService {
 
     val service = new EndpointCommandHandlerImpl(handler)
 
-    ops.clientSideService(service, "Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { (binding, session) =>
+    ops.clientSideService(service, Descriptors.userCommandRequest, "Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { (binding, session) =>
       import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection, CommandHandlerBinding }
 
       val endpointConnection = EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid))

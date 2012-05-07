@@ -23,13 +23,14 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
 import util.SynchronizedResult
 import org.totalgrid.reef.client.sapi.client._
-import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, ServiceHelpers }
+import org.totalgrid.reef.client.sapi.service.{ ServiceHelpers }
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, SelfIdentityingServiceRequest, ServiceRequest, BatchServiceRequest }
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 
 import org.totalgrid.reef.services.framework._
+import org.totalgrid.reef.client.registration.ServiceResponseCallback
 
 class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
     extends ServiceEntryPoint[BatchServiceRequest] {

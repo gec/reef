@@ -81,8 +81,7 @@ class MeasurementProcessorServicesImpl(client: Client, eventPub: EventPublisher)
   override def bindMeasurementProcessingNode(handler: MeasBatchProcessor, conn: MeasurementProcessingConnection) = {
     val service = new AddressableMeasurementBatchService(handler)
 
-    ops.clientSideService(service, "Couldn't register as measurement processor for stream: " + conn.getRouting.getServiceRoutingKey) { (binding, session) =>
-      import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection, CommandHandlerBinding }
+    ops.clientSideService(service, Descriptors.measurementBatch, "Couldn't register as measurement processor for stream: " + conn.getRouting.getServiceRoutingKey) { (binding, session) =>
 
       val bindingProto = MeasurementStreamBinding.newBuilder.setMeasurementQueue(binding.getId).setProcessingConnection(conn).build
 

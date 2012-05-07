@@ -22,7 +22,7 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.proto.Envelope.{ SubscriptionEventType, Verb }
-import org.totalgrid.reef.client.sapi.service.AsyncService
+import org.totalgrid.reef.client.registration.Service
 
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.UserSettings
@@ -63,20 +63,20 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
   final override def subscribe[A](descriptor: TypeDescriptor[A]) = {
     notifySubscriptionCreated(conn.subscribe(descriptor, strand))
   }
-  final override def lateBindService[A](service: AsyncService[A]) = {
-    notifySubscriptionCreated(conn.lateBindService(service, strand))
+  final override def lateBindService[A](service: Service, descriptor: TypeDescriptor[A]) = {
+    notifySubscriptionCreated(conn.lateBindService(service, descriptor, strand))
   }
 
   // implement Bindable
   final override def subscribe[A](descriptor: TypeDescriptor[A], dispatcher: Executor) = {
     notifySubscriptionCreated(conn.subscribe(descriptor, dispatcher))
   }
-  final override def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean) = {
-    notifySubscriptionCreated(conn.bindService(service, dispatcher, destination, competing))
+  final override def bindService[A](service: Service, descriptor: TypeDescriptor[A], dispatcher: Executor, destination: Routable, competing: Boolean) = {
+    notifySubscriptionCreated(conn.bindService(service, descriptor, dispatcher, destination, competing))
   }
   final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
-  final override def lateBindService[A](service: AsyncService[A], dispatcher: Executor) =
-    notifySubscriptionCreated(conn.lateBindService(service, dispatcher))
+  final override def lateBindService[A](service: Service, descriptor: TypeDescriptor[A], dispatcher: Executor) =
+    notifySubscriptionCreated(conn.lateBindService(service, descriptor, dispatcher))
   final override def bindServiceQueue[A](subQueue: String, key: String, klass: Class[A]) = conn.bindServiceQueue(subQueue, key, klass)
 
   final override def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) = conn.publishEvent(typ, value, key)

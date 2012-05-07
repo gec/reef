@@ -27,7 +27,7 @@ import org.mockito.Mockito
 import org.totalgrid.reef.client.sapi.rpc.MeasurementService
 import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
-import org.totalgrid.reef.client.sapi.client.Event
+import org.totalgrid.reef.client.operations.scl.Event
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.calc.lib.InputBucket.{ LimitRangeBucket, SingleLatestBucket }
 

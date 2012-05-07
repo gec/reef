@@ -18,13 +18,14 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
+import scala.collection.JavaConversions._
+
 import org.totalgrid.reef.client.SubscriptionBinding
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, AsyncService }
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.broker.{ BrokerConnection, BrokerSubscription, BrokerMessage, BrokerMessageConsumer }
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.registration.{ ServiceResponseCallback, Service }
 
 class DefaultServiceBinding[A](conn: BrokerConnection, sub: BrokerSubscription, exe: Executor)
     extends SubscriptionBinding with Logging {
@@ -33,7 +34,7 @@ class DefaultServiceBinding[A](conn: BrokerConnection, sub: BrokerSubscription, 
 
   def getId = sub.getQueue
 
-  def start(service: AsyncService[A]) {
+  def start(service: Service) {
     val consumer = new BrokerMessageConsumer {
       def onMessage(msg: BrokerMessage) = exe.execute {
         msg.replyTo match {
@@ -42,7 +43,7 @@ class DefaultServiceBinding[A](conn: BrokerConnection, sub: BrokerSubscription, 
             safely("Error deserializing ServiceRequest") {
               val request = Envelope.ServiceRequest.parseFrom(msg.bytes)
               import collection.JavaConversions._
-              val headers = BasicRequestHeaders.from(request.getHeadersList.toList)
+              val headers = convertHeadersToMap(request.getHeadersList.toList)
               val callback = new ServiceResponseCallback {
                 def onResponse(rsp: Envelope.ServiceResponse) = publish(rsp, dest.exchange, dest.key)
               }
@@ -52,6 +53,10 @@ class DefaultServiceBinding[A](conn: BrokerConnection, sub: BrokerSubscription, 
       }
     }
     sub.start(consumer)
+  }
+
+  private def convertHeadersToMap(keyValuePairs: List[Envelope.RequestHeader]): java.util.Map[String, java.util.List[String]] = {
+    keyValuePairs.map(e => e.getKey -> e.getValue).groupBy(_._1).mapValues(_.map(_._2): java.util.List[String])
   }
 
   private def publish(rsp: Envelope.ServiceResponse, exchange: String, key: String) = {

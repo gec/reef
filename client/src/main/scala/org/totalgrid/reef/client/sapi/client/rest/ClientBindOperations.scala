@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.client.rest
 
 import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.client.sapi.service.AsyncService
+import org.totalgrid.reef.client.registration.Service
 import org.totalgrid.reef.client.{ Subscription, SubscriptionBinding }
 
 /**
@@ -38,5 +38,5 @@ trait ClientBindOperations {
    * setups a service listener to the published "request exchange" associated with the service type A; binding must be
    * done later by an authorized agent with "services" level access to the broker using the bindServiceQueue() function.
    */
-  def lateBindService[A](service: AsyncService[A]): SubscriptionBinding
+  def lateBindService[A](service: Service, descriptor: TypeDescriptor[A]): SubscriptionBinding
 }

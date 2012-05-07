@@ -20,7 +20,8 @@ package org.totalgrid.reef.services.framework
 
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, ServiceHelpers, AsyncService }
+import org.totalgrid.reef.client.sapi.service.{ ServiceHelpers, AsyncService }
+import org.totalgrid.reef.client.registration.ServiceResponseCallback
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.client.Response

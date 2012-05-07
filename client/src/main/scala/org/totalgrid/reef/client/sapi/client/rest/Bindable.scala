@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.client.rest
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.{ Subscription, SubscriptionBinding, Routable }
 import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.client.sapi.service.AsyncService
+import org.totalgrid.reef.client.registration.Service
 
 trait Bindable {
 
@@ -37,13 +37,13 @@ trait Bindable {
    * NOTE: Requires "services" level access to broker to perform binding operations, most clients
    * do not have the necessary privileges to bind to arbitrary queues.
    */
-  def bindService[A](service: AsyncService[A], dispatcher: Executor, destination: Routable, competing: Boolean): SubscriptionBinding
+  def bindService[A](service: Service, descriptor: TypeDescriptor[A], dispatcher: Executor, destination: Routable, competing: Boolean): SubscriptionBinding
 
   /**
    * setups a service listener to the published "request exchange" associated with the service type A; binding must be
    * done later by an authorized agent with "services" level access to the broker using the bindServiceQueue() function.
    */
-  def lateBindService[A](service: AsyncService[A], dispatcher: Executor): SubscriptionBinding
+  def lateBindService[A](service: Service, descriptor: TypeDescriptor[A], dispatcher: Executor): SubscriptionBinding
 
   /**
    * Do the exchange -> queue binding for a lateBoundService

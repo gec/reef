@@ -32,7 +32,6 @@ import org.totalgrid.reef.client.operations.{ Response => JResponse }
 import org.totalgrid.reef.client.{ Promise => JPromise }
 
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
-import org.totalgrid.reef.client.sapi.service.AsyncService
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.{ UserSettings, Version }
 import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Routable }
@@ -40,6 +39,7 @@ import org.totalgrid.reef.client.javaimpl.{ ResponseWrapper }
 import org.totalgrid.reef.client.operations.impl.{ DefaultServiceOperations, FuturePromise }
 
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.registration.Service
 
 final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends Connection
@@ -188,10 +188,9 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     new DefaultSubscription[A](conn.listen(), exe, descriptor.deserialize)
   }
 
-  override def bindService[A](service: AsyncService[A], exe: Executor, destination: Routable, competing: Boolean): SubscriptionBinding = {
+  override def bindService[A](service: Service, descriptor: TypeDescriptor[A], exe: Executor, destination: Routable, competing: Boolean): SubscriptionBinding = {
 
-    val serviceInfo = getServiceInfo(service.descriptor.getKlass)
-    val descriptor = serviceInfo.getDescriptor
+    val serviceInfo = getServiceInfo(descriptor.getKlass)
 
     def subscribe(competing: Boolean) = {
       conn.declareExchange(serviceInfo.getEventExchange)
@@ -226,7 +225,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     conn.declareExchange(info.getEventExchange)
   }
 
-  override def lateBindService[A](service: AsyncService[A], exe: Executor): SubscriptionBinding = {
+  override def lateBindService[A](service: Service, descriptor: TypeDescriptor[A], exe: Executor): SubscriptionBinding = {
     val sub = new DefaultServiceBinding[A](conn, conn.listen(), exe)
     sub.start(service)
     sub
