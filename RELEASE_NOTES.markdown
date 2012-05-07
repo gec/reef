@@ -9,6 +9,39 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+Version 0.4.8 - May 9, 2012
+=============
+
+This was primarily a refactoring and cleanup release. Prior to this version there were two seperate Client interfaces,
+one for scala, one for java. We have merged all of the functionality into the java client and removed the scala client.
+Java developers and applications now have full acces to features that before were only available to scala applications.
+There were also some important performance enhancements on the service implementation side.
+
+### Major Features:
+
+* Promoted java client to "first class" citizen and ported all functionality that was previously available only to scala
+  into java client. This allowed removing all external uses of the scala client class.
+* Added point_uuid to Measurements and added getXxxxxByUuid calls for snapshots, history and statistics functions
+* Added --force option to reef:unload
+* All requests use TTL (time to live) to stop server from handling old requests.
+* Client applications that handle command requests are bound to the command queue by server only, only the main service
+  nodes need to have "bind" level access to the broker.
+* Endpoints can be "externally-managed" by ProtocolAdapters, (previous behavior of "autoAssign" is still default)
+* ProtocolAdapters change endpoint state to ERROR if there is an issue during configuration of the protocol
+
+### Reef Internals:
+
+* Added batched loading of related properties to speed up slow getXxxxx queries that were making far too many database
+  requests to populate objects.
+* Filtering of invisibile entries are done during read rather than as a post filtering step (so response limit works)
+* Requests that include ReefUUID or ReefID will "short-circuit" other ways of searching for faster lookups.
+
+### Bug fixes
+
+* Default JAVA_MAX_MEM and JAVA_MAX_PERM_MEM for server builds are now 1024M and 256M respectivley
+* If calculator protocol has a misconfiguration just the bad points are marked #ERROR, not the whole endpoint.
+* Fixed issue where measurement processor would get unassigned and never reattached
+
 Version 0.4.7 - April 11, 2012
 ==============
 
