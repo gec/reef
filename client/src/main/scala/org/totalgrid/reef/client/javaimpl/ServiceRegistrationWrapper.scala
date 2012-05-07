@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.client.javaimpl
 
-import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
 import org.totalgrid.reef.client.{ SubscriptionBinding, Routable }
 import org.totalgrid.reef.client.registration.{ EventPublisher, Service, ServiceRegistration }
 import org.totalgrid.reef.client.types.TypeDescriptor
 import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
 
-class ServiceRegistrationWrapper(conn: SConnection, exe: Executor) extends ServiceRegistration {
+class ServiceRegistrationWrapper(conn: DefaultConnection, exe: Executor) extends ServiceRegistration {
 
   def getEventPublisher: EventPublisher = new EventPublisherWrapper(conn)
 

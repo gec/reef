@@ -24,11 +24,11 @@ import operations.impl._
 import operations.{ RequestListenerManager, ServiceOperations }
 import org.totalgrid.reef.client.ServiceProviderInfo
 import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
 
 import sapi.client.BasicRequestHeaders
+import sapi.client.rest.impl.DefaultClient
 
-class ClientWrapper(client: SClient) extends Client {
+class ClientWrapper(client: DefaultClient) extends Client {
 
   def getHeaders = client.getHeaders
 

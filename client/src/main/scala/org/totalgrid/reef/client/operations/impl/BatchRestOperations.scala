@@ -18,13 +18,11 @@
  */
 package org.totalgrid.reef.client.operations.impl
 
-import org.totalgrid.reef.client.sapi.client.rest.impl.ClassLookup
 import java.util.UUID
 import com.google.protobuf.ByteString
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.types.{ TypeDescriptor, ServiceTypeInformation }
 import collection.mutable.Queue
-import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.operations.scl.ScalaPromise._
 import org.totalgrid.reef.client.operations.scl.ScalaResponse._
 import scala.collection.JavaConversions._
@@ -34,7 +32,7 @@ import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceR
 import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.operations.{ Response, RestOperations }
-import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient, ServiceRegistry }
+import org.totalgrid.reef.client.sapi.client.rest.impl.{ DefaultClient, ClassLookup }
 
 trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOperations {
   def batched: Option[BatchRestOperations] = Some(this)
@@ -42,10 +40,12 @@ trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOpera
   def batchedFlush(batchSize: Int): Promise[java.lang.Boolean]
 }
 
-class DefaultBatchRestOperations(protected val ops: RestOperations, client: SClient) extends BatchRestOperationsImpl {
+class DefaultBatchRestOperations(protected val ops: RestOperations, client: DefaultClient) extends BatchRestOperationsImpl {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getServiceInfo(klass)
   protected def futureSource[A] = FuturePromise.open[A](client)
-  protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]]) = client.notifyListeners(verb, payload, promise)
+  protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]]) {
+    client.notifyListeners(verb, payload, promise)
+  }
 
 }
 

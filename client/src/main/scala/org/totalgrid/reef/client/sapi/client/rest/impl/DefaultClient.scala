@@ -19,9 +19,7 @@
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.proto.Envelope.{ SubscriptionEventType, Verb }
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.client.registration.Service
 
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
@@ -31,8 +29,10 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.{ Promise => JPromise }
 import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo, Routable }
 import org.totalgrid.reef.client.operations.{ RequestListenerManager, RequestListener, Response => JResponse }
+import org.totalgrid.reef.client.sapi.client.{ SubscriptionCreatorManager, DefaultHeaders, BasicRequestHeaders }
 
-class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with ExecutorDelegate {
+class DefaultClient(conn: DefaultConnection, strand: Strand)
+    extends DefaultHeaders with SubscriptionCreatorManager with ExecutorDelegate with SharedServiceRegistry {
 
   protected def executor = strand
 
@@ -52,7 +52,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
     listeners.foreach(_.onRequest(verb, payload, promise))
   }
 
-  override def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[BasicRequestHeaders]): JPromise[JResponse[A]] = {
+  def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[BasicRequestHeaders]): JPromise[JResponse[A]] = {
     val usedHeaders = headers.map(getHeaders.merge(_)).getOrElse(getHeaders)
     val promise = conn.requestJava(verb, payload, usedHeaders, strand)
     notifyListeners(verb, payload, promise)
@@ -60,45 +60,59 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
   }
 
   // implement ClientBindOperations
-  final override def subscribe[A](descriptor: TypeDescriptor[A]) = {
+  def subscribe[A](descriptor: TypeDescriptor[A]) = {
     notifySubscriptionCreated(conn.subscribe(descriptor, strand))
   }
-  final override def lateBindService[A](service: Service, descriptor: TypeDescriptor[A]) = {
+  def lateBindService[A](service: Service, descriptor: TypeDescriptor[A]) = {
     notifySubscriptionCreated(conn.lateBindService(service, descriptor, strand))
   }
 
   // implement Bindable
-  final override def subscribe[A](descriptor: TypeDescriptor[A], dispatcher: Executor) = {
+  def subscribe[A](descriptor: TypeDescriptor[A], dispatcher: Executor) = {
     notifySubscriptionCreated(conn.subscribe(descriptor, dispatcher))
   }
-  final override def bindService[A](service: Service, descriptor: TypeDescriptor[A], dispatcher: Executor, destination: Routable, competing: Boolean) = {
+  def bindService[A](service: Service, descriptor: TypeDescriptor[A], dispatcher: Executor, destination: Routable, competing: Boolean) = {
     notifySubscriptionCreated(conn.bindService(service, descriptor, dispatcher, destination, competing))
   }
-  final override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) = conn.bindQueueByClass(subQueue, key, klass)
-  final override def lateBindService[A](service: Service, descriptor: TypeDescriptor[A], dispatcher: Executor) =
+  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {
+    conn.bindQueueByClass(subQueue, key, klass)
+  }
+  def lateBindService[A](service: Service, descriptor: TypeDescriptor[A], dispatcher: Executor) =
     notifySubscriptionCreated(conn.lateBindService(service, descriptor, dispatcher))
-  final override def bindServiceQueue[A](subQueue: String, key: String, klass: Class[A]) = conn.bindServiceQueue(subQueue, key, klass)
+  def bindServiceQueue[A](subQueue: String, key: String, klass: Class[A]) {
+    conn.bindServiceQueue(subQueue, key, klass)
+  }
 
-  final override def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) = conn.publishEvent(typ, value, key)
-  final override def declareEventExchange(klass: Class[_]) = conn.declareEventExchange(klass)
+  def publishEvent[A](typ: SubscriptionEventType, value: A, key: String) {
+    conn.publishEvent(typ, value, key)
+  }
+  def declareEventExchange(klass: Class[_]) {
+    conn.declareEventExchange(klass)
+  }
 
   // TODO: clone parent client settings?
-  final override def login(authToken: String) = conn.login(authToken)
-  final override def login(userName: String, password: String) = conn.login(userName, password)
-  final override def login(userSettings: UserSettings) = conn.login(userSettings)
-  final override def spawn = conn.login(getHeaders.getAuthToken)
+  def login(authToken: String) = conn.login(authToken)
+  def login(userName: String, password: String) = conn.login(userName, password)
+  def login(userSettings: UserSettings) = conn.login(userSettings)
+  def spawn() = conn.login(getHeaders.getAuthToken)
 
-  final override def addRpcProvider(info: ServiceProviderInfo) = conn.addRpcProvider(info)
-  final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, new ClientWrapper(this))
+  def addRpcProvider(info: ServiceProviderInfo) {
+    conn.addRpcProvider(info)
+  }
+  def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, new ClientWrapper(this))
 
-  final override def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = conn.addServiceInfo(info)
-  final override def getServiceInfo[A](klass: Class[A]) = conn.getServiceInfo(klass)
+  def addServiceInfo[A](info: ServiceTypeInformation[A, _]) {
+    conn.addServiceInfo(info)
+  }
+  def getServiceInfo[A](klass: Class[A]) = conn.getServiceInfo(klass)
 
-  final override def addServicesList(servicesList: ServicesList) = conn.addServicesList(servicesList)
+  def addServicesList(servicesList: ServicesList) {
+    conn.addServicesList(servicesList)
+  }
 
-  final override def disconnect() = conn.disconnect()
+  def disconnect() = conn.disconnect()
 
-  final override def logout() = conn.logout(this)
-  final override def logout(authToken: String) = conn.logout(authToken)
-  final override def logout(client: Client) = conn.logout(client)
+  def logout() = conn.logout(this)
+  def logout(authToken: String) = conn.logout(authToken)
+  def logout(client: DefaultClient) = conn.logout(client)
 }

@@ -20,14 +20,13 @@ package org.totalgrid.reef.client.javaimpl
 
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.client.exception.ReefServiceException
-
-import org.totalgrid.reef.client.sapi.client.rest.{ Connection => SConnection }
 import org.totalgrid.reef.client._
 import org.totalgrid.reef.client.ServicesList
 import net.agileautomata.executor4s.Executor
 import registration.ServiceRegistration
+import sapi.client.rest.impl.DefaultConnection
 
-class ConnectionWrapper(conn: SConnection, exe: Executor) extends Connection {
+class ConnectionWrapper(conn: DefaultConnection, exe: Executor) extends Connection {
 
   def addConnectionListener(listener: ConnectionCloseListener) {
     conn.addConnectionListener(listener)

@@ -41,11 +41,12 @@ import org.totalgrid.reef.client.operations.impl.{ DefaultServiceOperations, Fut
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.registration.Service
 
-final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
-    extends Connection
-    with BrokerConnectionListener
-    with Logging
-    with DefaultServiceRegistry {
+class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
+    extends BrokerConnectionListener
+    with DefaultServiceRegistry
+    with ConnectionListening
+    with SharedServiceRegistry
+    with Logging {
 
   addServiceInfo(BuiltInDescriptors.authRequestServiceInfo)
   addServiceInfo(BuiltInDescriptors.batchServiceRequestServiceInfo)
@@ -57,7 +58,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   conn.addListener(this)
 
   // only called on unexpected disconnections
-  def onDisconnect(expected: Boolean): Unit = {
+  def onDisconnect(expected: Boolean) {
     logger.info("connection disconnected: " + expected)
     handleDisconnect(expected)
   }
@@ -79,15 +80,15 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     }
   }
 
-  def login(authToken: String): Client = createClient(authToken, Strand(executor))
+  def login(authToken: String): DefaultClient = createClient(authToken, Strand(executor))
 
-  def login(userSettings: UserSettings) = login(userSettings.getUserName, userSettings.getUserPassword)
+  def login(userSettings: UserSettings): JPromise[DefaultClient] = login(userSettings.getUserName, userSettings.getUserPassword)
 
-  def login(userName: String, password: String): JPromise[Client] = {
+  def login(userName: String, password: String): JPromise[DefaultClient] = {
     val strand = Strand(executor)
     DefaultServiceOperations.safeOp("Error logging in with name: " + userName, strand) {
       val agent = AuthRequest.newBuilder.setName(userName).setPassword(password).setClientVersion(Version.getClientVersion).build
-      def convert(r: AuthRequest): Client = {
+      def convert(r: AuthRequest): DefaultClient = {
         if (!r.hasServerVersion) logger.warn("Login response did not include the server version")
         else if (r.getServerVersion != Version.getClientVersion) {
           logger.warn("The server is running " + r.getServerVersion + ", but the client is " + Version.getClientVersion)
@@ -99,7 +100,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   }
 
   def logout(authToken: String): JPromise[Boolean] = logout(authToken, Strand(executor))
-  def logout(client: Client): JPromise[Boolean] = logout(client.getHeaders.getAuthToken, client)
+  def logout(client: DefaultClient): JPromise[Boolean] = logout(client.getHeaders.getAuthToken, client)
 
   private def logout(authToken: String, strand: Executor): JPromise[Boolean] = {
     DefaultServiceOperations.safeOp("Error revoking auth token.", strand) {
@@ -120,12 +121,14 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
 
     val promise = FuturePromise.open[JResponse[A]](requestExecutor)
 
-    def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) = result match {
-      case Left(response) => promise.setSuccess(ResponseWrapper.convert(response))
-      case Right(envelope) => promise.setSuccess(ResponseWrapper.convert(RestHelpers.readServiceResponse(descriptor, envelope)))
+    def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) {
+      result match {
+        case Left(response) => promise.setSuccess(ResponseWrapper.convert(response))
+        case Right(envelope) => promise.setSuccess(ResponseWrapper.convert(RestHelpers.readServiceResponse(descriptor, envelope)))
+      }
     }
 
-    def send(info: ServiceTypeInformation[A, _]) = {
+    def send(info: ServiceTypeInformation[A, _]) {
       val timeout = headers.getTimeout.getOrElse(timeoutms)
       val descriptor = info.getDescriptor
 
@@ -188,7 +191,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     new DefaultSubscription[A](conn.listen(), exe, descriptor.deserialize)
   }
 
-  override def bindService[A](service: Service, descriptor: TypeDescriptor[A], exe: Executor, destination: Routable, competing: Boolean): SubscriptionBinding = {
+  def bindService[A](service: Service, descriptor: TypeDescriptor[A], exe: Executor, destination: Routable, competing: Boolean): SubscriptionBinding = {
 
     val serviceInfo = getServiceInfo(descriptor.getKlass)
 
@@ -207,7 +210,7 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
     sub
   }
 
-  override def publishEvent[A](typ: Envelope.SubscriptionEventType, value: A, key: String): Unit = {
+  def publishEvent[A](typ: Envelope.SubscriptionEventType, value: A, key: String) {
     val info = getServiceInfo(ClassLookup.get(value))
     val desc = info.getSubscriptionDescriptor.asInstanceOf[TypeDescriptor[A]]
     val event = RestHelpers.getEvent(typ, value, desc)
@@ -215,23 +218,23 @@ final class DefaultConnection(conn: BrokerConnection, executor: Executor, timeou
   }
 
   // TODO: rename to "bind event queue"
-  override def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]): Unit = {
+  def bindQueueByClass[A](subQueue: String, key: String, klass: Class[A]) {
     val info = getServiceInfo(klass)
     conn.bindQueue(subQueue, info.getEventExchange, key)
   }
 
-  override def declareEventExchange(klass: Class[_]) = {
+  def declareEventExchange(klass: Class[_]) {
     val info = getServiceInfo(klass)
     conn.declareExchange(info.getEventExchange)
   }
 
-  override def lateBindService[A](service: Service, descriptor: TypeDescriptor[A], exe: Executor): SubscriptionBinding = {
+  def lateBindService[A](service: Service, descriptor: TypeDescriptor[A], exe: Executor): SubscriptionBinding = {
     val sub = new DefaultServiceBinding[A](conn, conn.listen(), exe)
     sub.start(service)
     sub
   }
 
-  override def bindServiceQueue[A](subQueue: String, key: String, klass: Class[A]): Unit = {
+  def bindServiceQueue[A](subQueue: String, key: String, klass: Class[A]): Unit = {
     val info = getServiceInfo(klass)
     conn.bindQueue(subQueue, info.getDescriptor.id, key)
   }

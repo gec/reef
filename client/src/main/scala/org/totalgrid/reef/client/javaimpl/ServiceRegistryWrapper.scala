@@ -18,11 +18,11 @@
  */
 package org.totalgrid.reef.client.javaimpl
 
-import org.totalgrid.reef.client.sapi.client.rest.{ ServiceRegistry => SRegistry }
 import org.totalgrid.reef.client.types.ServiceTypeInformation
 import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo, ServiceRegistry }
+import org.totalgrid.reef.client.sapi.client.rest.impl.SharedServiceRegistry
 
-class ServiceRegistryWrapper(reg: SRegistry) extends ServiceRegistry {
+class ServiceRegistryWrapper(reg: SharedServiceRegistry) extends ServiceRegistry {
 
   def addServicesList(servicesList: ServicesList) { reg.addServicesList(servicesList) }
 

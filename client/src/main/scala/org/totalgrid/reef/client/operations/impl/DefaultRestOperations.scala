@@ -18,13 +18,13 @@
  */
 package org.totalgrid.reef.client.operations.impl
 
-import org.totalgrid.reef.client.sapi.client.rest.{ Client => SClient }
 import org.totalgrid.reef.client.operations.{ Response, RestOperations }
 import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionBinding, Promise }
 import org.totalgrid.reef.client.proto.Envelope.Verb
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultClient
 
-class DefaultRestOperations(client: SClient) extends RestOperations with DerivedRestOperations with OptionallyBatchedRestOperations {
+class DefaultRestOperations(client: DefaultClient) extends RestOperations with DerivedRestOperations with OptionallyBatchedRestOperations {
 
   def batched: Option[BatchRestOperations] = None
 

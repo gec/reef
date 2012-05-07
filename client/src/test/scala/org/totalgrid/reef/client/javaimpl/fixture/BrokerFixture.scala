@@ -21,7 +21,6 @@ package org.totalgrid.reef.client.javaimpl.fixture
 
 import net.agileautomata.executor4s.Executors
 
-import org.totalgrid.reef.client.sapi.client.rest.Connection
 import org.totalgrid.reef.broker.BrokerConnectionFactory
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
@@ -32,7 +31,7 @@ import org.totalgrid.reef.client.settings.util.PropertyReader
 trait BrokerFixture {
   def factory: BrokerConnectionFactory
 
-  def cleanup(): Unit = {}
+  def cleanup() {}
 }
 
 class QpidBrokerFixture(config: AmqpSettings) extends BrokerFixture {
@@ -47,20 +46,24 @@ class MemoryBrokerFixture extends BrokerFixture {
 
   override def factory = fac
 
-  override def cleanup() = exe.terminate()
+  override def cleanup() {
+    exe.terminate()
+  }
 }
 
 object ConnectionFixture {
 
   val qpidDefault = new AmqpSettings(PropertyReader.readFromFile("../org.totalgrid.reef.test.cfg"))
 
-  def qpid(config: AmqpSettings = qpidDefault)(test: Connection => Unit): Unit = {
+  def qpid(config: AmqpSettings = qpidDefault)(test: DefaultConnection => Unit): Unit = {
     using(new QpidBrokerFixture(config))(test)
   }
 
-  def mock(test: Connection => Unit): Unit = using(new MemoryBrokerFixture)(test)
+  def mock(test: DefaultConnection => Unit) {
+    using(new MemoryBrokerFixture)(test)
+  }
 
-  def using(fixture: BrokerFixture)(test: Connection => Unit): Unit = {
+  def using(fixture: BrokerFixture)(test: DefaultConnection => Unit): Unit = {
     val exe = Executors.newScheduledThreadPool()
     try {
       val broker = fixture.factory.connect

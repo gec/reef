@@ -16,20 +16,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.operations.impl
+package org.totalgrid.reef.client.sapi.client.rest.impl
 
-import org.totalgrid.reef.client.operations.BindOperations
-import org.totalgrid.reef.client.registration.Service
-import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.client.{ Subscription, SubscriptionBinding }
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultClient
+import org.totalgrid.reef.client.types.ServiceTypeInformation
+import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList }
 
-class DefaultBindOperations(client: DefaultClient) extends BindOperations {
-  def subscribe[A](descriptor: TypeDescriptor[A]): Subscription[A] = {
-    client.subscribe(descriptor)
-  }
+trait SharedServiceRegistry {
 
-  def lateBindService[A](service: Service, descriptor: TypeDescriptor[A]): SubscriptionBinding = {
-    client.lateBindService(service, descriptor)
-  }
+  def addServicesList(servicesList: ServicesList)
+
+  def addRpcProvider(info: ServiceProviderInfo)
+
+  def addServiceInfo[A](info: ServiceTypeInformation[A, _])
+
+  def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _]
 }
+
