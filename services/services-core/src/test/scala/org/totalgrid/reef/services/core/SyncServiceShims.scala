@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.sapi.client.impl.SynchronizedResult
+import util.SynchronizedResult
 import org.totalgrid.reef.services.{ SilentRequestContext, ServiceBootstrap, DependenciesRequestContext, ServiceDependencies }
 import org.totalgrid.reef.models.{ ApplicationSchema, Agent, DatabaseUsingTestBaseNoTransaction }
 

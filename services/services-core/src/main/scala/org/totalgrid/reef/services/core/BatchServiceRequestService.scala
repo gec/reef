@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
-import org.totalgrid.reef.client.sapi.client.impl.SynchronizedResult
+import util.SynchronizedResult
 import org.totalgrid.reef.client.sapi.client._
 import org.totalgrid.reef.client.sapi.service.{ ServiceResponseCallback, ServiceHelpers }
 import org.totalgrid.reef.client.exception.BadRequestException
