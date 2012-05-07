@@ -24,7 +24,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.client.proto.Envelope
 import net.agileautomata.executor4s.testing.MockFuture
-import org.totalgrid.reef.client.sapi.client.rest.fixture._
+import org.totalgrid.reef.client.javaimpl.fixture._
 import org.totalgrid.reef.client.types.ServiceTypeInformation
 import org.totalgrid.reef.client.proto.Envelope.{ BatchServiceRequest, Verb }
 
