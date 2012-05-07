@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.client;
 
-import org.totalgrid.reef.client.internal.ProviderFactory;
-
 /**
  * ServiceProviderFactories are created by "service-client" packages to implement one or more
  * service interfaces.
@@ -27,7 +25,7 @@ import org.totalgrid.reef.client.internal.ProviderFactory;
  * Currently these service providers are only creatable in scala because they use the scala
  * implementation of Client that has more low-level functions.
  */
-public interface ServiceProviderFactory extends ProviderFactory
+public interface ServiceProviderFactory
 {
     /**
      * Currently we are passing the scala client to the rpc factoryies and casting to

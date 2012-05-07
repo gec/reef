@@ -96,7 +96,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand) extends Client with
   final override def spawn = conn.login(getHeaders.getAuthToken)
 
   final override def addRpcProvider(info: ServiceProviderInfo) = conn.addRpcProvider(info)
-  final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, this, new ClientWrapper(this))
+  final override def getRpcInterface[A](klass: Class[A]) = conn.getRpcInterface(klass, new ClientWrapper(this))
 
   final override def addServiceInfo[A](info: ServiceTypeInformation[A, _]) = conn.addServiceInfo(info)
   final override def getServiceInfo[A](klass: Class[A]) = conn.getServiceInfo(klass)
