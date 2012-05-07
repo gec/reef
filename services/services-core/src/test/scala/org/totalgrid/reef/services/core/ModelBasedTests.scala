@@ -29,6 +29,7 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.services._
 
 import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 import org.totalgrid.reef.client.service.proto.Model
 

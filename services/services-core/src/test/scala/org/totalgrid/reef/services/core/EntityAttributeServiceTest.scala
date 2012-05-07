@@ -20,12 +20,12 @@ package org.totalgrid.reef.services.core
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.core.SubscriptionTools.SubscriptionTesting
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityAttribute }
 import org.totalgrid.reef.client.service.proto.Utils.Attribute
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
+import org.totalgrid.reef.client.sapi.client.Expectations._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.{ ApplicationSchema, DatabaseUsingTestBase, EntityAttribute => AttrModel }
 

@@ -26,6 +26,8 @@ import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Model.{ Command, CommandType, Entity }
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 @RunWith(classOf[JUnitRunner])
 class CommandServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 

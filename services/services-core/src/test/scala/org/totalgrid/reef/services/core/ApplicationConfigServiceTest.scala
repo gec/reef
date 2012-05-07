@@ -28,6 +28,7 @@ import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationConfigServiceTest extends DatabaseUsingTestBase {

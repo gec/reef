@@ -20,6 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.services.framework.{ RequestContextSource, RequestContext }
 import org.totalgrid.reef.client.service.proto.Auth.{ Agent, PermissionSet => RoleProto, Permission, EntitySelector }
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 /**
  * static seed function to bootstrap users + permissions into the system

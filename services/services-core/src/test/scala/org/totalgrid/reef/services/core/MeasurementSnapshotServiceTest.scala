@@ -27,6 +27,8 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import scala.collection.JavaConversions._
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }

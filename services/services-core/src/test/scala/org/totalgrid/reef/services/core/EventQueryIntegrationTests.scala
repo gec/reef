@@ -27,6 +27,8 @@ import org.totalgrid.reef.client.service.proto.Events.{ EventList => EventListPr
 import org.totalgrid.reef.client.service.proto.Alarms.{ EventConfig => EventConfigProto }
 import org.totalgrid.reef.client.exception.BadRequestException
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 @RunWith(classOf[JUnitRunner])
 class EventQueryIntegrationTests extends EventIntegrationTestsBase {
 

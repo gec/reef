@@ -36,6 +36,7 @@ import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration

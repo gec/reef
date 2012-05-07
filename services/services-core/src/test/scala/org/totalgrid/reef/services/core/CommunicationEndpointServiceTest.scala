@@ -43,6 +43,8 @@ import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 @RunWith(classOf[JUnitRunner])
 class CommunicationEndpointServiceTest extends DatabaseUsingTestBase {
 

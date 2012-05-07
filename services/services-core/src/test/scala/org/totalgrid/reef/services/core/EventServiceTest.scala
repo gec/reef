@@ -31,6 +31,8 @@ import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.ServiceDependencies
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 @RunWith(classOf[JUnitRunner])
 class EventServiceTest extends DatabaseUsingTestBase with SystemEventCreator {
 

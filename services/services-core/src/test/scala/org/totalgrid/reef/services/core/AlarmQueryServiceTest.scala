@@ -37,6 +37,8 @@ import org.totalgrid.reef.services.core.util._
 import java.util.{ Date, Calendar }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity => EntityProto }
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 @RunWith(classOf[JUnitRunner])
 class AlarmQueryServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._

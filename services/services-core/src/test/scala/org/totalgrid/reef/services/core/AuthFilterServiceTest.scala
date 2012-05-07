@@ -28,6 +28,8 @@ import org.totalgrid.reef.services.core.SubscriptionTools.FilterRequest
 import org.totalgrid.reef.authz.{ Allowed, Permission, WildcardMatcher, Denied }
 import scala.collection.JavaConversions._
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 @RunWith(classOf[JUnitRunner])
 class AuthFilterServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {
 

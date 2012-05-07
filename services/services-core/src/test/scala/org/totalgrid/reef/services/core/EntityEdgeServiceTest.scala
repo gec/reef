@@ -29,6 +29,8 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.exception.{ BadRequestException, ReefServiceException }
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 import org.squeryl.PrimitiveTypeMode._
 
 @RunWith(classOf[JUnitRunner])

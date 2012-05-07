@@ -29,8 +29,8 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, ConfigFile, Ent
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.services.framework.ProtoSerializer.convertStringToByteString
-import org.totalgrid.reef.services.core.SubscriptionTools.MockContextSource
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 @RunWith(classOf[JUnitRunner])
 class ConfigFileServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {

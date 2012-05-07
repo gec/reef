@@ -27,9 +27,10 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.services.SilentRequestContext
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.client.exception.BadRequestException
+
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
   var begin: Long = -1

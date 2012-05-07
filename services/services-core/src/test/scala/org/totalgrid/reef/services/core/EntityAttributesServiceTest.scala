@@ -21,20 +21,16 @@ package org.totalgrid.reef.services.core
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
-import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityAttributes }
 import org.totalgrid.reef.client.service.proto.Utils.Attribute
 
 import org.totalgrid.reef.client.proto.Envelope.Status
 
 import org.squeryl.PrimitiveTypeMode._
-import org.totalgrid.reef.services.ServiceResponseTestingHelpers._
-import org.totalgrid.reef.client.exception.BadRequestException
-import com.google.protobuf.ByteString
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ DatabaseUsingTestBase, ApplicationSchema, EntityAttribute }
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Entity, EntityAttributes }
-import java.util.UUID
 
 @RunWith(classOf[JUnitRunner])
 class EntityAttributesServiceTest extends DatabaseUsingTestBase with SyncServicesTestHelpers {

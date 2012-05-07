@@ -25,7 +25,7 @@ import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.client.service.proto.ProcessStatus._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.models.DatabaseUsingTestBase
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.Expectations._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.registration.EventPublisher

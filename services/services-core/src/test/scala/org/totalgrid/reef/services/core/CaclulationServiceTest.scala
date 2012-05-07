@@ -28,6 +28,7 @@ import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.Calculations._
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point, Entity, EntityEdge }
 import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 @RunWith(classOf[JUnitRunner])
 class CaclulationServiceTest extends PointServiceTestBase {

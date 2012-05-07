@@ -33,6 +33,8 @@ import org.totalgrid.reef.models.{ EventConfigStore, ApplicationSchema, Database
 import org.totalgrid.reef.client.service.proto.Alarms.Alarm
 import org.totalgrid.reef.client.service.proto.Events.Event
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 @RunWith(classOf[JUnitRunner])
 class EntityServiceTest extends DatabaseUsingTestBase {
 

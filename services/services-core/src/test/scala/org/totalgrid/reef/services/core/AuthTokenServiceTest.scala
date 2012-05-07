@@ -38,6 +38,7 @@ import org.totalgrid.reef.services.{ HeadersContext, SilentRequestContext }
 import org.totalgrid.reef.client.settings.Version
 import org.totalgrid.reef.models.{ DatabaseUsingTestNotTransactionSafe, RunTestsInsideTransaction }
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 class AuthSystemTestBase extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction {
 

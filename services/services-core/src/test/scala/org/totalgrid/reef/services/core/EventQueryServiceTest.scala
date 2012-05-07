@@ -34,6 +34,8 @@ import org.totalgrid.reef.models._
 import org.totalgrid.reef.event._
 import org.totalgrid.reef.event.EventType.eventTypeToString
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 import java.util.{ Calendar }
 
 @RunWith(classOf[JUnitRunner])

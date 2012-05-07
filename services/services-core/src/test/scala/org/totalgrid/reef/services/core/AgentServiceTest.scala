@@ -30,6 +30,8 @@ import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType._
 import org.totalgrid.reef.models.ApplicationSchema
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 @RunWith(classOf[JUnitRunner])
 class AgentServiceTest extends AuthSystemTestBase {
   import SubscriptionTools._

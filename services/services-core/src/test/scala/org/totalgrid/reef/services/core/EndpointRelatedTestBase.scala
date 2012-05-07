@@ -46,6 +46,7 @@ import org.totalgrid.reef.client.service.proto.Commands.UserCommandRequest
 import org.totalgrid.reef.client.AddressableDestination
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.client.operations.scl.Event
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSafe with RunTestsInsideTransaction with Logging {
 

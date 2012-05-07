@@ -27,6 +27,7 @@ import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
 import org.totalgrid.reef.client.proto.Envelope.Status
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.metrics.{ SimpleMetricsSink, MappedMetricsHolder, MetricsHooks, MetricsSink }
+import org.totalgrid.reef.client.sapi.client.Expectations._
 
 @RunWith(classOf[JUnitRunner])
 class MetricsServiceTest extends FunSuite with ShouldMatchers {

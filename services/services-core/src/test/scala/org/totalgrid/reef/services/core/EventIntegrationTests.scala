@@ -30,12 +30,10 @@ import org.totalgrid.reef.client.service.proto.Alarms.{ Alarm => AlarmProto, Eve
 
 import org.totalgrid.reef.client.service.proto.Utils.{ AttributeList, Attribute }
 
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.sapi.client.Expectations._
 import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.services.{ SilentRequestContext, ConnectionFixture }
-import org.totalgrid.reef.client.settings.UserSettings
-import org.totalgrid.reef.util.SyncVar
 
 abstract class EventIntegrationTestsBase extends DatabaseUsingTestBase {
   import org.totalgrid.reef.services.ServiceResponseTestingHelpers._

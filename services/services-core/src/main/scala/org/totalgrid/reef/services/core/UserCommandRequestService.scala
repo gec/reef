@@ -34,6 +34,8 @@ import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestExc
 import org.totalgrid.reef.client.sapi.client.{ FailureResponse, BasicRequestHeaders, Response }
 import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel)
     extends AsyncModeledServiceBase[UserCommandRequest, UserCommandModel, UserCommandRequestServiceModel]

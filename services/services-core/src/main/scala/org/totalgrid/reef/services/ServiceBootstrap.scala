@@ -33,6 +33,8 @@ import org.totalgrid.reef.persistence.squeryl.DbConnection
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.settings.Version
 
+import org.totalgrid.reef.client.sapi.client.Expectations._
+
 object ServiceBootstrap {
 
   def buildLogin(userSettings: UserSettings): AuthToken = {

@@ -38,6 +38,8 @@ import org.totalgrid.reef.client.proto.Envelope
 class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] {
 
+  private case class Request[+A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders = BasicRequestHeaders.empty)
+
   override val descriptor = Descriptors.measurementBatch
 
   override def putAsync(contextSource: RequestContextSource, req: MeasurementBatch)(callback: Response[MeasurementBatch] => Unit) {
