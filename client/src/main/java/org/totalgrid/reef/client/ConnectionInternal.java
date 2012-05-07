@@ -20,9 +20,13 @@ package org.totalgrid.reef.client;
 
 import net.agileautomata.executor4s.Executor;
 
+/**
+ * keeps references to internal objects not for application use
+ */
 public interface ConnectionInternal
 {
-
+    /**
+     * underlying thread that connection change listeners will be notified with
+     */
     Executor getExecutor();
-
 }

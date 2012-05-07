@@ -95,6 +95,9 @@ public interface Connection
      */
     ServiceRegistration getServiceRegistration();
 
+    /**
+     * holder for connection internals not meant for application use
+     */
     ConnectionInternal getInternal();
 
     /**

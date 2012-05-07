@@ -92,6 +92,9 @@ public interface Client
      */
     Client spawn();
 
+    /**
+     * holder for client internals not meant for application use
+     */
     ClientInternal getInternal();
 
     /**

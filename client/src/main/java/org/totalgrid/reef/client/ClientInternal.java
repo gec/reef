@@ -20,8 +20,13 @@ package org.totalgrid.reef.client;
 
 import net.agileautomata.executor4s.Executor;
 
+/**
+ * keeps references to internal objects not for application use
+ */
 public interface ClientInternal
 {
-
+    /**
+     * underlying thread that subscriptions and services will be executed on
+     */
     Executor getExecutor();
 }
