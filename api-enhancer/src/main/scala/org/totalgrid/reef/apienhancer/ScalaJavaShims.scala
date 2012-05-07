@@ -50,7 +50,6 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
 
     if (isFuture) {
       stream.println("import org.totalgrid.reef.client.Promise")
-      //stream.println("import org.totalgrid.reef.client.javaimpl.PromiseWrapper")
     }
     stream.println("import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._")
 
@@ -81,8 +80,6 @@ class ScalaJavaShims(isFuture: Boolean) extends ApiTransformer with GeneratorFun
         if (p.`type`().simpleTypeName == "List") p.name + ".toList"
         else p.name
       }.mkString(", ")
-      implCall += ")"
-      implCall += ")"
       implCall += ")"
 
       if ((m.name.startsWith("find") || m.name.startsWith("clear")) && m.returnType.simpleTypeName != "List") implCall = implCall + ".map(a => convert(a))"
