@@ -31,7 +31,7 @@ abstract class ServiceOperationsProvider(client: Client)
 
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getServiceRegistry.getServiceTypeInformation(klass)
 
-  def getHeaders() = client.getHeaders
+  def getHeaders = client.getHeaders
 
   def setHeaders(hdrs: RequestHeaders) {
     client.setHeaders(hdrs)

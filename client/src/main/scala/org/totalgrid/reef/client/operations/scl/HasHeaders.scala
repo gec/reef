@@ -19,11 +19,9 @@ package org.totalgrid.reef.client.operations.scl
  * the License.
  */
 
-import org.totalgrid.reef.client.sapi.client.rest.ServiceRegistry
-import org.totalgrid.reef.client.types.ServiceTypeInformation
 import org.totalgrid.reef.client.RequestHeaders
 
 trait HasHeaders {
-  def getHeaders(): RequestHeaders
+  def getHeaders: RequestHeaders
   def setHeaders(hdrs: RequestHeaders)
 }

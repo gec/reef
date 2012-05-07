@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.client.operations.scl
 
-import org.totalgrid.reef.client.proto.StatusCodes
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.ExpectationException
 import org.totalgrid.reef.client.proto.Envelope.Status
@@ -27,21 +26,20 @@ import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 trait ScalaResponse {
 
   class RichResponse[A](resp: Response[A]) {
-    //import java.util.List
 
     def many: List[A] = checkGood
 
     def one: A = {
       inspect {
         case (list, 0) => throw new ExpectationException("Expected a response list of size 1, but got an empty list")
-        case (list, 1) => list.head //list.get(0)
+        case (list, 1) => list.head
         case (list, count) => throw new ExpectationException("Expected a response list of size 1, but got a list of size: " + count)
       }
     }
     def oneOrNone: Option[A] = {
       inspect {
         case (list, 0) => None
-        case (list, 1) => Some(list.head) //Some(list.get(0))
+        case (list, 1) => Some(list.head)
         case (list, count) => throw new ExpectationException("Expected a response list of size 1, but got a list of size: " + count)
       }
     }
@@ -54,7 +52,7 @@ trait ScalaResponse {
     private def checkGood: List[A] = {
       import scala.collection.JavaConversions._
       resp.isSuccess match {
-        case true => resp.getList.toList // resp.getList
+        case true => resp.getList.toList
         case false => throw resp.getException
       }
     }

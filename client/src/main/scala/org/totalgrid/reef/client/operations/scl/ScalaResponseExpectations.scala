@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.operations.scl
 
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.ExpectationException
-import org.totalgrid.reef.client.proto.{ Envelope, StatusCodes }
+import org.totalgrid.reef.client.proto.Envelope
 
 object ScalaResponseExpectations {
   class RichResponse[A](resp: Response[A]) {

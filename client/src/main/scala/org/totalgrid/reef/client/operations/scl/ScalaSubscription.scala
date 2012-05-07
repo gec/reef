@@ -26,11 +26,6 @@ trait ScalaSubscription {
 
   class RichSubscription[A](sub: Subscription[A]) {
 
-    /*def start(f: (SubscriptionEvent[A]) => Unit) {
-      sub.start(new SubscriptionEventAcceptor[A] {
-        def onEvent(event: SubscriptionEvent[A]) { f(event)}
-      })
-    }*/
     def onEvent(f: Event[A] => Unit) {
       sub.start(new SubscriptionEventAcceptor[A] {
         def onEvent(event: SubscriptionEvent[A]) { f(Event(event.getEventType, event.getValue)) }
