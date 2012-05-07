@@ -33,6 +33,7 @@ import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
 import org.totalgrid.reef.client.operations.scl.Event
 import org.totalgrid.reef.client.javaimpl.fixture._
 import net.agileautomata.executor4s._
+import sapi.client.rest.impl.DefaultConnection
 import SimpleRestAccess._
 
 @RunWith(classOf[JUnitRunner])
@@ -45,48 +46,47 @@ class MemoryServiceClientTest extends BasicClientTest with MemoryBrokerTestFixtu
 trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatchers {
 
   def fixture(fun: (Client, Connection) => Unit) {
+
     val (brokerFac, kill) = getFactory
     val exe = Executors.newResizingThreadPool(5.minutes)
-    val fac = new ReefConnectionFactory(brokerFac, exe, ExampleServiceList)
+
     try {
-      val conn = fac.connect()
+      val brokerConn = brokerFac.connect
+      brokerConn.declareExchange(ExampleServiceList.info.getEventExchange)
+      val conn = new ConnectionWrapper(new DefaultConnection(brokerConn, exe, 5000), exe)
+      conn.addServicesList(ExampleServiceList)
       fun(conn.createClient("foo"), conn)
     } finally {
-      fac.terminate()
       exe.terminate()
       kill()
     }
   }
 
   test("Subscription sequence works if event occurs before start()") {
-    fixture {
-      (client, conn) =>
-        val reg = conn.getServiceRegistration
-        val eventPub = conn.getServiceRegistration.getEventPublisher
+    fixture { (client, conn) =>
+      val eventPub = conn.getServiceRegistration.getEventPublisher
 
-        val si = SomeInteger(42)
-        val sub = client.subscribe(SomeIntegerTypeDescriptor) // gets us an unbound queue, doesn't listen yet
-        reg.bindServiceQueue(sub.getId, "#", classOf[SomeInteger]) //binds the queue to the correct exchange
-        eventPub.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")
-        val events = new SynchronizedList[Event[SomeInteger]]
-        sub.onEvent(events.append(_))
-        events shouldBecome Event(Envelope.SubscriptionEventType.ADDED, si) within 5000
+      val si = SomeInteger(42)
+      val sub = client.subscribe(SomeIntegerTypeDescriptor) // gets us an unbound queue, doesn't listen yet
+      eventPub.bindQueueByClass(sub.getId, "#", classOf[SomeInteger])
+      eventPub.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")
+      val events = new SynchronizedList[Event[SomeInteger]]
+      sub.onEvent(events.append(_))
+      events shouldBecome Event(Envelope.SubscriptionEventType.ADDED, si) within 5000
     }
   }
 
   test("Subscription sequence works if event occurs after start()") {
-    fixture {
-      (client, conn) =>
-        val reg = conn.getServiceRegistration
-        val eventPub = conn.getServiceRegistration.getEventPublisher
+    fixture { (client, conn) =>
+      val eventPub = conn.getServiceRegistration.getEventPublisher
 
-        val si = SomeInteger(42)
-        val sub = client.subscribe(SomeIntegerTypeDescriptor) // gets us an unbound queue, doesn't listen yet
-        reg.bindServiceQueue(sub.getId, "#", classOf[SomeInteger]) //binds the queue to the correct exchange
-        val events = new SynchronizedList[Event[SomeInteger]]
-        sub.onEvent(events.append(_))
-        eventPub.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")
-        events shouldBecome Event(Envelope.SubscriptionEventType.ADDED, si) within 5000
+      val si = SomeInteger(42)
+      val sub = client.subscribe(SomeIntegerTypeDescriptor) // gets us an unbound queue, doesn't listen yet
+      eventPub.bindQueueByClass(sub.getId, "#", classOf[SomeInteger])
+      val events = new SynchronizedList[Event[SomeInteger]]
+      sub.onEvent(events.append(_))
+      eventPub.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")
+      events shouldBecome Event(Envelope.SubscriptionEventType.ADDED, si) within 5000
     }
   }
 

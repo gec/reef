@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.javaimpl.fixture
 
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 
-import org.totalgrid.reef.client.sapi.client.{Response, BasicRequestHeaders}
+import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
 
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.registration.EventPublisher

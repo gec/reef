@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.javaimpl.fixture
 
 import org.totalgrid.reef.broker.memory.MemoryBrokerConnectionFactory
 import net.agileautomata.executor4s.Executors
-import org.totalgrid.reef.broker.{BrokerConnection, BrokerConnectionFactory}
+import org.totalgrid.reef.broker.{ BrokerConnection, BrokerConnectionFactory }
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.settings.AmqpSettings
 import org.totalgrid.reef.client.settings.util.PropertyReader

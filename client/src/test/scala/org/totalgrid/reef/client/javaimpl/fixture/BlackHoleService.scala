@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.javaimpl.fixture
 
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
-import org.totalgrid.reef.client.sapi.client.{Response, BasicRequestHeaders}
+import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
 
 class BlackHoleService[A <: AnyRef](val descriptor: TypeDescriptor[A]) extends AsyncServiceBase[A] {
   override def getAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}

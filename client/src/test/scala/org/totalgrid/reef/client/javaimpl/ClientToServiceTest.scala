@@ -188,18 +188,17 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
 
   test("Events come in right order") {
     fixture(true) { (c, conn) =>
-      val reg = conn.getServiceRegistration
       val eventPub = conn.getServiceRegistration.getEventPublisher
 
       val events = new SynchronizedList[Int]
       val sub = c.subscribe(SomeIntegerTypeDescriptor)
-      reg.bindServiceQueue(sub.getId(), "#", classOf[SomeInteger])
+      eventPub.bindQueueByClass(sub.getId, "#", classOf[SomeInteger])
       sub.onEvent(e => events.append(e.value.num))
 
       val range = 0 to 1500
 
-      range.foreach {
-        i => eventPub.publishEvent(Envelope.SubscriptionEventType.MODIFIED, SomeInteger(i), "key")
+      range.foreach { i =>
+        eventPub.publishEvent(Envelope.SubscriptionEventType.MODIFIED, SomeInteger(i), "key")
       }
 
       events shouldBecome range.toList within 5000

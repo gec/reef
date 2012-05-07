@@ -20,8 +20,8 @@ package org.totalgrid.reef.client.sapi.client.rest.fixture
 
 import java.io._
 import java.util.List
-import org.totalgrid.reef.client.{ServiceProviderInfo, ServicesList}
-import org.totalgrid.reef.client.types.{ServiceTypeInformation, ServiceInfo, TypeDescriptor}
+import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList }
+import org.totalgrid.reef.client.types.{ ServiceTypeInformation, ServiceInfo, TypeDescriptor }
 import scala.collection.JavaConversions._
 
 case class SomeInteger(num: Int) extends Serializable {
@@ -40,7 +40,6 @@ class SomeIntegerTypeInformation extends ServiceTypeInformation[SomeInteger, Som
 
   def getEventExchange: String = SomeIntegerTypeDescriptor.id
 }
-
 
 object ExampleServiceList extends ServicesList {
   def info = new ServiceInfo(SomeIntegerTypeDescriptor, SomeIntegerTypeDescriptor)
