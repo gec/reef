@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.sapi.client.rest.impl
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.proto.Envelope
-import collection.JavaConversions._
+import scala.collection.JavaConversions._
 import com.google.protobuf.{ GeneratedMessage, ByteString }
 
 object RestHelpers {
@@ -34,7 +34,7 @@ object RestHelpers {
 
   def buildServiceRequest[A](verb: Envelope.Verb, request: A, desc: TypeDescriptor[A], uuid: String, env: BasicRequestHeaders): Envelope.ServiceRequest = {
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId(uuid).setPayload(ByteString.copyFrom(desc.serialize(request)))
-    env.toEnvelopeRequestHeaders.foreach(builder.addHeaders)
+    builder.addAllHeaders(env.toEnvelopeRequestHeaders)
     builder.build()
   }
 

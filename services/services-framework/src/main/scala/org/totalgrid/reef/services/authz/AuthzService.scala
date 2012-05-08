@@ -127,12 +127,11 @@ class SqlAuthzService(filteringService: AuthzFilteringService) extends AuthzServ
 
   private def loadPermissions(context: RequestContext) {
 
-    val authTokens = context.getHeaders.authTokens
+    if (!context.getHeaders.hasAuthToken) {
+      context.set(AuthzService.authError, "No auth tokens in envelope header")
+    } else {
 
-    if (authTokens.isEmpty) context.set(AuthzService.authError, "No auth tokens in envelope header")
-    else {
-
-      lookupTokens(authTokens) match {
+      lookupTokens(List(context.getHeaders.getAuthToken)) match {
         case None => context.set(AuthzService.authError, "All tokens unknown or expired")
         case Some(AuthLookup(agent, permSets)) =>
           context.set(AuthzService.agent, agent)

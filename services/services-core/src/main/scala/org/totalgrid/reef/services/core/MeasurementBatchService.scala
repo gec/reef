@@ -35,6 +35,8 @@ import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 import org.totalgrid.reef.client.proto.Envelope
 
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
+
 class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] {
 
@@ -66,7 +68,7 @@ class MeasurementBatchService
       context.auth.authorize(context, componentId, "create", points.map { _.entityId })
 
       val headers = BasicRequestHeaders.empty
-      val commonHeaders = context.getHeaders.getTimeout.map { headers.setTimeout(_) }.getOrElse(headers)
+      val commonHeaders = context.getHeaders.timeout.map { headers.setTimeout(_) }.getOrElse(headers)
 
       val requests = commEndpoints.size match {
         //fails with exception if any batch can't be routed

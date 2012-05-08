@@ -22,6 +22,8 @@ import org.totalgrid.reef.client.sapi.service.HasServiceType
 import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.proto.Envelope
 
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
+
 object SimpleServiceBehaviors {
   trait SimpleReadAndSubscribe extends HasServiceType with AsyncContextRestGet {
 

@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.javaimpl.fixture
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,23 +16,20 @@ package org.totalgrid.reef.client.javaimpl.fixture
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.operations.scl
 
-import org.totalgrid.reef.client.sapi.service.SyncServiceBase
+import org.totalgrid.reef.client.{ Routable, RequestHeaders }
 
-import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
+trait ScalaRequestHeaders {
 
-import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.registration.EventPublisher
-
-import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
-
-class SomeIntegerIncrementService(handler: EventPublisher) extends SyncServiceBase[SomeInteger] {
-  val descriptor = SomeIntegerTypeDescriptor
-
-  final override def put(req: SomeInteger, headers: BasicRequestHeaders): Response[ServiceType] = {
-    val rsp = req.increment
-    headers.subQueue.foreach(q => handler.bindQueueByClass(q, "#", req.getClass))
-    handler.publishEvent(Envelope.SubscriptionEventType.MODIFIED, req.increment, "all")
-    Response(Envelope.Status.OK, rsp)
+  class PimpedRequestHeaders(headers: RequestHeaders) {
+    def subQueue: Option[String] = if (headers.hasSubscribeQueue) Some(headers.getSubscribeQueue) else None
+    def timeout: Option[Long] = if (headers.hasTimeout) Some(headers.getTimeout) else None
+    def resultLimit: Option[Int] = if (headers.hasResultLimit) Some(headers.getResultLimit) else None
+    def destination: Option[Routable] = if (headers.hasDestination) Some(headers.getDestination) else None
   }
+
+  implicit def toPimpedRequestHeaders(headers: RequestHeaders) = new PimpedRequestHeaders(headers)
 }
+
+object ScalaRequestHeaders extends ScalaRequestHeaders

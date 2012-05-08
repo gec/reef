@@ -129,7 +129,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
     }
 
     def send(info: ServiceTypeInformation[A, _]) {
-      val timeout = headers.getTimeout.getOrElse(timeoutms)
+      val timeout = headers.timeout.getOrElse(timeoutms)
       val descriptor = info.getDescriptor
 
       // timeout callback will come in on a random executor thread and be marshalled correctly by future
@@ -137,7 +137,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
       try {
         val request = RestHelpers.buildServiceRequest(verb, payload, descriptor, uuid, headers)
         val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))
-        val destination = headers.getDestination.getOrElse(new AnyNodeDestination)
+        val destination = headers.destination.getOrElse(new AnyNodeDestination)
         conn.publish(descriptor.id, destination.getKey, request.toByteArray, replyTo)
       } catch {
         case ex: Exception =>
@@ -163,7 +163,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
     }
 
     def send(info: ServiceTypeInformation[A, _]) = {
-      val timeout = headers.getTimeout.getOrElse(timeoutms)
+      val timeout = headers.timeout.getOrElse(timeoutms)
       val descriptor = info.getDescriptor
 
       // timeout callback will come in on a random executor thread and be marshalled correctly by future
@@ -171,7 +171,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
       try {
         val request = RestHelpers.buildServiceRequest(verb, payload, descriptor, uuid, headers)
         val replyTo = Some(BrokerDestination("amq.direct", subscription.getQueue))
-        val destination = headers.getDestination.getOrElse(new AnyNodeDestination)
+        val destination = headers.destination.getOrElse(new AnyNodeDestination)
         conn.publish(descriptor.id, destination.getKey, request.toByteArray, replyTo)
       } catch {
         case ex: Exception =>

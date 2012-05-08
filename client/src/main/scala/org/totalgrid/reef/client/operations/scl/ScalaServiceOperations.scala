@@ -21,7 +21,6 @@ package org.totalgrid.reef.client.operations.scl
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.registration.Service
 import org.totalgrid.reef.client.operations._
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client._
 
 trait ScalaServiceOperations {
@@ -65,10 +64,7 @@ trait ScalaServiceOperations {
     new RichServiceOperations(ops)
   }
 
-  implicit def convertSubscriptionToBasicHeaders(sub: Subscription[_]): BasicRequestHeaders = {
-    BasicRequestHeaders.empty.setSubscribeQueue(sub.getId)
-  }
 }
 
-object ScalaServiceOperations extends ScalaServiceOperations with ScalaPromise with ScalaResponse
+object ScalaServiceOperations extends ScalaServiceOperations with ScalaPromise with ScalaResponse with ScalaRequestHeaders
 

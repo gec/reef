@@ -27,7 +27,7 @@ import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.service.proto.Model.Entity
 import org.mockito.{ ArgumentCaptor, Matchers, Mockito }
 import org.totalgrid.reef.client.proto.Envelope.{ Status, Verb }
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
 import org.totalgrid.reef.client.operations.scl.ScalaResponse
 import org.totalgrid.reef.client.{ RequestHeaders, Client }
 import org.totalgrid.reef.client.operations.impl.TestPromises
@@ -204,14 +204,14 @@ class RestLevelServletTest extends BaseServletTest {
     response.getHeader(CONTENT_TYPE_HEADER) should equal(JSON_FORMAT)
   }
 
-  def captureHeaders(): BasicRequestHeaders = {
+  def captureHeaders(): RequestHeaders = {
     val argument = ArgumentCaptor.forClass(classOf[RequestHeaders])
 
     Mockito.doThrow(new RuntimeException("intentional io failure")).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), argument.capture())
 
     service.doPost(request, response)
 
-    argument.getValue.asInstanceOf[BasicRequestHeaders] // TODO: BasicRequestHeaders HACK
+    argument.getValue
   }
 
   test("POST: Default Headers") {
@@ -219,8 +219,8 @@ class RestLevelServletTest extends BaseServletTest {
     goodRequest()
 
     val headers = captureHeaders()
-    headers.getResultLimit should equal(None)
-    headers.getTimeout should equal(None)
+    headers.resultLimit should equal(None)
+    headers.timeout should equal(None)
   }
 
   test("POST: Editted Header Timeout") {
@@ -230,8 +230,8 @@ class RestLevelServletTest extends BaseServletTest {
     request.addHeader(TIMEOUT_HEADER, "9999")
 
     val headers = captureHeaders()
-    headers.getResultLimit should equal(None)
-    headers.getTimeout should equal(Some(9999))
+    headers.resultLimit should equal(None)
+    headers.timeout should equal(Some(9999))
   }
 
   test("POST: Editted Header ResultLimit") {
@@ -241,8 +241,8 @@ class RestLevelServletTest extends BaseServletTest {
     request.addHeader(RESULT_LIMIT_HEADER, "8888")
 
     val headers = captureHeaders()
-    headers.getResultLimit should equal(Some(8888))
-    headers.getTimeout should equal(None)
+    headers.resultLimit should equal(Some(8888))
+    headers.timeout should equal(None)
   }
 
   test("POST: Editted Header ResultLimit and Timeout") {
@@ -253,8 +253,8 @@ class RestLevelServletTest extends BaseServletTest {
     request.addHeader(TIMEOUT_HEADER, "9999")
 
     val headers = captureHeaders()
-    headers.getResultLimit should equal(Some(8888))
-    headers.getTimeout should equal(Some(9999))
+    headers.resultLimit should equal(Some(8888))
+    headers.timeout should equal(Some(9999))
   }
 
   test("POST: Badly formatted ResultLimit") {

@@ -27,6 +27,7 @@ import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.models.SquerylConversions
 
 import SquerylModel._
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
 import org.totalgrid.reef.authz.VisibilityMap
 
 /**
@@ -45,7 +46,7 @@ trait UniqueAndSearchQueryable[MessageType, T] {
    * limit results to stop denial of service
    */
   def getResultLimit(context: RequestContext) = {
-    val limit = context.getHeaders.getResultLimit.getOrElse(100)
+    val limit = context.getHeaders.resultLimit.getOrElse(100)
     if (limit < 0) throw new BadRequestException("RESULT_LIMIT header needs to be integer larger than 0")
     limit
   }

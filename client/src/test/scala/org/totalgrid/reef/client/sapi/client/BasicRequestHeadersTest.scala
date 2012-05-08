@@ -23,6 +23,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.client.AddressableDestination
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
 
 @RunWith(classOf[JUnitRunner])
 class BasicRequestHeadersTest extends FunSuite with ShouldMatchers {
@@ -31,8 +32,8 @@ class BasicRequestHeadersTest extends FunSuite with ShouldMatchers {
 
     val h2 = BasicRequestHeaders.empty.setDestination(new AddressableDestination("test"))
 
-    h1.merge(h2).getDestination.map(_.getKey) should equal(Some("test"))
-    h2.merge(h1).getDestination.map(_.getKey) should equal(Some("test"))
+    h1.merge(h2).destination.map(_.getKey) should equal(Some("test"))
+    h2.merge(h1).destination.map(_.getKey) should equal(Some("test"))
   }
 
   test("Merge override") {
@@ -40,7 +41,7 @@ class BasicRequestHeadersTest extends FunSuite with ShouldMatchers {
 
     val h2 = BasicRequestHeaders.empty.setDestination(new AddressableDestination("test2"))
 
-    h1.merge(h2).getDestination.map(_.getKey) should equal(Some("test2"))
-    h2.merge(h1).getDestination.map(_.getKey) should equal(Some("test1"))
+    h1.merge(h2).destination.map(_.getKey) should equal(Some("test2"))
+    h2.merge(h1).destination.map(_.getKey) should equal(Some("test1"))
   }
 }

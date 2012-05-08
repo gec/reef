@@ -173,13 +173,11 @@ class ConfigFileServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
 
     s.get(query, env.setResultLimit(1000)).expectMany(50)
 
-    s.get(query, env.setResultLimit(0)).expectMany(0)
-
     s.get(query, env.setResultLimit(1)).expectMany(1)
 
     s.get(query, env.setResultLimit(45)).expectMany(45)
 
-    intercept[BadRequestException] {
+    intercept[IllegalArgumentException] {
       s.get(query, env.setResultLimit(-1))
     }
   }

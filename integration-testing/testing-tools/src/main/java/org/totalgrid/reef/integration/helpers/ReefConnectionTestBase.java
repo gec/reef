@@ -122,7 +122,7 @@ public class ReefConnectionTestBase
         {
             client = connection.createClient( "" );
         }
-        connection.addServicesList( new LoaderServicesList() );
+        connection.getServiceRegistry().addServicesList( new LoaderServicesList() );
         client.addSubscriptionCreationListener( bindingListener );
         helpers = client.getService( AllScadaService.class );
 

@@ -368,9 +368,9 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
 
     val componentId = "auth_tester"
 
-    def request(verb: Verb, authTokens: List[String]) = {
+    def request(verb: Verb, authToken: Option[String]) = {
       val context = new AuthRequestContext
-      context.modifyHeaders { _.setAuthTokens(authTokens) }
+      authToken.map { token => context.modifyHeaders { _.setAuthToken(token) } }
       context.auth.prepare(context)
       verb match {
         case Verb.GET => context.auth.authorize(context, componentId, "read", Nil)
@@ -390,7 +390,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     val fix = new AuthFixture
 
     intercept[UnauthorizedException] {
-      fix.test.request(Verb.GET, Nil)
+      fix.test.request(Verb.GET, None)
     }
   }
 
@@ -398,14 +398,14 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     val fix = new AuthFixture
 
     intercept[UnauthorizedException] {
-      fix.test.request(Verb.GET, List("fake-token"))
+      fix.test.request(Verb.GET, Some("fake-token"))
     }
   }
 
   test("Get w/ AuthToken => OK") {
     val fix = new AuthFixture
     val authToken = fix.login("guest", "guest")
-    fix.test.request(Verb.GET, List(authToken.getToken))
+    fix.test.request(Verb.GET, Some(authToken.getToken))
   }
 
   test("Get w/ Revoked AuthToken => Unauthorized") {
@@ -415,7 +415,7 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     fix.authService.delete(authToken).expectOne()
 
     intercept[UnauthorizedException] {
-      fix.test.request(Verb.GET, List(authToken.getToken))
+      fix.test.request(Verb.GET, Some(authToken.getToken))
     }
   }
 
@@ -425,17 +425,18 @@ class AuthTokenVerifierTest extends AuthSystemTestBase {
     val authToken = fix.login("guest", "guest")
 
     intercept[UnauthorizedException] {
-      fix.test.request(Verb.PUT, List(authToken.getToken))
+      fix.test.request(Verb.PUT, Some(authToken.getToken))
     }
   }
 
-  test("Put w/ Access => OK") {
-    val fix = new AuthFixture
-
-    val authToken1 = fix.login("guest", "guest")
-    val authToken2 = fix.login("core", "core")
-
-    fix.test.request(Verb.PUT, List(authToken1.getToken, authToken2.getToken))
-  }
+  // TODO: re-enable multiple auth tokens?
+  //  test("Put w/ Access => OK") {
+  //    val fix = new AuthFixture
+  //
+  //    val authToken1 = fix.login("guest", "guest")
+  //    val authToken2 = fix.login("core", "core")
+  //
+  //    fix.test.request(Verb.PUT, List(authToken1.getToken, authToken2.getToken))
+  //  }
 
 }

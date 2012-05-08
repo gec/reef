@@ -29,6 +29,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto }
 import org.totalgrid.reef.models._
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 import org.squeryl.dsl.ast.{ RightHandSideOfIn, BinaryOperatorNodeLogicalBoolean, ExpressionNode }
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
 
 object EntityService {
   def seed() {
@@ -147,7 +148,7 @@ class EntityServiceModel
       }
     }
     // TODO: Make limits non-superficial
-    val entityResults = results.take(context.getHeaders.getResultLimit().getOrElse(100))
+    val entityResults = results.take(context.getHeaders.resultLimit.getOrElse(100))
 
     Entity.preloadEntityTypes(entityResults)
 

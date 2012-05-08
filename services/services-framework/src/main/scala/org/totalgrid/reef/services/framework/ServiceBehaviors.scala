@@ -24,6 +24,8 @@ import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
 
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
+
 /**
  * implementations for common behaviors for the services that use a "model" object.
  *

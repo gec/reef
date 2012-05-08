@@ -65,7 +65,7 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
 
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId(uuid)
     builder.setPayload(ByteString.copyFrom(descriptor.serialize(payload)))
-    headers.foreach { _.toEnvelopeRequestHeaders.foreach(builder.addHeaders) } // TODO: HACK HACK HACK
+    headers.foreach { h => builder.addAllHeaders(h.toEnvelopeRequestHeaders) }
 
     val request = SelfIdentityingServiceRequest.newBuilder.setExchange(descriptor.id).setRequest(builder).build
 
