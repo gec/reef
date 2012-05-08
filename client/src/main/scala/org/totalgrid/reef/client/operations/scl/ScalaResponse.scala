@@ -18,12 +18,11 @@
  */
 package org.totalgrid.reef.client.operations.scl
 
-import org.totalgrid.reef.client.operations.Response
+import org.totalgrid.reef.client.operations.{ Response, DefaultResponse }
 import org.totalgrid.reef.client.exception.ExpectationException
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 import java.util.Arrays
-import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 
 trait ScalaResponse {
 
@@ -66,17 +65,14 @@ trait ScalaResponse {
 object ScalaResponse extends ScalaResponse {
 
   def success[A](status: Status, result: A): Response[A] = {
-    if (!StatusCodes.isSuccess(status)) throw new IllegalArgumentException("Trying to set success using code: " + status)
-    new ResponseWrapper[A](status, Arrays.asList(result), "", true)
+    new DefaultResponse[A](status, Arrays.asList(result))
   }
-
   def success[A](status: Status, results: List[A]): Response[A] = {
-    if (!StatusCodes.isSuccess(status)) throw new IllegalArgumentException("Trying to set success using code: " + status)
     import scala.collection.JavaConversions._
-    new ResponseWrapper[A](status, results.toList, "", true)
+    new DefaultResponse[A](status, results.toList)
   }
   def failure[A](status: Status, error: String): Response[A] = {
-    new ResponseWrapper[A](status, null, error, false)
+    new DefaultResponse[A](status, error)
   }
 
   def wrap[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, list: List[A] = Nil, error: String = "") = {
