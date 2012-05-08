@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.totalgrid.reef.client.proto.SimpleAuth.AuthRequest
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.service.proto.Auth.{ Agent, AuthToken }
 
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
@@ -28,6 +28,7 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.ReefServiceException
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.services.settings.Version
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
     extends ServiceEntryPoint[AuthRequest] with Logging {
@@ -38,7 +39,7 @@ class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
     if (req.hasClientVersion) builder.setClientVersion(req.getClientVersion)
     val authTokenRecord = contextSource.transaction { model.createFromProto(_, builder.build()) }
     val response = req.toBuilder.setToken(authTokenRecord.token).setServerVersion(Version.getClientVersion).build()
-    callback(Response(Envelope.Status.OK, response))
+    callback(ScalaResponse.success(Envelope.Status.OK, response))
   }
 
   override def deleteAsync(source: RequestContextSource, req: AuthRequest)(callback: (Response[AuthRequest]) => Unit) {
@@ -55,6 +56,6 @@ class SimpleAuthRequestService(protected val model: AuthTokenServiceModel)
       // information about the system and complicates shutdown code.
       case rse: ReefServiceException => logger.info("Error deleting auth token: " + rse.getMessage)
     }
-    callback(Response(Envelope.Status.DELETED, req.toBuilder.setToken(req.getToken).build))
+    callback(ScalaResponse.success(Envelope.Status.DELETED, req.toBuilder.setToken(req.getToken).build))
   }
 }

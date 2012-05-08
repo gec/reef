@@ -126,7 +126,7 @@ class EventQueryServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
   test("FailPutEventList") {
 
     val resp = service.put(makeEL(0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY))
-    resp.status should equal(Envelope.Status.NOT_ALLOWED)
+    resp.getStatus should equal(Envelope.Status.NOT_ALLOWED)
   }
 
   test("SimpleQueries") {

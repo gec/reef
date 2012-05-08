@@ -22,24 +22,23 @@ import net.agileautomata.executor4s._
 
 import org.totalgrid.reef.broker._
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.proto.SimpleAuth.AuthRequest
-import org.totalgrid.reef.client.sapi.client.rest._
 import org.totalgrid.reef.client.sapi.client._
 
 import com.weiglewilczek.slf4s.Logging
 
-import org.totalgrid.reef.client.operations.{ Response => JResponse }
 import org.totalgrid.reef.client.{ Promise => JPromise }
 
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.{ UserSettings, Version }
 import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionBinding, AnyNodeDestination, Routable }
-import org.totalgrid.reef.client.javaimpl.{ ResponseWrapper }
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 import org.totalgrid.reef.client.operations.impl.{ DefaultServiceOperations, FuturePromise }
 
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.registration.Service
+import org.totalgrid.reef.client.proto.SimpleAuth.AuthRequest
+import org.totalgrid.reef.client.operations.Response
 
 class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: Long)
     extends BrokerConnectionListener
@@ -117,14 +116,14 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
     client
   }
 
-  def requestJava[A](verb: Envelope.Verb, payload: A, headers: RequestHeaders, requestExecutor: Executor): JPromise[JResponse[A]] = {
+  def requestJava[A](verb: Envelope.Verb, payload: A, headers: RequestHeaders, requestExecutor: Executor): JPromise[Response[A]] = {
 
-    val promise = FuturePromise.open[JResponse[A]](requestExecutor)
+    val promise = FuturePromise.open[Response[A]](requestExecutor)
 
     def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) {
       result match {
-        case Left(response) => promise.setSuccess(ResponseWrapper.convert(response))
-        case Right(envelope) => promise.setSuccess(ResponseWrapper.convert(RestHelpers.readServiceResponse(descriptor, envelope)))
+        case Left(fail) => promise.setSuccess(ScalaResponse.failure(fail.status, fail.error))
+        case Right(envelope) => promise.setSuccess(RestHelpers.readServiceResponse(descriptor, envelope))
       }
     }
 
@@ -147,7 +146,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
 
     ClassLookup(payload).flatMap(getServiceOption) match {
       case Some(info) => send(info)
-      case None => promise.setSuccess(ResponseWrapper.failure[A](Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
+      case None => promise.setSuccess(ScalaResponse.failure[A](Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
     }
 
     promise
@@ -158,7 +157,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
     val future = requestExecutor.future[Response[A]]
 
     def onResponse(descriptor: TypeDescriptor[A])(result: Either[FailureResponse, Envelope.ServiceResponse]) = result match {
-      case Left(response) => future.set(response)
+      case Left(fail) => future.set(ScalaResponse.failure(fail.status, fail.error))
       case Right(envelope) => future.set(RestHelpers.readServiceResponse(descriptor, envelope))
     }
 
@@ -181,7 +180,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
 
     ClassLookup(payload).flatMap(getServiceOption) match {
       case Some(info) => send(info)
-      case None => future.set(FailureResponse(Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
+      case None => future.set(ScalaResponse.failure[A](Envelope.Status.BAD_REQUEST, "No info on type: " + payload))
     }
 
     future

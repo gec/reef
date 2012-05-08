@@ -31,7 +31,7 @@ import org.totalgrid.reef.client.proto.Envelope.{ BatchServiceRequest, Verb }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.operations.{ RestOperations, Response }
 import org.totalgrid.reef.client.sapi.client.rest.impl.ClassLookup
-import org.totalgrid.reef.client.javaimpl.ResponseWrapper
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 import org.totalgrid.reef.client.operations.impl.FuturePromise.OpenEitherPromise
 import org.totalgrid.reef.client.exception._
 import org.totalgrid.reef.client.{ RequestHeaders, Promise }
@@ -49,7 +49,7 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
       response.addPayload(request.getPayload)
       batchResponse.addRequests(req.toBuilder.setResponse(response))
     }
-    ResponseWrapper.success(Envelope.Status.OK, List(batchResponse.build))
+    ScalaResponse.success(Envelope.Status.OK, List(batchResponse.build))
   }
 
   private def conditionalSuccess(errorMessages: List[Option[String]])(request: BatchServiceRequest): Response[BatchServiceRequest] = {
@@ -63,11 +63,11 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
         else response.setStatus(Envelope.Status.BAD_REQUEST).setErrorMessage(errorMsg.get)
         batchResponse.addRequests(req.toBuilder.setResponse(response))
     }
-    new ResponseWrapper(Envelope.Status.BAD_REQUEST, List(batchResponse.build), "Batch failed because: " + errorMessages.flatten.head, false)
+    ScalaResponse.failure(Envelope.Status.BAD_REQUEST, "Batch failed because: " + errorMessages.flatten.head)
   }
 
   private def badAuthFailure(request: BatchServiceRequest): Response[BatchServiceRequest] = {
-    ResponseWrapper.failure(Envelope.Status.UNAUTHORIZED, "not authorized")
+    ScalaResponse.failure(Envelope.Status.UNAUTHORIZED, "not authorized")
   }
 
   case class RealRequestCounter(var requests: Int = 0) {

@@ -33,10 +33,12 @@ import org.totalgrid.reef.services._
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders }
 import org.totalgrid.reef.client.{ RequestHeaders, Connection }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client.Expectations._
+import org.totalgrid.reef.client.operations.Response
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 @RunWith(classOf[JUnitRunner])
 class CommandRequestServicesIntegration
@@ -100,7 +102,7 @@ class CommandRequestServicesIntegration
           val response = UserCommandRequest.newBuilder(req).setStatus(status).setErrorMessage("Command: " + commandsRecived).build
           commandsRecived += 1
 
-          Response(Envelope.Status.OK, response :: Nil)
+          ScalaResponse.success(Envelope.Status.OK, response)
         }
       }
 

@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.service.proto.Model.{ Entity => EntityProto, En
 import org.totalgrid.reef.client.service.proto.Utils.Attribute
 import org.totalgrid.reef.client.service.proto.Descriptors
 
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.proto.Envelope.Status
 
@@ -34,6 +34,7 @@ import scala.collection.JavaConversions._
 import java.util.UUID
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.framework.SquerylModel._
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 class EntityAttributesService extends ServiceEntryPoint[AttrProto] {
   import EntityAttributesService._
@@ -48,7 +49,7 @@ class EntityAttributesService extends ServiceEntryPoint[AttrProto] {
 
       context.auth.authorize(context, componentId, "read", entitiesWithAttributes.map { _._1.id })
 
-      Response(Status.OK, resultToProto(entitiesWithAttributes))
+      ScalaResponse.success(Status.OK, resultToProto(entitiesWithAttributes))
     })
   }
 

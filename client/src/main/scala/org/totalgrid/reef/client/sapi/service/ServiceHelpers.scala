@@ -20,7 +20,7 @@ package org.totalgrid.reef.client.sapi.service
 
 import org.totalgrid.reef.client.proto.Envelope
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.types.TypeDescriptor
 import com.weiglewilczek.slf4s.Logging
@@ -29,8 +29,9 @@ import org.totalgrid.reef.client.registration.ServiceResponseCallback
 object ServiceHelpers extends Logging {
   def getResponse[A](id: String, rsp: Response[A], descriptor: TypeDescriptor[A]): Envelope.ServiceResponse = {
     val ret = Envelope.ServiceResponse.newBuilder.setId(id)
-    ret.setStatus(rsp.status).setErrorMessage(rsp.error)
-    rsp.list.foreach { x: A => ret.addPayload(ByteString.copyFrom(descriptor.serialize(x))) }
+    ret.setStatus(rsp.getStatus).setErrorMessage(rsp.getErrorMessage)
+    val it = rsp.getList.iterator()
+    while (it.hasNext) ret.addPayload(ByteString.copyFrom(descriptor.serialize(it.next())))
     ret.build
   }
 

@@ -19,10 +19,11 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.client.sapi.service.HasServiceType
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 object SimpleServiceBehaviors {
   trait SimpleReadAndSubscribe extends HasServiceType with AsyncContextRestGet {
@@ -30,7 +31,7 @@ object SimpleServiceBehaviors {
     final override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit) {
       val response = contextSource.transaction { context =>
         val result = doGetAndSubscribe(context, req)
-        Response(Envelope.Status.OK, result)
+        ScalaResponse.success(Envelope.Status.OK, result)
       }
       callback(response)
     }
@@ -63,7 +64,7 @@ object SimpleServiceBehaviors {
     override def postAsync(source: RequestContextSource, req: ServiceType)(callback: (Response[ServiceType]) => Unit) {
       val response = source.transaction { context =>
         val result = doPost(context, req)
-        Response(Envelope.Status.OK, result)
+        ScalaResponse.success(Envelope.Status.OK, result)
       }
       callback(response)
     }

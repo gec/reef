@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.metrics
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 
 class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long, chattyTransactionThreshold: Int)
     extends ServiceEntryPoint[A]
@@ -38,7 +38,7 @@ class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], hoo
       metrics.timerHook(time.toInt)
       if (time > slowQueryThreshold)
         logger.info("Slow Request: " + time + "ms to handle " + verb + " request: " + displayRequest(req))
-      if (!rsp.success) metrics.errorHook(1)
+      if (!rsp.isSuccess) metrics.errorHook(1)
       val counts = countingSource.databaseActionCounts
       metrics.actionsHook(counts.actions)
       if (counts.actions > chattyTransactionThreshold)

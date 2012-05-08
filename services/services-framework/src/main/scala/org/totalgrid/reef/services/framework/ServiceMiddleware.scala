@@ -24,7 +24,7 @@ import org.totalgrid.reef.client.sapi.service.{ ServiceHelpers, AsyncService }
 import org.totalgrid.reef.client.registration.ServiceResponseCallback
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.types.TypeDescriptor
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ReefServiceException }
 
 /**

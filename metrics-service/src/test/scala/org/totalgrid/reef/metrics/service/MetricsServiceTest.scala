@@ -23,11 +23,12 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.totalgrid.reef.metrics.client.proto.Metrics.MetricsRead
-import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
+import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders }
 import org.totalgrid.reef.client.proto.Envelope.Status
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.metrics.{ SimpleMetricsSink, MappedMetricsHolder, MetricsHooks, MetricsSink }
 import org.totalgrid.reef.client.sapi.client.Expectations._
+import org.totalgrid.reef.client.operations.Response
 
 @RunWith(classOf[JUnitRunner])
 class MetricsServiceTest extends FunSuite with ShouldMatchers {

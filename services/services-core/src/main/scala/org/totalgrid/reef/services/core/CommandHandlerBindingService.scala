@@ -21,9 +21,10 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding
-import org.totalgrid.reef.client.sapi.client._
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.operations.Response
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 class CommandHandlerBindingService extends ServiceEntryPoint[CommandHandlerBinding] {
 
@@ -46,7 +47,7 @@ class CommandHandlerBindingService extends ServiceEntryPoint[CommandHandlerBindi
 
       context.serviceRegistration.bindServiceQueue(commandQueueName, routingKey, klass)
 
-      Response(Envelope.Status.OK, req)
+      ScalaResponse.success(Envelope.Status.OK, req)
     })
   }
 

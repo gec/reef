@@ -31,7 +31,7 @@ import org.totalgrid.reef.test.MockitoStubbedOnly
 import org.totalgrid.reef.client.operations.BindOperations
 
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
-import org.totalgrid.reef.client.javaimpl.ResponseWrapper
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 import org.totalgrid.reef.client.proto.Envelope.Status
 import org.totalgrid.reef.client.Subscription
 import org.totalgrid.reef.client.javaimpl.fixture.{ SomeInteger, SomeIntegerTypeDescriptor }
@@ -64,7 +64,7 @@ class ServiceOperationsTest extends FunSuite with ShouldMatchers {
     val subscription = mock(classOf[Subscription[SomeInteger]])
 
     doReturn(subscription).when(bindable).subscribe(SomeIntegerTypeDescriptor)
-    doReturn(TestPromises.fixed(ResponseWrapper.success(Status.OK, List(8)))).when(rest).get(4)
+    doReturn(TestPromises.fixed(ScalaResponse.success(Status.OK, List(8)))).when(rest).get(4)
 
     val promise = ops.subscription(SomeIntegerTypeDescriptor, "failure") { (sub, client) =>
       client.get(4).map(r => r.one)

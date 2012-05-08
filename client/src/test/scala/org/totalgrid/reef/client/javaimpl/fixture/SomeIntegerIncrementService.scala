@@ -21,13 +21,14 @@ package org.totalgrid.reef.client.javaimpl.fixture
 
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.registration.EventPublisher
 
 import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
 import org.totalgrid.reef.client.RequestHeaders
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 class SomeIntegerIncrementService(handler: EventPublisher) extends SyncServiceBase[SomeInteger] {
   val descriptor = SomeIntegerTypeDescriptor
@@ -36,6 +37,6 @@ class SomeIntegerIncrementService(handler: EventPublisher) extends SyncServiceBa
     val rsp = req.increment
     headers.subQueue.foreach(q => handler.bindQueueByClass(q, "#", req.getClass))
     handler.publishEvent(Envelope.SubscriptionEventType.MODIFIED, req.increment, "all")
-    Response(Envelope.Status.OK, rsp)
+    ScalaResponse.success(Envelope.Status.OK, rsp)
   }
 }

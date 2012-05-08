@@ -20,6 +20,7 @@ package org.totalgrid.reef.client.sapi.client
 
 import org.totalgrid.reef.client.exception.ExpectationException
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
+import org.totalgrid.reef.client.operations.Response
 
 trait Expectations {
 
@@ -28,17 +29,19 @@ trait Expectations {
 
       expected match {
         case Some(x) =>
-          if (resp.status != x)
-            throw new ExpectationException("Status " + resp.status + " != " + " expected " + x)
-          resp.list
-        case None => resp match {
-          case SuccessResponse(_, list) => list
-          case FailureResponse(status, error) => throw StatusCodes.toException(status, error)
+          if (resp.getStatus != x)
+            throw new ExpectationException("Status " + resp.getStatus + " != " + " expected " + x)
+        case None => resp.isSuccess match {
+          case true =>
+          case false => throw StatusCodes.toException(resp.getStatus, resp.getErrorMessage)
         }
       }
 
+      import scala.collection.JavaConversions._
+      val list = if (resp.isSuccess) resp.getList.toList else Nil
+
       num.foreach { expected =>
-        val actual = resp.list.size
+        val actual = list.size
         if (expected != actual) {
           val msg = errorFun match {
             case Some(fun) => fun(expected, actual)
@@ -48,7 +51,7 @@ trait Expectations {
         }
       }
 
-      resp.list
+      list
     }
   }
 

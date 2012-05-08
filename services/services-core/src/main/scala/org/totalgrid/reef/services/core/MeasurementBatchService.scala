@@ -29,13 +29,14 @@ import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntr
 
 import org.totalgrid.reef.client.{ RequestHeaders, AddressableDestination }
 
-import org.totalgrid.reef.client.sapi.client._
-import org.totalgrid.reef.client.operations.scl.PromiseCollators
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
+import org.totalgrid.reef.client.operations.scl.{ ScalaResponse, PromiseCollators }
+import org.totalgrid.reef.client.operations.Response
 
 class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] {
@@ -94,9 +95,9 @@ class MeasurementBatchService
     future.listenFor { results =>
       val response = try {
         results.await()
-        SuccessResponse(Envelope.Status.OK, List(MeasurementBatch.newBuilder(req).clearMeas.build))
+        ScalaResponse.success(Envelope.Status.OK, MeasurementBatch.newBuilder(req).clearMeas.build)
       } catch {
-        case rse: ReefServiceException => FailureResponse(rse.getStatus, rse.getMessage)
+        case rse: ReefServiceException => ScalaResponse.failure[MeasurementBatch](rse.getStatus, rse.getMessage)
       }
       callback(response)
     }

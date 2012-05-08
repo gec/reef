@@ -30,7 +30,6 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.proto.Envelope.ServiceResponse
 
 import org.totalgrid.reef.broker.BrokerMessage
-import org.totalgrid.reef.client.sapi.client.{ ResponseTimeout, FailureResponse }
 
 @RunWith(classOf[JUnitRunner])
 class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {

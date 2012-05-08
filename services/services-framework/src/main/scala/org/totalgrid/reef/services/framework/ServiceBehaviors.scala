@@ -19,12 +19,13 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.models.SquerylConversions.NoSearchTermsException
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 /**
  * implementations for common behaviors for the services that use a "model" object.
@@ -44,7 +45,7 @@ object ServiceBehaviors {
       contextSource.transaction { context =>
         context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
         val results = read(context, model, req)
-        Response(Envelope.Status.OK, results)
+        ScalaResponse.success(Envelope.Status.OK, results)
       }
     }
     override def getAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit = {
@@ -71,7 +72,7 @@ object ServiceBehaviors {
       contextSource.transaction { context =>
         context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
         val (value, status) = create(context, model, req)
-        Response(status, value :: Nil)
+        ScalaResponse.success(status, value)
       }
     }
 
@@ -88,7 +89,7 @@ object ServiceBehaviors {
           case Some(x) => update(context, model, req, x)
           case None => throw new BadRequestException("Record not found: " + req)
         }
-        Response(status, value :: Nil)
+        ScalaResponse.success(status, value)
       }
     }
 
@@ -124,7 +125,7 @@ object ServiceBehaviors {
           // TODO: evaluate replacing NoSearchTermsException with flags
           case e: NoSearchTermsException => create(context, model, req)
         }
-        Response(status, proto :: Nil)
+        ScalaResponse.success(status, proto)
       }
     }
 
@@ -152,7 +153,7 @@ object ServiceBehaviors {
         context.getHeaders.subQueue.foreach(subscribe(context, model, req, _))
         val deleted = doDelete(context, model, req)
         val status = if (deleted.isEmpty) Envelope.Status.NOT_MODIFIED else Envelope.Status.DELETED
-        Response(status, deleted)
+        ScalaResponse.success(status, deleted)
       }
     }
     override def deleteAsync(contextSource: RequestContextSource, req: ServiceType)(callback: Response[ServiceType] => Unit): Unit =

@@ -150,7 +150,7 @@ class AlarmQueryServiceTest extends DatabaseUsingTestBase with SyncServicesTestH
   test("FailPutAlarmList") {
 
     val resp = service.put(makeAL(STATE_ANY, 0, 0, Some(Scada.ControlExe), USER_ANY, ENTITY_ANY))
-    resp.status should equal(Envelope.Status.NOT_ALLOWED)
+    resp.getStatus should equal(Envelope.Status.NOT_ALLOWED)
   }
 
   test("SimpleQueries") {

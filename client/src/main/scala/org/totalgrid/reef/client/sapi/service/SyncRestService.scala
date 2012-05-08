@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.sapi.service
 
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.RequestHeaders
 
 trait HasSyncRestGet extends HasServiceType {

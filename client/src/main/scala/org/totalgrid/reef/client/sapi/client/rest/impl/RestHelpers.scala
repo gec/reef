@@ -18,12 +18,13 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.proto.Envelope
 import scala.collection.JavaConversions._
 import com.google.protobuf.{ GeneratedMessage, ByteString }
 import org.totalgrid.reef.client.RequestHeaders
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 object RestHelpers {
 
@@ -41,7 +42,7 @@ object RestHelpers {
 
   def readServiceResponse[A](desc: TypeDescriptor[A], rsp: Envelope.ServiceResponse): Response[A] = {
     val list = rsp.getPayloadList.map(bs => desc.deserialize(bs.toByteArray())).toList
-    Response.apply[A](rsp.getStatus, list, rsp.getErrorMessage)
+    ScalaResponse.wrap(rsp.getStatus, list, rsp.getErrorMessage)
   }
 
 }

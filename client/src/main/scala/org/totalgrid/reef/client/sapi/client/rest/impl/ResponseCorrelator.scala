@@ -27,7 +27,10 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.proto.Envelope._
 
-import org.totalgrid.reef.client.sapi.client.{ ResponseTimeout, FailureResponse }
+case class FailureResponse(status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, error: String = "")
+
+case class ResponseTimeout(interval: TimeInterval) extends FailureResponse(Envelope.Status.RESPONSE_TIMEOUT,
+  "Timed out waiting for response after: " + interval)
 
 /**
  * Synchronizes and correlates the send/receive operations on a ProtoServiceChannel

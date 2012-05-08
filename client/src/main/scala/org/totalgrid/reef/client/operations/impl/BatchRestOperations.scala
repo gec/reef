@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.operations.scl.ScalaPromise._
 import org.totalgrid.reef.client.operations.scl.ScalaResponse._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
-import org.totalgrid.reef.client.javaimpl.ResponseWrapper
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb }
 import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client.{ RequestHeaders, Promise }
@@ -111,7 +111,7 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
       StatusCodes.isSuccess(response.getStatus) match {
         case true =>
           val data = response.getPayloadList.toList.map(bs => desc.deserialize(bs.toByteArray))
-          promise.setSuccess(ResponseWrapper.success(response.getStatus, data))
+          promise.setSuccess(ScalaResponse.success(response.getStatus, data))
         case false =>
           promise.setFailure(new ReefServiceException(response.getErrorMessage, response.getStatus))
       }

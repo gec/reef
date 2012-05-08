@@ -21,6 +21,8 @@ package org.totalgrid.reef.client.operations.scl
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.ExpectationException
 import org.totalgrid.reef.client.proto.Envelope.Status
+import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
+import java.util.Arrays
 import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 
 trait ScalaResponse {
@@ -63,7 +65,13 @@ trait ScalaResponse {
 
 object ScalaResponse extends ScalaResponse {
 
+  def success[A](status: Status, result: A): Response[A] = {
+    if (!StatusCodes.isSuccess(status)) throw new IllegalArgumentException("Trying to set success using code: " + status)
+    new ResponseWrapper[A](status, Arrays.asList(result), "", true)
+  }
+
   def success[A](status: Status, results: List[A]): Response[A] = {
+    if (!StatusCodes.isSuccess(status)) throw new IllegalArgumentException("Trying to set success using code: " + status)
     import scala.collection.JavaConversions._
     new ResponseWrapper[A](status, results.toList, "", true)
   }
@@ -71,13 +79,10 @@ object ScalaResponse extends ScalaResponse {
     new ResponseWrapper[A](status, null, error, false)
   }
 
-  import org.totalgrid.reef.client.sapi.client.{ FailureResponse, SuccessResponse }
-  import scala.collection.JavaConversions._
-  def convert[A](resp: Response[A]): org.totalgrid.reef.client.sapi.client.Response[A] = {
-    resp.isSuccess match {
-      case true => SuccessResponse(resp.getStatus, resp.getList.toList)
-      case false => FailureResponse(resp.getStatus, resp.getErrorMessage)
-    }
+  def wrap[A](status: Envelope.Status = Envelope.Status.INTERNAL_ERROR, list: List[A] = Nil, error: String = "") = {
+    if (StatusCodes.isSuccess(status)) success[A](status, list)
+    else failure[A](status, error)
   }
+
 }
 

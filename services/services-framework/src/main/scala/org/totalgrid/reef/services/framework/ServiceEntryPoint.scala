@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.client.sapi.service._
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.proto.Envelope
 
 /**

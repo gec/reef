@@ -19,13 +19,14 @@
 package org.totalgrid.reef.metrics.service
 
 import org.totalgrid.reef.client.proto.Envelope.Status
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.metrics.client.proto.Metrics.{ MetricsValue, MetricsRead }
 import org.totalgrid.reef.metrics.MetricsHolder
 import org.totalgrid.reef.metrics.client.MetricsReadDescriptor
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.RequestHeaders
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 class MetricsService(metrics: MetricsHolder) extends AsyncServiceBase[MetricsRead] {
 
@@ -53,20 +54,20 @@ class MetricsService(metrics: MetricsHolder) extends AsyncServiceBase[MetricsRea
 
   override def getAsync(req: MetricsRead, env: RequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
     val response = buildValuesResponse(req.getFiltersList.toList)
-    callback(Response(Status.OK, List(response)))
+    callback(ScalaResponse.success(Status.OK, response))
   }
 
   override def deleteAsync(req: MetricsRead, env: RequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
 
     req.getFiltersList.toList match {
-      case Nil => callback(Response(Status.BAD_REQUEST, Nil))
+      case Nil => callback(ScalaResponse.failure(Status.BAD_REQUEST, "Nothing to delete"))
       case List("*") => doReset(Nil)
       case filters: List[String] => doReset(filters)
     }
 
     def doReset(filters: List[String]) {
       metrics.reset(filters)
-      callback(Response(Status.DELETED, List(buildValuesResponse(filters))))
+      callback(ScalaResponse.success(Status.DELETED, buildValuesResponse(filters)))
     }
   }
 }

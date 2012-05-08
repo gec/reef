@@ -22,7 +22,6 @@ import scala.collection.JavaConversions._
 
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
 import util.SynchronizedResult
-import org.totalgrid.reef.client.sapi.client._
 import org.totalgrid.reef.client.sapi.service.{ ServiceHelpers }
 import org.totalgrid.reef.client.exception.BadRequestException
 
@@ -31,6 +30,8 @@ import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.registration.ServiceResponseCallback
+import org.totalgrid.reef.client.operations.Response
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
     extends ServiceEntryPoint[BatchServiceRequest] {
@@ -67,7 +68,7 @@ class BatchServiceRequestService(services: List[ServiceEntryPoint[_ <: AnyRef]])
       b.addRequests(SelfIdentityingServiceRequest.newBuilder.setResponse(r))
     }
 
-    Response(Envelope.Status.OK, b.build)
+    ScalaResponse.success(Envelope.Status.OK, b.build)
   }
 
   private def handleRequest[A <: AnyRef](

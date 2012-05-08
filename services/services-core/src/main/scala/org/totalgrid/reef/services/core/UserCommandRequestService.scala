@@ -31,10 +31,11 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.{ AddressableDestination, Routable }
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
-import org.totalgrid.reef.client.sapi.client.{ FailureResponse, BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 import org.totalgrid.reef.client.sapi.client.Expectations._
+import org.totalgrid.reef.client.operations.Response
 
 class UserCommandRequestService(
   protected val model: UserCommandRequestServiceModel)
@@ -84,7 +85,6 @@ class UserCommandRequestService(
 
     promise.listenFor { respPromise =>
       try {
-        println("Promise result received")
         val response = respPromise.await()
 
         try {
@@ -109,11 +109,11 @@ class UserCommandRequestService(
           case ex: Exception =>
             logger.error("Error handling command response callback: " + ex.getMessage, ex)
         } finally {
-          callback(ScalaResponse.convert(response))
+          callback(response)
         }
       } catch {
-        case rse: ReefServiceException => callback(FailureResponse(rse.getStatus, rse.getMessage))
-        case ex => callback(FailureResponse(error = "Unknown error in UserCommandRequest"))
+        case rse: ReefServiceException => callback(ScalaResponse.failure(rse.getStatus, rse.getMessage))
+        case ex => callback(ScalaResponse.failure(Envelope.Status.INTERNAL_ERROR, "Unknown error in UserCommandRequest"))
       }
     }
   }
