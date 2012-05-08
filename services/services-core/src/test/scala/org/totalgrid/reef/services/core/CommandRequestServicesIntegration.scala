@@ -34,7 +34,7 @@ import org.totalgrid.reef.client.proto.Envelope
 
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
-import org.totalgrid.reef.client.Connection
+import org.totalgrid.reef.client.{ RequestHeaders, Connection }
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.sapi.client.Expectations._
 
@@ -96,7 +96,7 @@ class CommandRequestServicesIntegration
 
         val descriptor = Descriptors.userCommandRequest
 
-        override def put(req: UserCommandRequest, env: BasicRequestHeaders): Response[UserCommandRequest] = {
+        override def put(req: UserCommandRequest, env: RequestHeaders): Response[UserCommandRequest] = {
           val response = UserCommandRequest.newBuilder(req).setStatus(status).setErrorMessage("Command: " + commandsRecived).build
           commandsRecived += 1
 

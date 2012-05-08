@@ -34,7 +34,7 @@ import org.totalgrid.reef.client.{ Promise => JPromise }
 import org.totalgrid.reef.client.sapi.types.{ BuiltInDescriptors }
 import org.totalgrid.reef.client.types.{ ServiceTypeInformation, TypeDescriptor }
 import org.totalgrid.reef.client.settings.{ UserSettings, Version }
-import org.totalgrid.reef.client.{ SubscriptionBinding, AnyNodeDestination, Routable }
+import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionBinding, AnyNodeDestination, Routable }
 import org.totalgrid.reef.client.javaimpl.{ ResponseWrapper }
 import org.totalgrid.reef.client.operations.impl.{ DefaultServiceOperations, FuturePromise }
 
@@ -117,7 +117,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
     client
   }
 
-  def requestJava[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): JPromise[JResponse[A]] = {
+  def requestJava[A](verb: Envelope.Verb, payload: A, headers: RequestHeaders, requestExecutor: Executor): JPromise[JResponse[A]] = {
 
     val promise = FuturePromise.open[JResponse[A]](requestExecutor)
 
@@ -153,7 +153,7 @@ class DefaultConnection(conn: BrokerConnection, executor: Executor, timeoutms: L
     promise
   }
 
-  def request[A](verb: Envelope.Verb, payload: A, headers: BasicRequestHeaders, requestExecutor: Executor): Future[Response[A]] = {
+  def request[A](verb: Envelope.Verb, payload: A, headers: RequestHeaders, requestExecutor: Executor): Future[Response[A]] = {
 
     val future = requestExecutor.future[Response[A]]
 

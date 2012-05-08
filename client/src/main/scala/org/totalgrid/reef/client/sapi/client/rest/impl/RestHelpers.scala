@@ -18,11 +18,12 @@
  */
 package org.totalgrid.reef.client.sapi.client.rest.impl
 
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.proto.Envelope
 import scala.collection.JavaConversions._
 import com.google.protobuf.{ GeneratedMessage, ByteString }
+import org.totalgrid.reef.client.RequestHeaders
 
 object RestHelpers {
 
@@ -32,7 +33,7 @@ object RestHelpers {
   def getEvent[A](typ: Envelope.SubscriptionEventType, value: A, desc: TypeDescriptor[A]): Envelope.ServiceNotification =
     Envelope.ServiceNotification.newBuilder.setEvent(typ).setPayload(ByteString.copyFrom(desc.serialize(value))).build
 
-  def buildServiceRequest[A](verb: Envelope.Verb, request: A, desc: TypeDescriptor[A], uuid: String, env: BasicRequestHeaders): Envelope.ServiceRequest = {
+  def buildServiceRequest[A](verb: Envelope.Verb, request: A, desc: TypeDescriptor[A], uuid: String, env: RequestHeaders): Envelope.ServiceRequest = {
     val builder = Envelope.ServiceRequest.newBuilder.setVerb(verb).setId(uuid).setPayload(ByteString.copyFrom(desc.serialize(request)))
     builder.addAllHeaders(env.toEnvelopeRequestHeaders)
     builder.build()

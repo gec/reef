@@ -23,13 +23,14 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.command.{ CommandResultCallback, CommandRequestHandler }
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus, UserCommandRequest }
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.sapi.client.{ SuccessResponse, BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.{ SuccessResponse, Response }
+import org.totalgrid.reef.client.RequestHeaders
 
 class EndpointCommandHandlerImpl(handler: CommandRequestHandler) extends AsyncServiceBase[UserCommandRequest] {
 
   val descriptor = Descriptors.userCommandRequest
 
-  override def putAsync(req: UserCommandRequest, env: BasicRequestHeaders)(callback: Response[UserCommandRequest] => Unit): Unit = {
+  override def putAsync(req: UserCommandRequest, env: RequestHeaders)(callback: Response[UserCommandRequest] => Unit): Unit = {
 
     val request = req.getCommandRequest
 

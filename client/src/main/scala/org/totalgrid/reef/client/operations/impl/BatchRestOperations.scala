@@ -20,7 +20,6 @@ package org.totalgrid.reef.client.operations.impl
 
 import java.util.UUID
 import com.google.protobuf.ByteString
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.types.{ TypeDescriptor, ServiceTypeInformation }
 import collection.mutable.Queue
 import org.totalgrid.reef.client.operations.scl.ScalaPromise._
@@ -30,7 +29,7 @@ import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb }
 import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
-import org.totalgrid.reef.client.Promise
+import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 import org.totalgrid.reef.client.operations.{ Response, RestOperations }
 import org.totalgrid.reef.client.sapi.client.rest.impl.{ DefaultClient, ClassLookup }
 
@@ -58,7 +57,7 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
   case class QueuedRequest[A](request: SelfIdentityingServiceRequest, descriptor: TypeDescriptor[A], promise: OpenPromise[Response[A]])
   private val requestQueue = Queue.empty[QueuedRequest[_]]
 
-  protected def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]): Promise[Response[A]] = {
+  protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]] = {
 
     val descriptor: TypeDescriptor[A] = getServiceInfo(ClassLookup.get(payload)).getDescriptor
     val uuid = UUID.randomUUID().toString

@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
 
-import org.totalgrid.reef.client.AddressableDestination
+import org.totalgrid.reef.client.{ RequestHeaders, AddressableDestination }
 
 import org.totalgrid.reef.client.sapi.client._
 import org.totalgrid.reef.client.operations.scl.PromiseCollators
@@ -40,7 +40,7 @@ import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
 class MeasurementBatchService
     extends ServiceEntryPoint[MeasurementBatch] {
 
-  private case class Request[+A](verb: Envelope.Verb, payload: A, env: BasicRequestHeaders = BasicRequestHeaders.empty)
+  private case class Request[+A](verb: Envelope.Verb, payload: A, env: RequestHeaders = BasicRequestHeaders.empty)
 
   override val descriptor = Descriptors.measurementBatch
 
@@ -107,7 +107,7 @@ class MeasurementBatchService
     case None => throw new BadRequestException("No measurement stream assignment for endpoint: " + ce.entityName)
   }
 
-  private def getRequests(req: MeasurementBatch, commonHeaders: BasicRequestHeaders, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {
+  private def getRequests(req: MeasurementBatch, commonHeaders: RequestHeaders, commEndpoints: Map[CommunicationEndpoint, List[Point]]): List[Request[MeasurementBatch]] = {
     val measList = req.getMeasList().toList
 
     // TODO: more efficient creation of measurement batches

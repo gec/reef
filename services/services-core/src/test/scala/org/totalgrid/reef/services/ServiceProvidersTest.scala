@@ -28,8 +28,7 @@ import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProce
 import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
 import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Lifecycle
-import org.totalgrid.reef.client.Connection
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.{ RequestHeaders, Connection }
 import org.totalgrid.reef.client.sapi.service.{ AsyncService }
 import org.totalgrid.reef.client.registration.ServiceResponseCallback
 import org.totalgrid.reef.client.proto.Envelope
@@ -47,7 +46,7 @@ class NoOpService extends AsyncService[Any] {
   import Envelope._
 
   /// noOpService that returns OK
-  def respond(request: ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) =
+  def respond(request: ServiceRequest, env: RequestHeaders, callback: ServiceResponseCallback) =
     callback.onResponse(ServiceResponse.newBuilder.setStatus(Status.OK).setId(request.getId).build)
 
   override val descriptor = new TypeDescriptor[Any] {

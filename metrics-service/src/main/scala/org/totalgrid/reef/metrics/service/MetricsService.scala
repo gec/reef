@@ -19,12 +19,13 @@
 package org.totalgrid.reef.metrics.service
 
 import org.totalgrid.reef.client.proto.Envelope.Status
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
 import org.totalgrid.reef.metrics.client.proto.Metrics.{ MetricsValue, MetricsRead }
 import org.totalgrid.reef.metrics.MetricsHolder
 import org.totalgrid.reef.metrics.client.MetricsReadDescriptor
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.client.RequestHeaders
 
 class MetricsService(metrics: MetricsHolder) extends AsyncServiceBase[MetricsRead] {
 
@@ -50,12 +51,12 @@ class MetricsService(metrics: MetricsHolder) extends AsyncServiceBase[MetricsRea
     b.build()
   }
 
-  override def getAsync(req: MetricsRead, env: BasicRequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
+  override def getAsync(req: MetricsRead, env: RequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
     val response = buildValuesResponse(req.getFiltersList.toList)
     callback(Response(Status.OK, List(response)))
   }
 
-  override def deleteAsync(req: MetricsRead, env: BasicRequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
+  override def deleteAsync(req: MetricsRead, env: RequestHeaders)(callback: (Response[MetricsRead]) => Unit) {
 
     req.getFiltersList.toList match {
       case Nil => callback(Response(Status.BAD_REQUEST, Nil))

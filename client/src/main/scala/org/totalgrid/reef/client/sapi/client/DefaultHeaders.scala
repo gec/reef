@@ -18,13 +18,9 @@
  */
 package org.totalgrid.reef.client.sapi.client
 
-trait HasHeaders {
-  def getHeaders: BasicRequestHeaders
-  def setHeaders(headers: BasicRequestHeaders): Unit
-  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): Unit
-}
+import org.totalgrid.reef.client.RequestHeaders
 
-trait DefaultHeaders extends HasHeaders {
+trait DefaultHeaders {
 
   /** The default request headers */
   private var defaultHeaders = BasicRequestHeaders.empty
@@ -33,9 +29,9 @@ trait DefaultHeaders extends HasHeaders {
   def getHeaders = defaultHeaders
 
   /** Set the default request headers */
-  def setHeaders(headers: BasicRequestHeaders) = defaultHeaders = headers
+  def setHeaders(headers: RequestHeaders) = defaultHeaders = headers
 
   /** Provide a little syntactic sugar for change the headers */
-  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders) = setHeaders(modify(defaultHeaders))
+  def modifyHeaders(modify: RequestHeaders => RequestHeaders) = setHeaders(modify(defaultHeaders))
 
 }

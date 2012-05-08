@@ -18,22 +18,23 @@
  */
 package org.totalgrid.reef.client.sapi.service
 
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.RequestHeaders
 
 trait HasAsyncRestGet extends HasServiceType {
-  def getAsync(req: ServiceType, env: BasicRequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
+  def getAsync(req: ServiceType, env: RequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
 }
 
 trait HasAsyncRestPut extends HasServiceType {
-  def putAsync(req: ServiceType, env: BasicRequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
+  def putAsync(req: ServiceType, env: RequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noPut[ServiceType])
 }
 
 trait HasAsyncRestDelete extends HasServiceType {
-  def deleteAsync(req: ServiceType, env: BasicRequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noDelete[ServiceType])
+  def deleteAsync(req: ServiceType, env: RequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noDelete[ServiceType])
 }
 
 trait HasAsyncRestPost extends HasServiceType {
-  def postAsync(req: ServiceType, env: BasicRequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
+  def postAsync(req: ServiceType, env: RequestHeaders)(callback: Response[ServiceType] => Unit): Unit = callback(RestResponses.noGet[ServiceType])
 }
 
 trait AsyncRestService extends HasAsyncRestGet with HasAsyncRestPut with HasAsyncRestDelete with HasAsyncRestPost

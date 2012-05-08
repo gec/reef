@@ -29,12 +29,12 @@ object BasicRequestHeaders {
   val destination = "DESTINATION"
   val timeoutMs = "TIMEOUT_MS"
 
-  def from(map: java.util.Map[String, java.util.List[String]]) = {
+  def from(map: java.util.Map[String, java.util.List[String]]): RequestHeaders = {
     import scala.collection.JavaConversions._
-    map.foldLeft(BasicRequestHeaders.empty)((sum, i) => sum.addHeader(i._1, i._2.head))
+    map.foldLeft(new BasicRequestHeaders)((sum, i) => sum.addHeader(i._1, i._2.head))
   }
 
-  val empty = new BasicRequestHeaders
+  val empty: RequestHeaders = new BasicRequestHeaders
 }
 
 /**

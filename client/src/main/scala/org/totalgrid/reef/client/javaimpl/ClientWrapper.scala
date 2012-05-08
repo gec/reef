@@ -34,10 +34,7 @@ class ClientWrapper(client: DefaultClient) extends Client {
 
   // TODO make client Headers mutable 0.5.x
   def setHeaders(headers: RequestHeaders) {
-    headers match {
-      case h: BasicRequestHeaders => client.setHeaders(h)
-      case _ => throw new ServiceIOException("Cannot use custom header class. Must use headers returned from getHeaders")
-    }
+    client.setHeaders(headers)
   }
 
   def addSubscriptionCreationListener(listener: SubscriptionCreationListener) {

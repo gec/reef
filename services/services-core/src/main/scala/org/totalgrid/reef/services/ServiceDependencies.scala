@@ -21,7 +21,7 @@ package org.totalgrid.reef.services
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.services.framework._
-import org.totalgrid.reef.client.Connection
+import org.totalgrid.reef.client.{ RequestHeaders, Connection }
 import org.totalgrid.reef.event.{ SilentEventSink, SystemEventSink }
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 import org.totalgrid.reef.services.authz.{ AuthzService, NullAuthzService }
@@ -49,7 +49,7 @@ trait HeadersContext {
 
   def getHeaders = headers
 
-  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders = {
+  def modifyHeaders(modify: RequestHeaders => RequestHeaders): RequestHeaders = {
     val newHeaders = modify(headers)
     headers = newHeaders
     newHeaders

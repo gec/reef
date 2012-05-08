@@ -18,22 +18,23 @@
  */
 package org.totalgrid.reef.client.sapi.service
 
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.RequestHeaders
 
 trait HasSyncRestGet extends HasServiceType {
-  def get(req: ServiceType, env: BasicRequestHeaders): Response[ServiceType] = RestResponses.noGet[ServiceType]
+  def get(req: ServiceType, env: RequestHeaders): Response[ServiceType] = RestResponses.noGet[ServiceType]
 }
 
 trait HasSyncRestPut extends HasServiceType {
-  def put(req: ServiceType, env: BasicRequestHeaders): Response[ServiceType] = RestResponses.noPut[ServiceType]
+  def put(req: ServiceType, env: RequestHeaders): Response[ServiceType] = RestResponses.noPut[ServiceType]
 }
 
 trait HasSyncRestDelete extends HasServiceType {
-  def delete(req: ServiceType, env: BasicRequestHeaders): Response[ServiceType] = RestResponses.noDelete[ServiceType]
+  def delete(req: ServiceType, env: RequestHeaders): Response[ServiceType] = RestResponses.noDelete[ServiceType]
 }
 
 trait HasSyncRestPost extends HasServiceType {
-  def post(req: ServiceType, env: BasicRequestHeaders): Response[ServiceType] = RestResponses.noGet[ServiceType]
+  def post(req: ServiceType, env: RequestHeaders): Response[ServiceType] = RestResponses.noGet[ServiceType]
 }
 
 trait SyncRestService extends HasSyncRestGet with HasSyncRestPut with HasSyncRestDelete with HasSyncRestPost

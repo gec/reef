@@ -37,7 +37,7 @@ object ServiceResponseTestingHelpers {
   private def makeId(str: String) = ReefID.newBuilder.setValue(str).build
   implicit def makeIdFromString(str: String): ReefID = makeId(str)
 
-  def getEventQueue[A <: Any](client: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[A], BasicRequestHeaders) = {
+  def getEventQueue[A <: Any](client: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[A], RequestHeaders) = {
 
     val updates = BlockingQueue.empty[A]
     val env = getSubscriptionQueue(client, descriptor, { (evt: Event[A]) => updates.push(evt.value) })
@@ -45,7 +45,7 @@ object ServiceResponseTestingHelpers {
     (updates, env)
   }
 
-  def getEventQueueWithCode[A <: Any](client: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[Event[A]], BasicRequestHeaders) = {
+  def getEventQueueWithCode[A <: Any](client: Client, descriptor: TypeDescriptor[A]): (BlockingQueue[Event[A]], RequestHeaders) = {
     val updates = BlockingQueue.empty[Event[A]]
 
     val env = getSubscriptionQueue(client, descriptor, { (evt: Event[A]) => updates.push(evt) })
@@ -56,7 +56,7 @@ object ServiceResponseTestingHelpers {
   def getSubscriptionQueue[A <: Any](client: Client, descriptor: TypeDescriptor[A], func: Event[A] => Unit) = {
 
     // slightly naughty "escaping" of the subscription object for this test only code
-    val headers = client.getServiceOperations.subscriptionRequest(descriptor, new SubscriptionBindingRequest[BasicRequestHeaders] {
+    val headers = client.getServiceOperations.subscriptionRequest(descriptor, new SubscriptionBindingRequest[RequestHeaders] {
       def errorMessage() = ""
 
       def execute(subscription: SubscriptionBinding, operations: RestOperations) = {

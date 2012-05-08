@@ -34,8 +34,7 @@ import org.totalgrid.reef.client.sapi.client.rest.impl.ClassLookup
 import org.totalgrid.reef.client.javaimpl.ResponseWrapper
 import org.totalgrid.reef.client.operations.impl.FuturePromise.OpenEitherPromise
 import org.totalgrid.reef.client.exception._
-import org.totalgrid.reef.client.Promise
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 
 @RunWith(classOf[JUnitRunner])
 class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
@@ -84,7 +83,7 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
     protected def futureSource[A] = new OpenEitherPromise[A](new MockFuture[Either[ReefServiceException, A]](None))
 
     protected def ops = new DerivedRestOperations with RestOperations {
-      protected def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]) = {
+      protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]) = {
         ClassLookup(payload) should equal(Some(classOf[BatchServiceRequest]))
 
         val batchRequest = payload.asInstanceOf[BatchServiceRequest]

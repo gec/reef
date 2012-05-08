@@ -27,9 +27,9 @@ import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.client.javaimpl.ClientWrapper
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.{ Promise => JPromise }
-import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo, Routable }
+import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo, Routable, RequestHeaders }
 import org.totalgrid.reef.client.operations.{ RequestListenerManager, RequestListener, Response => JResponse }
-import org.totalgrid.reef.client.sapi.client.{ SubscriptionCreatorManager, DefaultHeaders, BasicRequestHeaders }
+import org.totalgrid.reef.client.sapi.client.{ SubscriptionCreatorManager, DefaultHeaders }
 
 class DefaultClient(conn: DefaultConnection, strand: Strand)
     extends DefaultHeaders with SubscriptionCreatorManager with ExecutorDelegate with SharedServiceRegistry {
@@ -52,7 +52,7 @@ class DefaultClient(conn: DefaultConnection, strand: Strand)
     listeners.foreach(_.onRequest(verb, payload, promise))
   }
 
-  def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[BasicRequestHeaders]): JPromise[JResponse[A]] = {
+  def requestJava[A](verb: Envelope.Verb, payload: A, headers: Option[RequestHeaders]): JPromise[JResponse[A]] = {
     val usedHeaders = headers.map(getHeaders.merge(_)).getOrElse(getHeaders)
     val promise = conn.requestJava(verb, payload, usedHeaders, strand)
     notifyListeners(verb, payload, promise)

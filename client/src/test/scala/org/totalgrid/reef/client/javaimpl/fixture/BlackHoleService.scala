@@ -21,14 +21,15 @@ package org.totalgrid.reef.client.javaimpl.fixture
 
 import org.totalgrid.reef.client.types.TypeDescriptor
 import org.totalgrid.reef.client.sapi.service.AsyncServiceBase
-import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.RequestHeaders
 
 class BlackHoleService[A <: AnyRef](val descriptor: TypeDescriptor[A]) extends AsyncServiceBase[A] {
-  override def getAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
+  override def getAsync(req: A, env: RequestHeaders)(callback: Response[A] => Unit) {}
 
-  override def putAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
+  override def putAsync(req: A, env: RequestHeaders)(callback: Response[A] => Unit) {}
 
-  override def deleteAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
+  override def deleteAsync(req: A, env: RequestHeaders)(callback: Response[A] => Unit) {}
 
-  override def postAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) {}
+  override def postAsync(req: A, env: RequestHeaders)(callback: Response[A] => Unit) {}
 }

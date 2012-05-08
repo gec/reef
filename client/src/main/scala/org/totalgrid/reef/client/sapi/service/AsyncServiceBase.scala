@@ -20,8 +20,9 @@ package org.totalgrid.reef.client.sapi.service
 
 import org.totalgrid.reef.client.proto.Envelope
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.registration.ServiceResponseCallback
+import org.totalgrid.reef.client.RequestHeaders
 
 trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
     with ServiceHelpers[A]
@@ -31,13 +32,13 @@ trait AsyncServiceBase[A <: AnyRef] extends AsyncService[A]
 
   /* Implement AsyncService */
 
-  def respond(req: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) = {
+  def respond(req: Envelope.ServiceRequest, env: RequestHeaders, callback: ServiceResponseCallback) = {
     ServiceHelpers.catchErrors(req, callback) {
       handleRequest(req, env, callback)
     }
   }
 
-  private def handleRequest(request: Envelope.ServiceRequest, env: BasicRequestHeaders, callback: ServiceResponseCallback) {
+  private def handleRequest(request: Envelope.ServiceRequest, env: RequestHeaders, callback: ServiceResponseCallback) {
 
     def onResponse(response: Response[A]) = callback.onResponse(getResponse(request.getId, response))
 

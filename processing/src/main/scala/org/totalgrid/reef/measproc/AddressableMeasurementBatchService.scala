@@ -21,8 +21,9 @@ package org.totalgrid.reef.measproc
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.client.sapi.service.SyncServiceBase
 import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.sapi.client.{ Response, BasicRequestHeaders }
+import org.totalgrid.reef.client.sapi.client.Response
 import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.RequestHeaders
 
 trait MeasBatchProcessor {
   def process(m: MeasurementBatch)
@@ -32,8 +33,8 @@ class AddressableMeasurementBatchService(measProc: MeasBatchProcessor) extends S
 
   override val descriptor = Descriptors.measurementBatch
 
-  override def post(req: MeasurementBatch, env: BasicRequestHeaders) = put(req, env)
-  override def put(req: MeasurementBatch, env: BasicRequestHeaders) = {
+  override def post(req: MeasurementBatch, env: RequestHeaders) = put(req, env)
+  override def put(req: MeasurementBatch, env: RequestHeaders) = {
     measProc.process(req)
     Response(Envelope.Status.OK, req.toBuilder.clearMeas.build :: Nil)
   }

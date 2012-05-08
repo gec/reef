@@ -19,8 +19,7 @@
 package org.totalgrid.reef.services.framework
 
 import org.totalgrid.reef.event.SystemEventSink
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.Client
+import org.totalgrid.reef.client.{ RequestHeaders, Client }
 import org.totalgrid.reef.services.authz.AuthzService
 import scala.collection.mutable
 import org.totalgrid.reef.models.Agent
@@ -61,12 +60,12 @@ trait RequestContext {
   /**
    * request headers as received from the client
    */
-  def getHeaders: BasicRequestHeaders
+  def getHeaders: RequestHeaders
 
   /**
    * Change the request headers and return the modified version
    */
-  def modifyHeaders(modify: BasicRequestHeaders => BasicRequestHeaders): BasicRequestHeaders
+  def modifyHeaders(modify: RequestHeaders => RequestHeaders): RequestHeaders
 
   // per-request store for cached objects
   private lazy val requestObjects = mutable.Map.empty[String, Object]
@@ -105,7 +104,7 @@ trait RequestContextSource {
 /**
  * wrapper class that takes a source and merges in some extra RequestEnv headers before the transaction
  */
-class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: BasicRequestHeaders)
+class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: RequestHeaders)
     extends RequestContextSource {
   def transaction[A](f: (RequestContext) => A) = {
     contextSource.transaction { context =>

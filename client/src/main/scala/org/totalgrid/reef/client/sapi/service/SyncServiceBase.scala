@@ -18,15 +18,16 @@
  */
 package org.totalgrid.reef.client.sapi.service
 
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.RequestHeaders
 
 trait SyncServiceBase[A <: AnyRef] extends AsyncServiceBase[A] with SyncRestService {
 
   /* redirect the async calls to the synchronous ones */
 
-  final override def getAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) = callback(get(req, env))
-  final override def putAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) = callback(put(req, env))
-  final override def deleteAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) = callback(delete(req, env))
-  final override def postAsync(req: A, env: BasicRequestHeaders)(callback: Response[A] => Unit) = callback(post(req, env))
+  final override def getAsync(req: A, env: RequestHeaders)(callback: Response[A] => Unit) = callback(get(req, env))
+  final override def putAsync(req: A, env: RequestHeaders)(callback: Response[A] => Unit) = callback(put(req, env))
+  final override def deleteAsync(req: A, env: RequestHeaders)(callback: Response[A] => Unit) = callback(delete(req, env))
+  final override def postAsync(req: A, env: RequestHeaders)(callback: Response[A] => Unit) = callback(post(req, env))
 
 }

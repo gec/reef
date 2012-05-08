@@ -28,18 +28,17 @@ class DefaultRestOperations(client: DefaultClient) extends RestOperations with D
 
   def batched: Option[BatchRestOperations] = None
 
-  protected def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]): Promise[Response[A]] = {
+  protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]] = {
     client.requestJava(verb, payload, headers)
   }
 
 }
 
 trait DerivedRestOperations {
-  protected def request[A](verb: Verb, payload: A, headers: Option[BasicRequestHeaders]): Promise[Response[A]]
+  protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]]
 
   def request[A](verb: Verb, payload: A, subscriptionBinding: Option[SubscriptionBinding], headers: Option[RequestHeaders]): Promise[Response[A]] = {
-    val converted = headers.map(_.asInstanceOf[BasicRequestHeaders]) // TODO: HACK HACK HACK SHOULD NOT SURVIVE TO RELEASE
-    val basic = subscriptionBinding.map(sb => converted.getOrElse(BasicRequestHeaders.empty).setSubscribeQueue(sb.getId)).orElse(converted)
+    val basic = subscriptionBinding.map(sb => headers.getOrElse(BasicRequestHeaders.empty).setSubscribeQueue(sb.getId)).orElse(headers)
 
     request(verb, payload, basic)
   }
