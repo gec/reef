@@ -130,35 +130,14 @@ trait CommandServiceImpl extends UsesServiceOperations with CommandService {
   override def getCommandByUuid(uuid: ReefUUID) = ops.operation("Couldn't get command with uuid: " + uuid) {
     _.get(CommandRequestBuilders.getByEntityId(uuid)).map(_.one)
   }
-  /*
-   def getCommandsByNamesFake(names: List[String]) = {
-     val prom: Promise[List[Command]] = ops.batchRequests("error") { restOps =>
-       names.map(name => restOps.get(CommandRequestBuilders.getByEntityName(name)).map(_.one))
-     }
-   }
-  */
 
-  // TODO: BATCH
-  override def getCommandsByNames(names: List[String]) = ops.batchOperation("Couldn't get commands with names: " + names) { rest =>
-    //val multiPromise = names.map(name => rest.get(CommandRequestBuilders.getByEntityName(name)))
-    batchGets(names.map { CommandRequestBuilders.getByEntityName(_) })
-    //null
+  override def getCommandsByNames(names: List[String]) = batchGets("Couldn't get commands with names: " + names) {
+    names.map { CommandRequestBuilders.getByEntityName(_) }
   }
 
-  override def getCommandsByUuids(uuids: List[ReefUUID]) = ops.operation("Couldn't get commands with uuids: " + uuids) { _ =>
-    batchGets(uuids.map { CommandRequestBuilders.getByEntityId(_) })
-    //null
+  override def getCommandsByUuids(uuids: List[ReefUUID]) = batchGets("Couldn't get commands with uuids: " + uuids) {
+    uuids.map { CommandRequestBuilders.getByEntityId(_) }
   }
-
-  /*
-  override def getCommandsByNames(names: List[String]) = ops.operation("Couldn't get commands with names: " + names) { _ =>
-    batchGets(names.map { CommandRequestBuilders.getByEntityName(_) })
-  }
-
-  override def getCommandsByUuids(uuids: List[ReefUUID]) = ops.operation("Couldn't get commands with uuids: " + uuids) { _ =>
-    batchGets(uuids.map { CommandRequestBuilders.getByEntityId(_) })
-  }
-   */
 
   override def getCommandsOwnedByEntity(parentUuid: ReefUUID) = {
     ops.operation("Couldn't find commands owned by parent entity: " + parentUuid.getValue) {

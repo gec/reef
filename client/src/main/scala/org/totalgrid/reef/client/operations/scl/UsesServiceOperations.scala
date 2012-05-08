@@ -25,6 +25,6 @@ import org.totalgrid.reef.client.proto.Envelope.BatchServiceRequest
 trait UsesServiceOperations {
   protected def ops: ServiceOperations
 
-  def batchGets[A](gets: List[A]): Promise[List[A]]
+  def batchGets[A](errorString: => String)(gets: List[A]): Promise[List[A]]
 
 }
