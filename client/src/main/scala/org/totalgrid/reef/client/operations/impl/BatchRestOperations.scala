@@ -23,25 +23,24 @@ import com.google.protobuf.ByteString
 import org.totalgrid.reef.client.types.{ TypeDescriptor, ServiceTypeInformation }
 import collection.mutable.Queue
 import org.totalgrid.reef.client.operations.scl.ScalaPromise._
-import org.totalgrid.reef.client.operations.scl.ScalaResponse._
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
 import org.totalgrid.reef.client.operations.scl.ScalaResponse
 import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceRequest, SelfIdentityingServiceRequest, Verb }
-import org.totalgrid.reef.client.exception.{ InternalClientError, ReefServiceException }
+import org.totalgrid.reef.client.exception._
 import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 import org.totalgrid.reef.client.operations.{ Response, RestOperations }
 import org.totalgrid.reef.client.sapi.client.rest.impl.{ DefaultClient, ClassLookup }
 
 trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOperations {
   def batched: Option[BatchRestOperations] = Some(this)
-  def flush(): Promise[BatchServiceRequest]
-  def batchedFlush(batchSize: Int): Promise[java.lang.Boolean]
+  def flush(): Promise[java.lang.Integer]
+  def batchedFlush(batchSize: Int): Promise[java.lang.Integer]
 }
 
 class DefaultBatchRestOperations(protected val ops: RestOperations, client: DefaultClient) extends BatchRestOperationsImpl {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getServiceInfo(klass)
-  protected def futureSource[A] = FuturePromise.open[A](client)
+  protected def futureSource[A](onAwait: Option[() => Unit]) = FuturePromise.openWithAwaitNotifier[A](client, onAwait)
   protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]]) {
     client.notifyListeners(verb, payload, promise)
   }
@@ -50,12 +49,33 @@ class DefaultBatchRestOperations(protected val ops: RestOperations, client: Defa
 
 trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperations {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _]
-  protected def futureSource[A]: OpenPromise[A]
+  protected def futureSource[A](onAwait: Option[() => Unit]): OpenPromise[A]
   protected def ops: RestOperations
   protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]])
 
   case class QueuedRequest[A](request: SelfIdentityingServiceRequest, descriptor: TypeDescriptor[A], promise: OpenPromise[Response[A]])
-  private val requestQueue = Queue.empty[QueuedRequest[_]]
+  private class PendingBatchRequests {
+    private val requestQueue = Queue.empty[QueuedRequest[_]]
+    private var notYetFlushed = true
+
+    def checkFlushed() = {
+      if (notYetFlushed) throw new ServiceIOException("Batch has not been flushed, await cannot possibly complete")
+    }
+
+    def getPending: List[QueuedRequest[_]] = {
+      val list = requestQueue.toList
+      requestQueue.clear()
+      unflushedRequests.notYetFlushed = false
+      list
+    }
+
+    def enqueue(request: QueuedRequest[_]) {
+      if (!notYetFlushed) throw new IllegalArgumentException("Batch state error")
+      requestQueue.enqueue(request)
+    }
+  }
+
+  private var unflushedRequests = new PendingBatchRequests
 
   protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]] = {
 
@@ -68,44 +88,45 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
 
     val request = SelfIdentityingServiceRequest.newBuilder.setExchange(descriptor.id).setRequest(builder).build
 
-    val promise: OpenPromise[Response[A]] = futureSource[Response[A]]
+    val promise = futureSource[Response[A]](Some(unflushedRequests.checkFlushed _))
 
-    requestQueue.enqueue(QueuedRequest[A](request, descriptor, promise))
+    unflushedRequests.enqueue(QueuedRequest[A](request, descriptor, promise))
 
     notifyListeners(verb, payload, promise)
     promise
   }
 
-  def flush(): Promise[BatchServiceRequest] = {
-    sendBatch(popRequests(), None)
+  def flush(): Promise[java.lang.Integer] = {
+    batchedFlush(-1)
   }
 
-  def batchedFlush(batchSize: Int): Promise[java.lang.Boolean] = {
+  def batchedFlush(batchSize: Int): Promise[java.lang.Integer] = {
 
-    def nextBatch(prevFailed: Option[ReefServiceException], pending: List[QueuedRequest[_]], promise: OpenPromise[java.lang.Boolean]) {
+    def nextBatch(prevFailed: Option[ReefServiceException], pending: List[QueuedRequest[_]], totalSize: Int, promise: OpenPromise[java.lang.Integer]) {
       prevFailed match {
         case Some(rse) => promise.setFailure(rse)
         case None => pending match {
-          case Nil => promise.setSuccess(true)
+          case Nil => promise.setSuccess(totalSize)
           case remains =>
             val (now, later) = if (batchSize > 0) {
               remains.splitAt(batchSize)
             } else {
               (remains, Nil)
             }
-            sendBatch(now, Some(nextBatch(_, later, promise)))
+            sendBatch(now, Some(nextBatch(_, later, totalSize, promise)))
         }
       }
     }
 
-    val promise = futureSource[java.lang.Boolean]
+    val promise = futureSource[java.lang.Integer](None)
 
-    nextBatch(None, popRequests(), promise)
+    val list = popRequests()
+    nextBatch(None, list, list.size, promise)
 
     promise
   }
 
-  private def sendBatch(requests: List[QueuedRequest[_]], chain: Option[(Option[ReefServiceException]) => Unit]): Promise[BatchServiceRequest] = {
+  private def sendBatch(requests: List[QueuedRequest[_]], chain: Option[(Option[ReefServiceException]) => Unit]) {
 
     def applyResponseToPromise[A](response: ServiceResponse, desc: TypeDescriptor[A], promise: OpenPromise[Response[A]]) {
       StatusCodes.isSuccess(response.getStatus) match {
@@ -150,13 +171,11 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
         chain.foreach(_(Some(rse)))
       }
     }
-
-    batchPromise.map(_.one)
   }
 
   private def popRequests(): List[QueuedRequest[_]] = {
-    val list = requestQueue.toList
-    requestQueue.clear()
+    val list = unflushedRequests.getPending
+    unflushedRequests = new PendingBatchRequests
     list
   }
 }

@@ -80,7 +80,8 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
       ExampleServiceList.info.asInstanceOf[ServiceTypeInformation[A, A]]
     }
 
-    protected def futureSource[A] = new OpenEitherPromise[A](new MockFuture[Either[ReefServiceException, A]](None))
+    protected def futureSource[A](onAwait: Option[() => Unit]) =
+      FuturePromise.openWithAwaitNotifier(new MockFuture[Either[ReefServiceException, A]](None), onAwait)
 
     protected def ops = new DerivedRestOperations with RestOperations {
       protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]) = {
@@ -183,6 +184,22 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
     val batchResult = ops.batchedFlush(4).await
 
     requestCounter.requests should equal(3 + 1)
+  }
+
+  test("Calling await on queued but not flushed promise throws") {
+
+    val requestCounter = new RealRequestCounter()
+    val ops = new MockBatch(duplicatePayload(requestCounter.increment _, _))
+
+    val promise1 = ops.request(Envelope.Verb.PUT, SomeInteger(1))
+
+    intercept[ServiceIOException] {
+      promise1.await
+    }.getMessage should include("flush")
+
+    val batchPromise = ops.flush
+
+    promise1.await()
   }
 
 }

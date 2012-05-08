@@ -32,11 +32,15 @@ object FuturePromise {
   def error[A](err: ReefServiceException, exe: Executor): Promise[A] = {
     val future = exe.future[Either[ReefServiceException, A]]
     future.set(Left(err))
-    new ClosedEitherPromise(future)
+    new ClosedEitherPromise(future, None)
   }
 
-  def open[A](settable: SettableFuture[Either[ReefServiceException, A]]): OpenPromise[A] = new OpenEitherPromise[A](settable)
-  def open[A](exe: Executor): OpenPromise[A] = new OpenEitherPromise[A](exe.future[Either[ReefServiceException, A]])
+  def open[A](settable: SettableFuture[Either[ReefServiceException, A]]): OpenPromise[A] = new OpenEitherPromise[A](settable, None)
+  def open[A](exe: Executor): OpenPromise[A] = new OpenEitherPromise[A](exe.future[Either[ReefServiceException, A]], None)
+
+  // get a promise that can callback an application defined function when await is called
+  def openWithAwaitNotifier[A](settable: SettableFuture[Either[ReefServiceException, A]], onAwait: Option[() => Unit]): OpenPromise[A] = new OpenEitherPromise[A](settable, onAwait)
+  def openWithAwaitNotifier[A](exe: Executor, onAwait: Option[() => Unit]): OpenPromise[A] = new OpenEitherPromise[A](exe.future[Either[ReefServiceException, A]], onAwait)
 
   trait DefinedPromise[A] extends Promise[A] {
     protected def original: Promise[A]
@@ -65,10 +69,14 @@ object FuturePromise {
 
   trait EitherPromise[A] extends Promise[A] {
     protected def future: Future[Either[ReefServiceException, A]]
+    protected def onAwait: Option[() => Unit]
 
-    def await(): A = future.await match {
-      case Left(ex) => throw ex
-      case Right(v) => v
+    def await(): A = {
+      onAwait.foreach { _() }
+      future.await match {
+        case Left(ex) => throw ex
+        case Right(v) => v
+      }
     }
 
     def listen(listener: PromiseListener[A]) {
@@ -85,7 +93,7 @@ object FuturePromise {
         case Right(v) => performTransform(v, trans)
         case left => left.asInstanceOf[Either[ReefServiceException, Nothing]]
       }
-      new ClosedEitherPromise[B](result)
+      new ClosedEitherPromise[B](result, onAwait)
     }
 
     def transformError(transform: PromiseErrorTransform): Promise[A] = {
@@ -93,20 +101,24 @@ object FuturePromise {
         case Left(ex) => Left(performErrorTransform(ex, transform))
         case right => right
       }
-      new ClosedEitherPromise[A](result)
+      new ClosedEitherPromise[A](result, onAwait)
     }
   }
 
   /**
    * only the initial promise is open and settable, any derived promies are closed
    */
-  class OpenEitherPromise[A](protected val future: SettableFuture[Either[ReefServiceException, A]]) extends EitherPromise[A] with OpenPromise[A] {
+  class OpenEitherPromise[A](
+      protected val future: SettableFuture[Either[ReefServiceException, A]],
+      protected val onAwait: Option[() => Unit]) extends EitherPromise[A] with OpenPromise[A] {
     def setSuccess(v: A) { future.set(Right(v)) }
 
     def setFailure(ex: ReefServiceException) { future.set(Left(ex)) }
   }
 
-  class ClosedEitherPromise[A](protected val future: Future[Either[ReefServiceException, A]]) extends EitherPromise[A]
+  class ClosedEitherPromise[A](
+    protected val future: Future[Either[ReefServiceException, A]],
+    protected val onAwait: Option[() => Unit]) extends EitherPromise[A]
 
   private def performTransform[A, B](v: A, trans: PromiseTransform[A, B]): Either[ReefServiceException, B] = {
     try {
