@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import scala.collection.JavaConversions._
-
 import java.io.PrintStream
 import org.totalgrid.reef.client.service.proto.Model.ReefID
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, Endpoint }
@@ -34,22 +32,26 @@ object EndpointStopper extends Logging {
    * synchronous function that blocks until all passed in endpoints are stopped
    * TODO: use endpoint stopper before reef:unload
    */
-  def stopEndpoints(local: LoaderServices, endpoints: List[Endpoint], stream: Option[PrintStream], forceStop: Boolean, timeout: Long = 20000) {
+  def stopEndpoints(local: LoaderServices, targetEndpoints: List[Endpoint], stream: Option[PrintStream], forceStop: Boolean, timeout: Long = 20000) {
 
     // then subscribe to all of the connections
     val subResult = local.subscribeToEndpointConnections().await
 
+    // filter the subscription down to just the endpoints we care about
+    val targetUuids = targetEndpoints.map { _.getUuid }
+    val filteredEndpoints = subResult.getResult.toList.filter(p => targetUuids.contains(p.getEndpoint.getUuid))
+
     def endpointNames(endpoints: Map[ReefID, EndpointConnection]) = endpoints.values.map { _.getEndpoint.getName }.mkString(", ")
-    val endpointUuids = subResult.getResult.toList.map { e => e.getId -> e }.toMap
+    val endpointUuids = filteredEndpoints.map { e => e.getId -> e }.toMap
 
     stream.foreach { _.println("Disabling endpoints: " + endpointNames(endpointUuids)) }
 
     // first we disable all of the endpoints
-    endpoints.foreach { e => local.disableEndpointConnection(e.getUuid).await }
+    targetEndpoints.foreach { e => local.disableEndpointConnection(e.getUuid).await }
 
     try {
       // we filter out all of the endpoints that are not COMMS_UP
-      val stillRunning = subResult.getResult.toList.foldLeft(endpointUuids)(filterEndpoints)
+      val stillRunning = filteredEndpoints.foldLeft(endpointUuids)(filterEndpoints)
 
       // if there are any still running we need to wait for them to go down
       if (endpointUuids.size > 0) {
