@@ -65,7 +65,7 @@ class ClientImpl(conn: ConnectionImpl, strand: Strand) extends Client with Clien
   def getBatching: Batching = BatchModeManager
 
   def getServiceOperations: ServiceOperations = {
-    val restOperations = OpsBuilders.buildRestOperations
+    val restOperations = BatchModeManager.getOps
     def createSingleOpsBatch() = {
       OpsBuilders.buildBatchOperations(restOperations)
     }

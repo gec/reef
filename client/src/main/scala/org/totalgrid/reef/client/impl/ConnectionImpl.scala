@@ -20,6 +20,7 @@ package org.totalgrid.reef.client.impl
 
 import org.totalgrid.reef.client._
 import registration.{ Service, ServiceRegistration }
+import sapi.types.BuiltInDescriptors
 import settings.UserSettings
 import org.totalgrid.reef.broker.{ BrokerConnectionListener, BrokerConnection }
 import net.agileautomata.executor4s.{ Strand, Executor }
@@ -28,6 +29,9 @@ import com.weiglewilczek.slf4s.Logging
 
 class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Long)
     extends Connection with ConnectionListening with Logging {
+
+  Registry.addServiceTypeInformation(BuiltInDescriptors.authRequestServiceInfo)
+  Registry.addServiceTypeInformation(BuiltInDescriptors.batchServiceRequestServiceInfo)
 
   private val requests = RequestManager(broker, executor, timeoutMs)
 
@@ -63,7 +67,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
   object Login extends ClientLogin(Sender, executor) {
     def createClient(authToken: String, strand: Strand): ClientImpl = {
       val cl = new ClientImpl(me, strand)
-      cl.getHeaders.setAuthToken(authToken)
+      cl.setHeaders(cl.getHeaders.setAuthToken(authToken))
       cl
     }
   }
