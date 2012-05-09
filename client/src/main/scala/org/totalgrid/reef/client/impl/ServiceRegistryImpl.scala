@@ -28,7 +28,7 @@ trait ServiceRegistryLookup {
   def getServiceTypeInformation[T](klass: Class[T]): ServiceTypeInformation[T, _]
 }
 
-trait ServiceRegistryImpl extends ServiceRegistry with ServiceRegistryLookup {
+class ServiceRegistryImpl extends ServiceRegistry with ServiceRegistryLookup {
 
   def buildServiceInterface[A](klass: Class[A], client: => Client): A = this.synchronized {
     providers.get(klass) match {

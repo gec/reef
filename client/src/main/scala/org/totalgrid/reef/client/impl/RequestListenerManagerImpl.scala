@@ -26,7 +26,7 @@ trait RequestListenerNotifier {
   def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]])
 }
 
-trait RequestListenerManagerImpl extends RequestListenerManager with RequestListenerNotifier {
+class RequestListenerManagerImpl extends RequestListenerManager with RequestListenerNotifier {
   private var listeners = Set.empty[RequestListener]
 
   def addRequestListener(listener: RequestListener) {

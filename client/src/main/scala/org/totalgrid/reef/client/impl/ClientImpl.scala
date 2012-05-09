@@ -34,11 +34,14 @@ class ClientImpl(conn: ConnectionImpl, strand: Strand) extends Client with Clien
 
   def spawn(): Client = conn.createClient(getHeaders.getAuthToken)
 
+  // ServiceRegistry / getService pass through to the ConnectionImpl's registry
   def getServiceRegistry: ServiceRegistry = conn.getServiceRegistry
 
-  def getService[A](klass: Class[A]): A = conn.Registry.buildServiceInterface(klass, this)
+  def getService[A](klass: Class[A]): A = conn.registry.buildServiceInterface(klass, this)
 
-  object Binding extends BindOperations {
+  // bindOperations calls the relevant methods on ConnectionImpl, but with our strand and
+  // informing our subscription listeners
+  private val bindOperations = new BindOperations {
     def subscribe[T](descriptor: TypeDescriptor[T]): Subscription[T] = {
       notifySubscriptionCreated {
         conn.subscribe(descriptor, strand)
@@ -51,34 +54,42 @@ class ClientImpl(conn: ConnectionImpl, strand: Strand) extends Client with Clien
     }
   }
 
-  object OpsBuilders extends OperationsBuildersImpl(RequestListeners, conn.Registry, strand) {
+  // OperationBuilders encapsulates building batched/non-batched versions of RestOperations
+  // We define the actual request issuing logic inline here, which allows us to specify it centrally and
+  // inform our listeners
+  private val opsBuilders = new OperationsBuildersImpl(requestListenerManager, conn.registry, strand) {
     def issueRequest[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]] = {
       val usedHeaders = headers.map(getHeaders.merge(_)).getOrElse(getHeaders)
-      val promise = conn.Sender.request(verb, payload, usedHeaders, strand)
+      val promise = conn.requestSender.request(verb, payload, usedHeaders, strand)
       notifier.notifyListeners(verb, payload, promise)
       promise
     }
   }
 
-  object BatchModeManager extends BatchingImpl(OpsBuilders)
+  // The batchModeManager component handles the state associated with batching
+  private val batchModeManager = new BatchingImpl(opsBuilders)
 
-  def getBatching: Batching = BatchModeManager
+  def getBatching: Batching = batchModeManager
 
+  // Exposes ServiceOperations for consumption, handling cases where batching is already "on" and
+  // if not allowing ServiceOperations users to enable it for a single set of requests
   def getServiceOperations: ServiceOperations = {
-    val restOperations = BatchModeManager.getOps
+    val restOperations = batchModeManager.getOps
     def createSingleOpsBatch() = {
-      OpsBuilders.buildBatchOperations(restOperations)
+      opsBuilders.buildBatchOperations(restOperations)
     }
-    new DefaultServiceOperations(restOperations, Binding, createSingleOpsBatch _, strand)
+    new DefaultServiceOperations(restOperations, bindOperations, createSingleOpsBatch _, strand)
   }
 
-  object RequestListeners extends RequestListenerManagerImpl
+  // Maintains list of request listeners, internally allos us to notify them
+  private val requestListenerManager = new RequestListenerManagerImpl
 
-  def getRequestListenerManager: RequestListenerManager = RequestListeners
+  def getRequestListenerManager: RequestListenerManager = requestListenerManager
 
-  object Internal extends ClientInternal {
+  // Exposes executor
+  private val internal = new ClientInternal {
     def getExecutor: Executor = strand
   }
 
-  def getInternal: ClientInternal = Internal
+  def getInternal: ClientInternal = internal
 }

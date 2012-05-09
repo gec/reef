@@ -28,16 +28,22 @@ import types.TypeDescriptor
 import com.weiglewilczek.slf4s.Logging
 
 class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Long)
-    extends Connection with ConnectionListening with Logging {
+    extends Connection with ConnectionListening with Logging { self =>
 
-  Registry.addServiceTypeInformation(BuiltInDescriptors.authRequestServiceInfo)
-  Registry.addServiceTypeInformation(BuiltInDescriptors.batchServiceRequestServiceInfo)
+  // Startup procedure
+  registry.addServiceTypeInformation(BuiltInDescriptors.authRequestServiceInfo)
+  registry.addServiceTypeInformation(BuiltInDescriptors.batchServiceRequestServiceInfo)
+  broker.addListener(brokerListener)
 
-  private val requests = RequestManager(broker, executor, timeoutMs)
+  // Request components - request manager handles correlation/resources,
+  // request sender encapsulates payload class lookup
+  private val requestManager = RequestManager(broker, executor, timeoutMs)
 
-  broker.addListener(BrokerListener)
+  val requestSender = new RequestSenderImpl(requestManager, registry)
 
-  private object BrokerListener extends BrokerConnectionListener {
+  // Disconnection logic, two ways to disconnect: by listening to the broker or
+  // by an explicit disconnect() call
+  private val brokerListener = new BrokerConnectionListener {
     def onDisconnect(expected: Boolean) {
       logger.info("connection disconnected: " + expected)
       handleDisconnect(expected)
@@ -45,49 +51,48 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
   }
 
   private def handleDisconnect(expected: Boolean) {
-    broker.removeListener(BrokerListener)
-    requests.close()
+    broker.removeListener(brokerListener)
+    requestManager.close()
     notifyListenersOfClose(expected)
   }
 
   def disconnect() {
     val currentlyConnected = broker.isConnected()
     logger.info("disconnect called, connected: " + currentlyConnected)
-    requests.cancelSubscription()
+    requestManager.cancelSubscription()
     if (currentlyConnected) {
       handleDisconnect(true)
       broker.disconnect()
     }
   }
 
-  object Sender extends RequestSenderImpl(requests, Registry)
-
-  private val me = this
-
-  object Login extends ClientLogin(Sender, executor) {
+  // Login component and public interface
+  private val login = new ClientLogin(requestSender, executor) {
     def createClient(authToken: String, strand: Strand): ClientImpl = {
-      val cl = new ClientImpl(me, strand)
+      val cl = new ClientImpl(self, strand)
       cl.setHeaders(cl.getHeaders.setAuthToken(authToken))
       cl
     }
   }
 
   def login(userSettings: UserSettings): Client = {
-    Login.login(userSettings.getUserName, userSettings.getUserPassword).await()
+    login.login(userSettings.getUserName, userSettings.getUserPassword).await()
   }
 
   def createClient(authToken: String): Client = {
-    Login.createClient(authToken, Strand(executor))
+    login.createClient(authToken, Strand(executor))
   }
 
   def logout(authToken: String) {
-    Login.logout(authToken, Strand(executor)).await()
+    login.logout(authToken, Strand(executor)).await()
   }
 
-  object Registration extends ServiceRegistrationImpl(broker, Registry, executor)
+  // ServiceRegistration component and public interface
+  private val registration = new ServiceRegistrationImpl(broker, registry, executor)
 
-  def getServiceRegistration: ServiceRegistration = Registration
+  def getServiceRegistration: ServiceRegistration = registration
 
+  // Subscription internal interfaces used by ClientImpl
   def subscribe[A](descriptor: TypeDescriptor[A], exe: Executor) = {
     new DefaultSubscription[A](broker.listen(), exe, descriptor.deserialize)
   }
@@ -98,17 +103,20 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
     sub
   }
 
-  object Internal extends ConnectionInternal {
+  // Service registry component and public interface.
+  // registry is used by ClientImpl
+  val registry = new ServiceRegistryImpl
+
+  def getServiceRegistry: ServiceRegistry = registry
+
+  def addServicesList(servicesList: ServicesList) {
+    registry.addServicesList(servicesList)
+  }
+
+  // ConnectionInternal exposes executor
+  private val internal = new ConnectionInternal {
     def getExecutor: Executor = executor
   }
 
-  def getInternal: ConnectionInternal = Internal
-
-  object Registry extends ServiceRegistryImpl
-
-  def getServiceRegistry: ServiceRegistry = Registry
-
-  def addServicesList(servicesList: ServicesList) {
-    Registry.addServicesList(servicesList)
-  }
+  def getInternal: ConnectionInternal = internal
 }

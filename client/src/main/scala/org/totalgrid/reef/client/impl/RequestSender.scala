@@ -30,7 +30,7 @@ trait RequestSender {
   def request[A](verb: Envelope.Verb, payload: A, headers: RequestHeaders, requestExecutor: Executor): Promise[Response[A]]
 }
 
-abstract class RequestSenderImpl(manager: RequestManager, registry: ServiceRegistryLookup) extends RequestSender {
+class RequestSenderImpl(manager: RequestManager, registry: ServiceRegistryLookup) extends RequestSender {
   def request[A](verb: Verb, payload: A, headers: RequestHeaders, requestExecutor: Executor): Promise[Response[A]] = {
 
     ClassLookup(payload).flatMap(registry.getServiceOption) match {
