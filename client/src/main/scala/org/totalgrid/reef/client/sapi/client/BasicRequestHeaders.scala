@@ -34,6 +34,8 @@ object BasicRequestHeaders {
     map.foldLeft(new BasicRequestHeaders)((sum, i) => sum.addHeader(i._1, i._2.head))
   }
 
+  def fromAuth(authToken: String) = empty.setAuthToken(authToken)
+
   val empty: RequestHeaders = new BasicRequestHeaders
 }
 

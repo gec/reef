@@ -79,15 +79,17 @@ object ModelCreationUtilities {
 
     def completed(stopwatch: Stopwatch, a: Promise[A]) {
       f.synchronized {
-        try {
-          val result = a.await()
-          inProgressOps -= 1
-          timingResults ::= (stopwatch.elapsed, result)
-          if (timingResults.size == batchableOperations.size) prom.setSuccess(timingResults)
-          else startNext()
-        } catch {
-          case rse: ReefServiceException => prom.setFailure(rse)
-          case ex => prom.setFailure(new UnknownServiceException(ex.toString))
+        if (!prom.isComplete) {
+          try {
+            val result = a.await()
+            inProgressOps -= 1
+            timingResults ::= (stopwatch.elapsed, result)
+            if (timingResults.size == batchableOperations.size) prom.setSuccess(timingResults)
+            else startNext()
+          } catch {
+            case rse: ReefServiceException => prom.setFailure(rse)
+            case ex => prom.setFailure(new UnknownServiceException(ex.toString))
+          }
         }
       }
     }

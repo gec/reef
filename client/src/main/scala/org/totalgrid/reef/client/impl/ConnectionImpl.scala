@@ -20,6 +20,7 @@ package org.totalgrid.reef.client.impl
 
 import org.totalgrid.reef.client._
 import registration.{ Service, ServiceRegistration }
+import sapi.client.BasicRequestHeaders
 import sapi.types.BuiltInDescriptors
 import settings.UserSettings
 import org.totalgrid.reef.broker.{ BrokerConnectionListener, BrokerConnection }
@@ -68,9 +69,9 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
 
   // Login component and public interface
   private lazy val login = new ClientLogin(requestSender, executor) {
-    def createClient(authToken: String, strand: Strand): ClientImpl = {
+    def createClient(headers: RequestHeaders, strand: Strand): ClientImpl = {
       val cl = new ClientImpl(self, strand)
-      cl.setHeaders(cl.getHeaders.setAuthToken(authToken))
+      cl.setHeaders(headers)
       cl
     }
   }
@@ -80,11 +81,16 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
   }
 
   def createClient(authToken: String): Client = {
-    login.createClient(authToken, Strand(executor))
+    login.createClient(BasicRequestHeaders.fromAuth(authToken), Strand(executor))
   }
 
   def logout(authToken: String) {
     login.logout(authToken, Strand(executor)).await()
+  }
+
+  // Used by ClientImpl to copy auth and relevant settings
+  def copyClient(headers: RequestHeaders): Client = {
+    login.createClient(headers, Strand(executor))
   }
 
   // ServiceRegistration component and public interface

@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.client.impl
 
-import org.totalgrid.reef.client.Promise
 import net.agileautomata.executor4s.{ Strand, Executor }
 import org.totalgrid.reef.client.operations.impl.DefaultServiceOperations
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
@@ -27,10 +26,11 @@ import org.totalgrid.reef.client.proto.SimpleAuth.AuthRequest
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.{RequestHeaders, Promise}
 
 abstract class ClientLogin(requests: RequestSender, executor: Executor) extends Logging {
 
-  def createClient(authToken: String, strand: Strand): ClientImpl
+  def createClient(headers: RequestHeaders, strand: Strand): ClientImpl
 
   def login(userName: String, password: String): Promise[ClientImpl] = {
     val strand = Strand(executor)
@@ -41,7 +41,7 @@ abstract class ClientLogin(requests: RequestSender, executor: Executor) extends 
         else if (r.getServerVersion != Version.getClientVersion) {
           logger.warn("The server is running " + r.getServerVersion + ", but the client is " + Version.getClientVersion)
         }
-        createClient(r.getToken, strand)
+        createClient(BasicRequestHeaders.fromAuth(r.getToken), strand)
       }
       requests.request(Envelope.Verb.POST, agent, BasicRequestHeaders.empty, strand).map(_.one).map(convert)
     }

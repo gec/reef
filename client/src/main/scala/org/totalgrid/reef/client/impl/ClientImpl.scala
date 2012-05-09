@@ -32,7 +32,8 @@ class ClientImpl(conn: ConnectionImpl, strand: Strand) extends Client with Clien
     conn.logout(getHeaders.getAuthToken)
   }
 
-  def spawn(): Client = conn.createClient(getHeaders.getAuthToken)
+  // TODO: handle spawned subscription listeners
+  def spawn(): Client = conn.copyClient(getHeaders)
 
   // ServiceRegistry / getService pass through to the ConnectionImpl's registry
   def getServiceRegistry: ServiceRegistry = conn.getServiceRegistry
