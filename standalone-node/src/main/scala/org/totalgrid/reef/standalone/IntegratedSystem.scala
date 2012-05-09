@@ -70,8 +70,6 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
 
   // we don't use ConnectionCloseManagerEx because it doesn't start things in the order they were added
   // and starts them all one-by-one rather than all at once
-  //val manager = new ConnectionCloseManagerEx(brokerConnection, exe)
-  //val manager = new SimpleConnectionProvider(() => {new ConnectionWrapper(new DefaultConnection(brokerConnection.connect, exe, 5000), exe)})
   val manager = new SimpleConnectionProvider(connectionFactory.connect)
 
   nodeSettings.foreach { nodeSettings =>

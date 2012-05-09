@@ -16,16 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client
+package org.totalgrid.reef.client.factory.impl
 
-import org.totalgrid.reef.client.ConnectionCloseListener
+import org.totalgrid.reef.broker.BrokerConnection
 
-trait ConnectionListening {
+trait ScalaConnectionWatcher {
+  def onConnectionClosed(expected: Boolean)
 
-  private var listeners = Set.empty[ConnectionCloseListener]
-
-  def addConnectionListener(listener: ConnectionCloseListener) = this.synchronized(listeners += listener)
-  def removeConnectionListener(listener: ConnectionCloseListener) = this.synchronized(listeners -= listener)
-
-  protected def notifyListenersOfClose(expected: Boolean) = listeners.foreach(_.onConnectionClosed(expected))
+  def onConnectionOpened(connection: BrokerConnection)
 }

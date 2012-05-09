@@ -32,15 +32,15 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
   private var broker = Option.empty[BrokerConnection]
   private var reconnectDelay = Option.empty[Timer]
 
-  private var watchers = Set.empty[ConnectionWatcher]
+  private var watchers = Set.empty[ScalaConnectionWatcher]
 
-  def addConnectionWatcher(watcher: ConnectionWatcher) {
+  def addConnectionWatcher(watcher: ScalaConnectionWatcher) {
     this.synchronized {
       watchers += watcher
     }
   }
 
-  def removeConnectionWatcher(watcher: ConnectionWatcher) {
+  def removeConnectionWatcher(watcher: ScalaConnectionWatcher) {
     this.synchronized {
       watchers -= watcher
     }

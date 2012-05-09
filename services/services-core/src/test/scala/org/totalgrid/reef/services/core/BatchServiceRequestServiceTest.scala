@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.core
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.totalgrid.reef.client.sapi.client.rest.impl.RestHelpers
+import org.totalgrid.reef.client.impl.RestHelpers
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.proto.Envelope.Status._
 import org.totalgrid.reef.client.proto.Envelope.Verb._

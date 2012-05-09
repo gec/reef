@@ -30,7 +30,7 @@ import org.totalgrid.reef.client.proto.Envelope.{ ServiceResponse, BatchServiceR
 import org.totalgrid.reef.client.exception._
 import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 import org.totalgrid.reef.client.operations.{ Response, RestOperations }
-import org.totalgrid.reef.client.sapi.client.rest.impl.{ DefaultClient, ClassLookup }
+import org.totalgrid.reef.client.impl.ClassLookup
 
 trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOperations {
   def batched: Option[BatchRestOperations] = Some(this)
@@ -38,14 +38,14 @@ trait BatchRestOperations extends RestOperations with OptionallyBatchedRestOpera
   def batchedFlush(batchSize: Int): Promise[java.lang.Integer]
 }
 
-class DefaultBatchRestOperations(protected val ops: RestOperations, client: DefaultClient) extends BatchRestOperationsImpl {
+/*class DefaultBatchRestOperations(protected val ops: RestOperations, client: DefaultClient) extends BatchRestOperationsImpl {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = client.getServiceInfo(klass)
   protected def futureSource[A](onAwait: Option[() => Unit]) = FuturePromise.openWithAwaitNotifier[A](client, onAwait)
   protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]]) {
     client.notifyListeners(verb, payload, promise)
   }
 
-}
+}*/
 
 trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperations {
   protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _]
