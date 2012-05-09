@@ -37,8 +37,8 @@ abstract class ServiceOperationsProvider(client: Client)
     client.setHeaders(hdrs)
   }
 
-  def batchGets[A](gets: List[A]): Promise[List[A]] = {
-    ops.batchOperation("Error during batched 'get' request") { session =>
+  def batchGets[A](errorMessage: => String)(gets: List[A]): Promise[List[A]] = {
+    ops.batchOperation(errorMessage) { session =>
       PromiseCollators.collate(client.getInternal.getExecutor, gets.map(session.get(_).map(_.one)))
     }
   }

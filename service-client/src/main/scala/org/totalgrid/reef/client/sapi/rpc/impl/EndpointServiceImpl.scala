@@ -45,12 +45,12 @@ trait EndpointServiceImpl extends UsesServiceOperations with EndpointService {
     _.get(Endpoint.newBuilder.setUuid(endpointUuid).build).map(_.one)
   }
 
-  override def getEndpointsByNames(names: List[String]) = ops.operation("Couldn't get endpoints with names: " + names) { _ =>
-    batchGets(names.map { Endpoint.newBuilder.setName(_).build })
+  override def getEndpointsByNames(names: List[String]) = batchGets("Couldn't get endpoints with names: " + names) {
+    names.map { Endpoint.newBuilder.setName(_).build }
   }
 
-  override def getEndpointsByUuids(endpointUuids: List[ReefUUID]) = ops.operation("Couldn't get endpoint with uuids: " + endpointUuids.map { _.getValue }) { _ =>
-    batchGets(endpointUuids.map { Endpoint.newBuilder.setUuid(_).build })
+  override def getEndpointsByUuids(endpointUuids: List[ReefUUID]) = batchGets("Couldn't get endpoint with uuids: " + endpointUuids.map { _.getValue }) {
+    endpointUuids.map { Endpoint.newBuilder.setUuid(_).build }
   }
 
   override def disableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, false)

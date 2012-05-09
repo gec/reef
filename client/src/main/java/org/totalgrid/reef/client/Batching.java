@@ -52,7 +52,6 @@ import org.totalgrid.reef.client.proto.Envelope.BatchServiceRequest;
 public interface Batching
 {
     // TODO: add test and checking to make sure batching is being done correctly start->flush->exit
-    // TODO: add hook to promise to determine if promise.await is called before flush and throw error
     /**
      * begin a batch request, all serviceOperations.requests will be queued for later flushing
      */
@@ -63,17 +62,16 @@ public interface Batching
      */
     void exit();
 
-    // TODO: flush should return Boolean not BatchServiceRequest
     /**
      * flush all of the queued requests in a single large batch requets
-     * @return a promise indicating whether the overall batch request succeeded or failed
+     * @return a promise indicating how many requests were sent in the batch
      */
-    Promise<BatchServiceRequest> flush();
+    Promise<Integer> flush();
 
     /**
      * flush the queued requests in a number of batches with upto a max chunkSize.
      * @param chunkSize max number of requests to put in a single batch query
-     * @return a promise indicating all of the overall batch requests
+     * @return a promise indicating how many requests were sent in total
      */
-    Promise<Boolean> flush( int chunkSize );
+    Promise<Integer> flush( int chunkSize );
 }

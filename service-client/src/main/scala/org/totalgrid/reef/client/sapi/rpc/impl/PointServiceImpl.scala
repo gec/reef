@@ -44,12 +44,12 @@ trait PointServiceImpl extends UsesServiceOperations with PointService {
     _.get(PointRequestBuilders.getById(uuid)).map(_.one)
   }
 
-  override def getPointsByNames(names: List[String]) = ops.operation("Points not found with names: " + names) { _ =>
-    batchGets(names.map { PointRequestBuilders.getByName(_) })
+  override def getPointsByNames(names: List[String]) = batchGets("Points not found with names: " + names) {
+    names.map { PointRequestBuilders.getByName(_) }
   }
 
-  override def getPointsByUuids(uuids: List[ReefUUID]) = ops.operation("Points not found with uuids: " + uuids) { _ =>
-    batchGets(uuids.map { PointRequestBuilders.getById(_) })
+  override def getPointsByUuids(uuids: List[ReefUUID]) = batchGets("Points not found with uuids: " + uuids) {
+    uuids.map { PointRequestBuilders.getById(_) }
   }
 
   override def getPointsOwnedByEntity(parentEntity: Entity) = {

@@ -45,12 +45,12 @@ trait EntityServiceImpl extends UsesServiceOperations with EntityService {
     _.get(EntityRequestBuilders.getByName(name)).map(_.one)
   }
 
-  override def getEntitiesByUuids(uuids: List[ReefUUID]) = ops.operation("Couldn't get entities with uuids: " + uuids) { _ =>
-    batchGets(uuids.map { EntityRequestBuilders.getById(_) })
+  override def getEntitiesByUuids(uuids: List[ReefUUID]) = batchGets("Couldn't get entities with uuids: " + uuids) {
+    uuids.map { EntityRequestBuilders.getById(_) }
   }
 
-  override def getEntitiesByNames(names: List[String]) = ops.operation("Couldn't get entities with names: " + names) { _ =>
-    batchGets(names.map { EntityRequestBuilders.getByName(_) })
+  override def getEntitiesByNames(names: List[String]) = batchGets("Couldn't get entities with names: " + names) {
+    names.map { EntityRequestBuilders.getByName(_) }
   }
 
   override def findEntityByName(name: String) = ops.operation("Couldn't find entity with name: " + name) {
@@ -132,14 +132,14 @@ trait EntityServiceImpl extends UsesServiceOperations with EntityService {
   }
 
   override def getEntityRelationsForParents(parents: List[ReefUUID], relations: List[EntityRelation]) = {
-    ops.operation("Couldn't get tree for parents: " + parents.size + " relations: " + relations.mkString(", ")) { _ =>
-      batchGets(parents.map { EntityRequestBuilders.getRelatedEntities(_, relations) })
+    batchGets("Couldn't get tree for parents: " + parents.size + " relations: " + relations.mkString(", ")) {
+      parents.map { EntityRequestBuilders.getRelatedEntities(_, relations) }
     }
   }
 
   override def getEntityRelationsForParentsByName(parents: List[String], relations: List[EntityRelation]) = {
-    ops.operation("Couldn't get relations for parentNames: " + parents.size + " relations: " + relations.mkString(", ")) { _ =>
-      batchGets(parents.map { EntityRequestBuilders.getRelatedEntitiesByName(_, relations) })
+    batchGets("Couldn't get relations for parentNames: " + parents.size + " relations: " + relations.mkString(", ")) {
+      parents.map { EntityRequestBuilders.getRelatedEntitiesByName(_, relations) }
     }
   }
 

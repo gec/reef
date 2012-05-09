@@ -22,20 +22,21 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import net.agileautomata.executor4s.testing.MockFuture
 
 import org.totalgrid.reef.client.operations.scl.ScalaPromise._
 import org.totalgrid.reef.client.exception._
+import org.totalgrid.reef.client.operations.scl.PromiseCollators
+import net.agileautomata.executor4s.testing.{ InstantExecutor, MockFuture }
 
 @RunWith(classOf[JUnitRunner])
 class FuturePromiseTest extends FunSuite with ShouldMatchers {
 
-  def future[A]() = new MockFuture[Either[ReefServiceException, A]](None)
+  def future() = new MockFuture[Either[ReefServiceException, java.lang.Integer]](None)
 
   def doubleFun(int: java.lang.Integer): java.lang.Integer = if (int < 0) throw new ExpectationException("Can't double") else int + int
 
   test("Simple Transform") {
-    val promise = FuturePromise.open(future[java.lang.Integer]())
+    val promise = FuturePromise.open(future())
 
     promise.isComplete should equal(false)
     val doubled = promise.map(doubleFun)
@@ -52,7 +53,7 @@ class FuturePromiseTest extends FunSuite with ShouldMatchers {
   }
 
   test("Simple Transform Failure") {
-    val promise = FuturePromise.open(future[java.lang.Integer]())
+    val promise = FuturePromise.open(future())
 
     val doubled = promise.map(doubleFun)
     val doubledAndAnnotated = doubled.mapError { rse => rse.addExtraInformation("annotated"); rse }
@@ -70,7 +71,7 @@ class FuturePromiseTest extends FunSuite with ShouldMatchers {
   }
 
   test("Request Failure") {
-    val promise = FuturePromise.open(future[java.lang.Integer]())
+    val promise = FuturePromise.open(future())
 
     val doubled = promise.map(doubleFun)
     val doubledAndAnnotated = doubled.mapError { rse => rse.addExtraInformation("annotated"); rse }
@@ -102,7 +103,7 @@ class FuturePromiseTest extends FunSuite with ShouldMatchers {
   }
 
   test("Listen success") {
-    val promise = FuturePromise.open(future[java.lang.Integer]())
+    val promise = FuturePromise.open(future())
 
     val doubled = promise.map(doubleFun)
     val doubledAndAnnotated = doubled.mapError { rse => rse.addExtraInformation("annotated"); rse }
@@ -125,7 +126,7 @@ class FuturePromiseTest extends FunSuite with ShouldMatchers {
   }
 
   test("Listen failure") {
-    val promise = FuturePromise.open(future[java.lang.Integer]())
+    val promise = FuturePromise.open(future())
 
     val doubled = promise.map(doubleFun)
     val doubledAndAnnotated = doubled.mapError { rse => rse.addExtraInformation("annotated"); rse }
@@ -146,7 +147,7 @@ class FuturePromiseTest extends FunSuite with ShouldMatchers {
   }
 
   test("Exception in errorTransform Failure") {
-    val promise = FuturePromise.open(future[java.lang.Integer]())
+    val promise = FuturePromise.open(future())
 
     val annotated = promise.mapError(rse => throw new ExpectationException("Bleh"))
 
@@ -157,5 +158,55 @@ class FuturePromiseTest extends FunSuite with ShouldMatchers {
     }.getMessage
     msg should include("bad stuff")
     msg should include("Bleh")
+  }
+
+  test("OpenPromise onAwait is called") {
+
+    var throwException = true
+    def checkFlag = if (throwException) throw new ExpectationException("intentional error")
+    val future = new MockFuture[Either[ReefServiceException, java.lang.Integer]](Some(Right(3)))
+    val promise = FuturePromise.openWithAwaitNotifier(future, Some(checkFlag _))
+
+    intercept[ExpectationException] {
+      promise.await
+    }
+
+    throwException = false
+    promise.await
+  }
+
+  test("Successfull promise collation") {
+    val promise1 = FuturePromise.open(future())
+    val promise2 = FuturePromise.open(future())
+
+    val collated = PromiseCollators.collate(new InstantExecutor(), List(promise1, promise2))
+    collated.isComplete should equal(false)
+
+    promise1.setSuccess(5)
+    collated.isComplete should equal(false)
+
+    promise2.setSuccess(10)
+    collated.isComplete should equal(true)
+
+    collated.await() should equal(List(5, 10))
+  }
+
+  test("Partial failure promise collation") {
+    val promise1 = FuturePromise.open(future())
+    val promise2 = FuturePromise.open(future())
+
+    val collated = PromiseCollators.collate(new InstantExecutor(), List(promise1, promise2))
+    collated.isComplete should equal(false)
+
+    promise1.setSuccess(5)
+    collated.isComplete should equal(false)
+
+    val ex = new ExpectationException("intentional")
+    promise2.setFailure(ex)
+    collated.isComplete should equal(true)
+
+    intercept[ExpectationException] {
+      collated.await()
+    } should equal(ex)
   }
 }
