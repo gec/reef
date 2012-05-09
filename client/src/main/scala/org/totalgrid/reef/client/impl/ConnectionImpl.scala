@@ -37,13 +37,13 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
 
   // Request components - request manager handles correlation/resources,
   // request sender encapsulates payload class lookup
-  private val requestManager = RequestManager(broker, executor, timeoutMs)
+  private lazy val requestManager = RequestManager(broker, executor, timeoutMs)
 
-  val requestSender = new RequestSenderImpl(requestManager, registry)
+  lazy val requestSender = new RequestSenderImpl(requestManager, registry)
 
   // Disconnection logic, two ways to disconnect: by listening to the broker or
   // by an explicit disconnect() call
-  private val brokerListener = new BrokerConnectionListener {
+  private lazy val brokerListener = new BrokerConnectionListener {
     def onDisconnect(expected: Boolean) {
       logger.info("connection disconnected: " + expected)
       handleDisconnect(expected)
@@ -67,7 +67,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
   }
 
   // Login component and public interface
-  private val login = new ClientLogin(requestSender, executor) {
+  private lazy val login = new ClientLogin(requestSender, executor) {
     def createClient(authToken: String, strand: Strand): ClientImpl = {
       val cl = new ClientImpl(self, strand)
       cl.setHeaders(cl.getHeaders.setAuthToken(authToken))
@@ -88,7 +88,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
   }
 
   // ServiceRegistration component and public interface
-  private val registration = new ServiceRegistrationImpl(broker, registry, executor)
+  private lazy val registration = new ServiceRegistrationImpl(broker, registry, executor)
 
   def getServiceRegistration: ServiceRegistration = registration
 
@@ -105,7 +105,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
 
   // Service registry component and public interface.
   // registry is used by ClientImpl
-  val registry = new ServiceRegistryImpl
+  lazy val registry = new ServiceRegistryImpl
 
   def getServiceRegistry: ServiceRegistry = registry
 
@@ -114,7 +114,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
   }
 
   // ConnectionInternal exposes executor
-  private val internal = new ConnectionInternal {
+  private lazy val internal = new ConnectionInternal {
     def getExecutor: Executor = executor
   }
 
