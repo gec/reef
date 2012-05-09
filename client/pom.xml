@@ -36,6 +36,7 @@
                             org.totalgrid.reef.client.impl.*;version="${reef.version}",
                             org.totalgrid.reef.client.registration;version="${reef.version}",
                             org.totalgrid.reef.client.factory;version="${reef.version}",
+                            org.totalgrid.reef.client.factory.impl;version="${reef.version}",
                             org.totalgrid.reef.client.javaimpl;version="${reef.version}",
                             org.totalgrid.reef.client.sapi.client.*;version="${reef.version}",
                             org.totalgrid.reef.client.sapi.service;version="${reef.version}",
