@@ -25,6 +25,7 @@ import org.totalgrid.reef.util.Timing.Stopwatch
 import org.totalgrid.reef.client.operations.RequestListener
 import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.operations.scl.ScalaPromise._
+import org.totalgrid.reef.client.exception.ReefServiceException
 
 class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends RequestListener {
 
@@ -40,7 +41,12 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
     if (request.asInstanceOf[AnyRef].getClass != classOf[BatchServiceRequest]) {
       this.synchronized { outstandingCalls += 1 }
       promise.listenFor { response =>
-        update(response.await().getStatus, request.asInstanceOf[AnyRef])
+        try {
+          update(response.await().getStatus, request.asInstanceOf[AnyRef])
+        } catch {
+          case rse: ReefServiceException =>
+            update(rse.getStatus, request.asInstanceOf[AnyRef])
+        }
         onFutureCallback()
       }
     }
