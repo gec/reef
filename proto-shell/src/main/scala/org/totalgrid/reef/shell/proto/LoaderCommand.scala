@@ -72,6 +72,27 @@ class UnloadConfigCommand extends ReefCommandSupport {
 
 }
 
+@Command(scope = "reef", name = "unload-children", description = "Delete a particular branch out of the model")
+class UnloadChildrenConfigCommand extends ReefCommandSupport {
+
+  @GogoOption(name = "-batchSize", description = "Upload batch size, 0 disables all batching.", required = false, multiValued = false)
+  var batchSize = 0
+
+  @Argument(index = 0, name = "roots", description = "Names of parent nodes to delete", required = true, multiValued = true)
+  var roots: java.util.List[String] = null
+
+  override def doCommand(): Unit = {
+    val loaderServices = new LoaderServicesImpl(reefClient)
+    reefClient.setHeaders(reefClient.getHeaders.setTimeout(30000))
+
+    val rootEntities = roots.toList.map { loaderServices.getEntityByName(_) }
+
+    ModelDeleter.deleteChildren(loaderServices, roots.toList, false, false, Some(Console.out), batchSize) { (_, _) =>
+      // dont delete anything extra
+    }
+  }
+}
+
 @Command(scope = "trigger", name = "trigger", description = "Lists triggers")
 class TriggerCommand extends ReefCommandSupport {
 
