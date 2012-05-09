@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.proto.SimpleAuth.AuthRequest
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.{RequestHeaders, Promise}
+import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 
 abstract class ClientLogin(requests: RequestSender, executor: Executor) extends Logging {
 
