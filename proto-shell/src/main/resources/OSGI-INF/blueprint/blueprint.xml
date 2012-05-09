@@ -147,6 +147,9 @@
         <command name="reef/unload">
             <action class="org.totalgrid.reef.shell.proto.UnloadConfigCommand"/>
         </command>
+        <command name="reef/unload-children">
+            <action class="org.totalgrid.reef.shell.proto.UnloadChildrenConfigCommand"/>
+        </command>
         <command name="trigger/trigger">
             <action class="org.totalgrid.reef.shell.proto.TriggerCommand"/>
         </command>

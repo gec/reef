@@ -38,6 +38,7 @@ trait ModelDeleterCache extends ModelCollector {
   var equipment = List.empty[Entity]
   var configFiles = List.empty[ConfigFile]
   var eventConfigs = List.empty[EventConfig]
+  var edges = List.empty[EntityEdge]
 
   def addPoint(obj: Point, entity: Entity) = {
     points ::= obj
@@ -60,13 +61,18 @@ trait ModelDeleterCache extends ModelCollector {
   def addEventConfig(eventConfig: EventConfig) = {
     eventConfigs ::= eventConfig
   }
-  def addEdge(edge: EntityEdge) = {}
+  def addEdge(edge: EntityEdge) = {
+    // we need to delete "source" links manually to unhook endpoints from their points and commands
+    // other edges we can ignore, they will get implictly deleted when the entities are deleted
+    // we could delete all edges but it would be much slower
+    if (edge.getRelationship == "source") edges ::= edge
+  }
 
   def doDeletes(local: LoaderServices, batchSize: Int) {
     // we need to delete endpoints first because we can't delete points and commands that
     // are sourced by endpoints
     // NOTE: we need the List.empty[GeneratedMessage] to tell the compiler what the type is, when it tries to guess it can run forever
-    val toDelete: List[GeneratedMessage] = endpoints ::: channel ::: commands ::: points ::: equipment ::: configFiles ::: eventConfigs ::: List.empty[GeneratedMessage]
+    val toDelete: List[GeneratedMessage] = edges ::: endpoints ::: channel ::: commands ::: points ::: equipment ::: configFiles ::: eventConfigs ::: List.empty[GeneratedMessage]
     /*val toDeleteOps = toDelete.map { entry => (c: LoaderServices) => c.delete(entry) }
 
     BatchOperations.batchOperations(local, toDeleteOps, batchSize)*/

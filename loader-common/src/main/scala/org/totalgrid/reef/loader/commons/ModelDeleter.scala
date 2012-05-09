@@ -32,7 +32,7 @@ object ModelDeleter {
 
     val traversalUi = stream.map { new SimpleTraversalProgressNotifier(_) }
 
-    val traverser = new EquipmentModelTraverser(local, cachingImporter, traversalUi)
+    val traverser = new EquipmentModelTraverser(local, cachingImporter, true, traversalUi)
 
     stream.foreach { _.println("Finding items to delete starting at nodes: " + roots.mkString(", ")) }
 
@@ -76,21 +76,25 @@ object ModelDeleter {
 
   def deleteEverything(local: LoaderServices, dryRun: Boolean, forceOffline: Boolean, stream: Option[PrintStream], batchSize: Int = 25): Long = {
     deleteChildren(local, Nil, dryRun, forceOffline, stream, batchSize) { (traverse, collector) =>
-      local.setHeaders(local.getHeaders.setResultLimit(50000))
-
-      // since we never look at entities when we are deleting we dont need to look them up
-      val fakeEntity = Entity.newBuilder.build
-
-      local.getEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
-      val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
-      local.getEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
-
-      local.getCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
-      local.getConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
-      local.getPoints().await.foreach { collector.addPoint(_, fakeEntity) }
-      local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
-      local.getEventConfigurations().await.foreach { collector.addEventConfig(_) }
+      collectEverything(local, collector)
     }
+  }
+
+  def collectEverything(local: LoaderServices, collector: ModelCollector) {
+    local.setHeaders(local.getHeaders.setResultLimit(50000))
+
+    // since we never look at entities when we are deleting we dont need to look them up
+    val fakeEntity = Entity.newBuilder.build
+
+    local.getEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
+    val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
+    local.getEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
+
+    local.getCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
+    local.getConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
+    local.getPoints().await.foreach { collector.addPoint(_, fakeEntity) }
+    local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
+    local.getEventConfigurations().await.foreach { collector.addEventConfig(_) }
   }
 
 }
