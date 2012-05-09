@@ -38,7 +38,6 @@ class ClientImpl(conn: ConnectionImpl, strand: Strand) extends Client with Clien
 
   def getService[A](klass: Class[A]): A = conn.Registry.buildServiceInterface(klass, this)
 
-  // TODO: listening
   object Binding extends BindOperations {
     def subscribe[T](descriptor: TypeDescriptor[T]): Subscription[T] = {
       notifySubscriptionCreated {

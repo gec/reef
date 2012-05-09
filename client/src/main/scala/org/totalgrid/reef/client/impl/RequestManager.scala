@@ -35,6 +35,7 @@ trait RequestManager {
   def request[A](verb: Envelope.Verb, payload: A, headers: RequestHeaders, info: ServiceTypeInformation[A, _], requestExecutor: Executor): Promise[Response[A]]
 
   def close()
+  def cancelSubscription()
 }
 
 object RequestManager {
@@ -49,11 +50,11 @@ object RequestManager {
     private val correlator = ResponseCorrelator(executor)
     private val subscription = broker.listen().start(correlator)
     broker.bindQueue(subscription.getQueue, exchange, subscription.getQueue)
-    //broker.addListener()
 
     def close() {
-      // TODO: is this right?
       correlator.close()
+    }
+    def cancelSubscription() {
       subscription.close()
     }
 

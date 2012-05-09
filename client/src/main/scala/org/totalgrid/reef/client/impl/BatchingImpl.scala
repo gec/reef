@@ -37,14 +37,14 @@ class BatchingImpl(ops: OperationsBuilders) extends Batching {
     currentOpsMode = ops.buildRestOperations
   }
 
-  def flush(): Promise[BatchServiceRequest] = {
+  def flush() = {
     currentOpsMode.batched match {
       case None => throw new BadRequestException("No batch requests configured")
       case Some(batched) => batched.flush()
     }
   }
 
-  def flush(chunkSize: Int): Promise[Boolean] = {
+  def flush(chunkSize: Int) = {
     currentOpsMode.batched match {
       case None => throw new BadRequestException("No batch requests configured")
       case Some(batched) => batched.batchedFlush(chunkSize)

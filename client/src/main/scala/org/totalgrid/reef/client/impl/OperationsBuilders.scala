@@ -53,7 +53,7 @@ trait ClientTiedOperationsBuilders extends OperationsBuilders {
 
   private class ClientTiedBatchRestOperations(protected val ops: RestOperations) extends BatchRestOperationsImpl {
     protected def getServiceInfo[A](klass: Class[A]): ServiceTypeInformation[A, _] = registry.getServiceTypeInformation(klass)
-    protected def futureSource[A] = FuturePromise.open[A](strand)
+    protected def futureSource[A](onAwait: Option[() => Unit]) = FuturePromise.openWithAwaitNotifier[A](strand, onAwait)
     protected def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]]) {
       notifier.notifyListeners(verb, payload, promise)
     }

@@ -24,23 +24,36 @@ import settings.UserSettings
 import org.totalgrid.reef.broker.{ BrokerConnectionListener, BrokerConnection }
 import net.agileautomata.executor4s.{ Strand, Executor }
 import types.TypeDescriptor
+import com.weiglewilczek.slf4s.Logging
 
 class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Long)
-    extends Connection with ConnectionListening {
+    extends Connection with ConnectionListening with Logging {
 
   private val requests = RequestManager(broker, executor, timeoutMs)
 
-  broker.addListener(BrokerConnection)
+  broker.addListener(BrokerListener)
 
-  object BrokerConnection extends BrokerConnectionListener {
+  private object BrokerListener extends BrokerConnectionListener {
     def onDisconnect(expected: Boolean) {
-      requests.close()
-      notifyListenersOfClose(expected)
+      logger.info("connection disconnected: " + expected)
+      handleDisconnect(expected)
     }
   }
 
+  private def handleDisconnect(expected: Boolean) {
+    broker.removeListener(BrokerListener)
+    requests.close()
+    notifyListenersOfClose(expected)
+  }
+
   def disconnect() {
-    // TODO: unstub
+    val currentlyConnected = broker.isConnected()
+    logger.info("disconnect called, connected: " + currentlyConnected)
+    requests.cancelSubscription()
+    if (currentlyConnected) {
+      handleDisconnect(true)
+      broker.disconnect()
+    }
   }
 
   object Sender extends RequestSenderImpl(requests, Registry)
