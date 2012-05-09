@@ -11,6 +11,7 @@
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-qpid-broker/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-memory-broker/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-client-common/${reef.version}</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-loader-commons/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-client/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-service-client/${reef.version}</bundle>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-metrics-client/${reef.version}</bundle>
