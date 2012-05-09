@@ -30,9 +30,8 @@ import org.totalgrid.reef.client.proto.Envelope.{ BatchServiceRequest, Verb }
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.operations.{ RestOperations, Response }
-import org.totalgrid.reef.client.sapi.client.rest.impl.ClassLookup
+import org.totalgrid.reef.client.impl.ClassLookup
 import org.totalgrid.reef.client.operations.scl.ScalaResponse
-import org.totalgrid.reef.client.operations.impl.FuturePromise.OpenEitherPromise
 import org.totalgrid.reef.client.exception._
 import org.totalgrid.reef.client.{ RequestHeaders, Promise }
 

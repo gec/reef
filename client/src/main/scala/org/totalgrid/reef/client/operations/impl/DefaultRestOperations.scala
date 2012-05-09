@@ -22,8 +22,8 @@ import org.totalgrid.reef.client.operations.{ Response, RestOperations }
 import org.totalgrid.reef.client.{ RequestHeaders, SubscriptionBinding, Promise }
 import org.totalgrid.reef.client.proto.Envelope.Verb
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultClient
 
+/*
 class DefaultRestOperations(client: DefaultClient) extends RestOperations with DerivedRestOperations with OptionallyBatchedRestOperations {
 
   def batched: Option[BatchRestOperations] = None
@@ -32,7 +32,7 @@ class DefaultRestOperations(client: DefaultClient) extends RestOperations with D
     client.requestJava(verb, payload, headers)
   }
 
-}
+}*/
 
 trait DerivedRestOperations {
   protected def request[A](verb: Verb, payload: A, headers: Option[RequestHeaders]): Promise[Response[A]]

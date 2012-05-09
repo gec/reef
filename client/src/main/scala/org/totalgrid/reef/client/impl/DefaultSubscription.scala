@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.impl
+package org.totalgrid.reef.client.impl
 
 import org.totalgrid.reef.client.{ Subscription, SubscriptionEventAcceptor }
 import net.agileautomata.executor4s.Executor
@@ -32,7 +32,10 @@ import org.totalgrid.reef.client.operations.scl.Event
 final class DefaultSubscription[A](subscription: BrokerSubscription, executor: Executor, deserialize: Array[Byte] => A) extends Subscription[A] with Logging {
 
   override def getId() = subscription.getQueue
-  override def cancel() = subscription.close()
+
+  override def cancel() {
+    subscription.close()
+  }
 
   override def start(callback: SubscriptionEventAcceptor[A]): Subscription[A] = {
     val consumer = new BrokerMessageConsumer {

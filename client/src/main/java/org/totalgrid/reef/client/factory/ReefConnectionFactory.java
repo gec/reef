@@ -28,8 +28,7 @@ import org.totalgrid.reef.client.Connection;
 import org.totalgrid.reef.client.ConnectionFactory;
 import org.totalgrid.reef.client.ServicesList;
 import org.totalgrid.reef.client.exception.ReefServiceException;
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper;
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection;
+import org.totalgrid.reef.client.impl.ConnectionImpl;
 import org.totalgrid.reef.client.settings.AmqpSettings;
 
 /**
@@ -99,10 +98,9 @@ public class ReefConnectionFactory implements ConnectionFactory
 
     public Connection connect() throws ReefServiceException
     {
-        org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection scalaConnection;
-        scalaConnection = new DefaultConnection( brokerConnectionFactory.connect(), exe, 5000 );
-        scalaConnection.addServicesList( servicesList );
-        return new ConnectionWrapper( scalaConnection, exe );
+        ConnectionImpl connection = new ConnectionImpl( brokerConnectionFactory.connect(), exe, 5000 );
+        connection.addServicesList( servicesList );
+        return connection;
     }
 
     public void terminate()

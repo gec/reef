@@ -136,7 +136,7 @@ class ConcurrentMeasurementPublishingBenchmark(endpointNames: List[String], tota
     }
 
     val stopwatch = new Stopwatch
-    val results = ModelCreationUtilities.parallelExecutor(client, concurrency, batchPublishers)
+    val results = ModelCreationUtilities.parallelExecutor(client.getInternal.getExecutor, concurrency, batchPublishers)
     val overallTime = stopwatch.elapsed
 
     val readings = mutable.Queue.empty[BenchmarkReading]

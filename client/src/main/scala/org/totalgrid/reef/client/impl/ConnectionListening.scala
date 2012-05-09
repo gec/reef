@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client
+package org.totalgrid.reef.client.impl
 
 import org.totalgrid.reef.client.ConnectionCloseListener
 
@@ -24,8 +24,15 @@ trait ConnectionListening {
 
   private var listeners = Set.empty[ConnectionCloseListener]
 
-  def addConnectionListener(listener: ConnectionCloseListener) = this.synchronized(listeners += listener)
-  def removeConnectionListener(listener: ConnectionCloseListener) = this.synchronized(listeners -= listener)
+  def addConnectionListener(listener: ConnectionCloseListener) {
+    this.synchronized(listeners += listener)
+  }
 
-  protected def notifyListenersOfClose(expected: Boolean) = listeners.foreach(_.onConnectionClosed(expected))
+  def removeConnectionListener(listener: ConnectionCloseListener) {
+    this.synchronized(listeners -= listener)
+  }
+
+  protected def notifyListenersOfClose(expected: Boolean) {
+    listeners.foreach(_.onConnectionClosed(expected))
+  }
 }

@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.impl
+package org.totalgrid.reef.client.factory.impl
 
 import net.agileautomata.executor4s._
 import com.weiglewilczek.slf4s.Logging
@@ -32,14 +32,15 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
   private var broker = Option.empty[BrokerConnection]
   private var reconnectDelay = Option.empty[Timer]
 
-  private var watchers = Set.empty[ConnectionWatcher]
+  private var watchers = Set.empty[ScalaConnectionWatcher]
 
-  def addConnectionWatcher(watcher: ConnectionWatcher) {
+  def addConnectionWatcher(watcher: ScalaConnectionWatcher) {
     this.synchronized {
       watchers += watcher
     }
   }
-  def removeConnectionWatcher(watcher: ConnectionWatcher) {
+
+  def removeConnectionWatcher(watcher: ScalaConnectionWatcher) {
     this.synchronized {
       watchers -= watcher
     }
@@ -54,11 +55,15 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
 
   override def beforeStop() {
     // can't hold lock while canceling because it blocks until wither we connect or the connection fails
-    this.synchronized(reconnectDelay).foreach { _.cancel() }
+    this.synchronized(reconnectDelay).foreach {
+      _.cancel()
+    }
     // if we're connected call the disconnect function, otherwise inform the watchers of failure
     this.synchronized(broker) match {
       case Some(c) => c.disconnect()
-      case None => this.synchronized(watchers).foreach { _.onConnectionClosed(true) }
+      case None => this.synchronized(watchers).foreach {
+        _.onConnectionClosed(true)
+      }
     }
   }
 
@@ -71,7 +76,9 @@ class DefaultReconnectingFactory(factory: BrokerConnectionFactory, exe: Executor
       this.synchronized {
         broker = Some(connection)
         connection.addListener(this)
-        watchers.foreach { _.onConnectionOpened(broker.get) }
+        watchers.foreach {
+          _.onConnectionOpened(broker.get)
+        }
       }
     } catch {
       case ex: ReefServiceException =>

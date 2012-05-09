@@ -16,19 +16,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.javaimpl
+package org.totalgrid.reef.client.factory.impl
 
-import org.totalgrid.reef.client.types.ServiceTypeInformation
-import org.totalgrid.reef.client.{ ServicesList, ServiceProviderInfo, ServiceRegistry }
-import org.totalgrid.reef.client.sapi.client.rest.impl.SharedServiceRegistry
+import org.totalgrid.reef.broker.BrokerConnection
 
-class ServiceRegistryWrapper(reg: SharedServiceRegistry) extends ServiceRegistry {
+trait ScalaConnectionWatcher {
+  def onConnectionClosed(expected: Boolean)
 
-  def addServicesList(servicesList: ServicesList) { reg.addServicesList(servicesList) }
-
-  def addServiceProvider(info: ServiceProviderInfo) { reg.addRpcProvider(info) }
-
-  def addServiceTypeInformation[T, U](typeInformation: ServiceTypeInformation[T, U]) { reg.addServiceInfo(typeInformation) }
-
-  def getServiceTypeInformation[T](klass: Class[T]): ServiceTypeInformation[T, _] = reg.getServiceInfo(klass)
+  def onConnectionOpened(connection: BrokerConnection)
 }

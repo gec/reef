@@ -16,19 +16,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client
+package org.totalgrid.reef.client.impl
 
-import org.totalgrid.reef.client.{ SubscriptionCreator, SubscriptionCreationListener, SubscriptionBinding }
+import org.totalgrid.reef.client.{ SubscriptionBinding, SubscriptionCreationListener }
 
-trait SubscriptionCreatorManager extends SubscriptionCreator {
-
+trait SubscriptionListeners {
   private var listeners = Set.empty[SubscriptionCreationListener]
 
-  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = this.synchronized(listeners += listener)
-  def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = this.synchronized(listeners -= listener)
+  def addSubscriptionCreationListener(listener: SubscriptionCreationListener) {
+    listeners += listener
+  }
+
+  def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) {
+    listeners -= listener
+  }
 
   protected def notifySubscriptionCreated[A <: SubscriptionBinding](binding: A): A = {
-    listeners.foreach { _.onSubscriptionCreated(binding) }
+    listeners.foreach(_.onSubscriptionCreated(binding))
     binding
   }
 }

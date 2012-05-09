@@ -25,16 +25,14 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import net.agileautomata.commons.testing._
-import net.agileautomata.executor4s.Executors
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client._
-import factory.ReefConnectionFactory
 import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
 import org.totalgrid.reef.client.operations.scl.Event
 import org.totalgrid.reef.client.javaimpl.fixture._
 import net.agileautomata.executor4s._
-import sapi.client.rest.impl.DefaultConnection
 import SimpleRestAccess._
+import org.totalgrid.reef.client.impl.ConnectionImpl
 
 @RunWith(classOf[JUnitRunner])
 class QpidServiceClientTest extends BasicClientTest with QpidBrokerTestFixture
@@ -53,7 +51,7 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
     try {
       val brokerConn = brokerFac.connect
       brokerConn.declareExchange(ExampleServiceList.info.getEventExchange)
-      val conn = new ConnectionWrapper(new DefaultConnection(brokerConn, exe, 5000), exe)
+      val conn = new ConnectionImpl(brokerConn, exe, 5000)
       conn.addServicesList(ExampleServiceList)
       fun(conn.createClient("foo"), conn)
     } finally {

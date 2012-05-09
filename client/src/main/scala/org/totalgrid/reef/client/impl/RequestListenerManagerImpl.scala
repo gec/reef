@@ -1,5 +1,3 @@
-package org.totalgrid.reef.client.sapi.client.rest.impl
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,11 +16,28 @@ package org.totalgrid.reef.client.sapi.client.rest.impl
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.client.impl
 
-import org.totalgrid.reef.broker.BrokerConnection
+import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.client.Promise
+import org.totalgrid.reef.client.operations.{ Response, RequestListenerManager, RequestListener }
 
-trait ConnectionWatcher {
-  def onConnectionClosed(expected: Boolean)
+trait RequestListenerNotifier {
+  def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]])
+}
 
-  def onConnectionOpened(connection: BrokerConnection)
+class RequestListenerManagerImpl extends RequestListenerManager with RequestListenerNotifier {
+  private var listeners = Set.empty[RequestListener]
+
+  def addRequestListener(listener: RequestListener) {
+    listeners += listener
+  }
+
+  def removeRequestListener(listener: RequestListener) {
+    listeners -= listener
+  }
+
+  def notifyListeners[A](verb: Envelope.Verb, payload: A, promise: Promise[Response[A]]) {
+    listeners.foreach(_.onRequest(verb, payload, promise))
+  }
 }

@@ -27,6 +27,7 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.{ BrokerConnection, BrokerConnectionFactory, BrokerDestination }
 import org.mockito.Mockito
 import org.totalgrid.reef.client.exception.ServiceIOException
+import org.totalgrid.reef.client.factory.impl.{ ScalaConnectionWatcher, DefaultReconnectingFactory }
 
 @RunWith(classOf[JUnitRunner])
 class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
@@ -57,7 +58,7 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
       def unbindQueue(queue: String, exchange: String, key: String) {}
     }
 
-    val watcher = Mockito.mock(classOf[ConnectionWatcher])
+    val watcher = Mockito.mock(classOf[ScalaConnectionWatcher])
 
     val reconnector = new DefaultReconnectingFactory(broker, exe, 1000, 5000)
     reconnector.addConnectionWatcher(watcher)

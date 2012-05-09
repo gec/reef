@@ -49,9 +49,7 @@ class BatchingTest extends ServiceClientSuite {
     }
   }
 
-  // TODO: enable test when clientWrapper is gone
-  ignore("Using Batching with sync api fails fast") {
-
+  test("Using Batching with sync api fails fast") {
     // this batching mode change doesn't affect the services we are spawning
     session.getBatching.start()
     try {

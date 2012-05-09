@@ -25,13 +25,12 @@ import net.agileautomata.executor4s.Minutes;
 import org.totalgrid.reef.broker.BrokerConnection;
 import org.totalgrid.reef.broker.BrokerConnectionFactory;
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory;
-import org.totalgrid.reef.client.Connection;
 import org.totalgrid.reef.client.ConnectionWatcher;
 import org.totalgrid.reef.client.ReconnectingConnectionFactory;
 import org.totalgrid.reef.client.ServicesList;
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper;
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection;
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultReconnectingFactory;
+import org.totalgrid.reef.client.factory.impl.DefaultReconnectingFactory;
+import org.totalgrid.reef.client.factory.impl.ScalaConnectionWatcher;
+import org.totalgrid.reef.client.impl.ConnectionImpl;
 import org.totalgrid.reef.client.settings.AmqpSettings;
 
 import java.util.HashSet;
@@ -44,7 +43,7 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory
 {
     // TODO: Make this a static factory class, put implementations in scala
 
-    private class Watcher implements org.totalgrid.reef.client.sapi.client.rest.impl.ConnectionWatcher
+    private class Watcher implements ScalaConnectionWatcher
     {
         @Override
         public synchronized void onConnectionClosed( boolean expected )
@@ -58,10 +57,8 @@ public class ReefReconnectingFactory implements ReconnectingConnectionFactory
         @Override
         public synchronized void onConnectionOpened( BrokerConnection connection )
         {
-            org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection scalaConnection;
-            scalaConnection = new DefaultConnection( connection, exe, 5000 );
-            scalaConnection.addServicesList( servicesList );
-            Connection c = new ConnectionWrapper( scalaConnection, exe );
+            ConnectionImpl c = new ConnectionImpl( connection, exe, 5000 );
+            c.addServicesList( servicesList );
             for ( ConnectionWatcher cw : watchers )
             {
                 cw.onConnectionOpened( c );

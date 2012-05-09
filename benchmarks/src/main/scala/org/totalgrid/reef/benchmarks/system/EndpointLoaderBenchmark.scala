@@ -47,7 +47,7 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
 
     def addReadings[A](operation: String, ops: Seq[() => Promise[A]]) {
       val stopwatch = new Stopwatch()
-      val results = ModelCreationUtilities.parallelExecutor(client, parallelism, ops)
+      val results = ModelCreationUtilities.parallelExecutor(client.getInternal.getExecutor, parallelism, ops)
       val overallTime = stopwatch.elapsed
 
       readings ::= new EndpointLoadingReading("overall" + operation, endpoints, pointsPerEndpoint, overallTime, parallelism, batchSize)
@@ -59,7 +59,7 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
     }
 
     if (add) {
-      val preparedLoaders = endpointNames.map { n => ModelCreationUtilities.addEndpoint(client, n, pointsPerEndpoint, batchSize) }
+      val preparedLoaders = endpointNames.map { n => ModelCreationUtilities.addEndpoint(client.spawn(), n, pointsPerEndpoint, batchSize) }
       stream.foreach { _.println("Adding " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points using " + parallelism + " writers.") }
       addReadings("addEndpoint", preparedLoaders)
     }
@@ -71,7 +71,7 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
       val map = new EndpointStateTransitionTimer(services.subscribeToEndpointConnections(), endpointUuids)
       map.checkAllState(false, State.COMMS_DOWN)
 
-      val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client, n, pointsPerEndpoint, batchSize) }
+      val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client.spawn(), n, pointsPerEndpoint, batchSize) }
       stream.foreach { _.println("Deleting " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points using " + parallelism + " writers.") }
       addReadings("deleteEndpoint", preparedDeleters)
     }

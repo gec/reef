@@ -16,22 +16,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client
+package org.totalgrid.reef.client.impl
 
+import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.RequestHeaders
 
-trait DefaultHeaders {
+trait ClientHeaders {
 
-  /** The default request headers */
+  /**The default request headers */
   private var defaultHeaders = BasicRequestHeaders.empty
 
-  /** The current value of the headers */
+  /**The current value of the headers */
   def getHeaders = defaultHeaders
 
-  /** Set the default request headers */
-  def setHeaders(headers: RequestHeaders) = defaultHeaders = headers
+  /**Set the default request headers */
+  def setHeaders(headers: RequestHeaders) {
+    defaultHeaders = headers
+  }
 
-  /** Provide a little syntactic sugar for change the headers */
-  def modifyHeaders(modify: RequestHeaders => RequestHeaders) = setHeaders(modify(defaultHeaders))
+  /**Provide a little syntactic sugar for change the headers */
+  def modifyHeaders(modify: RequestHeaders => RequestHeaders) {
+    setHeaders(modify(defaultHeaders))
+  }
 
 }

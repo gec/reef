@@ -1,3 +1,5 @@
+package org.totalgrid.reef.client.impl
+
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -16,7 +18,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.impl
 
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.types.TypeDescriptor

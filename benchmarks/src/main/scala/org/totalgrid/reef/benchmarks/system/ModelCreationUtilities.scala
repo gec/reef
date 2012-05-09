@@ -69,12 +69,10 @@ object ModelCreationUtilities {
    * timing information on how long each individual request takes. The batchSize parameter is used to change
    * how much work is done in each request to the server.
    */
-  def parallelExecutor[A](client: Client, numConcurrent: Int, batchableOperations: Seq[() => Promise[A]]) = {
+  def parallelExecutor[A](exe: Executor, numConcurrent: Int, batchableOperations: Seq[() => Promise[A]]) = {
     var inProgressOps = 0
     var remainingOps = batchableOperations
     var timingResults = List.empty[(Long, A)]
-
-    val exe = client.getInternal.getExecutor
 
     val f = exe.future[Either[ReefServiceException, List[(Long, A)]]]
     val prom: OpenPromise[List[(Long, A)]] = FuturePromise.open(f)
@@ -94,15 +92,17 @@ object ModelCreationUtilities {
       }
     }
 
-    def startNext(): Unit = f.synchronized {
-      if (inProgressOps < numConcurrent) {
-        inProgressOps += 1
-        val stopwatch = new Stopwatch()
-        val nextOperationToStart = remainingOps.headOption
-        if (nextOperationToStart.isDefined) {
-          remainingOps = remainingOps.tail
-          nextOperationToStart.get().listenFor(completed(stopwatch, _))
-          startNext()
+    def startNext() {
+      f.synchronized {
+        if (inProgressOps < numConcurrent) {
+          inProgressOps += 1
+          val stopwatch = new Stopwatch()
+          val nextOperationToStart = remainingOps.headOption
+          if (nextOperationToStart.isDefined) {
+            remainingOps = remainingOps.tail
+            nextOperationToStart.get().listenFor(completed(stopwatch, _))
+            startNext()
+          }
         }
       }
     }
