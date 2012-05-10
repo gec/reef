@@ -33,6 +33,7 @@ import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import org.totalgrid.reef.client.service.proto.Auth.{ Agent, PermissionSet }
 import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.operations.scl.ScalaRequestListener._
+import org.totalgrid.reef.client.operations.scl.ScalaBatchOperations._
 
 // TODO: get rid of caching model loader
 class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) extends ModelLoader with Logging {
@@ -128,10 +129,9 @@ class CachingModelLoader(client: Option[LoaderServices], batchSize: Int = 25) ex
 
     try {
       withRequestListener(client, viewer) {
-        client.batching.start()
-        uploadOrder.foreach { client.put(_) }
-        client.batching.flush(batchSize).await()
-        client.batching.exit()
+        batchOperations(client, batchSize) {
+          uploadOrder.foreach { client.put(_) }
+        }.await
       }
     } finally {
       viewer.foreach { _.finish }
