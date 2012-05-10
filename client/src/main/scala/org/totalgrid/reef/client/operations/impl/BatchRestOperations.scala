@@ -104,7 +104,10 @@ trait BatchRestOperationsImpl extends BatchRestOperations with DerivedRestOperat
 
     def nextBatch(prevFailed: Option[ReefServiceException], pending: List[QueuedRequest[_]], totalSize: Int, promise: OpenPromise[java.lang.Integer]) {
       prevFailed match {
-        case Some(rse) => promise.setFailure(rse)
+        case Some(rse) =>
+          // if an early request failed, fail all of the future promises as well
+          pending.foreach(_.promise.setFailure(rse))
+          promise.setFailure(rse)
         case None => pending match {
           case Nil => promise.setSuccess(totalSize)
           case remains =>

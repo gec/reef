@@ -151,27 +151,31 @@ class BatchServiceOperationsTest extends FunSuite with ShouldMatchers {
   }
 
   test("Handles Partial Failures") {
-    val ops = new MockBatch(conditionalSuccess(List(None, Some("partial failure"))))
+    val ops = new MockBatch(conditionalSuccess(List(None, Some("partial failure"), None)))
 
     val successFuture = ops.request(Envelope.Verb.PUT, SomeInteger(100))
     val failureFuture = ops.request(Envelope.Verb.PUT, SomeInteger(200))
+    val afterFailure = ops.request(Envelope.Verb.PUT, SomeInteger(300))
 
-    val batchResult = ops.flush()
+    val batchResult = ops.batchedFlush(1)
 
     intercept[BadRequestException] {
       batchResult.await
     }.getMessage should include("partial failure")
 
-    successFuture.isComplete should equal(true)
-    failureFuture.isComplete should equal(true)
+    val futures = List(successFuture, failureFuture, afterFailure)
 
-    intercept[BadRequestException] {
-      successFuture.await
-    }.getMessage should include("partial failure")
+    futures.map { _.isComplete } should equal(List(true, true, true))
 
-    intercept[BadRequestException] {
-      failureFuture.await
-    }.getMessage should include("partial failure")
+    // check that all three futures have same error message
+    val errors = futures.map { f =>
+      intercept[BadRequestException] {
+        f.await
+      }.getMessage
+    }.distinct
+
+    errors.size should equal(1)
+    errors.head should include("partial failure")
   }
 
   test("BatchedFlush will send in chunks") {
