@@ -23,6 +23,7 @@ There were also some important performance enhancements on the service implement
   into java client. This allowed removing all external uses of the scala client class.
 * Added point_uuid to Measurements and added getXxxxxByUuid calls for snapshots, history and statistics functions
 * Added --force option to reef:unload
+* Added reef:unload-children command to remove a subset of the system.
 * All requests use TTL (time to live) to stop server from handling old requests.
 * Client applications that handle command requests are bound to the command queue by server only, only the main service
   nodes need to have "bind" level access to the broker.

@@ -72,7 +72,11 @@ class UnloadConfigCommand extends ReefCommandSupport {
 
 }
 
-@Command(scope = "reef", name = "unload-children", description = "Delete a particular branch out of the model")
+@Command(scope = "reef", name = "unload-children", description = "Delete a subset of the model starting with the indicated root nodes. The deleter will traverse the " +
+  "model starting at the root nodes and delete all child Equipment, Points and Commands. If the root node is an Endpoint then all of its \"sourced\" Points and Commands " +
+  "will be removed as well. If the root is a piece of Equipment all Points and Commands it \"owns\" will be delete. If all Points and Commands for an Endpoint are removed " +
+  "we will also remove the Endpoint itself.  We also check all of the ConfigFiles in the system, any that were \"uses\" only by removed entities will be deleted as well. " +
+  "If a Point is deleted all of the commands it is \"feedback\" for will also be deleted.")
 class UnloadChildrenConfigCommand extends ReefCommandSupport {
 
   @GogoOption(name = "-batchSize", description = "Upload batch size, 0 disables all batching.", required = false, multiValued = false)
