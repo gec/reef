@@ -75,7 +75,12 @@ final class QpidBrokerConnection(conn: Connection, ttlMilliseconds: Int) extends
       temp
     }
 
-    this.onDisconnect(expected)
+    try {
+      this.onDisconnect(expected)
+    } catch {
+      case ex: Exception =>
+        logger.error("unexpected error handling onDisconnect: " + ex.getMessage, ex)
+    }
 
     mutex.synchronized {
       mutex.notifyAll()
