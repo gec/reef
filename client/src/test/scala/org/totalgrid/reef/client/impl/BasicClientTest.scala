@@ -29,10 +29,10 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client._
 import org.totalgrid.reef.client.operations.scl.ScalaSubscription._
 import org.totalgrid.reef.client.operations.scl.Event
-import org.totalgrid.reef.client.javaimpl.fixture._
 import net.agileautomata.executor4s._
 import SimpleRestAccess._
 import org.totalgrid.reef.client.impl.ConnectionImpl
+import fixture._
 
 @RunWith(classOf[JUnitRunner])
 class QpidServiceClientTest extends BasicClientTest with QpidBrokerTestFixture
