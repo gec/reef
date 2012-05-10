@@ -71,6 +71,8 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
       val events = new SynchronizedList[Event[SomeInteger]]
       sub.onEvent(events.append(_))
       events shouldBecome Event(Envelope.SubscriptionEventType.ADDED, si) within 5000
+
+      sub.cancel()
     }
   }
 
@@ -85,6 +87,8 @@ trait BasicClientTest extends BrokerTestFixture with FunSuite with ShouldMatcher
       sub.onEvent(events.append(_))
       eventPub.publishEvent(Envelope.SubscriptionEventType.ADDED, si, "foobar")
       events shouldBecome Event(Envelope.SubscriptionEventType.ADDED, si) within 5000
+
+      sub.cancel()
     }
   }
 

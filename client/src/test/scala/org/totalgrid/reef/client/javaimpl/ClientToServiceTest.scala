@@ -56,7 +56,7 @@ object SimpleRestAccess {
       c.getServiceOperations.getBindOperations.subscribe(desc)
     }
 
-    def attempt[A](f: => A) = c.getInternal.getExecutor.attempt(f)
+    def attempt[A](f: => A) = c.getInternal.getExecutor.attempt(f).await
   }
   implicit def implClient(c: Client): ClientWrap = new ClientWrap(c)
 }
@@ -131,6 +131,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     val promise = c.put(i).map(_.one)
     val events = new SynchronizedList[SomeInteger]
     promise.listenFor { prom =>
+      prom.isComplete should equal(true)
       prom.await should equal(i.increment)
       events.append(prom.await)
     }
@@ -207,6 +208,8 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
   }
 
   def testTimeout(c: Client) {
+    // when testing timeouts we want a short wait
+    c.setHeaders(c.getHeaders.setTimeout(100))
     val i = SomeInteger(1)
     c.put(i).await.getStatus should equal(Envelope.Status.RESPONSE_TIMEOUT)
   }
@@ -249,7 +252,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     fixture(true) { (c, _) =>
       c.attempt {
         testSuccess(c)
-      }.await
+      }
     }
   }
 
@@ -257,7 +260,7 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
     fixture(false) { (c, _) =>
       c.attempt {
         testTimeout(c)
-      }.await
+      }
     }
   }
 
@@ -284,6 +287,8 @@ trait ClientToServiceTest extends BrokerTestFixture with FunSuite with ShouldMat
       reg.bindServiceQueue(sub.getId, address.getKey, classOf[SomeInteger])
       val request = c.put(SomeInteger(1), BasicRequestHeaders.empty.setDestination(address))
       checkResp(request.await, List(SomeInteger(2)))
+
+      sub.cancel()
     }
   }
 }
