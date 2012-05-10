@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.impl
+package org.totalgrid.reef.client.factory.impl
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -27,7 +27,6 @@ import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.{ BrokerConnection, BrokerConnectionFactory, BrokerDestination }
 import org.mockito.Mockito
 import org.totalgrid.reef.client.exception.ServiceIOException
-import org.totalgrid.reef.client.factory.impl.{ ScalaConnectionWatcher, DefaultReconnectingFactory }
 
 @RunWith(classOf[JUnitRunner])
 class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
@@ -36,6 +35,7 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
     val exe = new MockExecutor
     val broker = new BrokerConnectionFactory {
       var connection = Option.empty[BrokerConnection]
+
       def connect = connection.getOrElse(throw new ServiceIOException("test failure"))
     }
 
@@ -43,18 +43,26 @@ class ReconnectingFactoryTest extends FunSuite with ShouldMatchers {
       def unexpectedDisconnect() {
         onDisconnect(false)
       }
+
       def disconnect() = {
         onDisconnect(true)
         true
       }
 
       def bindQueue(queue: String, exchange: String, key: String, unbindFirst: Boolean) {}
+
       def declareExchange(exchange: String, exchangeType: String) {}
+
       def declareQueue(queue: String, autoDelete: Boolean, exclusive: Boolean) = null
+
       def isConnected() = true
+
       def listen() = null
+
       def listen(queue: String) = null
+
       def publish(exchange: String, key: String, bytes: Array[Byte], replyTo: Option[BrokerDestination]) {}
+
       def unbindQueue(queue: String, exchange: String, key: String) {}
     }
 
