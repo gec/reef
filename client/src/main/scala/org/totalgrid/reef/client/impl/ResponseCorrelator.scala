@@ -39,6 +39,8 @@ trait ResponseCorrelator extends BrokerMessageConsumer {
 object ResponseCorrelator {
 
   case class Failure(status: Envelope.Status, msg: String)
+  case object DisconnectFailure extends Failure(Envelope.Status.BUS_UNAVAILABLE, "Graceful close")
+  case class TimeoutFailure(interval: TimeInterval) extends Failure(Envelope.Status.RESPONSE_TIMEOUT, "Timed out waiting for response after: " + interval)
 
   def apply(exe: Executor): ResponseCorrelator = new ResponseCorrelatorImpl(exe)
 
@@ -82,14 +84,14 @@ object ResponseCorrelator {
       }.foreach {
         case Record(timer, callback, _) =>
           timer.cancel()
-          doCallback(callback, Left(Failure(Envelope.Status.BUS_UNAVAILABLE, "Graceful close")))
+          doCallback(callback, Left(DisconnectFailure))
       }
     }
 
     private def onTimeout(uuid: String) {
       map.synchronized(map.remove(uuid)) match {
         case Some(Record(timer, callback, interval)) =>
-          doCallback(callback, Left(Failure(Envelope.Status.RESPONSE_TIMEOUT, "Timed out waiting for response after: " + interval)))
+          doCallback(callback, Left(TimeoutFailure(interval)))
         case None =>
           logger.warn("Unexpected service response timeout w/ uuid: " + uuid)
       }

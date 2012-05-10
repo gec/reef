@@ -30,29 +30,29 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.proto.Envelope.ServiceResponse
 
 import org.totalgrid.reef.broker.BrokerMessage
+import org.totalgrid.reef.client.impl.ResponseCorrelator
+import org.totalgrid.reef.client.impl.ResponseCorrelator.{ TimeoutFailure, Failure }
 
 @RunWith(classOf[JUnitRunner])
 class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
 
   def getResponse(uuid: String) = ServiceResponse.newBuilder().setErrorMessage("").setId(uuid).setStatus(Envelope.Status.INTERNAL_ERROR).build()
 
-  // TODO: put back
-  /*
   test("Calls back on timeout") {
     val mock = new MockExecutor
-    val rc = new ResponseCorrelator(mock)
-    var list: List[Either[FailureResponse, ServiceResponse]] = Nil
-    rc.register(1.milliseconds, list ::= _)
+    val rc = ResponseCorrelator(mock)
+    var list: List[Either[Failure, ServiceResponse]] = Nil
+    rc.register(1, list ::= _)
     list should equal(Nil)
     mock.tick(1.milliseconds)
-    list should equal(List(Left(ResponseTimeout(1.milliseconds))))
+    list should equal(List(Left(TimeoutFailure(1.milliseconds))))
   }
 
   test("Marshall responses to executor") {
     val mock = new MockExecutor
-    val rc = new ResponseCorrelator(mock)
-    var list: List[Either[FailureResponse, ServiceResponse]] = Nil
-    val uuid = rc.register(200.milliseconds, list ::= _)
+    val rc = ResponseCorrelator(mock)
+    var list: List[Either[Failure, ServiceResponse]] = Nil
+    val uuid = rc.register(200, list ::= _)
     val response = getResponse(uuid)
     rc.onMessage(BrokerMessage(response.toByteArray, None))
     mock.runUntilIdle()
@@ -61,13 +61,13 @@ class ResponseCorrelatorTest extends FunSuite with ShouldMatchers {
 
   test("Multiple callbacks have no effect") {
     val mock = new MockExecutor
-    val rc = new ResponseCorrelator(mock)
-    var list: List[Either[FailureResponse, ServiceResponse]] = Nil
-    val uuid = rc.register(200.milliseconds, list ::= _)
+    val rc = ResponseCorrelator(mock)
+    var list: List[Either[Failure, ServiceResponse]] = Nil
+    val uuid = rc.register(200, list ::= _)
     val response = getResponse(uuid)
     4.times(rc.onMessage(BrokerMessage(response.toByteArray, None)))
     mock.runUntilIdle()
     list should equal(List(Right(response)))
-  }*/
+  }
 
 }
