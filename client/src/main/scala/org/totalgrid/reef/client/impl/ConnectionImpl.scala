@@ -31,26 +31,43 @@ import com.weiglewilczek.slf4s.Logging
 class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Long)
     extends Connection with ConnectionListening with Logging { self =>
 
-  // Startup procedure
+  // Service registry component and public interface.
+  // registry is used by ClientImpl
+  val registry = new ServiceRegistryImpl
+
   registry.addServiceTypeInformation(BuiltInDescriptors.authRequestServiceInfo)
   registry.addServiceTypeInformation(BuiltInDescriptors.batchServiceRequestServiceInfo)
-  broker.addListener(brokerListener)
+
+  // ServiceRegistration component
+  private val registration = new ServiceRegistrationImpl(broker, registry, executor)
 
   // Request components - request manager handles correlation/resources,
   // request sender encapsulates payload class lookup
-  private lazy val requestManager = RequestManager(broker, executor, timeoutMs)
+  private val requestManager = RequestManager(broker, executor, timeoutMs)
+  val requestSender = new RequestSenderImpl(requestManager, registry)
 
-  lazy val requestSender = new RequestSenderImpl(requestManager, registry)
+  // Login component encapsulates login service requests
+  private val login = new ClientLogin(requestSender, executor) {
+    def createClient(headers: RequestHeaders, strand: Strand): ClientImpl = {
+      val cl = new ClientImpl(self, strand)
+      cl.setHeaders(headers)
+      cl
+    }
+  }
 
-  // Disconnection logic, two ways to disconnect: by listening to the broker or
-  // by an explicit disconnect() call
-  private lazy val brokerListener = new BrokerConnectionListener {
+  // Callback object for broker-caused disconnections
+  private val brokerListener = new BrokerConnectionListener {
     def onDisconnect(expected: Boolean) {
       logger.info("connection disconnected: " + expected)
       handleDisconnect(expected)
     }
   }
 
+  // Register callback with broker
+  broker.addListener(brokerListener)
+
+  // Disconnection logic, two ways to disconnect: by listening to the broker or
+  // by an explicit disconnect() call
   private def handleDisconnect(expected: Boolean) {
     broker.removeListener(brokerListener)
     requestManager.close()
@@ -67,15 +84,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
     }
   }
 
-  // Login component and public interface
-  private lazy val login = new ClientLogin(requestSender, executor) {
-    def createClient(headers: RequestHeaders, strand: Strand): ClientImpl = {
-      val cl = new ClientImpl(self, strand)
-      cl.setHeaders(headers)
-      cl
-    }
-  }
-
+  // Login public interface
   def login(userSettings: UserSettings): Client = {
     login.login(userSettings.getUserName, userSettings.getUserPassword).await()
   }
@@ -93,9 +102,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
     login.createClient(headers, Strand(executor))
   }
 
-  // ServiceRegistration component and public interface
-  private lazy val registration = new ServiceRegistrationImpl(broker, registry, executor)
-
+  // ServiceRegistration public interface
   def getServiceRegistration: ServiceRegistration = registration
 
   // Subscription internal interfaces used by ClientImpl
@@ -109,10 +116,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
     sub
   }
 
-  // Service registry component and public interface.
-  // registry is used by ClientImpl
-  lazy val registry = new ServiceRegistryImpl
-
+  // Service registry public interface
   def getServiceRegistry: ServiceRegistry = registry
 
   def addServicesList(servicesList: ServicesList) {
@@ -120,7 +124,7 @@ class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Lo
   }
 
   // ConnectionInternal exposes executor
-  private lazy val internal = new ConnectionInternal {
+  private val internal = new ConnectionInternal {
     def getExecutor: Executor = executor
   }
 
