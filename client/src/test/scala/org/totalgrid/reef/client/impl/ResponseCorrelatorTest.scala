@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client.sapi.client.rest.impl
+package org.totalgrid.reef.client.impl
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -30,7 +30,6 @@ import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.proto.Envelope.ServiceResponse
 
 import org.totalgrid.reef.broker.BrokerMessage
-import org.totalgrid.reef.client.impl.ResponseCorrelator
 import org.totalgrid.reef.client.impl.ResponseCorrelator.{ TimeoutFailure, Failure }
 
 @RunWith(classOf[JUnitRunner])
