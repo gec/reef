@@ -209,4 +209,17 @@ class FuturePromiseTest extends FunSuite with ShouldMatchers {
       collated.await()
     } should equal(ex)
   }
+
+  // TODO: fix collated promise to use call all childrens onAwaits
+  ignore("Collated Promises use onAwait callback") {
+    def checkFlag = throw new ExpectationException("intentional error")
+    val future = new MockFuture[Either[ReefServiceException, java.lang.Integer]](Some(Right(3)))
+    val promise = FuturePromise.openWithAwaitNotifier(future, Some(checkFlag _))
+
+    val collated = PromiseCollators.collate(new InstantExecutor(), List(promise))
+
+    intercept[ExpectationException] {
+      collated.await
+    }
+  }
 }
