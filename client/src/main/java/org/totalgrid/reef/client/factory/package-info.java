@@ -16,19 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.client;
-
 /**
- * Interface to receive notifications when a subscription binding is created using a service
- * wrapper. This makes it much easier to create leak-proof subscription handling, all
- * subscriptions should be eventually canceled.
+ * Contains factory implementations for different patterns of connecting to reef.
  */
-public interface SubscriptionCreationListener
-{
-
-    /**
-     * Called when a subscription or "client side service" is created
-     * @param binding Newly created SubscriptionBinding
-     */
-    public void onSubscriptionCreated( SubscriptionBinding binding );
-}
+package org.totalgrid.reef.client.factory;

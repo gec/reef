@@ -23,11 +23,12 @@ import org.totalgrid.reef.client.proto.Envelope;
 
 /**
  * A RequestListener is notified of every low-level request to the server just after the request has been
- * issued to the server. The response Promise will not be ready yet and all listeners should use the Promise.listen
- * callback instead of calling await directly because this will break batchMode.
+ * issued to the server. The response will not be ready yet and all listeners should use the Promise.listen
+ * callback instead of calling await directly because this will break when we are using batching or the application
+ * is trying to issue concurrent requests.
  *
  * All calls to this class will be performed using the caller thread that made the inital request. If sharing the same
- * listener across multiple client it should be made thread safe.
+ * listener across multiple clients it should be made thread safe.
  */
 public interface RequestListener
 {

@@ -48,13 +48,15 @@ public interface Response<T>
     List<T> getList();
 
     /**
-     * @return a correctly typed and formatted exception based on the status code and errorMessage
+     * if (isSuccess) returns a correctly typed and formatted exception constructed using
+     * the status code and errorMessage string.
+     * @return error message.
      * @throws IllegalArgumentException if called when isSuccess == true
      */
     ReefServiceException getException();
 
     /**
-     * @return detailed status code for request, may be
+     * detailed status code for response
      */
     Envelope.Status getStatus();
 

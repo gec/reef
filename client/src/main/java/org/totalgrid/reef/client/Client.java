@@ -62,13 +62,11 @@ public interface Client
 
     /**
      * Add a listener that is called every time a subscription is created
-     * @param listener
      */
     void addSubscriptionCreationListener( SubscriptionCreationListener listener );
 
     /**
      * Remove a subscription creation listener
-     * @param listener
      */
     void removeSubscriptionCreationListener( SubscriptionCreationListener listener );
 
@@ -88,7 +86,7 @@ public interface Client
 
     /**
      * create a new client based on this one that has seperate state and subscription threading.
-     * @return a new client with just the authToken and connection reference copied
+     * @return a new client with just the headers and connection reference copied
      */
     Client spawn();
 
