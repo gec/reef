@@ -40,6 +40,11 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
   // name of the model file to initialize the system with
   def modelFile: String = "../../assemblies/assembly-common/filtered-resources/samples/integration/config.xml"
 
+  def propertiesFile: String = "../../org.totalgrid.reef.test.cfg"
+  def standaloneNodeFile: String = "../../standalone-node.cfg"
+
+  def waitForEndpointsOnline: Boolean = true
+
   // we use options so we can avoid starting the factories until the test is actually run
   private var factoryOption = Option.empty[ConnectionFactory]
   private var connectionOption = Option.empty[Connection]
@@ -54,11 +59,11 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
   def async = asyncClientOption.get
   def connection = connectionOption.get
 
-  private lazy val remoteTest = System.getProperty("remote-test") != null
+  protected lazy val remoteTest = System.getProperty("remote-test") != null
 
   override def beforeAll() {
     // gets default connection settings or overrides using system properties
-    val props = PropertyReader.readFromFile("../../org.totalgrid.reef.test.cfg")
+    val props = PropertyReader.readFromFile(propertiesFile)
     val userConfig = new UserSettings(props)
 
     val conn: Connection = if (remoteTest) {
@@ -68,7 +73,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
       factoryOption = Some(ReefConnectionFactory.buildFactory(config, new ReefServices))
       factoryOption.get.connect()
     } else {
-      InMemoryNode.initialize("../../standalone-node.cfg", true, None)
+      InMemoryNode.initialize(standaloneNodeFile, true, None)
       InMemoryNode.connection
     }
     conn.addServicesList(new LoaderServicesList)
@@ -85,7 +90,7 @@ abstract class ServiceClientSuite extends FunSuite with BeforeAndAfterAll with B
     // TODO: filtering is done after the result limit is applied
     client.setHeaders(client.getHeaders.setResultLimit(5000))
 
-    ModelPreparer.load(modelFile, session)
+    ModelPreparer.load(modelFile, session, waitForEndpointsOnline)
   }
 
   override def afterAll() {

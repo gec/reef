@@ -27,17 +27,17 @@ import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 object ModelPreparer {
   var lastModelFile = ""
 
-  def load(modelFile: String, client: Client) {
-    load(modelFile, client.getService(classOf[LoaderServices]), client.getService(classOf[AllScadaService]))
+  def load(modelFile: String, client: Client, waitForEndpoints: Boolean) {
+    load(modelFile, client.getService(classOf[LoaderServices]), client.getService(classOf[AllScadaService]), waitForEndpoints)
   }
 
-  private def load(modelFile: String, loaderServices: LoaderServices, scadaServices: AllScadaService) {
+  private def load(modelFile: String, loaderServices: LoaderServices, scadaServices: AllScadaService, waitForEndpoints: Boolean) {
     if (lastModelFile != modelFile) {
       lastModelFile = modelFile
       ModelDeleter.deleteEverything(loaderServices, false, true, Some(Console.out))
       LoadManager.loadFile(loaderServices, modelFile, false, false, false)
       // wait for all endpoints to be up before continuing
-      waitForEndpointsOnline(scadaServices)
+      if (waitForEndpoints) waitForEndpointsOnline(scadaServices)
     }
   }
 

@@ -127,7 +127,7 @@ public class ReefConnectionTestBase
         helpers = client.getService( AllScadaService.class );
 
         String fileName = "../../assemblies/assembly-common/filtered-resources/samples/integration/config.xml";
-        ModelPreparer.load( fileName, client );
+        ModelPreparer.load( fileName, client, true );
     }
 
     @After
