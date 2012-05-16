@@ -38,8 +38,8 @@ trait AddRemoveValidation extends Protocol with Logging {
   abstract override def addChannel(p: FEP.CommChannel, publisher: Publisher[CommChannel.State], client: Client): Unit = {
     channels.get(p.getName) match {
       case None =>
-        channels = channels + (p.getName -> Channel(p, publisher))
         super.addChannel(p, publisher, client)
+        channels = channels + (p.getName -> Channel(p, publisher))
       case Some(x) =>
         logger.info("Ignoring duplicate channel " + p)
     }
@@ -52,8 +52,9 @@ trait AddRemoveValidation extends Protocol with Logging {
       case None =>
         channels.get(channelName) match {
           case Some(p) =>
+            val cmdHandler = super.addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher, client)
             endpoints += endpoint -> Endpoint(endpoint, Some(p.config), config, endpointPublisher)
-            super.addEndpoint(endpoint, channelName, config, batchPublisher, endpointPublisher, client)
+            cmdHandler
           case None =>
             throw new IllegalArgumentException("Required channel not registered " + channelName)
         }
