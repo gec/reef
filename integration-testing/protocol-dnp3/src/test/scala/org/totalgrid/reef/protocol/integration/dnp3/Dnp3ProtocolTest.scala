@@ -29,11 +29,28 @@ import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 import org.totalgrid.reef.client.sapi.rpc.impl.util.{ EndpointConnectionStateMap, ServiceClientSuite }
 import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.loader.LoadManager
+import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol
+import org.totalgrid.reef.protocol.api.AddRemoveValidation
+import org.totalgrid.reef.protocol.dnp3.slave.Dnp3SlaveProtocol
+import org.totalgrid.reef.standalone.InMemoryNode
+import org.totalgrid.reef.frontend.ProtocolTraitToManagerShim
 
 @RunWith(classOf[JUnitRunner])
 class Dnp3ProtocolTest extends ServiceClientSuite {
 
   override val modelFile = "../../protocol-dnp3/src/test/resources/sample-model.xml"
+  override val waitForEndpointsOnline: Boolean = false
+
+  test("Add dnp3 protocol") {
+    if (!remoteTest) {
+      System.loadLibrary("dnp3java")
+      System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
+      val master = new ProtocolTraitToManagerShim(new Dnp3MasterProtocol with AddRemoveValidation)
+      val slave = new ProtocolTraitToManagerShim(new Dnp3SlaveProtocol with AddRemoveValidation)
+      InMemoryNode.system.addProtocol("dnp3-slave", slave)
+      InMemoryNode.system.addProtocol("dnp3", master)
+    }
+  }
 
   test("Cycle endpoints") {
     val (endpoints, map) = checkEndpointsOnline()

@@ -21,9 +21,7 @@ package org.totalgrid.reef.standalone
 import org.totalgrid.reef.measurementstore.squeryl.SqlMeasurementStore
 import org.totalgrid.reef.simulator.random.{ DefaultSimulator, DefaultSimulatorFactory }
 import org.totalgrid.reef.protocol.simulator.SimulatedProtocol
-import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol
-import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
-import org.totalgrid.reef.protocol.dnp3.slave.Dnp3SlaveProtocol
+import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 import org.totalgrid.reef.client.settings.util.PropertyLoading
 import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
 import org.totalgrid.reef.client.settings.AmqpSettings
@@ -51,18 +49,10 @@ object ImplLookup extends Logging {
         val simProtocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
         simProtocol.addPluginFactory(simFactory)
         simProtocol
-      case "dnp3" =>
-        System.loadLibrary("dnp3java")
-        System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
-        new Dnp3MasterProtocol with AddRemoveValidation
-      case "dnp3-slave" =>
-        System.loadLibrary("dnp3java")
-        System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
-        new Dnp3SlaveProtocol with AddRemoveValidation
       case "calculator" =>
         new CalculatorProtocol()
     }
-    val protocolNames = PropertyLoading.getString("org.totalgrid.reef.protocols", properties, "benchmark,dnp3,dnp3-slave,calculator")
+    val protocolNames = PropertyLoading.getString("org.totalgrid.reef.protocols", properties, "benchmark,calculator")
     protocolNames.split(",").toList.map { getProtocolImpl(_) }
   }
 

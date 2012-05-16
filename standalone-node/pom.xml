@@ -74,12 +74,6 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-protocol-dnp3</artifactId>
-            <version>${reef.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-memory-broker</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>

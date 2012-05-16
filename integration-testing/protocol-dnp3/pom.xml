@@ -70,6 +70,12 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-protocol-dnp3</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-integration-testing-tools</artifactId>
             <version>${reef.version}</version>
             <scope>test</scope>

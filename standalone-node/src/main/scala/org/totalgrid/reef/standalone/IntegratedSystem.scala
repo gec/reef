@@ -36,6 +36,7 @@ import org.totalgrid.reef.frontend.{ ProtocolTraitToManagerShim, FepConnectedApp
 import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
 import org.totalgrid.reef.client.Connection
+import org.totalgrid.reef.protocol.api.ProtocolManager
 
 class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) extends Logging {
 
@@ -100,6 +101,17 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
   def loadModel(modelFile: String) {
     val client = connection().login(userSettings)
     LoadManager.loadFile(client.getService(classOf[LoaderServices]), modelFile, false, false, false, 25)
+  }
+
+  def addProtocol(protocolName: String, protocol: ProtocolManager) {
+
+    val firstNodeSettings = nodeSettings.head
+
+    val appManagerSettings = new ApplicationManagerSettings(userSettings, firstNodeSettings)
+    val applicationManager = new SimpleConnectedApplicationManager(exe, InMemoryNode.system.manager, appManagerSettings)
+    applicationManager.start()
+
+    applicationManager.addConnectedApplication(new FepConnectedApplication(protocolName, protocol, userSettings))
   }
 
   def start() = {
