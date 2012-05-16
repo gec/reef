@@ -84,16 +84,19 @@ class LoginProcessTree(connection: Connection,
 
     def setup(p: ProcessManager) {
 
-      appConfig = Some(services.registerApplication(managerSettings.nodeSettings, instanceName, appSettings.capabilites.toList).await)
+      val newAppConfig = services.registerApplication(managerSettings.nodeSettings, instanceName, appSettings.capabilites.toList).await
 
       // send a single heartbeat just to verify we are correctly registered
-      services.sendHeartbeat(appConfig.get).await
+      services.sendHeartbeat(newAppConfig).await
+
+      // if heartbeat succeed we should try setting application offline on way out
+      appConfig = Some(newAppConfig)
 
       // we need to give the application a new client
       val appClient = client.spawn()
-      connectedApp.onApplicationStartup(appConfig.get, connection, appClient)
+      connectedApp.onApplicationStartup(newAppConfig, connection, appClient)
 
-      p.addChildProcess(this, new HeartbeatTask(services, appConfig.get))
+      p.addChildProcess(this, new HeartbeatTask(services, newAppConfig))
     }
 
     def cleanup(p: ProcessManager) {
