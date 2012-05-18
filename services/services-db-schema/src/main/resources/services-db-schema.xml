@@ -804,7 +804,7 @@
     <changeSet author="incremental" context="original" id="1330050395895-2">
         <createSequence schemaName="public" sequenceName="s_CalculationConfig_id"/>
     </changeSet>
-    <!-- 0.4.6 Release -->
+    <!-- Everything before this was release in 0.4.6 -->
     <changeSet author="incremental" context="original" id="1331138724917-1">
         <addColumn tableName="AuthToken">
             <column name="clientVersion" type="VARCHAR(128)" defaultValue="unknown">
@@ -815,6 +815,7 @@
     <changeSet author="incremental" context="original" id="1331673009469-1">
         <!-- remove the old permission sets because they are no longer accurate -->
         <delete tableName="PermissionSet" />
+        <delete tableName="AgentPermissionSetJoin" />
         <addColumn tableName="PermissionSet">
             <column name="protoData" type="bytea">
                 <constraints nullable="false"/>
@@ -834,33 +835,46 @@
         <dropTable tableName="PermissionSetJoin"/>
     </changeSet>
     <changeSet author="incremental" context="original" id="1331837983992-1">
+        <!-- When we upgrade the application table we need to get rid of all apps and all links to apps -->
+        <!-- This includes the endpoint/frontend assignments -->
+        <delete tableName="ApplicationInstance" />
+        <delete tableName="HeartbeatStatus" />
+        <update tableName="FrontEndAssignment">
+            <column name="applicationId" value="null" />
+        </update>
+        <update tableName="MeasProcAssignment" >
+            <column name="applicationId" value="null" />
+        </update>
         <addColumn tableName="ApplicationInstance">
-            <column name="agentId" type="int8" defaultValue="0">
+            <column name="agentId" type="int8">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
-    <!-- 0.4.7 Release -->
     <changeSet author="incremental" context="original" id="1331837983992-2">
         <dropColumn columnName="userName" tableName="ApplicationInstance"/>
     </changeSet>
     <changeSet author="incremental" context="original" id="1332380500619-1">
+        <!-- We delete all of the command locks and user command history because we are now using a foreign -->
+        <!-- key to the lock table in each request and "soft deleting" locks. -->
+        <delete tableName="CommandLockModel" />
         <addColumn tableName="CommandLockModel">
-            <column name="agentId" type="int8" defaultValue="0">
+            <column name="agentId" type="int8">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
     <changeSet author="incremental" context="original" id="1332380500619-2">
         <addColumn tableName="CommandLockModel">
-            <column name="deleted" type="bool" defaultValue="false">
+            <column name="deleted" type="bool">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
     <changeSet author="incremental" context="original" id="1332380500619-3">
+        <delete tableName="UserCommandModel" />
         <addColumn tableName="UserCommandModel">
-            <column name="lockId" type="int8" defaultValue="0">
+            <column name="lockId" type="int8">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
@@ -906,11 +920,12 @@
     </changeSet>
     <changeSet author="incremental" context="original" id="1333636303890-1">
         <addColumn tableName="ApplicationInstance">
-            <column name="version" type="VARCHAR(128)" value="unknown">
+            <column name="version" type="VARCHAR(128)" defaultValue="unknown">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
+    <!-- Everything before this was release in 0.4.7 -->
     <changeSet author="incremental" context="original" id="1334669398697-1">
         <addColumn tableName="CommunicationEndpoint">
             <column name="autoAssigned" type="bool" defaultValue="true">
@@ -925,5 +940,11 @@
             </column>
         </addColumn>
     </changeSet>
-    <!-- 0.4.8 Release -->
+    <!-- Everything before this was release in 0.4.8 -->
+
+    <!-- These changeSets (once published) should never be changed! Migrations should be tested with live data -->
+    <!-- between multiple versions of the system. Remember to add a defaultValue if adding a column that can have -->
+    <!-- a sensible value. If not you must delete those entries and update/delete all linked objects to keep a -->
+    <!-- consistent database. -->
+
 </databaseChangeLog>
