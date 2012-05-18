@@ -22,7 +22,6 @@ import org.totalgrid.reef.client.registration.Service
 import org.totalgrid.reef.client.types.TypeDescriptor
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.operations._
-import impl.DefaultServiceOperations.{ DefaultSubscriptionResult, CancelingListener }
 import java.util.concurrent.RejectedExecutionException
 import org.totalgrid.reef.client.exception.{ ServiceIOException, InternalClientError, ReefServiceException }
 import org.totalgrid.reef.client._
@@ -30,12 +29,25 @@ import scl.ScalaPromise._
 
 object DefaultServiceOperations {
 
+  /**
+   * since the error message is pass by value (and only generated on error) its possible that
+   * it will produce an exception when accessed. We catch this so we don't sheild the real error.
+   */
+  private def renderErrorMsg(errorMsg: => String): String = {
+    try {
+      val errorString = errorMsg
+      errorString.replaceAll("\n", " ").replaceAll("\r", "") + " - "
+    } catch {
+      case e: Exception => "Error rendering extra errorMsg - "
+    }
+  }
+
   class CancelingListener[A](cancel: () => Unit) extends PromiseListener[A] {
     def onComplete(promise: Promise[A]) {
       try {
         promise.await() // TODO: better way?
       } catch {
-        case x => cancel()
+        case x: Exception => cancel()
       }
     }
   }
@@ -48,7 +60,7 @@ object DefaultServiceOperations {
   def safeOp[A](err: => String, exe: Executor)(op: => Promise[A]): Promise[A] = {
 
     try {
-      op.mapError { rse => rse.addExtraInformation(err); rse }
+      op.mapError { rse => rse.addExtraInformation(renderErrorMsg(err)); rse }
     } catch {
       case npe: NullPointerException =>
         FuturePromise.error[A](new InternalClientError("Null pointer error while making request. Check that all parameters are not null.", npe), exe)
