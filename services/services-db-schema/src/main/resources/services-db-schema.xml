@@ -804,14 +804,17 @@
     <changeSet author="incremental" context="original" id="1330050395895-2">
         <createSequence schemaName="public" sequenceName="s_CalculationConfig_id"/>
     </changeSet>
+    <!-- 0.4.6 Release -->
     <changeSet author="incremental" context="original" id="1331138724917-1">
         <addColumn tableName="AuthToken">
-            <column name="clientVersion" type="VARCHAR(128)">
+            <column name="clientVersion" type="VARCHAR(128)" defaultValue="unknown">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
     <changeSet author="incremental" context="original" id="1331673009469-1">
+        <!-- remove the old permission sets because they are no longer accurate -->
+        <delete tableName="PermissionSet" />
         <addColumn tableName="PermissionSet">
             <column name="protoData" type="bytea">
                 <constraints nullable="false"/>
@@ -832,31 +835,32 @@
     </changeSet>
     <changeSet author="incremental" context="original" id="1331837983992-1">
         <addColumn tableName="ApplicationInstance">
-            <column name="agentId" type="int8">
+            <column name="agentId" type="int8" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
+    <!-- 0.4.7 Release -->
     <changeSet author="incremental" context="original" id="1331837983992-2">
         <dropColumn columnName="userName" tableName="ApplicationInstance"/>
     </changeSet>
     <changeSet author="incremental" context="original" id="1332380500619-1">
         <addColumn tableName="CommandLockModel">
-            <column name="agentId" type="int8">
+            <column name="agentId" type="int8" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
     <changeSet author="incremental" context="original" id="1332380500619-2">
         <addColumn tableName="CommandLockModel">
-            <column name="deleted" type="bool">
+            <column name="deleted" type="bool" defaultValue="false">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
     <changeSet author="incremental" context="original" id="1332380500619-3">
         <addColumn tableName="UserCommandModel">
-            <column name="lockId" type="int8">
+            <column name="lockId" type="int8" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
@@ -869,14 +873,14 @@
     </changeSet>
     <changeSet author="incremental" context="original" id="1332519044036-1">
         <addColumn tableName="AuthToken">
-            <column name="issueTime" type="int8">
+            <column name="issueTime" type="int8" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
     <changeSet author="incremental" context="original" id="1332519044036-2">
         <addColumn tableName="AuthToken">
-            <column name="revoked" type="bool">
+            <column name="revoked" type="bool" defaultValue="false">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
@@ -921,4 +925,5 @@
             </column>
         </addColumn>
     </changeSet>
+    <!-- 0.4.8 Release -->
 </databaseChangeLog>
