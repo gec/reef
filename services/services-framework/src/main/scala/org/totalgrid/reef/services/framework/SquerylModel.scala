@@ -112,8 +112,10 @@ trait BasicSquerylModel[SqlKeyType, SqlType <: ModelWithIdBase[SqlKeyType]]
 
     val ids = existing.map(_.id)
 
+    // apparently these selects can return differently ordered lists
     // Select for update
     val objList = table.where(c => c.getIn(ids)).forUpdate.toList
+    // we need two copies, one for modifying and one we old onto to check for changes
     val list = table.where(c => c.getIn(ids)).toList
 
     // Fail if we have nothing
@@ -122,8 +124,14 @@ trait BasicSquerylModel[SqlKeyType, SqlType <: ModelWithIdBase[SqlKeyType]]
     // Precondition on all objects
     if (objList.exists(!acquireCondition(_))) throw new AcquireConditionNotMetException("Not all objects have correct condition.")
 
+    // reorder the results back into the passed in order
+    def originalOrder(l: List[SqlType]) = {
+      val lookup = l.map { e => e.id -> e }.toMap
+      ids.map(lookup(_))
+    }
+
     // Get results, do any work inside the lock
-    val results = fun(objList)
+    val results = fun(originalOrder(objList))
 
     if (results.length != objList.length) throw new InvalidUpdateException("Updated entries must be 1 to 1 map from input list")
 
@@ -131,11 +139,11 @@ trait BasicSquerylModel[SqlKeyType, SqlType <: ModelWithIdBase[SqlKeyType]]
     if (results.exists(acquireCondition(_))) throw new AcquireConditionStillValidException("Not all entries have updated the necessary fields")
 
     // Do the update, get the list of actual rows (after model hooks)
-    val retList = results.zip(list).map {
+    val retList = results.zip(originalOrder(list)).map {
       case (entry, previous) =>
         // Assert this is the same table row
         if (entry.id != previous.id)
-          throw new InvalidUpdateException("Updated entries must be 1 to 1 map from input list")
+          throw new InvalidUpdateException("Updated entries must be in same order as input list")
 
         // Perform the update
         val (sql, updated) = update(context, entry, previous)
