@@ -526,6 +526,7 @@ object OptionalProtos {
   class OptLinearTransform(real: Option[LinearTransform]) extends OptionalStruct(real) {
     val scale = optionally(_.hasScale, _.getScale)
     val offset = optionally(_.hasOffset, _.getOffset)
+    val forceToDouble = optionally(_.hasForceToDouble, _.getForceToDouble)
   }
   implicit def proto2OptEventGeneration(a: EventGeneration): OptEventGeneration = new OptEventGeneration(Some(a))
   class OptEventGeneration(real: Option[EventGeneration]) extends OptionalStruct(real) {

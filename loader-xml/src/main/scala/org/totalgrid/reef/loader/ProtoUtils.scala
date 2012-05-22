@@ -401,6 +401,7 @@ object ProtoUtils {
   def toActionLinearTransform(name: String, scale: Scale): Action.Builder = {
 
     val ltProto = LinearTransform.newBuilder
+    ltProto.setForceToDouble(scale.isForceToDouble)
 
     if (scale.isSetRawLow && scale.isSetRawHigh && scale.isSetEngLow && scale.isSetEngHigh) {
       val rawRange = scale.getRawHigh - scale.getRawLow

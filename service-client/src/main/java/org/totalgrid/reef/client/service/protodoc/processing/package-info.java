@@ -64,6 +64,7 @@
  * message LinearTransform {
  *   optional double scale = 2;
  *   optional double offset = 3;
+ *   optional bool   forceToDouble = 4 [default = false];
  * }
  * 
  * message EventGeneration {

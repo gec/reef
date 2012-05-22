@@ -62,7 +62,7 @@ trait ActionFactory { self: ProcessingResources =>
       new SuppressAction(name, disabled, typ)
     } else {
       val eval = if (proto.hasLinearTransform) {
-        new LinearTransform(proto.getLinearTransform.getScale, proto.getLinearTransform.getOffset)
+        new LinearTransform(proto.getLinearTransform.getScale, proto.getLinearTransform.getOffset, proto.getLinearTransform.getForceToDouble)
       } else if (proto.hasQualityAnnotation) {
         new AnnotateQuality(proto.getQualityAnnotation)
       } else if (proto.hasStripValue && proto.getStripValue) {
@@ -122,13 +122,17 @@ object Actions {
       Measurement.newBuilder(m).setUnit(unit).build
     }
   }
-  class LinearTransform(scale: Double, offset: Double) extends Action.Evaluation {
+  class LinearTransform(scale: Double, offset: Double, forceToDouble: Boolean) extends Action.Evaluation {
     def apply(m: Measurement): Measurement = {
       m.getType match {
         case Measurement.Type.DOUBLE =>
           if (m.hasDoubleVal) Measurement.newBuilder(m).setDoubleVal(m.getDoubleVal * scale + offset).build else m
         case Measurement.Type.INT =>
-          if (m.hasIntVal) Measurement.newBuilder(m).setIntVal((m.getIntVal * scale + offset).toLong).build else m
+          if (m.hasIntVal) {
+            val scaledValue = m.getIntVal * scale + offset
+            if (!forceToDouble) Measurement.newBuilder(m).setIntVal(scaledValue.toLong).build
+            else Measurement.newBuilder(m).setDoubleVal(scaledValue).setType(Measurement.Type.DOUBLE).build
+          } else m
         case _ => m
       }
     }

@@ -394,6 +394,7 @@
             <xs:attribute name="engUnit" type="xs:string"/>
             <xs:attribute name="slope" type="xs:double"/>
             <xs:attribute name="offset" type="xs:double"/>
+            <xs:attribute name="forceToDouble" type="xs:boolean" default="false"/>
         </xs:complexType>
     </xs:element>
     <xs:complexType name="IndexType" abstract="true">
