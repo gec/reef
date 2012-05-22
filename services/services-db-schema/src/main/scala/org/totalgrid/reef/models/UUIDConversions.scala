@@ -28,6 +28,10 @@ object UUIDConversions {
     optUUID.map { ru => UUID.fromString(ru.getValue) }
   }
 
+  implicit def convertReefUUIDToListUUID(optUUID: List[ReefUUID]) = {
+    optUUID.map { ru => UUID.fromString(ru.getValue) }
+  }
+
   implicit def convertOptReefUUIDToUUID(optUUID: OptModelReefUUID) = {
     optUUID.value.map { ru => UUID.fromString(ru) }
   }

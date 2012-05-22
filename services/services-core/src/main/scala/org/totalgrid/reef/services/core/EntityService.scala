@@ -96,6 +96,9 @@ class EntityServiceModel
   def findEntitiesByNames(context: RequestContext, names: List[String], typ: String = "Entity"): List[Entity] = {
     EntityQuery.findEntities(names, List(typ)).toList
   }
+  def findEntitiesByUuids(context: RequestContext, uuids: List[UUID]): List[Entity] = {
+    EntityQuery.findEntitiesByUuids(uuids).toList
+  }
   def findEntitiesByType(context: RequestContext, typ: String): List[Entity] = {
     EntityQuery.findEntitiesByType(List(typ)).toList
   }

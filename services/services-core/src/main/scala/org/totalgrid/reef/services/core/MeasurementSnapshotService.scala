@@ -28,7 +28,7 @@ import org.totalgrid.reef.measurementstore.RTDatabase
 import org.totalgrid.reef.services.framework.SimpleServiceBehaviors.SimpleReadAndSubscribe
 import org.totalgrid.reef.services.framework.{ RequestContext, ServiceEntryPoint }
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.models.{ Entity, EntityBasedModel }
+import org.totalgrid.reef.models.{ UUIDConversions, Entity, EntityBasedModel }
 
 class MeasurementSnapshotService(cm: RTDatabase)
     extends ServiceEntryPoint[MeasurementSnapshot]
@@ -70,9 +70,23 @@ class MeasurementSnapshotService(cm: RTDatabase)
     }
 
     if (req.getPointCount > 0) {
-      val points = req.getPointList.toList.flatMap { PointServiceConversion.findRecords(context, _) }
-      EntityBasedModel.preloadEntities(points)
-      points.map { _.entity.value }
+      val requests = req.getPointList.toList
+
+      // split up the point objects to remove all of the unique searches first
+      val (includesUuid, others) = requests.partition(e => e.hasUuid && e.getUuid.getValue != "*")
+      val (includesName, searches) = others.partition(e => e.hasName && e.getName != "*")
+
+      val pointEntities = {
+        val points = searches.flatMap { PointServiceConversion.findRecords(context, _) }
+        EntityBasedModel.preloadEntities(points)
+        points.map { _.entity.value }
+      }
+
+      val nameEntities = entityModel.findEntitiesByNames(context, includesName.map { _.getName }, "Point")
+      import UUIDConversions._
+      val uuidEntities = entityModel.findEntitiesByUuids(context, includesUuid.map { _.getUuid })
+
+      nameEntities ::: uuidEntities ::: pointEntities
     } else {
       val measList = req.getPointNamesList().toList.distinct
 

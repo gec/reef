@@ -147,6 +147,11 @@ object EntityQuery extends Logging {
         typ.entityId === ent.id and (typ.entType in types))
         select (ent)).distinct
   }
+  def findEntitiesByUuids(uuids: List[UUID]) = {
+    from(entities)(ent =>
+      where(ent.id in uuids)
+        select (ent)).distinct
+  }
 
   def findEntityIds(names: List[String], types: List[String]) = {
     from(entities, entityTypes)((ent, typ) =>
