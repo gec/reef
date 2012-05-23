@@ -36,7 +36,7 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
     val applicablePermissions = permissions.filter(_.applicable(service, action))
 
     val results = if (applicablePermissions.isEmpty) {
-      val defaultRule = unmatchedServiceAction(service, action)
+      val defaultRule = unmatchedServiceAction(service, action, permissions.size)
       payloads.map { x => Denied[A](x, defaultRule) }
     } else {
       if (applicablePermissions.find(_.resourceDependent).isEmpty) {
@@ -60,8 +60,8 @@ class AuthzFiltering(resourceFilter: ResourceSpecificFiltering) extends AuthzFil
 
   def visibilityMap(permissions: => List[Permission]) = new VisibilityMapImpl(permissions)
 
-  private def unmatchedServiceAction(service: String, action: String) = {
-    Permission.denyAllPermission("No permission matched " + service + ":" + action + ". Assuming deny *")
+  private def unmatchedServiceAction(service: String, action: String, length: Long) = {
+    Permission.denyAllPermission("No permission (" + length + ") matched " + service + ":" + action + ". Assuming deny *")
   }
 
 }

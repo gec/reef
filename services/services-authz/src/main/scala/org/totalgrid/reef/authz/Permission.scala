@@ -58,9 +58,9 @@ class Permission(val allow: Boolean, services: List[String], actions: List[Strin
 
   def this(allow: Boolean, service: String, action: String) = this(allow, List(service), List(action), new WildcardMatcher)
 
-  def applicable(s: String, a: String) = (services == List("*") || services.find(_ == s).isDefined) && (actions == List("*") || actions.find(_ == a).isDefined)
+  def applicable(s: String, a: String) = services.find(e => e == "*" || e == s).isDefined && actions.find(e => e == "*" || e == a).isDefined
 
-  def isRead() = actions == List("*") || actions.find(_ == "read").isDefined
+  def isRead() = actions.find(e => e == "*" || e == "read").isDefined
 
   def resourceDependent = matcher.resourceDependent
 
