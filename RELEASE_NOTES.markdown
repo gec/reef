@@ -9,13 +9,14 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
-Version 0.4.8 - May 9, 2012
+Version 0.4.8 - June 1, 2012
 =============
 
 This was primarily a refactoring and cleanup release. Prior to this version there were two seperate Client interfaces,
 one for scala, one for java. We have merged all of the functionality into the java client and removed the scala client.
 Java developers and applications now have full acces to features that before were only available to scala applications.
-There were also some important performance enhancements on the service implementation side.
+There were also some important performance enhancements on the service implementation side. Make sure to read
+DB_MIGRATIONS.markdown for important database migration notes.
 
 ### Major Features:
 
@@ -29,6 +30,7 @@ There were also some important performance enhancements on the service implement
   nodes need to have "bind" level access to the broker.
 * Endpoints can be "externally-managed" by ProtocolAdapters, (previous behavior of "autoAssign" is still default)
 * ProtocolAdapters change endpoint state to ERROR if there is an issue during configuration of the protocol
+* Added forceToDouble parameter to comms:scale xml element to convert ints to doubles
 
 ### Reef Internals:
 
