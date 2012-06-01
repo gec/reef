@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-integration-testing</artifactId>
-        <version>0.4.8-SNAPSHOT</version>
+        <version>0.4.8</version>
         <relativePath>../</relativePath>
     </parent>
 
