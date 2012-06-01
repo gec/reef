@@ -27,6 +27,7 @@ import presentation.TriggerView
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.commons.{ ModelDeleter, LoaderServicesImpl }
 import org.totalgrid.reef.loader.LoadManager
+import org.totalgrid.reef.client.service.ClientOperations
 
 @Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
 class LoadConfigCommand extends ReefCommandSupport {
@@ -104,20 +105,16 @@ class TriggerCommand extends ReefCommandSupport {
   var pointName: String = null
 
   def doCommand() = {
-    // TODO: re-enable trigger view commands
-    //    Option(pointName) match {
-    //      case Some(entId) =>
-    //        val point = services.getPointByName(pointName)
-    //        val trigger = interpretAs("Trigger set not found.") {
-    //          reefSession.get(TriggerSet.newBuilder.setPoint(point).build).await().expectOne
-    //        }
-    //        TriggerView.inspectTrigger(trigger)
-    //      case None =>
-    //        val triggers = interpretAs("No trigger sets found.") {
-    //          reefSession.get(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName("*")).build).await().expectMany()
-    //        }
-    //        TriggerView.printTable(triggers)
-    //    }
+    val ops = reefClient.getService(classOf[ClientOperations])
+    Option(pointName) match {
+      case Some(entId) =>
+        val point = services.getPointByName(pointName)
+        val trigger = ops.getOne(TriggerSet.newBuilder.setPoint(point).build)
+        TriggerView.inspectTrigger(trigger)
+      case None =>
+        val triggers = ops.getMany(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName("*")).build)
+        TriggerView.printTable(triggers.toList)
+    }
   }
 
 }
