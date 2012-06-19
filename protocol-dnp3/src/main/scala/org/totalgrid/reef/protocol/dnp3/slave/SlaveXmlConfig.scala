@@ -95,6 +95,7 @@ object SlaveXmlConfig {
 
     cfg.setMEventMaxConfig(configureEvents(xml))
 
+    cfg.setMDisableUnsol(!xml.getUnsolDefaults.isEnable)
     cfg.setMUnsolMask(new ClassMask(xml.getUnsolDefaults.isDoClass1, xml.getUnsolDefaults.isDoClass2, xml.getUnsolDefaults.isDoClass3))
     cfg.setMUnsolPackDelay(xml.getUnsolDefaults.getPackDelayMS)
     cfg.setMUnsolRetryDelay(xml.getUnsolDefaults.getRetryMS)
