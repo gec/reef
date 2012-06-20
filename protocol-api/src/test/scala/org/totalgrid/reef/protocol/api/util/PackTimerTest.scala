@@ -16,7 +16,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.totalgrid.reef.protocol.dnp3.slave
+package org.totalgrid.reef.protocol.api.util
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -24,6 +24,8 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s._
+import scala.util.Random
+import net.agileautomata.commons.testing.SynchronizedList
 
 @RunWith(classOf[JUnitRunner])
 class PackTimerTest extends FunSuite with ShouldMatchers {
@@ -36,7 +38,7 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
     val pubFunc = (l: List[TestObject]) => pubbed ::= l
     val exe = new MockExecutor
 
-    val packTimer = new PackTimer(10, 10, pubFunc, exe)
+    val packTimer = new PackTimer(10, 10, pubFunc, Strand(exe))
     exe.isIdle should equal(true)
 
     packTimer.addEntry(TestObject(0))
@@ -56,7 +58,7 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
     val pubFunc = (l: List[TestObject]) => pubbed ::= l
     val exe = new MockExecutor
 
-    val packTimer = new PackTimer(10, 10, pubFunc, exe)
+    val packTimer = new PackTimer(10, 10, pubFunc, Strand(exe))
     exe.numQueuedTimers should equal(0)
 
     (0 to 8).foreach { i =>
@@ -71,5 +73,29 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
     pubbed.head should equal((0 to 9).map { TestObject(_) }.toList)
     exe.numQueuedTimers should equal(0)
 
+  }
+
+  test("Threading stress test") {
+
+    val exe = Executors.newResizingThreadPool(7.seconds)
+
+    val random = new Random
+
+    var publishEvents = 0
+    val result = new SynchronizedList[Int]
+    val pub = (list: List[Int]) => {
+      Thread.sleep(random.nextInt(100))
+      publishEvents += 1
+      list.foreach { result.append(_) }
+    }
+    val packer = new PackTimer[Int](10, 10, pub, Strand(exe))
+
+    val original = (0 to 1000).toList
+
+    val testExe = Strand(exe)
+    original.foreach { o => testExe.execute(packer.addEntry(o)) }
+
+    result shouldBecome (original) within 10000
+    publishEvents should (be > 10)
   }
 }

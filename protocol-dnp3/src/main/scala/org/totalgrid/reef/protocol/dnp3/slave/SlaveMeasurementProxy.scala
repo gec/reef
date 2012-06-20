@@ -28,8 +28,9 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 import org.totalgrid.reef.app.{ ServiceContext, SubscriptionDataHandler }
-import net.agileautomata.executor4s.{ Executor, Cancelable }
+import net.agileautomata.executor4s.{ Strand, Executor, Cancelable }
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.protocol.api.util.PackTimer
 
 class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dataObserver: IDataObserver, exe: Executor)
     extends SubscriptionDataHandler[Measurement] with Logging {
@@ -37,7 +38,7 @@ class SlaveMeasurementProxy(service: AllScadaService, mapping: IndexMapping, dat
   private def measList = mapping.getMeasmapList.toList
 
   private val publisher = new DataObserverPublisher(mapping, dataObserver)
-  private val packTimer = new PackTimer(100, 400, publisher.publishMeasurements _, exe)
+  private val packTimer = new PackTimer(100, 400, publisher.publishMeasurements _, Strand(exe))
   private val scaler = new MeasurementOutputScaler(measList)
 
   private var subscription = Option.empty[Cancelable]
