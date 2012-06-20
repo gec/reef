@@ -75,27 +75,49 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
 
   }
 
-  test("Threading stress test") {
+  test("Threading stress test (single producer)") {
 
     val exe = Executors.newResizingThreadPool(7.seconds)
 
-    val random = new Random
-
-    var publishEvents = 0
-    val result = new SynchronizedList[Int]
-    val pub = (list: List[Int]) => {
-      Thread.sleep(random.nextInt(100))
-      publishEvents += 1
-      list.foreach { result.append(_) }
-    }
-    val packer = new PackTimer[Int](10, 10, pub, Strand(exe))
+    val (packTimer, result, batchSizes) = fixture(exe)
 
     val original = (0 to 1000).toList
 
+    // publish all of the entries using the same strand (maintains order)
     val testExe = Strand(exe)
-    original.foreach { o => testExe.execute(packer.addEntry(o)) }
+    original.foreach { o => testExe.execute(packTimer.addEntry(o)) }
 
     result shouldBecome (original) within 10000
-    publishEvents should (be > 10)
+    batchSizes.get.sum should equal(original.size)
+    batchSizes.get should not contain (0)
+  }
+
+  test("Threading stress test (multiple producers)") {
+
+    val exe = Executors.newResizingThreadPool(7.seconds)
+
+    val (packTimer, result, batchSizes) = fixture(exe)
+
+    val original = (0 to 1000).toList
+
+    // publish entries using thread pool (breaks ordering)
+    original.foreach { o => exe.execute(packTimer.addEntry(o)) }
+
+    result.value.awaitUntil(10000)(l => l.size == original.size)
+    batchSizes.get.sum should equal(original.size)
+    batchSizes.get should not contain (0)
+  }
+
+  private def fixture(exe: ExecutorService) = {
+
+    val random = new Random
+    val result = new SynchronizedList[Int]
+    val batchSizes = new SynchronizedList[Int]
+    val pub = (list: List[Int]) => {
+      batchSizes.append(list.size)
+      list.foreach { result.append(_) }
+    }
+    (new PackTimer[Int](10, 10, pub, Strand(exe)), result, batchSizes)
+
   }
 }
