@@ -75,6 +75,21 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
 
   }
 
+  test("Instant publish with large entry") {
+
+    var pubbed = List.empty[List[TestObject]]
+    val pubFunc = (l: List[TestObject]) => pubbed ::= l
+    val exe = new MockExecutor
+
+    val packTimer = new PackTimer(10, 10, pubFunc, Strand(exe))
+    exe.numQueuedTimers should equal(0)
+
+    packTimer.addEntries((0 to 20).map { TestObject(_) })
+    exe.numQueuedTimers should equal(1)
+    exe.tick(0.milliseconds)
+    exe.numQueuedTimers should equal(0)
+  }
+
   test("Threading stress test (single producer)") {
 
     val exe = Executors.newResizingThreadPool(7.seconds)

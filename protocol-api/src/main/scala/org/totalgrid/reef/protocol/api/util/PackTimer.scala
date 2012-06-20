@@ -63,7 +63,7 @@ class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, 
     val isScheduled = !queuedEvent.getOption.isEmpty
     if (isScheduled && publishingFullBatch) {
       // publishing as fast as we can already
-    } else if (isScheduled && !publishingFullBatch && size >= maxEntries) {
+    } else if (size >= maxEntries && (!isScheduled || !publishingFullBatch)) {
       reschedulePublish(0)
     } else if (!isScheduled) {
       reschedulePublish(maxTimeMS)
