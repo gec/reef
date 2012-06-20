@@ -47,7 +47,7 @@ trait EventConfigServiceImpl extends UsesServiceOperations with EventConfigServi
   }
 
   override def setEventConfigAsAlarm(eventType: String, severity: Int, resourceString: String, audibleAlarm: Boolean) = {
-    setEventConfig(eventType, severity, EventConfig.Designation.ALARM, true, resourceString)
+    setEventConfig(eventType, severity, EventConfig.Designation.ALARM, audibleAlarm, resourceString)
   }
 
   override def setEventConfig(eventType: String, severity: Int, designation: EventConfig.Designation, audibleAlarm: Boolean, resourceString: String) = {
