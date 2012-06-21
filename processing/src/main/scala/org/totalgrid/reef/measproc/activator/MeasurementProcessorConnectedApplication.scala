@@ -47,6 +47,10 @@ class MeasurementProcessorConnectedApplication(measStore: MeasurementStore) exte
   }
 
   private def makeMeasProc(client: Client, appConfig: ApplicationConfig, eventPub: EventPublisher) = {
+
+    // make sure we can recieve all of our assigned nodes
+    client.setHeaders(client.getHeaders.setResultLimit(10000))
+
     def perStreamService = {
       new MeasurementProcessorServicesImpl(client.spawn(), eventPub)
     }

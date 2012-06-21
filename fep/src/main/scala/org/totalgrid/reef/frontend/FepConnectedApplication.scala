@@ -64,6 +64,8 @@ class FepConnectedApplication(protocolName: String, manager: ProtocolManager, pr
 
   private def makeFepNode(client: Client, appConfig: ApplicationConfig) = {
 
+    client.setHeaders(client.getHeaders.setResultLimit(10000))
+
     val services = client.getService(classOf[FrontEndProviderServices])
 
     def endpointClient = { client.spawn() }
