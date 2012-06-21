@@ -25,7 +25,7 @@ import org.scalatest.matchers.ShouldMatchers
 import net.agileautomata.executor4s.testing.MockExecutor
 import net.agileautomata.executor4s._
 import scala.util.Random
-import net.agileautomata.commons.testing.SynchronizedList
+import net.agileautomata.commons.testing.{ SynchronizedVariable, SynchronizedList }
 
 @RunWith(classOf[JUnitRunner])
 class PackTimerTest extends FunSuite with ShouldMatchers {
@@ -42,9 +42,11 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
     exe.isIdle should equal(true)
 
     packTimer.addEntry(TestObject(0))
+    exe.runUntilIdle()
     exe.numQueuedTimers should equal(1)
 
     packTimer.addEntry(TestObject(1))
+    exe.runUntilIdle()
     exe.numQueuedTimers should equal(1)
     exe.tick(100.milliseconds)
     exe.numQueuedTimers should equal(0)
@@ -63,6 +65,7 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
 
     (0 to 8).foreach { i =>
       packTimer.addEntry(TestObject(i))
+      exe.runUntilIdle()
       exe.numQueuedTimers should equal(1)
     }
     packTimer.addEntry(TestObject(9))
@@ -85,6 +88,7 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
     exe.numQueuedTimers should equal(0)
 
     packTimer.addEntries((0 to 20).map { TestObject(_) })
+    exe.runUntilIdle()
     exe.numQueuedTimers should equal(1)
     exe.tick(0.milliseconds)
     exe.numQueuedTimers should equal(0)
@@ -121,6 +125,28 @@ class PackTimerTest extends FunSuite with ShouldMatchers {
     result.value.awaitUntil(10000)(l => l.size == original.size)
     batchSizes.get.sum should equal(original.size)
     batchSizes.get should not contain (0)
+  }
+
+  test("Cancel blocks until publishing is done") {
+
+    val exe = Executors.newResizingThreadPool(7.seconds)
+
+    var done = false
+    val started = new SynchronizedVariable(false)
+    val pub = (list: List[Int]) => {
+      started.set(true)
+      Thread.sleep(100)
+      done = true
+    }
+    val packTimer = new PackTimer[Int](10, 0, pub, Strand(exe))
+
+    packTimer.addEntry(0)
+    started.awaitUntil(100)(_ == true)
+
+    done should equal(false)
+    packTimer.cancel()
+
+    done should equal(true)
   }
 
   private def fixture(exe: ExecutorService) = {

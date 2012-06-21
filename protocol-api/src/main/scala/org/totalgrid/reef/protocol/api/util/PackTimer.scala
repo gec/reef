@@ -43,48 +43,66 @@ class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, 
   private val batch = ArrayBuffer.empty[A]
   private val queuedEvent = new AtomicReference[Cancelable](None)
   private var publishingFullBatch = false
+  private var canceled = false
 
   def addEntry(entry: A) {
     val size = batch.synchronized {
       batch.append(entry)
       batch.size
     }
-    updateTimer(size)
+    updateTimer()
   }
   def addEntries(entries: Seq[A]) {
     val size = batch.synchronized {
       entries.foreach { batch.append(_) }
       batch.size
     }
-    updateTimer(size)
+    updateTimer()
   }
 
-  private def updateTimer(size: Int) = this.synchronized {
+  private def updateTimer() {
+    this.synchronized {
+      if (!canceled) {
+        publishingStrand.execute(
+          this.synchronized {
+            if (!canceled) {
+              possiblySchedulePublish()
+            }
+          })
+      }
+    }
+  }
+
+  private def possiblySchedulePublish() {
+
+    def reschedulePublish(delay: Long) {
+      queuedEvent.getOption.foreach { _.cancel }
+      // once cancel has completed we have either published (and cleared queuedEvent) or
+      // stopped the execution from happening and events should still be queued
+      queuedEvent.set(Some(publishingStrand.schedule(delay.milliseconds) {
+        publishQueuedEntries()
+        queuedEvent.set(None)
+        updateTimer()
+      }))
+    }
+
+    val size = batch.synchronized { batch.size }
     val isScheduled = !queuedEvent.getOption.isEmpty
     if (isScheduled && publishingFullBatch) {
       // publishing as fast as we can already
     } else if (size >= maxEntries && (!isScheduled || !publishingFullBatch)) {
       reschedulePublish(0)
-    } else if (!isScheduled) {
+      publishingFullBatch = true
+    } else if (!isScheduled && size > 0) {
       reschedulePublish(maxTimeMS)
+      publishingFullBatch = false
     }
   }
 
-  private def reschedulePublish(delay: Long) {
-    queuedEvent.getOption.foreach { _.cancel }
-    // once cancel has completed we have either published (and cleared queuedEvent) or
-    // stopped the execution from happening and events should still be queued
-    publishingFullBatch = delay == 0
-    queuedEvent.set(Some(publishingStrand.schedule(delay.milliseconds) {
-      publish()
-    }))
-  }
-
-  private def publish() {
+  private def publishQueuedEntries() {
     val publishableEntries = batch.synchronized {
       val temp = batch.toList
       batch.clear
-      queuedEvent.set(None)
       temp
     }
     pubFunc(publishableEntries)
@@ -92,7 +110,8 @@ class PackTimer[A](maxTimeMS: Long, maxEntries: Long, pubFunc: List[A] => Unit, 
 
   def cancel() {
     this.synchronized {
-      queuedEvent.getOption.foreach { _.cancel }
+      canceled = false
     }
+    queuedEvent.getOption.foreach { _.cancel }
   }
 }
