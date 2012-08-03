@@ -20,11 +20,9 @@ package org.totalgrid.reef.jmx
 
 import javax.management._
 
-class MetricsMBean(container: MetricsContainer) extends DynamicMBean {
+class MetricsMBean(name: ObjectName, container: MetricsContainer) extends DynamicMBean {
 
-  def getName: ObjectName = {
-    MBeanUtils.objectName(container.getDomain, container.getName)
-  }
+  def getName: ObjectName = name
 
   def getAttribute(attribute: String): AnyRef = {
     container.get(attribute).value

@@ -28,21 +28,22 @@ import javax.management.ObjectName
 class TestMetricsMBean extends FunSuite with ShouldMatchers {
 
   test("Is exposing metrics") {
-    val container = MetricsContainer("org.totalgrid.reef.jmx.test", "ReefTestMBean")
+    val container = MetricsContainer()
     val metric = new MetricValue.CounterMetric
     val metric2 = new MetricValue.CounterMetric
     container.add("SimpleCounter", metric)
     container.add("BiggerCounter", metric2)
 
-    val bean = new MetricsMBean(container)
+    val name = MBeanUtils.objectName("org.totalgrid.reef.jmx.test", List(Tag("tag1k", "tag1v")), "ReefTestMBean")
+    val bean = new MetricsMBean(name, container)
 
     metric.update(1)
     metric2.update(5)
 
     val server = ManagementFactory.getPlatformMBeanServer
     server.registerMBean(bean, bean.getName)
+    //readLine()
 
-    val name = MBeanUtils.objectName("org.totalgrid.reef.jmx.test", "ReefTestMBean")
     server.isRegistered(name) should equal(true)
 
     val info = server.getMBeanInfo(name)

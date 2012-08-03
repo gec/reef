@@ -30,20 +30,14 @@ trait MetricsContainer {
   def add(name: String, v: MetricValue)
   def get(name: String): MetricValue
   def getAll: List[(String, MetricValue)]
-
-  def getDomain: String
-  def getName: String
 }
 
 object MetricsContainer {
 
-  def apply(domain: String, name: String): MetricsContainer = new DefaultMetricsContainer(domain, name)
+  def apply(): MetricsContainer = new DefaultMetricsContainer
 
-  class DefaultMetricsContainer(domain: String, name: String) extends MetricsContainer {
+  class DefaultMetricsContainer extends MetricsContainer {
     private val map = mutable.Map.empty[String, MetricValue]
-
-    def getDomain: String = domain
-    def getName: String = name
 
     def add(name: String, v: MetricValue) {
       map += (name -> v)
@@ -111,27 +105,47 @@ trait MetricsManager {
   def register()
 }
 
+case class Tag(name: String, value: String)
+
 object MetricsManager {
 
-  //def apply(klass: Class[_])
+  val instanceTag = "instance"
 
-  def apply(domain: String): MetricsManager = new DefaultMetricsManager(domain)
+  def apply(domain: String): MetricsManager = new DefaultMetricsManager(domain, Nil)
+  def apply(domain: String, instance: String): MetricsManager = new DefaultMetricsManager(domain, List(Tag(instanceTag, instance)))
 
-  class DefaultMetricsManager(domain: String) extends MetricsManager {
+  //def apply(domain: String, tags: List[Tag]): MetricsManager = new DefaultMetricsManager(domain, tags)
 
-    private var containers = List.empty[MetricsContainer]
+  case class MetricsInfo(domain: String, tags: List[Tag], name: String, container: MetricsContainer)
+
+  class DefaultMetricsManager(domain: String, tags: List[Tag]) extends MetricsManager {
+
+    private var stash = List.empty[MetricsInfo]
 
     def metrics(name: String): Metrics = {
-      val container = MetricsContainer(domain, name)
-      containers ::= container
+      val container = MetricsContainer()
+      val info = MetricsInfo(domain, tags, name, container)
+      stash ::= info
       Metrics(container)
     }
 
     // TODO: invariants on calling only once and not calling metrics again afterwards
     def register() {
+
       val server = ManagementFactory.getPlatformMBeanServer
-      containers.map(c => new MetricsMBean(c)).foreach { bean =>
-        server.registerMBean(bean, bean.getName)
+
+      stash.foreach {
+        case MetricsInfo(domain, tags, name, container) => {
+          val objectName = MBeanUtils.objectName(domain, tags, name)
+
+          // Exception will be thrown if we try to register twice,
+          // since we may have modified what attributes the bean has we just replace it
+          if (server.isRegistered(objectName)) {
+            server.unregisterMBean(objectName)
+          }
+
+          server.registerMBean(new MetricsMBean(objectName, container), objectName)
+        }
       }
     }
   }

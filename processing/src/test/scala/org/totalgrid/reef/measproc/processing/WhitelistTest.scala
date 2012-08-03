@@ -27,15 +27,17 @@ import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 import org.totalgrid.reef.measproc.ProtoHelper._
 import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
+import org.totalgrid.reef.jmx.{ MetricsContainer, Metrics }
 
 @RunWith(classOf[JUnitRunner])
 class WhitelistTest extends FunSuite with ShouldMatchers {
   test("Ignores meases") {
     val queue = mutable.Queue.empty[String]
     val enqueue = { m: Measurement => queue.enqueue(m.getName) }
+    val metrics = Metrics(MetricsContainer())
 
     def makePoint(name: String) = Point.newBuilder.setName(name).setUuid(ReefUUID.newBuilder.setValue(name)).build
-    val filter = new MeasurementWhiteList(enqueue, List(makePoint("ok1"), makePoint("ok2")))
+    val filter = new MeasurementWhiteList(enqueue, List(makePoint("ok1"), makePoint("ok2")), metrics)
 
     filter.process(makeAnalog("ok1", 100))
     filter.process(makeAnalog("ok2", 100))

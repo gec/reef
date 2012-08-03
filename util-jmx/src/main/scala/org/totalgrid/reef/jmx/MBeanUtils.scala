@@ -21,7 +21,17 @@ package org.totalgrid.reef.jmx
 import javax.management.ObjectName
 
 object MBeanUtils {
+
   def objectName(domain: String, name: String): ObjectName = {
     new ObjectName(domain + ":name=" + name)
+  }
+
+  def objectName(domain: String, tags: List[Tag], name: String): ObjectName = {
+    val tagsText = tags match {
+      case Nil => ""
+      case full => tags.map(t => t.name + "=" + t.value).mkString(",") + ","
+    }
+    val text = domain + ":" + tagsText + "name=" + name
+    new ObjectName(text)
   }
 }

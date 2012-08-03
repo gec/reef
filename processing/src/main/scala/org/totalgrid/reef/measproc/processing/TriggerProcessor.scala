@@ -25,22 +25,22 @@ import org.totalgrid.reef.persistence.ObjectCache
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.measproc.MeasProcServiceContext
 
-import org.totalgrid.reef.metrics.MetricsHooks
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
+import org.totalgrid.reef.jmx.Metrics
 
 class TriggerProcessor(protected val next: Measurement => Unit,
   protected val factory: TriggerFactory,
-  protected val stateCache: ObjectCache[Boolean])
+  protected val stateCache: ObjectCache[Boolean],
+  metrics: Metrics)
     extends MeasProcServiceContext[TriggerSet]
-    with MetricsHooks
     with Logging {
 
   protected var map = immutable.Map[String, List[Trigger]]()
 
-  private lazy val triggersActive = valueHook("triggersActive")
+  private val triggersActive = metrics.gauge("triggersActive")
 
-  def process(m: Measurement) = {
+  def process(m: Measurement) {
     val triggerList = map.get(m.getName)
 
     triggerList match {
@@ -52,17 +52,6 @@ class TriggerProcessor(protected val next: Measurement => Unit,
       case None =>
         next(m)
     }
-
-    /*val result = triggerList match {
-      case Some(list) =>
-        logger.debug("Applying triggers: " + list.size + " to meas: " + m)
-        val res = Trigger.processAll(m, stateCache, list)
-        logger.debug("Trigger result: " + res)
-        res
-      case None =>
-        m
-    }
-    next(result)*/
   }
 
   def add(set: TriggerSet) {
@@ -70,21 +59,21 @@ class TriggerProcessor(protected val next: Measurement => Unit,
     val pointName = set.getPoint.getName
     val trigList = set.getTriggersList.toList.map(proto => factory.buildTrigger(proto, pointName))
     map += (pointName -> trigList)
-    updateMetrics
+    updateMetrics()
   }
 
   def remove(set: TriggerSet) {
     logger.debug("TriggerSet removed: " + set)
     map -= set.getPoint.getName
-    updateMetrics
+    updateMetrics()
   }
 
-  def clear() = {
+  def clear() {
     map = immutable.Map[String, List[Trigger]]()
-    updateMetrics
+    updateMetrics()
   }
 
-  private def updateMetrics {
+  private def updateMetrics() {
     triggersActive(map.size)
   }
 }

@@ -22,12 +22,12 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
+import management.ManagementFactory
 
 @RunWith(classOf[JUnitRunner])
 class TestMetricsManager extends FunSuite with ShouldMatchers {
 
-  ignore("Is exposing metrics") {
-
+  test("Publishes To JMX") {
     val manager = MetricsManager("org.totalgrid.reef.jmx.test")
 
     val metrics = manager.metrics("ReefTestMetrics")
@@ -40,6 +40,35 @@ class TestMetricsManager extends FunSuite with ShouldMatchers {
     count1(3)
     count2(8)
 
-    readLine()
+    val objName = MBeanUtils.objectName("org.totalgrid.reef.jmx.test", Nil, "ReefTestMetrics")
+
+    val server = ManagementFactory.getPlatformMBeanServer
+    server.isRegistered(objName) should equal(true)
+
+    server.getAttribute(objName, "FirstCounter") should equal(3)
+    server.getAttribute(objName, "SecondCounter") should equal(8)
+  }
+
+  def fullRegister(count: Int) {
+    val manager = MetricsManager("org.totalgrid.reef.jmx.test")
+    val metrics = manager.metrics("ReefTestMetrics")
+    val count1 = metrics.counter("FirstCounter")
+    count1(count)
+    manager.register()
+  }
+
+  test("Replace on second register") {
+    val server = ManagementFactory.getPlatformMBeanServer
+    val objName = MBeanUtils.objectName("org.totalgrid.reef.jmx.test", Nil, "ReefTestMetrics")
+
+    fullRegister(4)
+
+    server.isRegistered(objName) should equal(true)
+    server.getAttribute(objName, "FirstCounter") should equal(4)
+
+    fullRegister(10)
+
+    server.isRegistered(objName) should equal(true)
+    server.getAttribute(objName, "FirstCounter") should equal(10)
   }
 }

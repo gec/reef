@@ -38,7 +38,7 @@ class MeasurementStreamProcessingNode(
   client: MeasurementProcessorServices,
   caches: MeasProcObjectCaches,
   connection: MeasurementProcessingConnection)
-    extends Logging with MetricsHookContainer {
+    extends Logging {
 
   def publishEvent(event: Event.Builder) = try {
     event.setUserId("system")
@@ -61,8 +61,6 @@ class MeasurementStreamProcessingNode(
   val points = client.getPointsByNames(expectedPoints).await
 
   val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, points, endpoint.getName)
-
-  addHookedObject(processingPipeline)
 
   val endpointResult = client.subscribeToEndpointConnection(endpoint.getUuid).await
   val endpointSub = processingPipeline.lastCacheManager.setSubscription(endpointResult)
