@@ -63,6 +63,7 @@
 		<module>integration-testing</module>
         <module>executor</module>
 		<module>util</module>
+        <module>util-jmx</module>
 		<module>util-osgi</module>
 		<module>metrics</module>
         <module>metrics-client</module>
