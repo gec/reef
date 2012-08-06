@@ -31,24 +31,26 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.services.settings.ServiceOptions
 
 import org.totalgrid.reef.client.Connection
-import org.totalgrid.reef.metrics.IMetricsSink
 import org.totalgrid.reef.persistence.squeryl.DbConnection
 import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.jmx.MetricsManager
 
 /**
  * list of all of the service providers in the system
  */
 class ServiceProviders(
+    nodeName: String,
     dbConnection: DbConnection,
     connection: Connection,
     cm: MeasurementStore,
     serviceConfiguration: ServiceOptions,
     authzService: AuthzService,
-    metricsPublisher: IMetricsSink,
     authToken: String,
     executor: Executor) {
 
-  private val authService = new AuthzServiceMetricsWrapper(authzService, metricsPublisher.getStore("services.auth"))
+  private val metricsMgr = MetricsManager("org.totalgrid.reef.services", nodeName)
+
+  private val authService = new AuthzServiceMetricsWrapper(authzService, metricsMgr.metrics("Auth"))
 
   private val eventPublisher = new LocalSystemEventSink(executor)
   private val dependencies = new ServiceDependencies(dbConnection, connection, connection.getServiceRegistration.getEventPublisher, cm, eventPublisher, authToken, authService)
@@ -61,8 +63,8 @@ class ServiceProviders(
   // dependency on ServiceDepenedencies, should clear up once we OSGI the services
   eventPublisher.setComponents(dbConnection, modelFac.events, contextSource)
 
-  private val wrappedDb = new RTDatabaseMetrics(cm, metricsPublisher.getStore("rtdatbase.rt"))
-  private val wrappedHistorian = new HistorianMetrics(cm, metricsPublisher.getStore("historian.hist"))
+  private val wrappedDb = new RTDatabaseMetrics(cm, metricsMgr.metrics("RTDatabase"))
+  private val wrappedHistorian = new HistorianMetrics(cm, metricsMgr.metrics("Historian"))
 
   private val serviceProviders: List[ServiceEntryPoint[_ <: AnyRef]] = List(
     new SimpleAuthRequestService(modelFac.authTokens),
@@ -106,7 +108,7 @@ class ServiceProviders(
     new CommandHandlerBindingService,
     new MeasurementStreamBindingService)
 
-  private val metrics = new MetricsServiceWrapper(metricsPublisher, serviceConfiguration)
+  private val metrics = new MetricsServiceWrapper(metricsMgr.metrics("Services"), serviceConfiguration)
   private val metricWrapped = serviceProviders.map { s => metrics.instrumentCallback(s) }
 
   private val allServices = (new BatchServiceRequestService(metricWrapped) :: metricWrapped)
@@ -115,5 +117,12 @@ class ServiceProviders(
   val coordinators = List(
     new ProcessStatusCoordinator(modelFac.procStatus, contextSource),
     new HistoryTrimmer(cm, serviceConfiguration.trimPeriodMinutes * 1000 * 60, serviceConfiguration.maxMeasurements))
+
+  metricsMgr.register()
+
+  def close() {
+    coordinators.foreach { _.stopProcess() }
+    metricsMgr.unregister()
+  }
 
 }

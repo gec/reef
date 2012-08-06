@@ -18,18 +18,18 @@
  */
 package org.totalgrid.reef.services.metrics
 
-import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.services.authz.AuthzService
 import java.util.UUID
+import org.totalgrid.reef.jmx.Metrics
 
-class AuthzServiceMetricsWrapper(authz: AuthzService, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with AuthzService {
-  private val prepareCount = counterHook("PrepareCount")
-  private val prepareTime = timingHook("PrepareTime")
-  private val authCount = counterHook("AuthCount")
-  private val authTime = timingHook("AuthTime")
-  private val filterCount = counterHook("FilterCount")
-  private val filterTime = timingHook("FilterTime")
+class AuthzServiceMetricsWrapper(authz: AuthzService, metrics: Metrics) extends AuthzService {
+  private val prepareCount = metrics.counter("PrepareCount")
+  private val prepareTime = metrics.timer("PrepareTime")
+  private val authCount = metrics.counter("AuthCount")
+  private val authTime = metrics.timer("AuthTime")
+  private val filterCount = metrics.counter("FilterCount")
+  private val filterTime = metrics.timer("FilterTime")
 
   override def filter[A](context: RequestContext, componentId: String, action: String, payload: List[A], uuids: => List[List[UUID]]) = {
     filterCount(1)
@@ -47,7 +47,7 @@ class AuthzServiceMetricsWrapper(authz: AuthzService, source: MetricsHookSource)
 
   def visibilityMap(context: RequestContext) = authz.visibilityMap(context)
 
-  override def prepare(context: RequestContext) = {
+  override def prepare(context: RequestContext) {
     prepareCount(1)
     prepareTime {
       authz.prepare(context)

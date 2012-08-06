@@ -19,14 +19,12 @@
 package org.totalgrid.reef.services
 
 import org.totalgrid.reef.measurementstore.InMemoryMeasurementStore
-import org.totalgrid.reef.persistence.squeryl.{ DbConnector, DbInfo }
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.totalgrid.reef.models.DatabaseUsingTestBase
 import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
 import org.totalgrid.reef.client.settings.{ UserSettings, NodeSettings }
-import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.util.Lifecycle
 import org.totalgrid.reef.client.{ RequestHeaders, Connection }
 import org.totalgrid.reef.client.sapi.service.{ AsyncService }
@@ -85,10 +83,9 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
       val components = ServiceBootstrap.bootstrapComponents(dbConnection, amqp, userSettings, nodeSettings)
       val measStore = new InMemoryMeasurementStore
       val serviceContainer = new ExchangeCheckingServiceContainer(amqp)
-      val metrics = MetricsSink.getInstance("test")
 
-      val provider = new ServiceProviders(dbConnection, amqp, measStore, serviceOptions,
-        new NullAuthzService, metrics, "", new InstantExecutor())
+      val provider = new ServiceProviders(nodeSettings.getDefaultNodeName, dbConnection, amqp, measStore, serviceOptions,
+        new NullAuthzService, "", new InstantExecutor())
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)
     }

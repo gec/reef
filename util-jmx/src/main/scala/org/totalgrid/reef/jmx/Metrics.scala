@@ -101,8 +101,11 @@ object Metrics {
   }
 }
 
-trait MetricsManager {
+trait MetricsSource {
   def metrics(name: String): Metrics
+}
+
+trait MetricsManager extends MetricsSource {
   def register()
   def unregister()
 }
@@ -115,8 +118,6 @@ object MetricsManager {
 
   def apply(domain: String): MetricsManager = new DefaultMetricsManager(domain, Nil)
   def apply(domain: String, instance: String): MetricsManager = new DefaultMetricsManager(domain, List(Tag(instanceTag, instance)))
-
-  //def apply(domain: String, tags: List[Tag]): MetricsManager = new DefaultMetricsManager(domain, tags)
 
   case class MetricsInfo(domain: String, tags: List[Tag], name: String, container: MetricsContainer)
 

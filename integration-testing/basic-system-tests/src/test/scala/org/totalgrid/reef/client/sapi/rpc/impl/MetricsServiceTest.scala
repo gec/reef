@@ -29,7 +29,7 @@ import org.totalgrid.reef.metrics.client.{ MetricsService, MetricsServiceList }
 @RunWith(classOf[JUnitRunner])
 class MetricsServiceTest extends ServiceClientSuite {
 
-  test("Check that metrics are available") {
+  ignore("Check that metrics are available") {
     connection.addServicesList(new MetricsServiceList)
 
     val service = session.getService(classOf[MetricsService])

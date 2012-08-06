@@ -70,5 +70,10 @@
             <artifactId>reef-util</artifactId>
             <version>${reef.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util-jmx</artifactId>
+            <version>${reef.version}</version>
+        </dependency>
     </dependencies>
 </project>

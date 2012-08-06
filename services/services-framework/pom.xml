@@ -118,6 +118,12 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util-jmx</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-services-authz</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>

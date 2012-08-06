@@ -22,10 +22,20 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
 import org.totalgrid.reef.client.operations.Response
+import org.totalgrid.reef.jmx.Metrics
 
-class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], hooks: ServiceMetricHooks, slowQueryThreshold: Long, chattyTransactionThreshold: Int)
+class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], metrics: Metrics, slowQueryThreshold: Long, chattyTransactionThreshold: Int)
     extends ServiceEntryPoint[A]
     with Logging {
+
+  /// how many requests handled
+  private val count = metrics.counter("Count")
+  /// errors counted
+  private val errors = metrics.counter("Errors")
+  /// time of service requests
+  private val timer = metrics.average("Time")
+  /// number of database actions
+  private val actions = metrics.average("Actions")
 
   override val descriptor = service.descriptor
 
@@ -33,22 +43,26 @@ class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], hoo
 
     val countingSource = new DatabaseActionsCounter(source)
 
-    def recordMetrics(metrics: ServiceVerbHooks)(time: Long, rsp: Response[A]) {
-      metrics.countHook(1)
-      metrics.timerHook(time.toInt)
-      if (time > slowQueryThreshold)
+    def recordMetrics(time: Long, rsp: Response[A]) {
+      count(1)
+      timer(time.toInt)
+
+      if (time > slowQueryThreshold) {
         logger.info("Slow Request: " + time + "ms to handle " + verb + " request: " + displayRequest(req))
-      if (!rsp.isSuccess) metrics.errorHook(1)
+      }
+
+      if (!rsp.isSuccess) errors(1)
+
       val counts = countingSource.databaseActionCounts
-      metrics.actionsHook(counts.actions)
-      if (counts.actions > chattyTransactionThreshold)
+
+      actions(counts.actions)
+
+      if (counts.actions > chattyTransactionThreshold) {
         logger.info("Chatty transaction: " + counts.actions + " database queries to handle " + verb + " request: " + displayRequest(req))
+      }
     }
 
-    val proxyCallback = hooks(verb) match {
-      case Some(metrics) => new CallbackInterceptor(callback, recordMetrics(metrics)).onResponse _
-      case None => callback // no hooks, just pass through the request
-    }
+    val proxyCallback = new CallbackInterceptor(callback, recordMetrics _).onResponse _
 
     service.respondAsync(verb, countingSource, req)(proxyCallback)
   }
