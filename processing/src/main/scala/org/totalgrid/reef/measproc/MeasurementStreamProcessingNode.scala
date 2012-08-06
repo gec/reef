@@ -49,11 +49,13 @@ class MeasurementStreamProcessingNode(
       logger.warn("Couldn't publish event: " + rse.getMessage, rse)
   }
 
-  def measSink(meas: Measurement) = try {
-    client.publishIndividualMeasurementAsEvent(meas)
-  } catch {
-    case rse: ReefServiceException =>
-      logger.warn("Couldn't publish measurement: " + meas.getName + " message: " + rse.getMessage, rse)
+  def measSink(meas: Measurement) {
+    try {
+      client.publishIndividualMeasurementAsEvent(meas)
+    } catch {
+      case rse: ReefServiceException =>
+        logger.warn("Couldn't publish measurement: " + meas.getName + " message: " + rse.getMessage, rse)
+    }
   }
 
   val endpoint = client.getEndpointByUuid(connection.getLogicalNode.getUuid).await
@@ -75,10 +77,11 @@ class MeasurementStreamProcessingNode(
 
   client.setMeasurementProcessingConnectionReadyTime(connection, System.currentTimeMillis()).await
 
-  def cancel() = {
-    binding.cancel
-    triggerSub.cancel
-    overrideSub.cancel
-    endpointSub.cancel
+  def cancel() {
+    binding.cancel()
+    triggerSub.cancel()
+    overrideSub.cancel()
+    endpointSub.cancel()
+    processingPipeline.close()
   }
 }

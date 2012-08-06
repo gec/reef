@@ -60,4 +60,8 @@ class MeasProcessingPipeline(
   override def process(b: MeasurementBatch) {
     processor.process(b)
   }
+
+  def close() {
+    metricsMgr.unregister()
+  }
 }

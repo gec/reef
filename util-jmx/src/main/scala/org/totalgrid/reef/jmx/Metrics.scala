@@ -21,6 +21,7 @@ package org.totalgrid.reef.jmx
 import org.totalgrid.reef.util.Timing
 import scala.collection.mutable
 import management.ManagementFactory
+import javax.management.ObjectName
 
 trait Timer {
   def apply[A](f: => A): A
@@ -103,6 +104,7 @@ object Metrics {
 trait MetricsManager {
   def metrics(name: String): Metrics
   def register()
+  def unregister()
 }
 
 case class Tag(name: String, value: String)
@@ -121,6 +123,7 @@ object MetricsManager {
   class DefaultMetricsManager(domain: String, tags: List[Tag]) extends MetricsManager {
 
     private var stash = List.empty[MetricsInfo]
+    private var registered = List.empty[ObjectName]
 
     def metrics(name: String): Metrics = {
       val container = MetricsContainer()
@@ -134,7 +137,7 @@ object MetricsManager {
 
       val server = ManagementFactory.getPlatformMBeanServer
 
-      stash.foreach {
+      registered = stash.map {
         case MetricsInfo(domain, tags, name, container) => {
           val objectName = MBeanUtils.objectName(domain, tags, name)
 
@@ -145,8 +148,15 @@ object MetricsManager {
           }
 
           server.registerMBean(new MetricsMBean(objectName, container), objectName)
+
+          objectName
         }
       }
+    }
+
+    def unregister() {
+      val server = ManagementFactory.getPlatformMBeanServer
+      registered.foreach(name => server.unregisterMBean(name))
     }
   }
 }
