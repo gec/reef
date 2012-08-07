@@ -62,7 +62,7 @@ object ServiceFactory {
         val client = connection.createClient(authToken)
         val services = client.getService(classOf[AllScadaService])
         val heartbeater = new ProcessHeartbeatActor(services, appConfig.getHeartbeatCfg, exe)
-        val providers = new ServiceProviders(nodeSettings.getDefaultNodeName, dbConnection, connection, measStore, serviceOptions,
+        val providers = new ServiceProviders(dbConnection, connection, measStore, serviceOptions,
           new SqlAuthzService(), authToken, exe)
 
         val serviceContext = new ServiceContext(connection, exe)

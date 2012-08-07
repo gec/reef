@@ -84,7 +84,7 @@ class ServiceProvidersTest extends DatabaseUsingTestBase {
       val measStore = new InMemoryMeasurementStore
       val serviceContainer = new ExchangeCheckingServiceContainer(amqp)
 
-      val provider = new ServiceProviders(nodeSettings.getDefaultNodeName, dbConnection, amqp, measStore, serviceOptions,
+      val provider = new ServiceProviders(dbConnection, amqp, measStore, serviceOptions,
         new NullAuthzService, "", new InstantExecutor())
       serviceContainer.addCoordinator(provider.coordinators)
       serviceContainer.attachServices(provider.services)

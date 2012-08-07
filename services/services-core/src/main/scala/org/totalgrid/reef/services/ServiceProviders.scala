@@ -39,7 +39,6 @@ import org.totalgrid.reef.jmx.MetricsManager
  * list of all of the service providers in the system
  */
 class ServiceProviders(
-    nodeName: String,
     dbConnection: DbConnection,
     connection: Connection,
     cm: MeasurementStore,
@@ -48,7 +47,7 @@ class ServiceProviders(
     authToken: String,
     executor: Executor) {
 
-  private val metricsMgr = MetricsManager("org.totalgrid.reef.services", nodeName)
+  private val metricsMgr = MetricsManager("org.totalgrid.reef.services")
 
   private val authService = new AuthzServiceMetricsWrapper(authzService, metricsMgr.metrics("Auth"))
 
