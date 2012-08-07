@@ -33,7 +33,9 @@ class MetricsServiceWrapper(metrics: Metrics, serviceConfiguration: ServiceOptio
   /// will also instrument the call with hooks to track # and length of service requests
   def instrumentCallback[A <: AnyRef](endpoint: ServiceEntryPoint[A]): ServiceEntryPoint[A] = {
     if (serviceConfiguration.metrics) {
-      new ServiceMetricsInstrumenter(endpoint, metrics, serviceConfiguration.slowQueryThreshold, serviceConfiguration.chattyTransactionThreshold)
+      val perServiceMetrics = if (serviceConfiguration.metricsSplitByService) metrics.subMetrics(endpoint.descriptor.id() + ".") else metrics
+      val perVerbMetrics = ProtoServicableMetrics.generateMetricsHooks(perServiceMetrics, serviceConfiguration.metricsSplitByVerb)
+      new ServiceMetricsInstrumenter(endpoint, perVerbMetrics, serviceConfiguration.slowQueryThreshold, serviceConfiguration.chattyTransactionThreshold)
     } else {
       endpoint
     }

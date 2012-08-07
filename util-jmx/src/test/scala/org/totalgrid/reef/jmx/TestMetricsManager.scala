@@ -49,6 +49,31 @@ class TestMetricsManager extends FunSuite with ShouldMatchers {
     server.getAttribute(objName, "SecondCounter") should equal(8)
   }
 
+  test("SubMetric To JMX") {
+    val manager = MetricsManager("org.totalgrid.reef.jmx.test")
+
+    val metrics = manager.metrics("ReefTestMetrics2")
+
+    val count1 = metrics.counter("FirstCounter")
+
+    val subSection = metrics.subMetrics("SubSection1.")
+
+    val count2 = subSection.counter("SecondCounter")
+
+    manager.register()
+
+    count1(3)
+    count2(8)
+
+    val server = ManagementFactory.getPlatformMBeanServer
+
+    val objName = MBeanUtils.objectName("org.totalgrid.reef.jmx.test", Nil, "ReefTestMetrics2")
+    server.isRegistered(objName) should equal(true)
+
+    server.getAttribute(objName, "FirstCounter") should equal(3)
+    server.getAttribute(objName, "SubSection1.SecondCounter") should equal(8)
+  }
+
   def fullRegister(count: Int) {
     val manager = MetricsManager("org.totalgrid.reef.jmx.test")
     val metrics = manager.metrics("ReefTestMetrics")

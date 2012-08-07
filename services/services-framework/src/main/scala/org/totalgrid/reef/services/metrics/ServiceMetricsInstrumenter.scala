@@ -22,20 +22,10 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
 import org.totalgrid.reef.client.operations.Response
-import org.totalgrid.reef.jmx.Metrics
 
-class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], metrics: Metrics, slowQueryThreshold: Long, chattyTransactionThreshold: Int)
+class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], metricsHolder: ServiceMetricHooks, slowQueryThreshold: Long, chattyTransactionThreshold: Int)
     extends ServiceEntryPoint[A]
     with Logging {
-
-  /// how many requests handled
-  private val count = metrics.counter("Count")
-  /// errors counted
-  private val errors = metrics.counter("Errors")
-  /// time of service requests
-  private val timer = metrics.average("Time")
-  /// number of database actions
-  private val actions = metrics.average("Actions")
 
   override val descriptor = service.descriptor
 
@@ -44,19 +34,21 @@ class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], met
     val countingSource = new DatabaseActionsCounter(source)
 
     def recordMetrics(time: Long, rsp: Response[A]) {
-      count(1)
-      timer(time.toInt)
+
+      val metrics = metricsHolder.apply(verb).get
+
+      metrics.count(1)
+      metrics.timer(time.toInt)
+
+      if (!rsp.isSuccess) metrics.errors(1)
+
+      val counts = countingSource.databaseActionCounts
+
+      metrics.actions(counts.actions)
 
       if (time > slowQueryThreshold) {
         logger.info("Slow Request: " + time + "ms to handle " + verb + " request: " + displayRequest(req))
       }
-
-      if (!rsp.isSuccess) errors(1)
-
-      val counts = countingSource.databaseActionCounts
-
-      actions(counts.actions)
-
       if (counts.actions > chattyTransactionThreshold) {
         logger.info("Chatty transaction: " + counts.actions + " database queries to handle " + verb + " request: " + displayRequest(req))
       }

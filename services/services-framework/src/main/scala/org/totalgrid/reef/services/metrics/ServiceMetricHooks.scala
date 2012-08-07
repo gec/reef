@@ -18,19 +18,19 @@
  */
 package org.totalgrid.reef.services.metrics
 
-import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
 import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.jmx.Metrics
 
 /// the metrics collected on any single service request
-class ServiceVerbHooks(source: MetricsHookSource, baseName: String) extends StaticMetricsHooksBase(source) {
+class ServiceVerbHooks(source: Metrics) {
   /// how many requests handled
-  val countHook = counterHook(baseName + "Count")
+  val count = source.counter("Count")
   /// errors counted
-  val errorHook = counterHook(baseName + "Errors")
+  val errors = source.counter("Errors")
   /// time of service requests
-  val timerHook = averageHook(baseName + "Time")
+  val timer = source.average("Time")
   /// number of database actions
-  val actionsHook = averageHook(baseName + "Actions")
+  val actions = source.average("Actions")
 }
 
 /// trait to encapsulate the hooks used, sorted by verb

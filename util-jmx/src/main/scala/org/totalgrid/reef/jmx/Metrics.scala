@@ -58,7 +58,7 @@ trait Metrics {
   def average(name: String): (Int) => Unit
   def timer(name: String): Timer
 
-  //def subMetrics(subId: String): Metrics
+  def subMetrics(subId: String): Metrics
 }
 
 object Metrics {
@@ -71,11 +71,15 @@ object Metrics {
     }
   }
 
-  class DefaultMetrics(container: MetricsContainer) extends Metrics {
+  class DefaultMetrics(container: MetricsContainer, baseName: Option[String] = None) extends Metrics {
 
-    private def register(name: String, v: MetricValue) = {
+    private def register(nameSuffix: String, v: MetricValue) = {
+      val name = fullName(nameSuffix)
       container.add(name, v)
       container.get(name).update(_)
+    }
+    private def fullName(nameSuffix: String) = {
+      baseName.map(_ + nameSuffix).getOrElse(nameSuffix)
     }
 
     def gauge(name: String) = {
@@ -98,6 +102,8 @@ object Metrics {
       container.add(name, metric)
       new DefaultTimer(metric)
     }
+
+    def subMetrics(subId: String) = new DefaultMetrics(container, Some(fullName(subId)))
   }
 }
 
