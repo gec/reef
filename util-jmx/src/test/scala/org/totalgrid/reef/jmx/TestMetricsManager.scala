@@ -49,29 +49,29 @@ class TestMetricsManager extends FunSuite with ShouldMatchers {
     server.getAttribute(objName, "SecondCounter") should equal(8)
   }
 
-  test("SubMetric To JMX") {
+  def tagTest(tags: List[Tag]) {
     val manager = MetricsManager("org.totalgrid.reef.jmx.test")
 
-    val metrics = manager.metrics("ReefTestMetrics2")
-
-    val count1 = metrics.counter("FirstCounter")
-
-    val subSection = metrics.subMetrics("SubSection1.")
-
-    val count2 = subSection.counter("SecondCounter")
+    val metrics = manager.metrics("ReefTestMetrics2", tags)
 
     manager.register()
 
+    val count1 = metrics.counter("FirstCounter")
     count1(3)
-    count2(8)
 
+    val objName = MBeanUtils.objectName("org.totalgrid.reef.jmx.test", tags, "ReefTestMetrics2")
     val server = ManagementFactory.getPlatformMBeanServer
-
-    val objName = MBeanUtils.objectName("org.totalgrid.reef.jmx.test", Nil, "ReefTestMetrics2")
     server.isRegistered(objName) should equal(true)
 
-    server.getAttribute(objName, "FirstCounter") should equal(3)
-    server.getAttribute(objName, "SubSection1.SecondCounter") should equal(8)
+    manager.unregister()
+  }
+
+  test("Metrics with tag") {
+    tagTest(List(Tag("tag1k", "tag1v")))
+  }
+
+  test("Metrics with tags") {
+    tagTest(List(Tag("tag1k", "tag1v"), Tag("tag2k", "tag2v")))
   }
 
   def fullRegister(count: Int) {

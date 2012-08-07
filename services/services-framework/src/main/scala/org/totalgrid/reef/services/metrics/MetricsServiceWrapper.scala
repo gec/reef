@@ -20,22 +20,28 @@ package org.totalgrid.reef.services.metrics
 
 import org.totalgrid.reef.services.framework.ServiceEntryPoint
 import org.totalgrid.reef.services.settings.ServiceOptions
-import org.totalgrid.reef.jmx.Metrics
+import org.totalgrid.reef.jmx.MetricsSource
 
 /**
  * attaches Services to the bus but wraps the response functions with 2 pieces of "middleware".
  *  - auth wrapper that does high level access granting based on resource and verb
  *  - metrics collectors that monitor how many and how long the requests are taking
  */
-class MetricsServiceWrapper(metrics: Metrics, serviceConfiguration: ServiceOptions) {
+class MetricsServiceWrapper(metricsSource: MetricsSource, serviceConfiguration: ServiceOptions) {
 
   /// binds a proto serving endpoint to the broker and depending on configuration
   /// will also instrument the call with hooks to track # and length of service requests
   def instrumentCallback[A <: AnyRef](endpoint: ServiceEntryPoint[A]): ServiceEntryPoint[A] = {
     if (serviceConfiguration.metrics) {
-      val perServiceMetrics = if (serviceConfiguration.metricsSplitByService) metrics.subMetrics(endpoint.descriptor.id() + ".") else metrics
-      val perVerbMetrics = ProtoServicableMetrics.generateMetricsHooks(perServiceMetrics, serviceConfiguration.metricsSplitByVerb)
-      new ServiceMetricsInstrumenter(endpoint, perVerbMetrics, serviceConfiguration.slowQueryThreshold, serviceConfiguration.chattyTransactionThreshold)
+      val serviceName = endpoint.descriptor.id()
+      lazy val allMetrics = metricsSource.metrics("Services")
+
+      val hooks = serviceConfiguration.metricsSplitByVerb match {
+        case true => ProtoServicableMetrics.perVerbHooks(metricsSource, serviceName)
+        case false => ProtoServicableMetrics.allVerbsHooks(allMetrics, serviceName)
+      }
+
+      new ServiceMetricsInstrumenter(endpoint, hooks, serviceConfiguration.slowQueryThreshold, serviceConfiguration.chattyTransactionThreshold)
     } else {
       endpoint
     }

@@ -19,29 +19,27 @@
 package org.totalgrid.reef.services.metrics
 
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.jmx.Metrics
+import org.totalgrid.reef.jmx.{ Tag, MetricsSource, Metrics }
 
 object ProtoServicableMetrics {
 
-  def generateMetricsHooks(source: Metrics, seperateVerbs: Boolean): ServiceMetricHooks = new ServiceMetricHooks {
+  def perVerbHooks(source: MetricsSource, serviceName: String): ServiceMetricHooks = new ServiceMetricHooks {
+    override val map = Map(
+      Envelope.Verb.GET -> new ServiceVerbHooks(source.metrics("get", Tag("serviceName", serviceName))),
+      Envelope.Verb.PUT -> new ServiceVerbHooks(source.metrics("put", Tag("serviceName", serviceName))),
+      Envelope.Verb.DELETE -> new ServiceVerbHooks(source.metrics("delete", Tag("serviceName", serviceName))),
+      Envelope.Verb.POST -> new ServiceVerbHooks(source.metrics("post", Tag("serviceName", serviceName))))
+  }
 
-    override val map = if (seperateVerbs) {
-      // new bucket for hook counters for every verb
-      Map(
-        Envelope.Verb.GET -> new ServiceVerbHooks(source.subMetrics("get")),
-        Envelope.Verb.PUT -> new ServiceVerbHooks(source.subMetrics("put")),
-        Envelope.Verb.DELETE -> new ServiceVerbHooks(source.subMetrics("delete")),
-        Envelope.Verb.POST -> new ServiceVerbHooks(source.subMetrics("post")))
-    } else {
-      // give all verbs same hooks
-      val allVerbs = new ServiceVerbHooks(source)
-      Map(
-        Envelope.Verb.GET -> allVerbs,
-        Envelope.Verb.PUT -> allVerbs,
-        Envelope.Verb.DELETE -> allVerbs,
-        Envelope.Verb.POST -> allVerbs)
+  def allVerbsHooks(metrics: Metrics, serviceName: String): ServiceMetricHooks = {
+    val hooks = new ServiceVerbHooks(metrics)
+    new ServiceMetricHooks {
+      override val map = Map(
+        Envelope.Verb.GET -> hooks,
+        Envelope.Verb.PUT -> hooks,
+        Envelope.Verb.DELETE -> hooks,
+        Envelope.Verb.POST -> hooks)
     }
-
   }
 
 }

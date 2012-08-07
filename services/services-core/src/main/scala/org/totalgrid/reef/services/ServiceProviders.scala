@@ -107,7 +107,7 @@ class ServiceProviders(
     new CommandHandlerBindingService,
     new MeasurementStreamBindingService)
 
-  private val metrics = new MetricsServiceWrapper(metricsMgr.metrics("Services"), serviceConfiguration)
+  private val metrics = new MetricsServiceWrapper(metricsMgr, serviceConfiguration)
   private val metricWrapped = serviceProviders.map { s => metrics.instrumentCallback(s) }
 
   private val allServices = (new BatchServiceRequestService(metricWrapped) :: metricWrapped)

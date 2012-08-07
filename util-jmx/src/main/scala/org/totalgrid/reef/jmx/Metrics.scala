@@ -57,8 +57,6 @@ trait Metrics {
   def counter(name: String): (Int) => Unit
   def average(name: String): (Int) => Unit
   def timer(name: String): Timer
-
-  def subMetrics(subId: String): Metrics
 }
 
 object Metrics {
@@ -71,15 +69,11 @@ object Metrics {
     }
   }
 
-  class DefaultMetrics(container: MetricsContainer, baseName: Option[String] = None) extends Metrics {
+  class DefaultMetrics(container: MetricsContainer) extends Metrics {
 
-    private def register(nameSuffix: String, v: MetricValue) = {
-      val name = fullName(nameSuffix)
+    private def register(name: String, v: MetricValue) = {
       container.add(name, v)
       container.get(name).update(_)
-    }
-    private def fullName(nameSuffix: String) = {
-      baseName.map(_ + nameSuffix).getOrElse(nameSuffix)
     }
 
     def gauge(name: String) = {
@@ -102,13 +96,13 @@ object Metrics {
       container.add(name, metric)
       new DefaultTimer(metric)
     }
-
-    def subMetrics(subId: String) = new DefaultMetrics(container, Some(fullName(subId)))
   }
 }
 
 trait MetricsSource {
   def metrics(name: String): Metrics
+  def metrics(name: String, subTags: Tag): Metrics
+  def metrics(name: String, subTags: List[Tag]): Metrics
 }
 
 trait MetricsManager extends MetricsSource {
@@ -132,11 +126,22 @@ object MetricsManager {
     private var stash = List.empty[MetricsInfo]
     private var registered = List.empty[ObjectName]
 
-    def metrics(name: String): Metrics = {
+    private def addMetrics(name: String, tags: List[Tag]): Metrics = {
       val container = MetricsContainer()
       val info = MetricsInfo(domain, tags, name, container)
       stash ::= info
       Metrics(container)
+    }
+
+    def metrics(name: String, subTag: Tag): Metrics = {
+      addMetrics(name, tags ::: List(subTag))
+    }
+    def metrics(name: String, subTags: List[Tag]): Metrics = {
+      addMetrics(name, tags ::: subTags)
+    }
+
+    def metrics(name: String): Metrics = {
+      addMetrics(name, tags)
     }
 
     // TODO: invariants on calling only once and not calling metrics again afterwards
