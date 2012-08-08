@@ -46,6 +46,12 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util-jmx</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-calculations-library</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
