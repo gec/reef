@@ -20,7 +20,6 @@ package org.totalgrid.reef.services.activator
 
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import org.totalgrid.reef.app.ConnectionConsumer
-import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.services.authz.SqlAuthzService
 import org.totalgrid.reef.services.{ ServiceContext, ServiceProviders, ServiceBootstrap }
 import org.totalgrid.reef.services.settings.ServiceOptions
@@ -51,8 +50,6 @@ object ServiceFactory {
         val dbConnection = modules.getDbConnector()
 
         val (appConfig, authToken) = ServiceBootstrap.bootstrapComponents(dbConnection, connection, userSettings, nodeSettings)
-
-        val metricsHolder = MetricsSink.getInstance(appConfig.getInstanceName)
 
         val mgr = new LifecycleManager
         val measStore = modules.getMeasStore()
