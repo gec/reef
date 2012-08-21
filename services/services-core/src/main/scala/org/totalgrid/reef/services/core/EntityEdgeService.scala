@@ -22,7 +22,7 @@ import java.util.UUID
 import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.totalgrid.reef.client.exception.BadRequestException
+import org.totalgrid.reef.client.exception.{ InternalServiceException, BadRequestException }
 import org.totalgrid.reef.models._
 
 import org.totalgrid.reef.models.SquerylConversions._
@@ -45,9 +45,10 @@ class EntityEdgeServiceModel
   val table = ApplicationSchema.edges
 
   def findRecord(context: RequestContext, req: EntityEdgeProto): Option[EntityEdge] = {
-    findRecords(context, req) match {
-      case List(head, _) => None
-      case List(head) => Some(head)
+    val obj = if (req.hasDistance) req else req.toBuilder.setDistance(1).build
+    findRecords(context, obj) match {
+      case head :: second :: tail => throw new InternalServiceException("More than one edge matched request")
+      case head :: Nil => Some(head)
       case Nil => None
     }
   }
