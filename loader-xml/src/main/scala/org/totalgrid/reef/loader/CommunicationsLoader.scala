@@ -678,10 +678,12 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
         }
     }
 
+    val commandType = ProtoUtils.safeValueOf(options.getType, Mapping.CommandType.values(), Mapping.CommandType.valueOf _)
+
     val proto = Mapping.CommandMap.newBuilder
       .setCommandName(name)
       .setIndex(index)
-      .setType(Mapping.CommandType.valueOf(options.getType))
+      .setType(commandType)
 
     if (options.isSetOnTime)
       proto.setOnTime(options.getOnTime)

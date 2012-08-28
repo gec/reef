@@ -26,6 +26,8 @@ import org.totalgrid.reef.client.service.proto.Model.Point
 
 object CalculationsLoader {
 
+  import ProtoUtils.safeValueOf
+
   def prepareCalculationProto(outputPointName: String, outputUnit: String, basePointName: String, calc: CalcXml) = {
     val builder = Calculation.newBuilder
 
@@ -151,15 +153,6 @@ object CalculationsLoader {
       }
 
       input.build
-    }
-  }
-
-  private def safeValueOf[A](value: String, values: => Array[A], fun: String => A): A = {
-    try {
-      fun(value)
-    } catch {
-      case il: IllegalArgumentException =>
-        throw new LoadingException(value + " not one of the legal values: " + values.mkString("(", ",", ")"))
     }
   }
 }

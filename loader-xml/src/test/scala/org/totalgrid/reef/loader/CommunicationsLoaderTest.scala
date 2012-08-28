@@ -262,6 +262,32 @@ class CommunicationsLoaderTest extends FixtureSuite with BeforeAndAfterAll with 
     expect(2)(matchedError.length)
   }
 
+  def testCommunicationsDnp3BadControlCode(fixture: Fixture) {
+    import fixture._
+
+    val equipmentPointUnits = HashMap[String, String]()
+
+    // No profiles
+    //
+    model.add(
+      new Endpoint("Endpoint1", Some("dnp3"))
+        .set(new Interface("i1", "192.168.100.30", 8003))
+        .add(new Equipment("ChapelHill")
+          .add(new Equipment("BigBkr")
+            .add(new Control("trip", Some(1))
+              .set(new OptionsDnp3("PULSE_OPEN", 1000, 1000, 1))))))
+    loader.load(model, equipmentPointUnits)
+
+    logCollectedExceptions(loader)
+
+    expect(1)(loader.getExceptionCollector.getErrors.length)
+    val matchedError: List[String] = loader.getExceptionCollector.getErrors.filter(error =>
+      {
+        error.contains("not one of the legal values")
+      })
+    expect(1)(matchedError.length)
+  }
+
   def testCommunicationsDnp3WithIndexesSucceeds(fixture: Fixture) {
     import fixture._
 
