@@ -19,7 +19,7 @@ render the data exactly as desired.
 
 Widgets are tested and should work against most modern web browsers. (Chrome >= 15, Internet Explorer >= 7, Firefox >= 3)
 
-[Minimal Widget Demo](js-service-client/src/main/web/reef.widget-demos.html)
+[Minimal Widget Demo](widget-library/src/main/web/reef.widget-demos.html)
 
 Current Value Widget
 ---------------------
