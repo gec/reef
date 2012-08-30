@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core
 
-import org.totalgrid.reef.measurementstore.Historian
+import org.totalgrid.reef.measurementstore.{ InMemoryMeasurementStore, Historian }
 import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
 import org.totalgrid.reef.client.service.proto.Measurements
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory
@@ -32,17 +32,14 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.sapi.client.Expectations._
 
-class FakeHistorian(map: Map[String, List[Meas]]) extends Historian {
+class FakeHistorian(measStore: Historian) extends Historian {
   var begin: Long = -1
   var end: Long = -1
   var max: Long = -1
   var ascending = false
   def getInRange(name: String, b: Long, e: Long, m: Int, a: Boolean): Seq[Meas] = {
     begin = b; end = e; max = m; ascending = a
-    map.get(name) match {
-      case Some(l) => l
-      case None => Nil
-    }
+    measStore.getInRange(name, b, e, m, a)
   }
 
   def numValues(name: String): Int = { throw new Exception }
@@ -55,9 +52,12 @@ class MeasurementHistoryServiceTest extends DatabaseUsingTestBase with SyncServi
   class Fixture {
     val factories = new ModelFactories(new ServiceDependenciesDefaults(dbConnection))
     val pointService = sync(new PointService(factories.points))
-    val points = Map("meas1" -> List(makeMeas("meas1", 0, 1), makeMeas("meas1", 1, 1)),
-      "meas2" -> List(makeMeas("meas2", 100, 1), makeMeas("meas2", 200, 2), makeMeas("meas2", 300, 3)))
-    val historian = new FakeHistorian(points)
+    val measStore = new InMemoryMeasurementStore(false)
+    measStore.set(List(
+      makeMeas("meas1", 0, 1), makeMeas("meas1", 1, 1),
+      makeMeas("meas2", 100, 1), makeMeas("meas2", 200, 2), makeMeas("meas2", 300, 3),
+      makeMeas("meas3", 1, 88), makeMeas("meas3", 6, 99), makeMeas("meas3", 15, 111)))
+    val historian = new FakeHistorian(measStore)
     val service = sync(new MeasurementHistoryService(historian))
 
     private def makeMeas(name: String, time: Int, value: Int) = {
@@ -88,8 +88,8 @@ class MeasurementHistoryServiceTest extends DatabaseUsingTestBase with SyncServi
 
     f.validateHistorian(0, Long.MaxValue, 10000, false)
 
-    f.service.get(MeasurementHistory.newBuilder().setPointName("meas1").setStartTime(10).setEndTime(1000).build).expectOne()
-    f.validateHistorian(10, 1000, 10000, false)
+    f.service.get(MeasurementHistory.newBuilder().setPointName("meas1").setKeepNewest(false).setEndTime(1000).build).expectOne()
+    f.validateHistorian(0, 1000, 10000, true)
 
     f.service.get(MeasurementHistory.newBuilder().setPointName("meas1").setLimit(99).build).expectOne()
     f.validateHistorian(0, Long.MaxValue, 99, false)
@@ -121,7 +121,7 @@ class MeasurementHistoryServiceTest extends DatabaseUsingTestBase with SyncServi
     val f = new Fixture
 
     intercept[BadRequestException] {
-      f.service.get(MeasurementHistory.newBuilder.setPointName("meas3").build).expectOne()
+      f.service.get(MeasurementHistory.newBuilder.setPointName("meas44").build).expectOne()
     }
 
     intercept[BadRequestException] {
@@ -135,5 +135,25 @@ class MeasurementHistoryServiceTest extends DatabaseUsingTestBase with SyncServi
     intercept[BadRequestException] {
       f.service.get(MeasurementHistory.newBuilder.setPointName("meas1").setPoint(Point.newBuilder.setName("meas1")).build).expectOne()
     }
+  }
+
+  test("History Service history add previous point if we didn't hit limit") {
+    val f = new Fixture
+
+    val getMeas1 = f.service.get(MeasurementHistory.newBuilder.setPointName("meas1").setStartTime(4).build).expectOne()
+    getMeas1.getMeasurementsCount() should equal(1)
+    getMeas1.getMeasurements(0).getTime should equal(1)
+    getMeas1.getMeasurements(0).getIntVal should equal(1)
+
+  }
+
+  test("History Service history dont add previous point if we hit limit") {
+    val f = new Fixture
+
+    val getMeas1 = f.service.get(MeasurementHistory.newBuilder.setPointName("meas3").setStartTime(10).setLimit(1).build).expectOne()
+    getMeas1.getMeasurementsCount() should equal(1)
+    getMeas1.getMeasurements(0).getTime should equal(15)
+    getMeas1.getMeasurements(0).getIntVal should equal(111)
+
   }
 }

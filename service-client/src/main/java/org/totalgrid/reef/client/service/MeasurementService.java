@@ -42,6 +42,11 @@ import java.util.List;
  *   Asking for unknown points will result in an exception.
  *   </p>
  *
+ * When a history request is made and there are less than limit measurements in the time window we will look backwards
+ * from the since (from) time and return the previous value. This means the first point may be outside of your requested
+ * time window. This is helpful because it means a getMeasurement and a getMeasurementHistory(limit = 1, since = 10seconds)
+ * will return the same value in all cases, before it was possible for the history query to return an empty set for a range.
+ *
  * Tag for api-enhancer, do not delete: !api-definition!
  */
 public interface MeasurementService extends SubscriptionCreator

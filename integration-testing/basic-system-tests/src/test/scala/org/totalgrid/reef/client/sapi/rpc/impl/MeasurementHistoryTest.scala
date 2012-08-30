@@ -55,13 +55,13 @@ class MeasurementHistoryTest extends ServiceClientSuite {
     val list = new SynchronizedList[Double]
 
     // "Should be only two measurements since we limited since to the last 2 fake entries we made."
-    val last2 = client.subscribeToMeasurementHistoryByUuid(point.getUuid, now + 9, 100)
+    val last2 = client.subscribeToMeasurementHistoryByUuid(point.getUuid, now + 9, 2)
     last2.getResult.map { _.getDoubleVal } should equal(List(startValue + 9, startValue + 10))
 
     last2.getSubscription.start(new SubscriptionEventAcceptorShim[Measurement]({ ea: SubscriptionEvent[Measurement] => list.append(ea.getValue.getDoubleVal) }))
 
     // "Get measurements in range", "We can ask for a specific time range of measurements, this implies not getting live data.")
-    val middle = client.getMeasurementHistory(point, now + 3, now + 5, true, 100)
+    val middle = client.getMeasurementHistory(point, now + 3, now + 5, true, 3)
     middle.map { _.getDoubleVal } should equal(List(startValue + 3, startValue + 4, startValue + 5))
 
     list.get.isEmpty should equal(true)

@@ -80,6 +80,15 @@ class MeasurementHistoryService(cm: Historian)
     // read values out of the historian
     var history = cm.getInRange(pointName, begin, end, limit, !keepNewest)
 
+    // begin == 0 only when asking for all measurements
+    if (begin != 0 && history.size != limit) {
+      val previousValues = cm.getInRange(pointName, 0, begin, 1, false)
+      if (!previousValues.isEmpty) {
+        // TODO: make this more effecient
+        history = (previousValues(0) :: history.toList.reverse).reverse
+      }
+    }
+
     req.getSampling() match {
       case MeasurementHistory.Sampling.NONE =>
       case MeasurementHistory.Sampling.EXTREMES =>
