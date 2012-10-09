@@ -69,7 +69,7 @@ class ConcurrentRoundtripTimer(client: Client, result: SubscriptionResult[List[M
 
     var expected = measurements
     var firstMeas = Option.empty[Long]
-    val stopwatch = new Stopwatch()
+    val stopwatch = Stopwatch.start
 
     def onMeas(measWithUuid: Measurement): Boolean = {
       val m = measWithUuid.toBuilder.clearPointUuid().build

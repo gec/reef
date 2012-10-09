@@ -98,7 +98,7 @@ object ModelCreationUtilities {
       f.synchronized {
         if (inProgressOps < numConcurrent) {
           inProgressOps += 1
-          val stopwatch = new Stopwatch()
+          val stopwatch = Stopwatch.start
           val nextOperationToStart = remainingOps.headOption
           if (nextOperationToStart.isDefined) {
             remainingOps = remainingOps.tail

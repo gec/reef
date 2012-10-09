@@ -46,7 +46,7 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
     var readings = List.empty[BenchmarkReading]
 
     def addReadings[A](operation: String, ops: Seq[() => Promise[A]]) {
-      val stopwatch = new Stopwatch()
+      val stopwatch = Stopwatch.start
       val results = ModelCreationUtilities.parallelExecutor(client.getInternal.getExecutor, parallelism, ops)
       val overallTime = stopwatch.elapsed
 

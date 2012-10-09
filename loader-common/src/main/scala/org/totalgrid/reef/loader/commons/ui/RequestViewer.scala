@@ -62,7 +62,7 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
   var counts = Map.empty[Status, Counter]
   var classCounts = Map.empty[Class[_], Counter]
   var handled: Int = 0
-  val stopwatch = new Stopwatch()
+  val stopwatch = Stopwatch.start
 
   def start = {
     handled = 0
