@@ -22,7 +22,7 @@ import java.util.UUID
 import org.totalgrid.reef.models.UUIDConversions._
 import org.totalgrid.reef.client.service.proto.Model.{ Relationship, Entity => EntityProto }
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
-import org.squeryl.Query
+import org.squeryl.{ Queryable, Query }
 import org.squeryl.PrimitiveTypeMode._
 import org.totalgrid.reef.models.ApplicationSchema._
 import org.totalgrid.reef.models.SquerylConversions._
@@ -162,25 +162,25 @@ object EntityTreeQuery {
      * @param upperQuery Squeryl query that represents upper set
      * @param upperNodes Set of mutable result tree-nodes to be filled out
      */
-    def fillChildren(upperQuery: Query[Entity], upperNodes: List[ResultNodeBuilder]): Unit = {
+    def fillChildren(upperQuery: Query[Entity], upperNodes: List[ResultNodeBuilder]) {
 
       // short circuit the queries if we have no parent nodes
       if (upperNodes.isEmpty) return
 
-      val entEdges = lowerQuery(upperNodes.map { _.id })
-      val entsOnlyQuery = from(entEdges)(entEdge => select(entEdge._1))
+      val upperIds = upperNodes.map(_.id)
+      val upperIdMap = upperNodes.map(n => (n.id, n)).toMap
 
-      val ids = upperNodes.map(_.id)
       //if (ids != ids.distinct) throw new Exception("Tree is not unique, same node has multiple links to itself, check model.")
 
-      val upperMap = upperNodes.map(n => (n.id, n)).toMap
+      val entEdges = lowerQuery(upperIds)
+      val entsOnlyQuery = from(entEdges)(entEdge => select(entEdge._1))
 
       val nodes = entEdges.map {
         case (ent, edge) =>
           val rel = Relate(edge.relationship, edge.childId == ent.id, edge.distance)
           val upperId = if (edge.childId == ent.id) edge.parentId else edge.childId
           val node = new ResultNodeBuilder(ent)
-          upperMap(upperId).addSubNode(rel, node)
+          upperIdMap(upperId).addSubNode(rel, node)
           node
       }.toList
 
@@ -189,11 +189,11 @@ object EntityTreeQuery {
 
     protected def lowerQuery(upperIds: List[UUID]) = {
       from(entities, edges)((lowEnt, edge) =>
-        where(expr(lowEnt, edge, upperIds))
+        where(expressionForThisNode(lowEnt, edge, upperIds))
           select ((lowEnt, edge)))
     }
 
-    protected def expr(ent: Entity, edge: EntityEdge, upperIds: List[UUID]): LogicalBoolean = {
+    protected def expressionForThisNode(ent: Entity, edge: EntityEdge, upperIds: List[UUID]): LogicalBoolean = {
 
       val optList: List[Option[LogicalBoolean]] = List(name.map(ent.name === _),
         (types.size > 0) thenGet (ent.id in EntityQuery.entityIdsFromTypes(types)),
