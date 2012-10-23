@@ -153,22 +153,22 @@ object ProtoHelper {
           .setActionName("strip")
           .setType(ActivationType.HIGH)
           .setStripValue(true))
-        .addActions(
-          Action.newBuilder
-            .setActionName("qual")
-            .setType(ActivationType.HIGH)
-            .setQualityAnnotation(Quality.newBuilder.setValidity(Quality.Validity.QUESTIONABLE)))
-          .addActions(
-            Action.newBuilder
-              .setActionName("eventrise")
-              .setType(ActivationType.RISING)
-              .setEvent(EventGeneration.newBuilder.setEventType("event01")))
-            .addActions(
-              Action.newBuilder
-                .setActionName("eventfall")
-                .setType(ActivationType.FALLING)
-                .setEvent(EventGeneration.newBuilder.setEventType("event02")))
-              .build
+      .addActions(
+        Action.newBuilder
+          .setActionName("qual")
+          .setType(ActivationType.HIGH)
+          .setQualityAnnotation(Quality.newBuilder.setValidity(Quality.Validity.QUESTIONABLE)))
+      .addActions(
+        Action.newBuilder
+          .setActionName("eventrise")
+          .setType(ActivationType.RISING)
+          .setEvent(EventGeneration.newBuilder.setEventType("event01")))
+      .addActions(
+        Action.newBuilder
+          .setActionName("eventfall")
+          .setType(ActivationType.FALLING)
+          .setEvent(EventGeneration.newBuilder.setEventType("event02")))
+      .build
   }
   def triggerTransformation(measName: String) = {
     import org.totalgrid.reef.client.service.proto.Processing._
@@ -180,11 +180,11 @@ object ProtoHelper {
           .setActionName("linear")
           .setType(ActivationType.HIGH)
           .setLinearTransform(LinearTransform.newBuilder.setScale(10).setOffset(50000)))
-        .addActions(
-          Action.newBuilder
-            .setActionName("unit")
-            .setType(ActivationType.HIGH)
-            .setSetUnit("V"))
-          .build
+      .addActions(
+        Action.newBuilder
+          .setActionName("unit")
+          .setType(ActivationType.HIGH)
+          .setSetUnit("V"))
+      .build
   }
 }

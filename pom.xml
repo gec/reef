@@ -29,7 +29,7 @@
         <karaf.console.version>${karaf.version}</karaf.console.version>
         <scalatest.version>1.6.1</scalatest.version>
         <scala-maven-plugin.version>3.1.0</scala-maven-plugin.version>
-        <scalariform-maven-plugin.version>0.1.0</scalariform-maven-plugin.version>
+        <scalariform-maven-plugin.version>0.1.2</scalariform-maven-plugin.version>
         <mockito-core.version>1.8.5</mockito-core.version>
         <logback.version>0.9.27</logback.version>
         <maven-resources-plugin.version>2.3</maven-resources-plugin.version>

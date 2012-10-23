@@ -47,12 +47,12 @@ class FilterTriggerTest extends FunSuite with ShouldMatchers {
       .setFilter(
         FilterProto.newBuilder
           .setType(FilterProto.FilterType.DUPLICATES_ONLY))
-        .addActions(
-          ActionProto.newBuilder
-            .setSuppress(true)
-            .setActionName("action01")
-            .setType(ActivationType.LOW))
-          .build
+      .addActions(
+        ActionProto.newBuilder
+          .setSuppress(true)
+          .setActionName("action01")
+          .setType(ActivationType.LOW))
+      .build
 
     val trig = fac.buildTrigger(proto, "point01")
 

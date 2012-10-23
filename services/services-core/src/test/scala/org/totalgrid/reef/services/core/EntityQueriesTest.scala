@@ -227,10 +227,10 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
           .addEntities(
             EntityProto.newBuilder
               .addTypes("Point"))
-            .addEntities(
-              EntityProto.newBuilder
-                .setName("Junk01")
-                .addTypes("Junk")))
+          .addEntities(
+            EntityProto.newBuilder
+              .setName("Junk01")
+              .addTypes("Junk")))
 
     val nodes = protoToQuery(req.build, allEntitySelector)
     nodes.size should equal(2)
@@ -254,14 +254,14 @@ class EntityQueriesTest extends DatabaseUsingTestNotTransactionSafe with RunTest
           .addEntities(
             EntityProto.newBuilder
               .addTypes("Point")))
-        .addRelations(
-          Relationship.newBuilder
-            .setRelationship("refs")
-            .setDistance(4)
-            .addEntities(
-              EntityProto.newBuilder
-                .setName("Thing1")
-                .addTypes("Thing")))
+      .addRelations(
+        Relationship.newBuilder
+          .setRelationship("refs")
+          .setDistance(4)
+          .addEntities(
+            EntityProto.newBuilder
+              .setName("Thing1")
+              .addTypes("Thing")))
 
     val nodes = protoToQuery(req.build, allEntitySelector)
     nodes.size should equal(2)
