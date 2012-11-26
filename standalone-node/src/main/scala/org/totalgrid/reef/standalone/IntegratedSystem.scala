@@ -65,6 +65,7 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
     ServiceBootstrap.seed(dbConnection, userSettings.getUserPassword)
     measurementStore.reset()
     measurementStore.disconnect()
+    logger.info("Finished resetting database and measurement store")
   }
 
   val connectionFactory = new ReefConnectionFactory(brokerConnection, exe, new ReefServices)
