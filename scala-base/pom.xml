@@ -35,6 +35,18 @@
 							<goal>testCompile</goal>
 						</goals>
 					</execution>
+
+                    <execution>
+                        <id>cc</id>
+                        <goals>
+                            <goal>cc</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <useFsc>true</useFsc>
+                            <once>true</once>
+                        </configuration>
+                    </execution>
 				</executions>
 
 				<configuration>
