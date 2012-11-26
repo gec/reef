@@ -96,7 +96,7 @@
                 <version>${maven-protoc-plugin.version}</version>
                 <configuration>
                     <protoSourceRoot>src/proto</protoSourceRoot>
-                    <!--<checkStaleness>true</checkStaleness>-->
+                    <checkStaleness>true</checkStaleness>
 					<outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
                 </configuration>
                 <executions>
