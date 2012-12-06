@@ -12,6 +12,36 @@
 		<relativePath>../</relativePath>
 	</parent>
 
+    <profiles>
+        <profile>
+            <id>fsc</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>${scala-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>cc</id>
+                                <goals>
+                                    <goal>cc</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <useFsc>true</useFsc>
+                                    <once>true</once>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+    </profiles>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -35,18 +65,6 @@
 							<goal>testCompile</goal>
 						</goals>
 					</execution>
-
-                    <execution>
-                        <id>cc</id>
-                        <goals>
-                            <goal>cc</goal>
-                        </goals>
-                        <phase>compile</phase>
-                        <configuration>
-                            <useFsc>true</useFsc>
-                            <once>true</once>
-                        </configuration>
-                    </execution>
 				</executions>
 
 				<configuration>
