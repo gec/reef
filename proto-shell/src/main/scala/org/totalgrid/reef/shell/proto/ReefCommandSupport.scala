@@ -27,7 +27,6 @@ import org.totalgrid.reef.client.{ Connection, Client }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
-import org.totalgrid.reef.metrics.client.MetricsServiceList
 import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, SubscriptionEvent, Subscription, ConnectionCloseListener }
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
 
@@ -66,7 +65,6 @@ object ReefCommandSupport extends Logging {
 
     val factory = ReefConnectionFactory.buildFactory(amqpSettings, new ReefServices)
     val conn = factory.connect()
-    conn.addServicesList(new MetricsServiceList)
 
     val cancel = new Cancelable {
       def cancel() = {

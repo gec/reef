@@ -77,11 +77,6 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-metrics</artifactId>
-            <version>${reef.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-service-client</artifactId>
             <version>${reef.version}</version>
         </dependency>

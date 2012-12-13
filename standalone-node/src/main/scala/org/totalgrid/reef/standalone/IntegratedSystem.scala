@@ -33,7 +33,6 @@ import org.totalgrid.reef.models.CoreServicesSchema
 import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnectedApplicationManager }
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication
 import org.totalgrid.reef.frontend.{ ProtocolTraitToManagerShim, FepConnectedApplication }
-import org.totalgrid.reef.metrics.service.activator.MetricsServiceApplication
 import org.totalgrid.reef.client.factory.ReefConnectionFactory
 import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.protocol.api.ProtocolManager
@@ -90,7 +89,6 @@ class IntegratedSystem(exe: Executor, configFile: String, resetFirst: Boolean) e
       applicationManager.addConnectedApplication(new FepConnectedApplication(protocol.name, manager, userSettings))
     }
 
-    applicationManager.addConnectedApplication(new MetricsServiceApplication)
   }
 
   def connection(): Connection = {

@@ -59,11 +59,6 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-metrics</artifactId>
-            <version>${reef.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.totalgrid.reef</groupId>
             <artifactId>reef-util-osgi</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
