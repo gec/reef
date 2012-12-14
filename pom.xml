@@ -85,10 +85,10 @@
 		<module>fep</module>
         <module>standalone-fep</module>
 		<module>protocol-api</module>
-		<module>protocol-simulator</module>
-        <module>protocol-simulator-shell-commands</module>
-		<module>default-simulator</module>
-		<module>example-simulator</module>
+		<module>simulator/protocol-simulator</module>
+        <module>simulator/protocol-simulator-shell-commands</module>
+		<module>simulator/default-simulator</module>
+		<module>simulator/example-simulator</module>
 		<module>protocol-dnp3</module>
 		<module>services</module>
 		<module>admin-shell</module>

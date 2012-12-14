@@ -111,7 +111,6 @@ object BenchmarksRunner {
     outputResults(allResults, baseName)
   }
 
-
   def outputResults(allResults: List[BenchmarkReading], baseName: String) {
 
     val resultsByFileName = allResults.groupBy(_.csvName)
