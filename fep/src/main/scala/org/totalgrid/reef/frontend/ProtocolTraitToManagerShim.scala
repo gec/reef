@@ -68,8 +68,9 @@ class ProtocolTraitToManagerShim(protocol: Protocol) extends ProtocolManager wit
   private def newMeasBatchPublisher(services: FrontEndProviderServices, routingKey: String) = new Publisher[MeasurementBatch] {
     def publish(value: MeasurementBatch) {
       try {
+        val startTime = System.currentTimeMillis()
         services.publishMeasurements(value, new AddressableDestination(routingKey)).await()
-        logger.debug("Published a measurement batch of size: " + value.getMeasCount)
+        logger.info("Published a measurement batch of size: " + value.getMeasCount + " to " + routingKey + " " + " in " + (System.currentTimeMillis() - startTime) + " ms")
       } catch {
         case ex => logger.error("Couldn't publish measurements: " + ex.getMessage)
       }

@@ -24,6 +24,7 @@ import org.totalgrid.reef.app.process._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.app.ConnectedApplication
 import net.agileautomata.executor4s._
+import com.weiglewilczek.slf4s.Logging
 
 /**
  * Handles the multi stage application login process.
@@ -110,7 +111,7 @@ class LoginProcessTree(connection: Connection,
   }
 
   class HeartbeatTask(services: AllScadaService, appConfig: ApplicationConfig)
-      extends OneShotProcess("Starting beartbeats for: " + instanceName) {
+      extends OneShotProcess("Starting beartbeats for: " + instanceName) with Logging {
 
     var timer = Option.empty[Timer]
 
@@ -119,6 +120,7 @@ class LoginProcessTree(connection: Connection,
       val period: Long = managerSettings.overrideHeartbeatPeriodMs.getOrElse(appConfig.getHeartbeatCfg.getPeriodMs)
       timer = Some(executor.scheduleWithFixedOffset(period.milliseconds, period.milliseconds) {
         try {
+          logger.info("Sending heartbeat from " + appConfig.getInstanceName)
           services.sendHeartbeat(appConfig).await
         } catch {
           case rse: Exception =>
