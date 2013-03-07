@@ -110,7 +110,7 @@ class ServiceProviders(
   private val metrics = new MetricsServiceWrapper(metricsMgr, serviceConfiguration)
   private val metricWrapped = serviceProviders.map { s => metrics.instrumentCallback(s) }
 
-  private val allServices = (new BatchServiceRequestService(metricWrapped) :: metricWrapped)
+  private val allServices = (metrics.instrumentCallback(new BatchServiceRequestService(metricWrapped)) :: metricWrapped)
   val services = allServices.map { s => new ServiceMiddleware(contextSource, s) }
 
   val coordinators = List(
