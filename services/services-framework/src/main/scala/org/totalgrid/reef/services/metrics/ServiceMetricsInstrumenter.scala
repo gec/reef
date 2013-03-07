@@ -37,6 +37,7 @@ class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], met
 
       val metrics = metricsHolder.apply(verb).get
 
+      logger.info("Finished handling " + verb.toString + " " + service.componentId + ", Time: " + time + "ms")
       metrics.count(1)
       metrics.timer(time.toInt)
 
@@ -56,6 +57,7 @@ class ServiceMetricsInstrumenter[A <: AnyRef](service: ServiceEntryPoint[A], met
 
     val proxyCallback = new CallbackInterceptor(callback, recordMetrics _).onResponse _
 
+    logger.info("Starting handling " + verb.toString + " " + service.componentId)
     service.respondAsync(verb, countingSource, req)(proxyCallback)
   }
 

@@ -71,7 +71,7 @@ class ProcessStatusServiceModel(
   override def updateFromProto(context: RequestContext, ss: StatusSnapshot, hbeat: HeartbeatStatus): (HeartbeatStatus, Boolean) = {
     if (hbeat.isOnline) {
       if (ss.getOnline) {
-        logger.info("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " by " + (hbeat.timeoutAt - ss.getTime))
+        logger.info("Got heartbeat for: " + ss.getInstanceName + ": " + ss.getProcessId + " with " + (hbeat.timeoutAt - ss.getTime) + " left")
         hbeat.timeoutAt = ss.getTime + hbeat.periodMS * 2
         // don't publish a modify
         try {

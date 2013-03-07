@@ -74,6 +74,8 @@ class MeasurementStreamProcessingNode(
 
   val binding = client.bindMeasurementProcessingNode(processingPipeline, connection).await
 
+  logger.info("Bound measurement processing node: " + connection.getLogicalNode.getName + " to " + connection.getRouting.getServiceRoutingKey)
+
   client.setMeasurementProcessingConnectionReadyTime(connection, System.currentTimeMillis()).await
 
   def cancel() {
