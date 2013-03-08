@@ -34,7 +34,7 @@ final class QpidBrokerSubscription(session: Session, queue: String, connection: 
     override def resumed(s: Session) = logger.info("Qpid session resumed")
 
     override def message(s: Session, msg: MessageTransfer) {
-      val replyTo = ScalaOption(msg.getHeader.get(classOf[MessageProperties]).getReplyTo)
+      val replyTo = ScalaOption(msg.getHeader.getMessageProperties.getReplyTo)
       val dest = replyTo.map(r => new BrokerDestination(r.getExchange, r.getRoutingKey))
       try {
         consumer.onMessage(BrokerMessage(msg.getBodyBytes, dest))
