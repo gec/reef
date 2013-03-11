@@ -32,6 +32,27 @@ import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 import scala.collection.mutable
 import org.totalgrid.reef.client.service.proto.Model.{ EntityAttribute, EntityEdge, EntityAttributes, Entity, ConfigFile => ConfigFileProto }
 
+object CommonLoader {
+
+  def inferMimeType(filename: String): Option[String] = {
+    val parts = filename.split('.')
+    if (parts.length > 1) {
+      parts.last.toLowerCase match {
+        case "xml" => Some("text/xml")
+        case "jpg" => Some("image/jpeg")
+        case "jpeg" => Some("image/jpeg")
+        case "png" => Some("image/png")
+        case "gif" => Some("image/gif")
+        case "svg" => Some("image/svg+xml")
+        case other => None
+      }
+    } else {
+      None
+    }
+  }
+
+}
+
 class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollector, rootDir: File) extends Logging {
 
   val triggerCache = mutable.Map.empty[String, TriggerSet]
@@ -73,14 +94,8 @@ class CommonLoader(modelLoader: ModelLoader, exceptionCollector: ExceptionCollec
     if (hasFilename && hasCData) throw new LoadingException("Cannot have both filename and inline-data for configFile: " + name)
 
     val mimeType = if (!configFile.isSetMimeType) {
-      name match {
-        case s: String if (s.endsWith(".xml")) => "text/xml"
-        case s: String if (s.endsWith(".jpg")) => "image/jpeg"
-        case s: String if (s.endsWith(".jpeg")) => "image/jpeg"
-        case s: String if (s.endsWith(".png")) => "image/png"
-        case s: String if (s.endsWith(".gif")) => "image/gif"
-        case s: String if (s.endsWith(".svg")) => "image/svg+xml"
-        case _ => throw new LoadingException("Cannot guess mimeType for configfile, must be explictly defined: " + name)
+      CommonLoader.inferMimeType(name) getOrElse {
+        throw new LoadingException("Cannot guess mimeType for configfile, must be explictly defined: " + name)
       }
     } else {
       configFile.getMimeType
