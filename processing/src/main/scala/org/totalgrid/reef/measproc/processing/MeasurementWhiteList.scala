@@ -30,8 +30,8 @@ import org.totalgrid.reef.jmx.Metrics
 class MeasurementWhiteList(protected val next: Measurement => Unit, expectedPoints: List[Point], metrics: Metrics)
     extends Logging {
 
-  val allowedPointNamesLookup = expectedPoints.map { p => p.getName -> p }.toMap
-  var ignored = Map.empty[String, Boolean]
+  private var allowedPointNamesLookup: Map[String, Point] = expectedPoints.map { p => p.getName -> p }.toMap
+  private var ignored = Map.empty[String, Boolean]
 
   private val ignoredMeasurements = metrics.counter("ignoredMeasurements")
 
@@ -47,5 +47,10 @@ class MeasurementWhiteList(protected val next: Measurement => Unit, expectedPoin
             logger.info("Ignoring unexpected measurement: " + meas.getName)
         }
     }
+  }
+
+  def updatePointList(expectedPoints: List[Point]) {
+    allowedPointNamesLookup = expectedPoints.map { p => p.getName -> p }.toMap
+    ignored = Map.empty[String, Boolean]
   }
 }

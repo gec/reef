@@ -27,7 +27,6 @@ import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.measproc.pipeline.MeasProcessingPipeline
-
 /**
  * This class encapsulates all of the objects and functionality to process a stream of measurements from one endpoint.
  * A measurement processor node may have many processing nodes, some or all of the passed in resources can be shared
@@ -63,8 +62,7 @@ class MeasurementStreamProcessingNode(
 
   val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, points, endpoint.getName)
 
-  val endpointResult = client.subscribeToEndpointConnection(endpoint.getUuid).await
-  val endpointSub = processingPipeline.lastCacheManager.setSubscription(endpointResult)
+  val connectionWatcher = new EndpointConnectionWatcher(client, endpoint.getUuid, processingPipeline.lastCacheManager, processingPipeline.measWhiteList)
 
   val overrideResult = client.subscribeToOverridesForConnection(connection).await
   val overrideSub = processingPipeline.overProc.setSubscription(overrideResult)
@@ -82,7 +80,8 @@ class MeasurementStreamProcessingNode(
     binding.cancel()
     triggerSub.cancel()
     overrideSub.cancel()
-    endpointSub.cancel()
+    connectionWatcher.cancel()
     processingPipeline.close()
   }
 }
+

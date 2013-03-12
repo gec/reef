@@ -36,7 +36,7 @@ class MeasProcessingPipeline(
   // pipeline ends up being defined backwards, output from each step is wired into input of previous step
   // basicProcessingNode -> overrideProc -> triggerProc -> batchOutput
 
-  val lastCacheManager = new LastMeasurementCacheManager(endpointName)
+  val lastCacheManager = new LastMeasurementCacheManager
 
   val batchOutput = new ProcessedMeasBatchOutputCache(publish, eventSink, caches.measCache)
 
