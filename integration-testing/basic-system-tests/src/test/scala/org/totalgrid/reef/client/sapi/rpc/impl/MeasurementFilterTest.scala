@@ -83,6 +83,9 @@ class MeasurementFilterTest extends ServiceClientSuite {
     client.enableEndpointConnection(uuid)
     states.checkState(uuid, true, State.COMMS_UP)
 
+    // TODO: need a "measurement becomes X during Y ms" check to be less racy and more performant
+    Thread.sleep(2000)
+
     client.getMeasurementByName(pointName).getDoubleVal should equal(15.0)
 
   }

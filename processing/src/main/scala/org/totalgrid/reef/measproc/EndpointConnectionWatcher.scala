@@ -23,6 +23,7 @@ import processing.MeasurementWhiteList
 import org.totalgrid.reef.client.operations.scl.Event
 import scala.collection.JavaConversions._
 import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 class EndpointConnectionWatcher(client: MeasurementProcessorServices, endpointUuid: ReefUUID, cache: LastMeasurementCacheManager, whiteList: MeasurementWhiteList) extends Logging {
 
@@ -31,19 +32,27 @@ class EndpointConnectionWatcher(client: MeasurementProcessorServices, endpointUu
   val endpointResult = client.subscribeToEndpointConnection(endpointUuid).await
 
   endpointResult.getSubscription.onEvent {
-    case Event(anyType, endpointConn) => {
-
-      logger.info("Saw event " + anyType + " to endpoint " + endpointConn.getEndpoint.getName + ", resetting cache and white list.")
-
+    case Event(SubscriptionEventType.REMOVED, endpointConn) => {
+      logger.info("Saw event REMOVED to endpoint " + endpointConn.getEndpoint.getName + ", resetting cache.")
       cache.resetCache()
-
-      // Redo the point lookup
-      val endpoint = client.getEndpointByUuid(endpointUuid).await
-      val expectedPoints = endpoint.getOwnerships.getPointsList.toList
-      val points = client.getPointsByNames(expectedPoints).await
-
-      whiteList.updatePointList(points)
     }
+    case Event(SubscriptionEventType.MODIFIED, endpointConn) => {
+      logger.info("Saw event MODIFIED to endpoint " + endpointConn.getEndpoint.getName + ", resetting cache.")
+      cache.resetCache()
+    }
+    case Event(SubscriptionEventType.ADDED, endpointConn) => {
+      logger.info("Saw event ADDED to endpoint " + endpointConn.getEndpoint.getName + ", updating white list.")
+      updateWhiteList()
+    }
+  }
+
+  private def updateWhiteList() {
+    // Redo the point lookup
+    val endpoint = client.getEndpointByUuid(endpointUuid).await
+    val expectedPoints = endpoint.getOwnerships.getPointsList.toList
+    val points = client.getPointsByNames(expectedPoints).await
+
+    whiteList.updatePointList(points)
   }
 
   def cancel() {
