@@ -31,7 +31,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def get(req: A): Response[A] = get(req, BasicRequestHeaders.empty)
   def get(req: A, env: RequestHeaders): Response[A] = {
     val response = new SynchronizedResult[Response[A]]()
-    val cm = new RequestContextSourceWithHeaders(contextSource, env)
+    val cm = new RequestContextSourceWithHeaders("testSource", contextSource, env)
     service.getAsync(cm, req)(response.set _)
     response.await
   }
@@ -39,7 +39,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def put(req: A): Response[A] = put(req, BasicRequestHeaders.empty)
   def put(req: A, env: RequestHeaders): Response[A] = {
     val response = new SynchronizedResult[Response[A]]()
-    val cm = new RequestContextSourceWithHeaders(contextSource, env)
+    val cm = new RequestContextSourceWithHeaders("testSource", contextSource, env)
     service.putAsync(cm, req)(response.set _)
     response.await
   }
@@ -47,7 +47,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def post(req: A): Response[A] = post(req, BasicRequestHeaders.empty)
   def post(req: A, env: RequestHeaders): Response[A] = {
     val response = new SynchronizedResult[Response[A]]()
-    val cm = new RequestContextSourceWithHeaders(contextSource, env)
+    val cm = new RequestContextSourceWithHeaders("testSource", contextSource, env)
     service.postAsync(cm, req)(response.set _)
     response.await
   }
@@ -55,7 +55,7 @@ class SyncService[A <: AnyRef](service: ServiceEntryPoint[A], contextSource: Req
   def delete(req: A): Response[A] = delete(req, BasicRequestHeaders.empty)
   def delete(req: A, env: RequestHeaders): Response[A] = {
     val response = new SynchronizedResult[Response[A]]()
-    val cm = new RequestContextSourceWithHeaders(contextSource, env)
+    val cm = new RequestContextSourceWithHeaders("testSource", contextSource, env)
     service.deleteAsync(cm, req)(response.set _)
     response.await
   }

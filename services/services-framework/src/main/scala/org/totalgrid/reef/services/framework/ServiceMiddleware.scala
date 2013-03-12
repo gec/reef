@@ -59,7 +59,9 @@ class ServiceMiddleware[A <: AnyRef](contextSource: RequestContextSource, servic
 
     val value = descriptor.deserialize(request.getPayload.toByteArray)
 
-    val contextSourceWithHeaders = new RequestContextSourceWithHeaders(contextSource, env)
+    val title = request.getVerb.toString + " " + service.componentId
+
+    val contextSourceWithHeaders = new RequestContextSourceWithHeaders(title, contextSource, env)
 
     service.respondAsync(request.getVerb, contextSourceWithHeaders, value)(onResponse)
   }

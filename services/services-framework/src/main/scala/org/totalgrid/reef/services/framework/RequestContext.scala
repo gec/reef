@@ -105,12 +105,15 @@ trait RequestContextSource {
 /**
  * wrapper class that takes a source and merges in some extra RequestEnv headers before the transaction
  */
-class RequestContextSourceWithHeaders(contextSource: RequestContextSource, headers: RequestHeaders)
-    extends RequestContextSource {
+class RequestContextSourceWithHeaders(title: String, contextSource: RequestContextSource, headers: RequestHeaders)
+    extends RequestContextSource with Logging {
   def transaction[A](f: (RequestContext) => A) = {
     contextSource.transaction { context =>
       context.modifyHeaders(_.merge(headers))
       context.auth.prepare(context)
+
+      logger.info("Handling " + title + " from agent: " + context.get[Agent](AuthzService.agent).map(ag => ag.entity.value.name).getOrElse("(unknown)"))
+
       f(context)
     }
   }
