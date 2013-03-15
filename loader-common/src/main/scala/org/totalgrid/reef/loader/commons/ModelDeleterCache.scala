@@ -75,9 +75,14 @@ trait ModelDeleterCache extends ModelCollector {
     // NOTE: we need the List.empty[GeneratedMessage] to tell the compiler what the type is, when it tries to guess it can run forever
     val toDelete: List[GeneratedMessage] = edges ::: endpoints ::: channel ::: commands ::: points ::: equipment ::: configFiles ::: eventConfigs ::: List.empty[GeneratedMessage]
 
-    ScalaBatchOperations.batchOperations(local, batchSize) {
-      toDelete.foreach(local.delete(_))
-    }.await()
+    if (batchSize == 0) {
+      toDelete.foreach { local.delete(_).await() }
+    } else {
+      ScalaBatchOperations.batchOperations(local, batchSize) {
+        toDelete.foreach(local.delete(_))
+      }.await()
+    }
+
   }
 
   def size = endpoints.size + channel.size + commands.size + points.size + equipment.size + configFiles.size + eventConfigs.size
