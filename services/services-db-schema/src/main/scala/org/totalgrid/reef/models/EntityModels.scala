@@ -58,13 +58,20 @@ object Entity {
   }
 
   def preloadEntityTypes(entries: List[Entity]) {
-    val entitiesWithTypes = from(ApplicationSchema.entities, ApplicationSchema.entityTypes)((ent, typ) =>
-      where(ent.id in entries.map { _.id } and (typ.entityId === ent.id))
-        select (ent.id, typ.entType)).toList.groupBy(_._1)
+
+    val entitiesWithTypes: Map[UUID, List[String]] =
+      from(ApplicationSchema.entities, ApplicationSchema.entityTypes)((ent, typ) =>
+        where(ent.id in entries.map { _.id } and (typ.entityId === ent.id))
+          select (ent.id, typ.entType))
+        .toList.groupBy(_._1).mapValues(l => l.map(kv => kv._2))
 
     entries.foreach { entry =>
-      val listOfEntityWithTypes = entitiesWithTypes(entry.id)
-      entry.types.value = listOfEntityWithTypes.map { _._2 }
+      entitiesWithTypes.get(entry.id) match {
+        case Some(typeList) =>
+          entry.types.value = typeList
+        case None =>
+          entry.types.value = Nil
+      }
     }
   }
 }

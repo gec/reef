@@ -311,4 +311,12 @@ class EntityServiceTest extends DatabaseUsingTestBase {
     events.map(s => (s.typ, s.value.getClass)) should equal(eventList)
   }
 
+  test("Put entity with no types, get doesn't crash") {
+    val upload = Entity.newBuilder.setName("MagicTestObject").build
+
+    service.put(upload).expectOne(Status.CREATED)
+
+    service.get(Entity.newBuilder.setName("MagicTestObject").build).expectOne(Status.OK)
+  }
+
 }
