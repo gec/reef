@@ -103,7 +103,7 @@ object StandardAuthSeedData {
 
     val userRole = seeder.addRole("user_role", List(updatePassword, readSelfAgent, readAndDeleteOwnTokens))
 
-    val protocolAdapter = seeder.makePermission(true, List("read", "update"), List("endpoint_connection", "endpoint_state"))
+    val protocolAdapter = seeder.makePermission(true, List("read", "update"), List("endpoint_connection", "endpoint_state", "comm_channel"))
     val fep = seeder.makePermission(true, List("create", "update"), List("front_end_processor"))
     val protocolRole = seeder.addRole("protocol_adapter", List(protocolAdapter, fep))
 
