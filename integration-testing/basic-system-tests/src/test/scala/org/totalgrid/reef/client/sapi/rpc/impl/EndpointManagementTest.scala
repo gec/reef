@@ -78,6 +78,10 @@ class EndpointManagementTest extends ServiceClientSuite {
 
   }
 
+  /*
+  Disabling this test because it causes failures in subsequent tests, the 10 restarts continue
+  after the suite is over.
+
   test("Enable and disable as fast as possible") {
 
     // this test is a stress test on the coordinator and fep and benchmark protocol and also
@@ -116,5 +120,5 @@ class EndpointManagementTest extends ServiceClientSuite {
     val postMap = new EndpointConnectionStateMap(client.subscribeToEndpointConnections())
     postMap.checkAllState(true, COMMS_UP)
   }
-
+*/
 }
