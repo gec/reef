@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.9</version>
+        <version>0.4.10-SNAPSHOT</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-standalone-node</artifactId>
