@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.9-SNAPSHOT</version>
+        <version>0.4.9</version>
         <relativePath>../scala-base</relativePath>
     </parent>
 
