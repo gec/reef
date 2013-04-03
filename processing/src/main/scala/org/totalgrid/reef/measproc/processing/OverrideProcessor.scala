@@ -22,9 +22,9 @@ import org.totalgrid.reef.measproc.MeasProcServiceContext
 import org.totalgrid.reef.persistence.ObjectCache
 
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.metrics.{ MetricsHooks }
 import org.totalgrid.reef.client.service.proto.Processing.MeasOverride
 import org.totalgrid.reef.client.service.proto.Measurements.{ DetailQual, Quality, Measurement }
+import org.totalgrid.reef.jmx.Metrics
 
 object OverrideProcessor {
   def transformSubstituted(meas: Measurement): Measurement = {
@@ -42,17 +42,17 @@ object OverrideProcessor {
 }
 
 // TODO: OLD should not be set until a new field measurement comes in (61850-7-3).
-class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCache[Measurement], current: String => Option[Measurement])
-    extends MeasProcServiceContext[MeasOverride] with MetricsHooks with Logging {
+class OverrideProcessor(publish: (Measurement, Boolean) => Unit, cache: ObjectCache[Measurement], current: String => Option[Measurement], metrics: Metrics)
+    extends MeasProcServiceContext[MeasOverride] with Logging {
 
   import OverrideProcessor._
 
   private var map = scala.collection.immutable.Map[String, Option[Measurement]]()
 
-  private lazy val measSupressed = counterHook("measSupressed")
-  private lazy val overrideCurrentValueMiss = counterHook("overrideCurrentValueMiss")
-  private lazy val overridenCacheMiss = counterHook("overridenCacheMiss")
-  private lazy val overridesActive = valueHook("overridesActive")
+  private val measSupressed = metrics.counter("measSupressed")
+  private val overrideCurrentValueMiss = metrics.counter("overrideCurrentValueMiss")
+  private val overridenCacheMiss = metrics.counter("overridenCacheMiss")
+  private val overridesActive = metrics.gauge("overridesActive")
 
   def process(m: Measurement) {
     if (map.contains(m.getName)) {

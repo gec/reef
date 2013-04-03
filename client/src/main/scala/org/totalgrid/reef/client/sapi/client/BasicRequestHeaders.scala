@@ -19,21 +19,24 @@
 package org.totalgrid.reef.client.sapi.client
 
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.{ AddressableDestination, RequestHeaders, Routable }
-import org.totalgrid.reef.util.JavaInterop.notNull
+import org.totalgrid.reef.util.JavaInterop._
+import org.totalgrid.reef.client._
 
 object BasicRequestHeaders {
   val subQueueName = "SUB_QUEUE_NAME"
   val authToken = "AUTH_TOKEN"
-  val user = "USER"
   val resultLimit = "RESULT_LIMIT"
   val destination = "DESTINATION"
   val timeoutMs = "TIMEOUT_MS"
 
-  def from(list: List[Envelope.RequestHeader]): BasicRequestHeaders =
-    list.foldLeft(BasicRequestHeaders.empty)((sum, i) => sum.addHeader(i.getKey, i.getValue))
+  def from(map: java.util.Map[String, java.util.List[String]]): RequestHeaders = {
+    import scala.collection.JavaConversions._
+    map.foldLeft(new BasicRequestHeaders)((sum, i) => sum.addHeader(i._1, i._2.head))
+  }
 
-  val empty = new BasicRequestHeaders
+  def fromAuth(authToken: String) = empty.setAuthToken(authToken)
+
+  val empty: RequestHeaders = new BasicRequestHeaders
 }
 
 /**
@@ -48,79 +51,80 @@ final class BasicRequestHeaders private (val headers: Map[String, List[String]])
 
   /* --- Implement RequestHeaders --- */
 
-  override def setAuthToken(token: String) = setHeader(BasicRequestHeaders.authToken, notNull(token, "token"))
-
-  override def clearAuthToken() = clearHeader(BasicRequestHeaders.authToken)
-
-  override def setResultLimit(limit: Int) = setHeader(BasicRequestHeaders.resultLimit, limit.toString)
-
-  override def clearResultLimit() = clearHeader(BasicRequestHeaders.resultLimit)
+  override def setResultLimit(limit: Int) = {
+    if (limit <= 0) throw new IllegalArgumentException("Result Limit must be greator than 0 not " + limit)
+    setHeader(BasicRequestHeaders.resultLimit, limit.toString)
+  }
+  override def clearResultLimit = clearHeader(BasicRequestHeaders.resultLimit)
+  override def hasResultLimit = hasHeader(BasicRequestHeaders.resultLimit)
+  override def getResultLimit = getInteger(BasicRequestHeaders.resultLimit).map { _.toInt }.getOrElse(-1)
 
   override def setTimeout(timeoutMillis: Long) = {
     if (timeoutMillis <= 0) throw new IllegalArgumentException("Timeout must be greator than 0 not " + timeoutMillis)
     setHeader(BasicRequestHeaders.timeoutMs, timeoutMillis.toString)
   }
+  override def clearTimeout = clearHeader(BasicRequestHeaders.timeoutMs)
+  override def hasTimeout = hasHeader(BasicRequestHeaders.timeoutMs)
+  override def getTimeout = getString(BasicRequestHeaders.timeoutMs).map { _.toLong }.getOrElse(-1)
 
-  override def clearTimeout() = clearHeader(BasicRequestHeaders.timeoutMs)
+  override def setDestination(key: Routable) = setHeader(BasicRequestHeaders.destination, notNull(key.getKey, "key"))
+  override def clearDestination = clearHeader(BasicRequestHeaders.destination)
+  override def hasDestination = hasHeader(BasicRequestHeaders.destination)
+  override def getDestination = getString(BasicRequestHeaders.destination).map(key => new AddressableDestination(key)).getOrElse(new AnyNodeDestination())
 
-  override def setDestination(key: Routable) = setHeader(BasicRequestHeaders.destination, key.getKey)
+  override def getAuthToken = getString(BasicRequestHeaders.authToken).getOrElse("")
+  override def hasAuthToken = hasHeader(BasicRequestHeaders.authToken)
+  override def setAuthToken(token: String) = setHeader(BasicRequestHeaders.authToken, notNull(token, "token"))
+  override def clearAuthToken() = clearHeader(BasicRequestHeaders.authToken)
 
-  override def clearDestination() = clearHeader(BasicRequestHeaders.destination)
-
-  /* --- Specific getters/setters not part of RequestHeaders --- */
-
-  def getAuthToken = getString(BasicRequestHeaders.authToken).getOrElse("")
-
-  def getDestination = getString(BasicRequestHeaders.destination).map(key => new AddressableDestination(key))
-
-  def getTimeout = getString(BasicRequestHeaders.timeoutMs).map { _.toLong }
+  override def setSubscribeQueue(queueName: String) = setHeader(BasicRequestHeaders.subQueueName, notNull(queueName, "queueName"))
+  override def clearSubscribeQueue() = clearHeader(BasicRequestHeaders.subQueueName)
+  override def hasSubscribeQueue = hasHeader(BasicRequestHeaders.subQueueName)
+  override def getSubscribeQueue = getString(BasicRequestHeaders.subQueueName).getOrElse("")
 
   /* --- Helpers --- */
 
-  def addHeader(key: String, value: String) = headers.get(key) match {
+  private def addHeader(key: String, value: String) = headers.get(key) match {
     case Some(list) => new BasicRequestHeaders((headers - key) + (key -> (value :: list)))
     case None => new BasicRequestHeaders(headers + (key -> List(value)))
   }
 
-  def setHeader(key: String, value: String) = new BasicRequestHeaders(headers + (key -> List(value)))
+  private def setHeader(key: String, value: String) = new BasicRequestHeaders(headers + (key -> List(value)))
 
-  def clearHeader(key: String) = new BasicRequestHeaders(headers - key)
+  private def clearHeader(key: String) = new BasicRequestHeaders(headers - key)
+  private def hasHeader(key: String) = headers.get(key).map { b => true }.getOrElse(false)
 
-  def getString(key: String): Option[String] = headers.get(key) match {
+  private def getString(key: String): Option[String] = headers.get(key) match {
     case Some(List(a)) => Some(a)
     case _ => None
   }
 
-  def getInteger(key: String): Option[Int] = getString(key).map(_.toInt)
+  private def getInteger(key: String): Option[Int] = getString(key).map(_.toInt)
 
-  def getList(key: String): List[String] = headers.get(key) match {
+  private def getList(key: String): List[String] = headers.get(key) match {
     case Some(x) => x
     case None => Nil
   }
 
-  /**
-   * Merge the headers together, if a key is already present in this headers, the value from the other header is discarded
-   */
-  def merge(rhs: BasicRequestHeaders) = new BasicRequestHeaders(rhs.headers.foldLeft(headers)((map, x) => map + x))
+  def merge(other: RequestHeaders) = {
+    var out = this
+    out = if (other.hasDestination) out.setDestination(other.getDestination) else out
+    out = if (other.hasAuthToken) out.setAuthToken(other.getAuthToken) else out
+    out = if (other.hasResultLimit) out.setResultLimit(other.getResultLimit) else out
+    out = if (other.hasSubscribeQueue) out.setSubscribeQueue(other.getSubscribeQueue) else out
+    out = if (other.hasTimeout) out.setTimeout(other.getTimeout) else out
+    out
+  }
 
-  def subQueue: Option[String] = getString(BasicRequestHeaders.subQueueName)
-
-  def authTokens: List[String] = getList(BasicRequestHeaders.authToken)
-
-  def setSubscribeQueue(queueName: String) = addHeader(BasicRequestHeaders.subQueueName, notNull(queueName, "queueName"))
-
-  def addAuthToken(token: String) = addHeader(BasicRequestHeaders.authToken, notNull(token, "token"))
-
-  def getResultLimit() = getInteger(BasicRequestHeaders.resultLimit)
-
-  def setAuthTokens(ss: List[String]): BasicRequestHeaders =
-    ss.foldLeft(clearAuthToken)((rh, token) => rh.addAuthToken(token))
-
-  def toEnvelopeRequestHeaders: Iterable[Envelope.RequestHeader] = {
-    for {
+  def toEnvelopeRequestHeaders: java.lang.Iterable[Envelope.RequestHeader] = {
+    val slist = for {
       (key, list) <- headers
       value <- list
     } yield Envelope.RequestHeader.newBuilder.setKey(key).setValue(value).build
+
+    import scala.collection.JavaConversions._
+
+    slist.toList
   }
 }
 

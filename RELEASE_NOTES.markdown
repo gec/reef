@@ -9,6 +9,84 @@ Version Numbers are of the format {Major}.{Minor}.{Patch}.
 * Minor version updates imply a significant api or datatype change
 * Patch version updates should have little to no api or datatype changes
 
+
+Version 0.4.9 - April 2, 2013
+=============
+
+### Monitoring:
+
+* Publishing metrics using JMX.
+* Added and refactored logging statements to better trace service requests and their performance.
+
+### APIs:
+
+* Measurement History requests now return one measurement outside the specified range in order to provide context.
+
+### Reef Internals:
+
+* Moved pack timer code to be strand-based to avoid deadlocks.
+* Removed accidental 100 note limitation of FEPs and MeasProcs.
+* Added SQL script to initialize Postgres environments.
+
+### DNP3:
+
+* Added ability to disable unsolicited mode in DNP3 adapter.
+* Added better logging for bad DNP3 CommandTypes.
+
+### Bug Fixes:
+
+* Fixed minor bug where large publish would wait the full pack time before publishing.
+* Fixed bug where event configuration always had alarm set to audible.
+* Fixed bug in entity edge searches if a node had more than one grandparent.
+* REEF-305 - Made mime-types case insensitive
+* REEF-308 - Dynamically updating the measurement whitelist the endpoint configuration changes
+* REEF-304 - Service request failure when entity has no types
+* Fixed bug with loading batch size of 0 not being respected.
+* Added comm_channel:update to permissions for protocol adapters
+
+### Dependencies:
+
+* SLF4J updated to 1.7.2
+* Maven-protoc plugin updated to 0.1.10
+* Scala-maven-plugin updated to 3.1.0
+* Scalariform-maven-plugin updated to 0.1.2
+
+Version 0.4.8 - June 1, 2012
+=============
+
+This was primarily a refactoring and cleanup release. Prior to this version there were two seperate Client interfaces,
+one for scala, one for java. We have merged all of the functionality into the java client and removed the scala client.
+Java developers and applications now have full acces to features that before were only available to scala applications.
+There were also some important performance enhancements on the service implementation side. Make sure to read
+DB_MIGRATIONS.markdown for important database migration notes.
+
+### Major Features:
+
+* Promoted java client to "first class" citizen and ported all functionality that was previously available only to scala
+  into java client. This allowed removing all external uses of the scala client class.
+* Added point_uuid to Measurements and added getXxxxxByUuid calls for snapshots, history and statistics functions
+* Added --force option to reef:unload
+* Added reef:unload-children command to remove a subset of the system.
+* All requests use TTL (time to live) to stop server from handling old requests.
+* Client applications that handle command requests are bound to the command queue by server only, only the main service
+  nodes need to have "bind" level access to the broker.
+* Endpoints can be "externally-managed" by ProtocolAdapters, (previous behavior of "autoAssign" is still default)
+* ProtocolAdapters change endpoint state to ERROR if there is an issue during configuration of the protocol
+* Added forceToDouble parameter to comms:scale xml element to convert ints to doubles
+
+### Reef Internals:
+
+* Added batched loading of related properties to speed up slow getXxxxx queries that were making far too many database
+  requests to populate objects.
+* Filtering of invisibile entries are done during read rather than as a post filtering step (so response limit works)
+* Requests that include ReefUUID or ReefID will "short-circuit" other ways of searching for faster lookups.
+
+### Bug fixes
+
+* Default JAVA_MAX_MEM and JAVA_MAX_PERM_MEM for server builds are now 1024M and 256M respectivley
+* If calculator protocol has a misconfiguration just the bad points are marked #ERROR, not the whole endpoint.
+* Fixed issue where measurement processor would get unassigned and never reattached
+
 Version 0.4.7 - April 11, 2012
 ==============
 

@@ -29,7 +29,7 @@ object ApplicationView {
   }
 
   def header = {
-    "Name" :: "Version" :: "Online" :: "TimesOutAt" :: "Agent" :: "Capabilites" :: "Location" :: "Networks" :: Nil
+    "Name" :: "Version" :: "Online" :: "TimesOutAt" :: "Agent" :: "Capabilites" :: "Location" :: "Networks" :: "ProcessId" :: Nil
   }
 
   def row(a: ApplicationConfig) = {
@@ -41,6 +41,7 @@ object ApplicationView {
       a.getCapabilitesList.toList.mkString(", ") ::
       a.getLocation ::
       a.getNetworksList.toList.mkString(", ") ::
+      a.getProcessId ::
       Nil
   }
 

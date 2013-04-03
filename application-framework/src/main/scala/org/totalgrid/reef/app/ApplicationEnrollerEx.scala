@@ -19,15 +19,7 @@
 package org.totalgrid.reef.app
 
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
-import org.totalgrid.reef.procstatus.ProcessHeartbeatActor
-import org.totalgrid.reef.client.service.list.ReefServices
-import org.totalgrid.reef.client.sapi.client.rest.Client
-import net.agileautomata.executor4s.Executor
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
+import org.totalgrid.reef.client.Connection
 
 trait ConnectionProvider {
   def addConsumer(consumer: ConnectionConsumer)
@@ -35,46 +27,12 @@ trait ConnectionProvider {
 }
 
 trait ConnectionConsumer {
-  def newConnection(brokerConnection: BrokerConnection, exe: Executor): Cancelable
-}
 
-trait ClientConsumer {
-  def newClient(client: Client): Cancelable
-}
-
-trait AppEnrollerConsumer {
-  def applicationRegistered(client: Client, services: AllScadaService, appConfig: ApplicationConfig): Cancelable
-}
-
-class UserLogin(userSettings: UserSettings, consumer: ClientConsumer) extends ConnectionConsumer {
-  def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
-    // TODO: move defaultTimeout to userSettings file/object
-    val connection = new DefaultConnection(brokerConnection, exe, 5000)
-    connection.addServicesList(new ReefServices)
-    val client = connection.login(userSettings.getUserName, userSettings.getUserPassword).await
-
-    consumer.newClient(client)
-  }
-}
-
-class ApplicationEnrollerEx(nodeSettings: NodeSettings, instanceName: String, capabilities: List[String], applicationCreator: AppEnrollerConsumer) extends ClientConsumer {
-  def newClient(client: Client) = {
-
-    val services = client.getRpcInterface(classOf[AllScadaService])
-
-    val appConfig = services.registerApplication(nodeSettings, instanceName, capabilities).await
-
-    val heartBeater = new ProcessHeartbeatActor(services, appConfig.getHeartbeatCfg, client)
-
-    heartBeater.start()
-
-    val userApp = applicationCreator.applicationRegistered(client, services, appConfig)
-
-    new Cancelable {
-      override def cancel() {
-        userApp.cancel
-        heartBeater.stop()
-      }
-    }
-  }
+  /**
+   * Receive Connection when available.
+   *
+   * @param connection Connection with ReefServices already attached
+   * @return
+   */
+  def handleNewConnection(connection: Connection): Cancelable
 }

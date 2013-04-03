@@ -23,13 +23,15 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 import org.totalgrid.reef.client.service.command.{ CommandResultCallback, CommandRequestHandler }
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandResult, CommandStatus, UserCommandRequest }
 import org.totalgrid.reef.client.proto.Envelope
-import org.totalgrid.reef.client.sapi.client.{ SuccessResponse, BasicRequestHeaders, Response }
+import org.totalgrid.reef.client.operations.Response
+import org.totalgrid.reef.client.RequestHeaders
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 class EndpointCommandHandlerImpl(handler: CommandRequestHandler) extends AsyncServiceBase[UserCommandRequest] {
 
   val descriptor = Descriptors.userCommandRequest
 
-  override def putAsync(req: UserCommandRequest, env: BasicRequestHeaders)(callback: Response[UserCommandRequest] => Unit): Unit = {
+  override def putAsync(req: UserCommandRequest, env: RequestHeaders)(callback: Response[UserCommandRequest] => Unit): Unit = {
 
     val request = req.getCommandRequest
 
@@ -52,7 +54,7 @@ class EndpointCommandHandlerImpl(handler: CommandRequestHandler) extends AsyncSe
         }
         response.setResult(result)
 
-        callback(SuccessResponse(Envelope.Status.OK, List(response.build())))
+        callback(ScalaResponse.success(Envelope.Status.OK, response.build()))
       }
     }
 

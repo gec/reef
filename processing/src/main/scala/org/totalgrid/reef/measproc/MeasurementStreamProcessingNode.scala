@@ -20,7 +20,6 @@ package org.totalgrid.reef.measproc
 
 import scala.collection.JavaConversions._
 
-import org.totalgrid.reef.metrics.MetricsHookContainer
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingConnection
 import org.totalgrid.reef.client.service.proto.Events.Event
@@ -28,7 +27,6 @@ import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.measproc.pipeline.MeasProcessingPipeline
-
 /**
  * This class encapsulates all of the objects and functionality to process a stream of measurements from one endpoint.
  * A measurement processor node may have many processing nodes, some or all of the passed in resources can be shared
@@ -38,7 +36,7 @@ class MeasurementStreamProcessingNode(
   client: MeasurementProcessorServices,
   caches: MeasProcObjectCaches,
   connection: MeasurementProcessingConnection)
-    extends Logging with MetricsHookContainer {
+    extends Logging {
 
   def publishEvent(event: Event.Builder) = try {
     event.setUserId("system")
@@ -49,22 +47,22 @@ class MeasurementStreamProcessingNode(
       logger.warn("Couldn't publish event: " + rse.getMessage, rse)
   }
 
-  def measSink(meas: Measurement) = try {
-    client.publishIndividualMeasurementAsEvent(meas)
-  } catch {
-    case rse: ReefServiceException =>
-      logger.warn("Couldn't publish measurement: " + meas.getName + " message: " + rse.getMessage, rse)
+  def measSink(meas: Measurement) {
+    try {
+      client.publishIndividualMeasurementAsEvent(meas)
+    } catch {
+      case rse: ReefServiceException =>
+        logger.warn("Couldn't publish measurement: " + meas.getName + " message: " + rse.getMessage, rse)
+    }
   }
 
   val endpoint = client.getEndpointByUuid(connection.getLogicalNode.getUuid).await
   val expectedPoints = endpoint.getOwnerships.getPointsList.toList
+  val points = client.getPointsByNames(expectedPoints).await
 
-  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, expectedPoints, endpoint.getName)
+  val processingPipeline = new MeasProcessingPipeline(caches, measSink _, publishEvent _, points, endpoint.getName)
 
-  addHookedObject(processingPipeline)
-
-  val endpointResult = client.subscribeToEndpointConnection(endpoint.getUuid).await
-  val endpointSub = processingPipeline.lastCacheManager.setSubscription(endpointResult)
+  val connectionWatcher = new EndpointConnectionWatcher(client, endpoint.getUuid, processingPipeline.lastCacheManager, processingPipeline.measWhiteList)
 
   val overrideResult = client.subscribeToOverridesForConnection(connection).await
   val overrideSub = processingPipeline.overProc.setSubscription(overrideResult)
@@ -72,14 +70,18 @@ class MeasurementStreamProcessingNode(
   val triggerResult = client.subscribeToTriggerSetsForConnection(connection).await
   val triggerSub = processingPipeline.triggerProc.setSubscription(triggerResult)
 
-  val binding = client.bindMeasurementProcessingNode(processingPipeline, connection)
+  val binding = client.bindMeasurementProcessingNode(processingPipeline, connection).await
+
+  logger.info("Bound measurement processing node: " + connection.getLogicalNode.getName + " to " + connection.getRouting.getServiceRoutingKey)
 
   client.setMeasurementProcessingConnectionReadyTime(connection, System.currentTimeMillis()).await
 
-  def cancel() = {
-    binding.cancel
-    triggerSub.cancel
-    overrideSub.cancel
-    endpointSub.cancel
+  def cancel() {
+    binding.cancel()
+    triggerSub.cancel()
+    overrideSub.cancel()
+    connectionWatcher.cancel()
+    processingPipeline.close()
   }
 }
+

@@ -84,8 +84,24 @@ public interface Connection
      * After constructing the connection we will add the specific servicesList that has the
      * apis we need to call. More than one list can be added if desired.
      * @param servicesList ServicesList implementation included with the specific client package.
+     * @deprecated use ServiceRegistry.addServicesList instead
      */
+    @Deprecated
     void addServicesList( ServicesList servicesList );
 
+    /**
+     * Class used for creating and configuring services implementations (requires "high-level" credentials on
+     * the broker).
+     */
     ServiceRegistration getServiceRegistration();
+
+    /**
+     * holder for connection internals not meant for application use
+     */
+    ConnectionInternal getInternal();
+
+    /**
+     * service registry for adding ServicesList and retreiving low-level object details
+     */
+    ServiceRegistry getServiceRegistry();
 }

@@ -30,6 +30,7 @@ import org.totalgrid.reef.client.service.proto.Processing.MeasOverride
 import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.client.service.proto.Measurements
 import org.totalgrid.reef.client.proto.Envelope
+import org.totalgrid.reef.jmx.{ Metrics, MetricsContainer }
 
 @RunWith(classOf[JUnitRunner])
 class OverrideProcessorTest extends Suite with ShouldMatchers {
@@ -41,10 +42,17 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
 
     val overCache = new MockObjectCache[Measurement]
     val measCache = new MockObjectCache[Measurement]
-    val proc = new OverrideProcessor((m, b) => measQueue.enqueue(m), overCache, measCache.get(_))
 
-    def configure(config: List[MeasOverride]) = proc.subscribed(config)
-    def event(ev: Envelope.SubscriptionEventType, proto: MeasOverride) = proc.handleEvent(ev, proto)
+    val metrics = Metrics(MetricsContainer())
+
+    val proc = new OverrideProcessor((m, b) => measQueue.enqueue(m), overCache, measCache.get(_), metrics)
+
+    def configure(config: List[MeasOverride]) {
+      proc.subscribed(config)
+    }
+    def event(ev: Envelope.SubscriptionEventType, proto: MeasOverride) {
+      proc.handleEvent(ev, proto)
+    }
 
     def sendAndCheckMeas(m: Measurement) {
       proc.process(m)
@@ -52,21 +60,21 @@ class OverrideProcessorTest extends Suite with ShouldMatchers {
       overCache.putQueue.length should equal(0)
     }
 
-    def sendAndCheckOver(m: Measurement) = {
+    def sendAndCheckOver(m: Measurement) {
       proc.process(m)
       checkSame(m, overCache.putQueue.dequeue._2)
       measQueue.length should equal(0)
     }
-    def receiveAndCheckMeas(orig: Measurement) = {
+    def receiveAndCheckMeas(orig: Measurement) {
       checkSameExceptTimeIsGreater(orig, measQueue.dequeue)
     }
-    def receiveAndCheckOver(m: Measurement) = {
+    def receiveAndCheckOver(m: Measurement) {
       checkSame(m, overCache.putQueue.dequeue._2)
     }
-    def checkNISPublished(orig: Measurement) = {
+    def checkNISPublished(orig: Measurement) {
       checkNIS(orig, measQueue.dequeue)
     }
-    def checkReplacePublished(repl: Measurement) = {
+    def checkReplacePublished(repl: Measurement) {
       checkReplaced(repl, measQueue.dequeue)
     }
   }

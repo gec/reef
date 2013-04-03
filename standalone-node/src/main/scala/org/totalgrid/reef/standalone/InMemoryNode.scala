@@ -18,8 +18,6 @@
  */
 package org.totalgrid.reef.standalone
 
-import org.totalgrid.reef.client.ConnectionFactory
-import org.totalgrid.reef.client.javaimpl.ConnectionWrapper
 import net.agileautomata.executor4s._
 
 /**
@@ -28,12 +26,7 @@ import net.agileautomata.executor4s._
 object InMemoryNode {
 
   lazy val connection = systemOption.get.connection()
-  lazy val javaConnectionFactory = new ConnectionFactory {
-    lazy val javaConnection = new ConnectionWrapper(connection, exeOption.get)
-    def connect() = javaConnection
-
-    def terminate() {}
-  }
+  lazy val connectionFactory = systemOption.get.connectionFactory
   lazy val userSettings = systemOption.get.userSettings
   lazy val system = systemOption.get
 

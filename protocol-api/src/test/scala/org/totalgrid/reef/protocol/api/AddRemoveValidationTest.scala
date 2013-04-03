@@ -25,8 +25,11 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 import org.totalgrid.reef.client.service.proto.FEP
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.mockito.Mockito
+import org.totalgrid.reef.client.service.proto.Model.ConfigFile
+import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
+import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 
 @RunWith(classOf[JUnitRunner])
 class AddRemoveValidationTest extends FunSuite with ShouldMatchers {
@@ -97,6 +100,55 @@ class AddRemoveValidationTest extends FunSuite with ShouldMatchers {
     m.removeChannel("port1")
     m.next() should equal(Some(RemoveChannel("port1")))
     m.next() should equal(None)
+  }
+
+  class ExceptingProtocol extends Protocol {
+
+    var throwExceptions = false
+    def throwBad = if (throwExceptions) throw new IllegalStateException
+
+    def name = "bad"
+    def addEndpoint(endpoint: String, channelName: String, config: List[ConfigFile],
+      batchPublisher: Publisher[MeasurementBatch], endpointPublisher: Publisher[EndpointConnection.State],
+      client: Client): CommandHandler = {
+      throwBad
+      NullCommandHandler
+    }
+    def removeEndpoint(endpoint: String) { throwBad }
+    def addChannel(channel: CommChannel, channelPublisher: Publisher[CommChannel.State], client: Client) { throwBad }
+    def removeChannel(channel: String) { throwBad }
+  }
+
+  def getExceptingProtocol = new ExceptingProtocol with RecordingProtocol with AddRemoveValidation
+
+  test("MangingEndpointIsExceptionSafe") {
+    val m = getExceptingProtocol
+
+    m.addChannel(channel, NullChannelPublisher, client)
+    m.throwExceptions = true
+    intercept[IllegalStateException](m.addEndpoint("ep", channel.getName, Nil, NullBatchPublisher, NullEndpointPublisher, client))
+    m.throwExceptions = false
+    m.addEndpoint("ep", channel.getName, Nil, NullBatchPublisher, NullEndpointPublisher, client)
+
+    m.throwExceptions = true
+    intercept[IllegalStateException](m.removeEndpoint("ep"))
+    m.throwExceptions = false
+    intercept[IllegalArgumentException](m.removeEndpoint("ep"))
+  }
+
+  test("MangingChannelIsExceptionSafe") {
+    val m = getExceptingProtocol
+
+    m.throwExceptions = true
+    intercept[IllegalStateException](m.addChannel(channel, NullChannelPublisher, client))
+    m.throwExceptions = false
+
+    m.addChannel(channel, NullChannelPublisher, client)
+
+    m.throwExceptions = true
+    intercept[IllegalStateException](m.removeChannel(channel.getName))
+    m.throwExceptions = false
+    intercept[IllegalArgumentException](m.removeChannel(channel.getName))
   }
 }
 

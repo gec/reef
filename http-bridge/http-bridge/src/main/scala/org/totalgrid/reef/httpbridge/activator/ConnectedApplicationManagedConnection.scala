@@ -22,7 +22,7 @@ import org.totalgrid.reef.httpbridge.ManagedConnection
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.client.exception.{ ReefServiceException, ServiceIOException }
 import org.totalgrid.reef.client.settings.UserSettings
 
@@ -36,12 +36,12 @@ class ConnectedApplicationManagedConnection(defaultUser: Option[UserSettings])
 
   def connection = currentConnection.getOrElse(throw new ServiceIOException("Connection not available"))
 
-  def getAuthenticatedClient(authToken: String) = {
-    connection.login(authToken)
+  def getAuthenticatedClient(authToken: String): Client = {
+    connection.createClient(authToken)
   }
 
   def getNewAuthToken(userName: String, userPassword: String) = {
-    connection.login(userName, userPassword).await.getHeaders.getAuthToken()
+    connection.login(new UserSettings(userName, userPassword)).getHeaders.getAuthToken()
   }
 
   def getSharedBridgeAuthToken() = defaultAuthToken

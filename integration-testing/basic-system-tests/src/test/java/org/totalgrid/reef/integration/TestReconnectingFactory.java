@@ -49,7 +49,7 @@ public class TestReconnectingFactory
         final AmqpSettings s = new AmqpSettings( properties );
         final UserSettings userSettings = new UserSettings( properties );
 
-        ReconnectingConnectionFactory factory = new ReefReconnectingFactory( s, new ReefServices(), 100, 500 );
+        ReconnectingConnectionFactory factory = ReefReconnectingFactory.buildFactory( s, new ReefServices(), 100, 500 );
 
         final SyncVar closed = new SyncVar<Boolean>( Boolean.FALSE );
         final SyncVar closeExpected = new EmptySyncVar<Boolean>();

@@ -394,6 +394,7 @@
             <xs:attribute name="engUnit" type="xs:string"/>
             <xs:attribute name="slope" type="xs:double"/>
             <xs:attribute name="offset" type="xs:double"/>
+            <xs:attribute name="forceToDouble" type="xs:boolean" default="false"/>
         </xs:complexType>
     </xs:element>
     <xs:complexType name="IndexType" abstract="true">
@@ -745,6 +746,7 @@
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
 		<xs:attribute name="dataSource" type="xs:boolean" default="true"/>
+        <xs:attribute name="autoAssigned" type="xs:boolean" default="true"/>
     </xs:complexType>
     <xs:element name="endpointProfile">
         <xs:annotation>

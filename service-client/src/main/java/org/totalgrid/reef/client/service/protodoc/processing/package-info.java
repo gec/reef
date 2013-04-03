@@ -64,6 +64,7 @@
  * message LinearTransform {
  *   optional double scale = 2;
  *   optional double offset = 3;
+ *   optional bool   forceToDouble = 4 [default = false];
  * }
  * 
  * message EventGeneration {
@@ -159,6 +160,15 @@
  *     optional MeasurementProcessingRouting routing               = 5;
  *     optional uint64                       assignedTime          = 6;
  *     optional uint64                       readyTime             = 7;
+ * }
+ * 
+ * /*
+ *   When an measurement processor wants to register to handle a measurement stream
+ *   it will post a binding request with the connection and the name/id of the SubscriptionBinding queue
+ * -/
+ * message MeasurementStreamBinding {
+ *     optional MeasurementProcessingConnection   processing_connection     = 1;
+ *     optional string                            measurement_queue         = 2;
  * }
  * </pre>
  */

@@ -64,11 +64,15 @@ class EndpointConnectionSubscriptionFilter(connections: ClearableMap[EndpointCon
    * still enabled and that there is a routing key (meas proc is ready for us) before adding it.
    * otherwise we remove it
    */
-  private def shouldStart(c: EndpointConnection) = c.hasRouting && c.hasEnabled && c.getEnabled
+  private def shouldStart(c: EndpointConnection) = c.hasRouting && c.hasEnabled && c.getEnabled && (!c.hasActive || c.getActive)
+  // TODO: in 0.5.x we can remove the hasActive part because we assume all servers are 0.4.8+
 
   // temporary logging to help track down intermittent error
   private def logEndpointMessage(c: EndpointConnection, verb: String) {
-    logger.info(verb + " : " + c.getEndpoint.getName + " enabled: " + c.getEnabled + " state: " + c.getState + " routing: " + c.getRouting.getServiceRoutingKey)
+    logger.info(verb + " : " + c.getEndpoint.getName + " enabled: " + c.getEnabled +
+      " state: " + c.getState + " active: " + (!c.hasActive || c.getActive) +
+      " routing: " + c.getRouting.getServiceRoutingKey +
+      " adapter: " + c.getFrontEnd.getAppConfig.getInstanceName)
   }
 
   /**

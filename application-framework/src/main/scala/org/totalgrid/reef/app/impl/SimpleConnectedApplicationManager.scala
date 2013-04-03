@@ -20,10 +20,7 @@ package org.totalgrid.reef.app.impl
 
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import com.weiglewilczek.slf4s.Logging
-import org.totalgrid.reef.client.sapi.client.rest.Connection
-import org.totalgrid.reef.broker.BrokerConnection
-import org.totalgrid.reef.client.sapi.client.rest.impl.DefaultConnection
-import org.totalgrid.reef.client.service.list.ReefServices
+import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.app.{ ConnectedApplication, ConnectionConsumer, ConnectedApplicationManager, ConnectionProvider }
 import net.agileautomata.executor4s.{ Cancelable, Executor }
 import org.totalgrid.reef.util.Lifecycle
@@ -47,12 +44,8 @@ class SimpleConnectedApplicationManager(executor: Executor, provider: Connection
   private var currentConnection = Option.empty[Connection]
   private var applications = Map.empty[ConnectedApplication, Option[LoginProcessTree]]
 
-  def newConnection(brokerConnection: BrokerConnection, exe: Executor) = {
-
-    val conn = new DefaultConnection(brokerConnection, exe, 5000)
-    conn.addServicesList(new ReefServices)
-
-    handleConnection(conn)
+  def handleNewConnection(connection: Connection) = {
+    handleConnection(connection)
   }
 
   def handleConnection(conn: Connection) = {
@@ -103,7 +96,11 @@ class SimpleConnectedApplicationManager(executor: Executor, provider: Connection
   }
 
   private def createLoginProcess(app: ConnectedApplication) {
-    val process = if (currentConnection.isEmpty) None else Some(new LoginProcessTree(currentConnection.get, app, managerSettings, executor))
+    val process = if (currentConnection.isEmpty) {
+      None
+    } else {
+      Some(new LoginProcessTree(currentConnection.get, app, managerSettings, executor))
+    }
 
     applications += (app -> process)
   }

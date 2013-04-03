@@ -18,21 +18,21 @@
  */
 package org.totalgrid.reef.measproc.pipeline
 
-import org.totalgrid.reef.metrics.MetricsHooks
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.proto.Measurements.{ MeasurementBatch, Measurement }
+import org.totalgrid.reef.jmx.Metrics
 
-class MeasPipelinePump(procFun: Measurement => Unit, flushCache: () => Unit)
-    extends MetricsHooks with Logging {
+class MeasPipelinePump(procFun: Measurement => Unit, flushCache: () => Unit, metrics: Metrics)
+    extends Logging {
 
-  protected lazy val measProcessingTime = timingHook("measProcessingTime")
-  protected lazy val measProcessed = counterHook("measProcessed")
+  private val measProcessingTime = metrics.timer("measProcessingTime")
+  private val measProcessed = metrics.counter("measProcessed")
 
-  protected lazy val batchProcessingTime = timingHook("batchesProcessingTime")
-  protected lazy val batchProcessed = counterHook("batchesProcessed")
-  protected lazy val batchSize = averageHook("batchSize")
+  private val batchProcessingTime = metrics.timer("batchesProcessingTime")
+  private val batchProcessed = metrics.counter("batchesProcessed")
+  private val batchSize = metrics.average("batchSize")
 
-  def process(b: MeasurementBatch) = {
+  def process(b: MeasurementBatch) {
     batchProcessingTime[Unit] {
       deBatch(b) { meas =>
         logger.debug("Processing: " + meas)
@@ -45,7 +45,7 @@ class MeasPipelinePump(procFun: Measurement => Unit, flushCache: () => Unit)
     batchProcessed(1)
   }
 
-  private def deBatch[A](batch: MeasurementBatch)(f: Measurement => A) = {
+  private def deBatch[A](batch: MeasurementBatch)(f: Measurement => A) {
     import scala.collection.JavaConversions._
 
     val now = System.currentTimeMillis()

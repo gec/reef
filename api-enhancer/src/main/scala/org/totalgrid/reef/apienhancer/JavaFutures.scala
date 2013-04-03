@@ -27,9 +27,9 @@ import java.io.{ PrintStream, File }
  * duplicates the original java apis but wraps all of the return values in Futures
  */
 class JavaFutures extends ApiTransformer with GeneratorFunctions {
-  def make(c: ClassDoc, packageStr: String, rootDir: File, sourceFile: File) {
+  def make(c: ClassDoc, packageStr: String, outputDir: File, sourceFile: File) {
 
-    getFileStream(packageStr, rootDir, sourceFile, ".client.service.async", false, c.name + "Async") { (stream, javaPackage) =>
+    getFileStream(packageStr, outputDir, sourceFile, ".client.service.async", false, c.name + "Async") { (stream, javaPackage) =>
       javaFuture(c, stream, javaPackage)
     }
   }

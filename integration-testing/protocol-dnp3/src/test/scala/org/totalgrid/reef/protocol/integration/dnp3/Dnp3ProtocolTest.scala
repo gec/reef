@@ -27,34 +27,44 @@ import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State._
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.client.service.proto.Measurements.Quality.Validity
 import org.totalgrid.reef.client.sapi.rpc.impl.util.{ EndpointConnectionStateMap, ServiceClientSuite }
+import org.totalgrid.reef.loader.commons.LoaderServices
+import org.totalgrid.reef.loader.LoadManager
+import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol
+import org.totalgrid.reef.protocol.api.AddRemoveValidation
+import org.totalgrid.reef.protocol.dnp3.slave.Dnp3SlaveProtocol
+import org.totalgrid.reef.standalone.InMemoryNode
+import org.totalgrid.reef.frontend.ProtocolTraitToManagerShim
 
 @RunWith(classOf[JUnitRunner])
 class Dnp3ProtocolTest extends ServiceClientSuite {
 
   override val modelFile = "../../protocol-dnp3/src/test/resources/sample-model.xml"
+  override val waitForEndpointsOnline: Boolean = false
+
+  test("Add dnp3 protocol") {
+    if (!remoteTest) {
+      System.loadLibrary("dnp3java")
+      System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
+      val master = new ProtocolTraitToManagerShim(new Dnp3MasterProtocol with AddRemoveValidation)
+      val slave = new ProtocolTraitToManagerShim(new Dnp3SlaveProtocol with AddRemoveValidation)
+      InMemoryNode.system.addProtocol("dnp3-slave", slave)
+      InMemoryNode.system.addProtocol("dnp3", master)
+    }
+  }
 
   test("Cycle endpoints") {
-    val endpoints = client.getEndpoints().await.toList
-
-    endpoints.isEmpty should equal(false)
-
-    val result = client.subscribeToEndpointConnections().await
-
-    val map = new EndpointConnectionStateMap(result)
-
-    // make sure everything starts comms_up and enabled
-    map.checkAllState(true, COMMS_UP)
+    val (endpoints, map) = checkEndpointsOnline()
 
     (1 to 5).foreach { i =>
 
       val start = System.currentTimeMillis()
-      endpoints.foreach { e => client.disableEndpointConnection(e.getUuid).await }
+      endpoints.foreach { e => client.disableEndpointConnection(e.getUuid) }
 
       map.checkAllState(false, COMMS_DOWN)
       val disabled = System.currentTimeMillis()
       println("Disabled to COMMS_DOWN in: " + (disabled - start))
 
-      endpoints.foreach { e => client.enableEndpointConnection(e.getUuid).await }
+      endpoints.foreach { e => client.enableEndpointConnection(e.getUuid) }
 
       map.checkAllState(true, COMMS_UP)
       val enabled = System.currentTimeMillis()
@@ -66,22 +76,47 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
   }
 
   test("Issue Commands") {
-    val endpoint = client.getEndpointByName("DNPInput").await
-    val commands = client.getCommandsBelongingToEndpoint(endpoint.getUuid).await.toList
+    val endpoint = client.getEndpointByName("DNPInput")
+    val commands = client.getCommandsBelongingToEndpoint(endpoint.getUuid).toList
 
-    val lock = client.createCommandExecutionLock(commands).await
+    val lock = client.createCommandExecutionLock(commands)
     try {
       commands.foreach { cmd =>
         cmd.getType match {
-          case CommandType.CONTROL => client.executeCommandAsControl(cmd).await
-          case CommandType.SETPOINT_DOUBLE => client.executeCommandAsSetpoint(cmd, 55.55).await
-          case CommandType.SETPOINT_INT => client.executeCommandAsSetpoint(cmd, 100).await
-          case CommandType.SETPOINT_STRING => client.executeCommandAsSetpoint(cmd, "TestString").await
+          case CommandType.CONTROL => client.executeCommandAsControl(cmd)
+          case CommandType.SETPOINT_DOUBLE => client.executeCommandAsSetpoint(cmd, 55.55)
+          case CommandType.SETPOINT_INT => client.executeCommandAsSetpoint(cmd, 100)
+          case CommandType.SETPOINT_STRING => client.executeCommandAsSetpoint(cmd, "TestString")
         }
       }
     } finally {
-      client.deleteCommandLock(lock).await
+      client.deleteCommandLock(lock)
     }
+  }
+
+  test("Reload config file on running system") {
+    val loaderServices = session.getService(classOf[LoaderServices])
+
+    loaderServices.setHeaders(loaderServices.getHeaders.setTimeout(50000))
+    LoadManager.loadFile(loaderServices, modelFile, true, false, false, 25)
+
+    checkEndpointsOnline()
+  }
+
+  private def checkEndpointsOnline() = {
+    val endpoints = client.getEndpoints().toList
+
+    endpoints.isEmpty should equal(false)
+
+    val result = client.subscribeToEndpointConnections()
+
+    val map = new EndpointConnectionStateMap(result)
+
+    // make sure everything starts comms_up and enabled
+    map.checkAllState(true, COMMS_UP)
+
+    (endpoints, map)
+
   }
 
   private def setupMeasSubscribe(names: List[String]): Map[String, SyncVar[List[Measurement]]] = {
@@ -89,7 +124,7 @@ class Dnp3ProtocolTest extends ServiceClientSuite {
 
     val syncVars = names.map { _ -> new SyncVar(List.empty[Measurement]) }.toMap
 
-    val subResult = client.subscribeToMeasurementsByNames(names).await
+    val subResult = client.subscribeToMeasurementsByNames(names)
     subResult.getSubscription.start(new SubscriptionEventAcceptor[Measurement] {
       def onEvent(event: SubscriptionEvent[Measurement]) {
         val m = event.getValue

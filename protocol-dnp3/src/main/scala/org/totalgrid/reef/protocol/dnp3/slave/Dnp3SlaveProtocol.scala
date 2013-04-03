@@ -24,7 +24,7 @@ import org.totalgrid.reef.protocol.dnp3.{ ICommandAcceptor, IStackObserver }
 import org.totalgrid.reef.client.service.proto.Commands.CommandRequest
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler => ProtocolCommandHandler }
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
@@ -47,7 +47,7 @@ class Dnp3SlaveProtocol extends Dnp3ProtocolBase[SlaveObjectsContainer] {
     endpointPublisher: Publisher[EndpointConnection.State],
     client: Client): ProtocolCommandHandler = {
 
-    val services = client.getRpcInterface(classOf[AllScadaService])
+    val services = client.getService(classOf[AllScadaService])
 
     logger.info("Adding device with id: " + endpointName + " onto channel " + channelName)
 
@@ -61,7 +61,7 @@ class Dnp3SlaveProtocol extends Dnp3ProtocolBase[SlaveObjectsContainer] {
 
     val measAcceptor = dnp3.AddSlave(channelName, endpointName, filterLevel, commandReceiver, slaveConfig)
 
-    val measProxy = new SlaveMeasurementProxy(services, mapping, measAcceptor)
+    val measProxy = new SlaveMeasurementProxy(services, mapping, measAcceptor, client.getInternal.getExecutor)
     map += endpointName -> SlaveObjectsContainer(stackObserver, commandReceiver, measProxy)
 
     // do nothing, no commands associated with "dnp3-slave" endpoint

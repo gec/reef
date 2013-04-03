@@ -306,6 +306,7 @@ object OptionalProtos {
     val name = optionally(_.hasName, _.getName)
     val entity = new OptModelEntity(optionally(_.hasEntity, _.getEntity))
     val protocol = optionally(_.hasProtocol, _.getProtocol)
+    val autoAssigned = optionally(_.hasAutoAssigned, _.getAutoAssigned)
     val channel = new OptFEPCommChannel(optionally(_.hasChannel, _.getChannel))
     val ownerships = new OptFEPEndpointOwnership(optionally(_.hasOwnerships, _.getOwnerships))
     val configFiles = optionally(_.getConfigFilesList.toList.map { i => new OptModelConfigFile(Some(i)) })
@@ -320,6 +321,12 @@ object OptionalProtos {
     val routing = new OptFEPCommEndpointRouting(optionally(_.hasRouting, _.getRouting))
     val lastUpdate = optionally(_.hasLastUpdate, _.getLastUpdate)
     val enabled = optionally(_.hasEnabled, _.getEnabled)
+    val active = optionally(_.hasActive, _.getActive)
+  }
+  implicit def proto2OptFEPCommandHandlerBinding(a: org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding): OptFEPCommandHandlerBinding = new OptFEPCommandHandlerBinding(Some(a))
+  class OptFEPCommandHandlerBinding(real: Option[org.totalgrid.reef.client.service.proto.FEP.CommandHandlerBinding]) extends OptionalStruct(real) {
+    val endpointConnection = new OptFEPEndpointConnection(optionally(_.hasEndpointConnection, _.getEndpointConnection))
+    val commandQueue = optionally(_.hasCommandQueue, _.getCommandQueue)
   }
   implicit def proto2OptMappingMeasMap(a: org.totalgrid.reef.client.service.proto.Mapping.MeasMap): OptMappingMeasMap = new OptMappingMeasMap(Some(a))
   class OptMappingMeasMap(real: Option[org.totalgrid.reef.client.service.proto.Mapping.MeasMap]) extends OptionalStruct(real) {
@@ -366,6 +373,7 @@ object OptionalProtos {
   }
   implicit def proto2OptMeasurementsMeasurement(a: org.totalgrid.reef.client.service.proto.Measurements.Measurement): OptMeasurementsMeasurement = new OptMeasurementsMeasurement(Some(a))
   class OptMeasurementsMeasurement(real: Option[org.totalgrid.reef.client.service.proto.Measurements.Measurement]) extends OptionalStruct(real) {
+    val pointUuid = new OptModelReefUUID(optionally(_.hasPointUuid, _.getPointUuid))
     val name = optionally(_.hasName, _.getName)
     val _type = optionally(_.getType)
     val intVal = optionally(_.hasIntVal, _.getIntVal)
@@ -398,12 +406,14 @@ object OptionalProtos {
   }
   implicit def proto2OptMeasurementsMeasurementSnapshot(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot): OptMeasurementsMeasurementSnapshot = new OptMeasurementsMeasurementSnapshot(Some(a))
   class OptMeasurementsMeasurementSnapshot(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot]) extends OptionalStruct(real) {
+    val point = optionally(_.getPointList.toList.map { i => new OptModelPoint(Some(i)) })
     val pointNames = optionally(_.getPointNamesList.toList)
     val measurements = optionally(_.getMeasurementsList.toList.map { i => new OptMeasurementsMeasurement(Some(i)) })
   }
   implicit def proto2OptMeasurementsMeasurementHistory(a: org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory): OptMeasurementsMeasurementHistory = new OptMeasurementsMeasurementHistory(Some(a))
   class OptMeasurementsMeasurementHistory(real: Option[org.totalgrid.reef.client.service.proto.Measurements.MeasurementHistory]) extends OptionalStruct(real) {
-    val pointName = optionally(_.getPointName)
+    val point = new OptModelPoint(optionally(_.hasPoint, _.getPoint))
+    val pointName = optionally(_.hasPointName, _.getPointName)
     val startTime = optionally(_.hasStartTime, _.getStartTime)
     val endTime = optionally(_.hasEndTime, _.getEndTime)
     val limit = optionally(_.hasLimit, _.getLimit)
@@ -516,6 +526,7 @@ object OptionalProtos {
   class OptLinearTransform(real: Option[LinearTransform]) extends OptionalStruct(real) {
     val scale = optionally(_.hasScale, _.getScale)
     val offset = optionally(_.hasOffset, _.getOffset)
+    val forceToDouble = optionally(_.hasForceToDouble, _.getForceToDouble)
   }
   implicit def proto2OptEventGeneration(a: EventGeneration): OptEventGeneration = new OptEventGeneration(Some(a))
   class OptEventGeneration(real: Option[EventGeneration]) extends OptionalStruct(real) {
@@ -582,6 +593,11 @@ object OptionalProtos {
     val routing = new OptMeasurementProcessingRouting(optionally(_.hasRouting, _.getRouting))
     val assignedTime = optionally(_.hasAssignedTime, _.getAssignedTime)
     val readyTime = optionally(_.hasReadyTime, _.getReadyTime)
+  }
+  implicit def proto2OptMeasurementStreamBinding(a: MeasurementStreamBinding): OptMeasurementStreamBinding = new OptMeasurementStreamBinding(Some(a))
+  class OptMeasurementStreamBinding(real: Option[MeasurementStreamBinding]) extends OptionalStruct(real) {
+    val processingConnection = new OptMeasurementProcessingConnection(optionally(_.hasProcessingConnection, _.getProcessingConnection))
+    val measurementQueue = optionally(_.hasMeasurementQueue, _.getMeasurementQueue)
   }
   implicit def proto2OptSimMappingMeasSim(a: org.totalgrid.reef.client.service.proto.SimMapping.MeasSim): OptSimMappingMeasSim = new OptSimMappingMeasSim(Some(a))
   class OptSimMappingMeasSim(real: Option[org.totalgrid.reef.client.service.proto.SimMapping.MeasSim]) extends OptionalStruct(real) {

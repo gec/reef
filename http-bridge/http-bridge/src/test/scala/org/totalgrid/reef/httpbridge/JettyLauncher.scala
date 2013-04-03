@@ -26,6 +26,7 @@ import org.totalgrid.reef.httpbridge.servlets._
 import org.totalgrid.reef.httpbridge.servlets.apiproviders.AllScadaServiceApiCallLibrary
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.httpbridge.servlets.helpers._
+import org.totalgrid.reef.client.settings.UserSettings
 
 object JettyLauncher {
   def main(args: Array[String]) {
@@ -39,13 +40,13 @@ object JettyLauncher {
     val defaultUser = DefaultUserConfiguration.getDefaultUser(properties)
 
     val defaultAuthToken = defaultUser.map { user =>
-      InMemoryNode.connection.login(user.getUserName, user.getUserPassword).await.getHeaders.getAuthToken()
+      InMemoryNode.connection.login(new UserSettings(user.getUserName, user.getUserPassword)).getHeaders.getAuthToken()
     }
 
     val managedConnection = new ManagedConnection {
-      def getAuthenticatedClient(authToken: String) = InMemoryNode.connection.login(authToken)
+      def getAuthenticatedClient(authToken: String) = InMemoryNode.connection.createClient(authToken)
       def getNewAuthToken(userName: String, userPassword: String) =
-        InMemoryNode.connection.login(userName, userPassword).await.getHeaders.getAuthToken()
+        InMemoryNode.connection.login(new UserSettings(userName, userPassword)).getHeaders.getAuthToken()
 
       def getSharedBridgeAuthToken() = defaultAuthToken
     }

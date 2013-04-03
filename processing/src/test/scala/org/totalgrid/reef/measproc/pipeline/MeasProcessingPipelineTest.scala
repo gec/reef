@@ -28,10 +28,13 @@ import scala.collection.mutable
 import org.totalgrid.reef.client.service.proto.Events.Event
 import org.totalgrid.reef.client.service.proto.Measurements.{ Quality, MeasurementBatch, Measurement }
 import org.totalgrid.reef.measproc.{ MeasProcObjectCaches, MockObjectCache, ProtoHelper }
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 
 @RunWith(classOf[JUnitRunner])
 class MeasProcessingPipelineTest extends Suite with ShouldMatchers {
   import ProtoHelper._
+
+  def makePoint(name: String) = Point.newBuilder.setName(name).setUuid(ReefUUID.newBuilder.setValue(name)).build
 
   class TestRig {
     val measQueue = mutable.Queue[Measurement]()
@@ -44,7 +47,7 @@ class MeasProcessingPipelineTest extends Suite with ShouldMatchers {
       MeasProcObjectCaches(measCache, overCache, stateCache),
       measQueue.enqueue(_),
       { b => eventQueue.enqueue(b.build) },
-      List("meas01"), "endpoint01")
+      List(makePoint("meas01")), "endpoint01")
 
     def process(m: Measurement) {
       proc.process(MeasurementBatch.newBuilder.setWallTime(0).addMeas(m).build)
@@ -143,12 +146,14 @@ class MeasProcessingPipelineTest extends Suite with ShouldMatchers {
 
   def checkGood(m: Measurement, value: Double = 5.3) {
     m.getName should equal("meas01")
+    m.getPointUuid.getValue should equal("meas01")
     m.getUnit should equal("V")
     m.getType should equal(Measurement.Type.DOUBLE)
     m.getDoubleVal should equal(value * 10 + 50000)
   }
   def checkStripped(m: Measurement) {
     m.getName should equal("meas01")
+    m.getPointUuid.getValue should equal("meas01")
     m.getUnit should equal("raw")
     m.getType should equal(Measurement.Type.NONE)
     m.hasDoubleVal should equal(false)

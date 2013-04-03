@@ -28,15 +28,15 @@ import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 class AlarmQueryTest extends ServiceClientSuite {
   //
   //  test("Get alarms") {
-  //    val alarm = client.getActiveAlarms(1).await.head
+  //    val alarm = client.getActiveAlarms(1).head
   //
   //    // TODO: fix AlarmService.getAlarmById to use ReefId
-  //    client.getAlarmById(alarm.getId.getValue).await
+  //    client.getAlarmById(alarm.getId.getValue)
   //  }
 
   test("Test alarm failure") {
     val exc = intercept[ReefServiceException] {
-      client.getAlarmById("1234567890123456789").await
+      client.getAlarmById("1234567890123456789")
     }.getMessage
     exc.contains("1234567890123456789") should equal(true)
     exc.contains("id") should equal(true)

@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.loader.commons.LoaderServicesImpl
 import org.totalgrid.reef.client.settings.util.PropertyReader
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
+import org.totalgrid.reef.client.factory.ReefConnectionFactory
 
 object StandaloneLoader {
   def run(connectionInfo: AmqpSettings, userSettings: UserSettings, filename: String, benchmark: Boolean, dryRun: Boolean, ignoreWarnings: Boolean): Unit = {
@@ -31,10 +31,10 @@ object StandaloneLoader {
     try {
       // we only connect to amqp if we are not doing a dry run
       def client = {
-        val factory = new ReefFactory(connectionInfo, new ReefServices)
+        val factory = ReefConnectionFactory.buildFactory(connectionInfo, new ReefServices)
         val conn = factory.connect
 
-        val session = conn.login(userSettings).await
+        val client = conn.login(userSettings)
 
         cancelable = Some(new Cancelable {
           def cancel() = {
@@ -42,7 +42,7 @@ object StandaloneLoader {
           }
         })
 
-        new LoaderServicesImpl(session)
+        new LoaderServicesImpl(client)
       }
 
       LoadManager.loadFile(client, filename, benchmark, dryRun, ignoreWarnings)

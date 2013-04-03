@@ -18,7 +18,8 @@
  */
 package org.totalgrid.reef.client.sapi.rpc.impl
 
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.sapi.rpc.CalculationService
 import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, Point, ReefUUID }
@@ -26,7 +27,7 @@ import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
-trait CalculationServiceImpl extends HasAnnotatedOperations with CalculationService {
+trait CalculationServiceImpl extends UsesServiceOperations with CalculationService {
 
   def getCalculations() = ops.operation("Couldn't get calculations") {
     _.get(Calculation.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).map(_.many)

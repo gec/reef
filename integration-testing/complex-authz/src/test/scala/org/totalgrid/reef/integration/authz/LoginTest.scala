@@ -29,23 +29,23 @@ class LoginTest extends AuthTestBase {
 
   test("Admin can see logins") {
     as(ADMIN) { admin =>
-      val activeLogins = admin.getLogins(false).await
-      val allLogins = admin.getLogins(true).await
+      val activeLogins = admin.getLogins(false)
+      val allLogins = admin.getLogins(true)
 
       activeLogins.size should be <= allLogins.size
 
-      val byVersion = admin.getLoginsByClientVersion(true, allLogins.head.getClientVersion).await
+      val versions = allLogins.map { _.getClientVersion }.distinct
+      val byVersion = versions.map { admin.getLoginsByClientVersion(true, _) }.flatten
+      matchingIds(byVersion, allLogins)
 
-      byVersion should equal(allLogins)
-
-      val ownLogins = admin.getOwnLogins(true).await
+      val ownLogins = admin.getOwnLogins(true)
       ownLogins.size should be > 0
       allAgent(ADMIN, ownLogins)
 
-      val agents = admin.getAgents().await
+      val agents = admin.getAgents()
 
       agents.foreach { agent =>
-        val logins = admin.getLoginsByAgent(true, agent.getName).await
+        val logins = admin.getLoginsByAgent(true, agent.getName)
         allAgent(agent.getName, logins)
       }
     }
@@ -54,17 +54,18 @@ class LoginTest extends AuthTestBase {
   val GUEST = "guest"
 
   test("Guest can only see own logins") {
-    as(GUEST) { guest =>
-      // TODO: filtering is done after the result limit so if the most recent 100 logins are other users
-      // we dont' get any guest logins
-      guest.setHeaders(guest.getHeaders.setResultLimit(1000))
-      val allLogins = guest.getLogins(true).await
+    (1 to 50).foreach { i => as(ADMIN) { c => } }
 
+    as(GUEST) { guest =>
+      guest.setHeaders(guest.getHeaders.setResultLimit(5))
+      // we dont' get any guest logins
+      val allLogins = guest.getLogins(true)
+      allLogins should not equal (Nil)
       allAgent(GUEST, allLogins)
 
-      val ownLogins = guest.getOwnLogins(true).await
+      val ownLogins = guest.getOwnLogins(true)
       allAgent(GUEST, ownLogins)
-      allLogins.map { _.getId } should equal(ownLogins.map { _.getId })
+      matchingIds(allLogins, ownLogins)
     }
   }
 
@@ -72,20 +73,20 @@ class LoginTest extends AuthTestBase {
 
   test("User can revoke old logins") {
     as(USER, false) { user =>
-      user.getOwnLogins(false).await.size should be > 0
+      user.getOwnLogins(false).size should be > 0
     }
     val moreLogins = as(USER, false) { user =>
-      user.getOwnLogins(false).await
+      user.getOwnLogins(false)
     }
     allRevoked(false, moreLogins)
     as(USER) { user =>
       // revoke all of the old logins
-      val revoked = user.revokeOwnLogins().await
+      val revoked = user.revokeOwnLogins()
       allAgent(USER, revoked)
       allRevoked(true, revoked)
-      revoked.map { _.getId } should equal(moreLogins.map { _.getId })
+      matchingIds(revoked, moreLogins)
 
-      user.getOwnLogins(false).await.size should equal(1)
+      user.getOwnLogins(false).size should equal(1)
     }
   }
 
@@ -96,5 +97,9 @@ class LoginTest extends AuthTestBase {
   private def allRevoked(state: Boolean, logins: List[AuthToken]) = {
     logins.map { _.getRevoked }.filterNot { _ == state } should equal(Nil)
     logins
+  }
+  private def matchingIds(l1: List[AuthToken], l2: List[AuthToken]) = {
+    l1.map { _.getId.getValue }.sorted should equal(l2.map { _.getId.getValue }.sorted)
+    l1
   }
 }

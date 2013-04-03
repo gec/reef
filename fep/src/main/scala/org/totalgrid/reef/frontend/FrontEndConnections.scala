@@ -18,91 +18,47 @@
  */
 package org.totalgrid.reef.frontend
 
-import scala.collection.JavaConversions._
-
-import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
-
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import org.totalgrid.reef.protocol.api.ProtocolManager
+import org.totalgrid.reef.client.{ Client, SubscriptionBinding }
 import org.totalgrid.reef.app.KeyedMap
-import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
-import org.totalgrid.reef.client.{ SubscriptionBinding, AddressableDestination }
+import net.agileautomata.executor4s._
 
-import net.agileautomata.executor4s.{ Failure, Success }
-import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
-import org.totalgrid.reef.client.service.command.{ CommandResultCallback, CommandRequestHandler }
-import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest }
-import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.service.proto.Commands
-import org.totalgrid.reef.protocol.api.{ ProtocolManager, Publisher, CommandHandler, Protocol }
-import org.totalgrid.reef.client.javaimpl.ClientWrapper
-
-object ProtocolInterface {
-  sealed trait ProtocolInterface
-  case class TraitInterface(protocol: Protocol) extends ProtocolInterface
-  case class ManagerInterface(protocol: ProtocolManager) extends ProtocolInterface
-}
-
-// Data structure for handling the life cycle of connections
-class FrontEndConnections(comms: Seq[Protocol], mgrs: Map[String, ProtocolManager], newClient: => Client) extends KeyedMap[EndpointConnection] {
-  import ProtocolInterface._
+/**
+ * Takes the add/remove EndpointConnection calls from the outside manager and shunts them to the correct ProtocolManager
+ * implementation. It also creates a new client for each endpoint and manages binding the commandHandler to the client.
+ */
+class FrontEndConnections(protocolManagers: Map[String, ProtocolManager], newClient: => Client) extends KeyedMap[EndpointConnection] {
 
   case class EndpointComponent(commandAdapter: SubscriptionBinding)
 
-  var endpointComponents = Map.empty[String, EndpointComponent]
+  private var endpointComponents = Map.empty[String, EndpointComponent]
 
   def getKey(c: EndpointConnection) = c.getId.getValue
-
-  val protocols: Map[String, ProtocolInterface] = comms.map(p => p.name -> TraitInterface(p)).toMap ++ mgrs.mapValues(m => ManagerInterface(m))
 
   def hasChangedEnoughForReload(updated: EndpointConnection, existing: EndpointConnection) = {
     updated.hasRouting != existing.hasRouting ||
       (updated.hasRouting && updated.getRouting.getServiceRoutingKey != existing.getRouting.getServiceRoutingKey)
   }
 
-  private def addProtocolTrait(protocol: Protocol, client: Client, services: FrontEndProviderServices, c: EndpointConnection): CommandRequestHandler = {
-    val endpoint = c.getEndpoint
-
-    val endpointName = c.getEndpoint.getName
-
-    val batchPublisher = newMeasBatchPublisher(services, c.getRouting.getServiceRoutingKey)
-    val endpointListener = newEndpointStatePublisher(services, c.getId, endpointName)
-
-    val channelName = if (c.getEndpoint.hasChannel) {
-      val port = c.getEndpoint.getChannel
-      val channelListener = newChannelStatePublisher(services, port.getUuid, port.getName)
-      protocol.addChannel(port, channelListener, client)
-      port.getName
-    } else {
-      ""
-    }
-    // add the device, get the command issuer callback
-    val cmdHandler = protocol.addEndpoint(endpointName, channelName, endpoint.getConfigFilesList.toList, batchPublisher, endpointListener, client)
-
-    createCommandRequestHandler(cmdHandler)
-  }
-
   def addEntry(c: EndpointConnection) = try {
 
     val client = newClient
-    val services = client.getRpcInterface(classOf[FrontEndProviderServices])
+    val services = client.getService(classOf[FrontEndProviderServices])
 
     val protocolName = c.getEndpoint.getProtocol
     val endpointName = c.getEndpoint.getName
 
-    val cmdHandler = protocols.get(protocolName) match {
-      case None => throw new IllegalArgumentException("Unknown protocol: " + protocolName)
-      case Some(p) => p match {
-        case TraitInterface(protocol) => addProtocolTrait(protocol, client, services, c)
-        case ManagerInterface(mgr) => mgr.addEndpoint(new ClientWrapper(client), c)
-      }
-    }
+    val cmdHandler = getProtocol(protocolName).addEndpoint(client, c)
 
-    val service = services.bindCommandHandler(c.getEndpoint.getUuid, cmdHandler).await
-    endpointComponents += (endpointName -> EndpointComponent(service))
+    val commandHandlingService = services.bindCommandHandler(c.getEndpoint.getUuid, cmdHandler).await
+    endpointComponents += (endpointName -> EndpointComponent(commandHandlingService))
 
     logger.info("Added endpoint: " + endpointName + " on protocol: " + protocolName + ", routing key: " + c.getRouting.getServiceRoutingKey)
   } catch {
     case ex: Exception =>
       logger.error("Can't add endpoint: " + c.getEndpoint.getName, ex)
+      reportError(c)
   }
 
   def removeEntry(c: EndpointConnection) = try {
@@ -112,70 +68,43 @@ class FrontEndConnections(comms: Seq[Protocol], mgrs: Map[String, ProtocolManage
 
     logger.info("Removing endpoint: " + endpointName)
 
-    protocols.get(protocolName) match {
-      case None => throw new IllegalArgumentException("Unknown protocol: " + protocolName)
-      case Some(p) =>
-
+    endpointComponents.get(endpointName) match {
+      case None => logger.warn("Endpoint unknown: " + endpointName)
+      case Some(components) =>
         // need to make sure we close the addressable service so no new commands
         // are sent to endpoint while we are removing it
-        endpointComponents.get(endpointName).foreach { _.commandAdapter.cancel() }
-
-        p match {
-          case TraitInterface(protocol) => {
-            protocol.removeEndpoint(endpointName)
-            if (c.getEndpoint.hasChannel) protocol.removeChannel(c.getEndpoint.getChannel.getName)
-          }
-          case ManagerInterface(mgr) => {
-            mgr.removeEndpoint(c)
-          }
-        }
-
+        components.commandAdapter.cancel()
         endpointComponents -= endpointName
+
+        getProtocol(protocolName).removeEndpoint(c)
+
+        logger.info("Removed endpoint: " + endpointName + " on protocol: " + protocolName)
     }
-
-    logger.info("Removed endpoint: " + endpointName + " on protocol: " + protocolName)
-
   } catch {
     case ex: Exception =>
       logger.error("Can't remove endpoint: " + c.getEndpoint.getName, ex)
+      reportError(c)
   }
 
-  // TODO -fail the process if we can't publish measurements or state?
-
-  private def newMeasBatchPublisher(services: FrontEndProviderServices, routingKey: String) = new Publisher[MeasurementBatch] {
-    def publish(value: MeasurementBatch) = {
-      services.publishMeasurements(value, new AddressableDestination(routingKey)).extract match {
-        case Success(x) => logger.debug("Published a measurement batch of size: " + value.getMeasCount)
-        case Failure(ex) => logger.error("Couldn't publish measurements: " + ex.getMessage)
-      }
+  private def getProtocol(protocolName: String): ProtocolManager = {
+    protocolManagers.get(protocolName) match {
+      case None =>
+        throw new IllegalArgumentException("Unknown protocol: " + protocolName + " expected: " + protocolManagers.keys)
+      case Some(p) => p
     }
   }
 
-  private def newEndpointStatePublisher(services: FrontEndProviderServices, connectionId: ReefID, endpointName: String) = new Publisher[EndpointConnection.State] {
-    def publish(state: EndpointConnection.State) = {
-      services.alterEndpointConnectionState(connectionId, state).extract match {
-        case Success(x) => logger.info("Updated endpoint state: " + endpointName + " state: " + x.getState)
-        case Failure(ex) => logger.error("Couldn't update endpointState: " + ex.getMessage)
-      }
-    }
-  }
+  private def reportError(c: EndpointConnection) {
+    val client = newClient
+    val services = client.getService(classOf[FrontEndProviderServices])
 
-  private def newChannelStatePublisher(services: FrontEndProviderServices, channelUuid: ReefUUID, channelName: String) = new Publisher[CommChannel.State] {
-    def publish(state: CommChannel.State) = {
-      services.alterCommunicationChannelState(channelUuid, state).extract match {
-        case Success(x) => logger.info("Updated channel state: " + x.getName + " state: " + x.getState)
-        case Failure(ex) => logger.error("Couldn't update channelState: " + ex.getMessage)
-      }
-    }
-  }
+    val endpointName = c.getEndpoint.getName
 
-  private def createCommandRequestHandler(cmdHandler: CommandHandler) = new CommandRequestHandler {
-    def handleCommandRequest(cmdRequest: CommandRequest, resultCallback: CommandResultCallback) {
-      cmdHandler.issue(cmdRequest, new Publisher[Commands.CommandStatus] {
-        def publish(value: CommandStatus) {
-          resultCallback.setCommandResult(value)
-        }
-      })
+    try {
+      val result = services.alterEndpointConnectionState(c.getId, EndpointConnection.State.ERROR).await()
+      logger.info("Updated endpoint state: " + endpointName + " state: " + result.getState)
+    } catch {
+      case ex => logger.error("Couldn't update endpointState: " + ex.getMessage)
     }
   }
 }

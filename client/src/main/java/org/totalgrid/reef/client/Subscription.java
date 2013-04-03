@@ -34,6 +34,6 @@ public abstract class Subscription<A> implements SubscriptionBinding
      *
      * @param acceptor Callback for SubscriptionEvents
      */
-    public abstract void start( SubscriptionEventAcceptor<A> acceptor );
+    public abstract Subscription<A> start( SubscriptionEventAcceptor<A> acceptor );
 
 }

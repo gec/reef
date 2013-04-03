@@ -18,31 +18,52 @@
  */
 package org.totalgrid.reef.client.sapi.client
 
-import net.agileautomata.executor4s.{ Result, Success, Failure }
-import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.ExpectationException
+import org.totalgrid.reef.client.proto.{ StatusCodes, Envelope }
+import org.totalgrid.reef.client.operations.Response
 
-trait Expectations[+A] {
+trait Expectations {
 
-  def many: Result[List[A]]
+  class ResponseWithExpectation[A](resp: Response[A]) extends ResponseExpectations[A] {
+    def expectMany(num: Option[Int], expected: Option[Envelope.Status], errorFun: Option[(Int, Int) => String]): List[A] = {
+
+      expected match {
+        case Some(x) =>
+          if (resp.getStatus != x)
+            throw new ExpectationException("Status " + resp.getStatus + " != " + " expected " + x)
+        case None => resp.isSuccess match {
+          case true =>
+          case false => throw StatusCodes.toException(resp.getStatus, resp.getErrorMessage)
+        }
+      }
+
+      import scala.collection.JavaConversions._
+      val list = if (resp.isSuccess) resp.getList.toList else Nil
+
+      num.foreach { expected =>
+        val actual = list.size
+        if (expected != actual) {
+          val msg = errorFun match {
+            case Some(fun) => fun(expected, actual)
+            case None => defaultError(expected, actual)
+          }
+          throw new ExpectationException(msg)
+        }
+      }
+
+      list
+    }
+  }
+
+  implicit def toPimpedExpectation[A](resp: Response[A]) = new ResponseWithExpectation[A](resp)
+}
+
+object Expectations extends Expectations
+
+trait ResponseExpectations[+A] {
 
   // implement to widen the trait
   def expectMany(num: Option[Int], expected: Option[Envelope.Status], errorFun: Option[(Int, Int) => String]): List[A]
-
-  final def one: Result[A] = many match {
-    case Success(List(x)) => Success(x)
-    case Success(x: List[_]) =>
-      Failure(new ExpectationException("Expected a response list of size 1, but got a list of size: " + x.size))
-    case f: Failure => f
-  }
-
-  final def oneOrNone: Result[Option[A]] = many match {
-    case Success(Nil) => Success(None)
-    case Success(List(x)) => Success(Some(x))
-    case Success(x: List[_]) =>
-      Failure(new ExpectationException("Expected a response list of size 1 or 0, but got a list of size: " + x.size))
-    case f: Failure => f
-  }
 
   // widened helpers
 

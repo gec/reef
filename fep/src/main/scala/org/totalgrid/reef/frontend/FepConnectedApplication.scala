@@ -1,5 +1,3 @@
-package org.totalgrid.reef.frontend
-
 /**
  * Copyright 2011 Green Energy Corp.
  *
@@ -18,21 +16,27 @@ package org.totalgrid.reef.frontend
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
-import org.totalgrid.reef.frontend._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.settings.UserSettings
-import org.totalgrid.reef.protocol.api.{ ProtocolManager, Protocol }
+import org.totalgrid.reef.protocol.api.ProtocolManager
+import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList, Client, Connection }
+import org.totalgrid.reef.client.types.ServiceTypeInformation
 
-class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Option[ProtocolManager], protocolSpecificUser: UserSettings)
+object FepConnectedApplication {
+  object FepServiceProvider extends ServicesList {
+    import scala.collection.JavaConversions._
+    def getServiceTypeInformation: java.util.List[ServiceTypeInformation[_, _]] = Nil
+
+    def getServiceProviders: java.util.List[ServiceProviderInfo] = List(FrontEndProviderServices.serviceInfo)
+  }
+}
+
+class FepConnectedApplication(protocolName: String, manager: ProtocolManager, protocolSpecificUser: UserSettings)
     extends ConnectedApplication with Logging {
-
-  def this(p: Protocol, protocolSpecificUser: UserSettings) = this(p.name, Some(p), None, protocolSpecificUser)
-
-  def this(protocolName: String, mgr: ProtocolManager, protocolSpecificUser: UserSettings) = this(protocolName, None, Some(mgr), protocolSpecificUser)
 
   def getApplicationSettings = new ApplicationSettings("FEP-" + protocolName, "FEP")
 
@@ -41,51 +45,43 @@ class FepConnectedApplication(protocolName: String, p: Option[Protocol], mgr: Op
 
   def onApplicationStartup(appConfig: ApplicationConfig, connection: Connection, appLevelClient: Client) = {
 
-    client = Some(appLevelClient.login(protocolSpecificUser).await)
+    connection.addServicesList(FepConnectedApplication.FepServiceProvider)
+
+    client = Some(connection.login(protocolSpecificUser))
 
     fem = Some(makeFepNode(client.get, appConfig))
-    fem.foreach {
-      _.start()
-    }
+    fem.foreach { _.start() }
   }
 
-  def onApplicationShutdown() = {
-    fem.foreach {
-      _.stop()
-    }
-    client.foreach {
-      _.logout().await
-    }
+  def onApplicationShutdown() {
+    fem.foreach { _.stop() }
+    client.foreach { _.logout() }
   }
 
-  def onConnectionError(msg: String) = {
+  def onConnectionError(msg: String) {
     logger.info("FEP Error connecting: " + msg)
   }
 
   private def makeFepNode(client: Client, appConfig: ApplicationConfig) = {
-    client.addRpcProvider(FrontEndProviderServices.serviceInfo)
 
-    val services = client.getRpcInterface(classOf[FrontEndProviderServices])
+    client.setHeaders(client.getHeaders.setResultLimit(10000))
 
-    def endpointClient = {
-      client.spawn()
-    }
+    val services = client.getService(classOf[FrontEndProviderServices])
 
-    val mgrs = mgr.map(m => Map(protocolName -> m)) getOrElse Map()
-    val protocols = p.map(List(_)) getOrElse Nil
+    def endpointClient = { client.spawn() }
 
-    val frontEndConnections = new FrontEndConnections(protocols, mgrs, endpointClient)
+    val frontEndConnections = new FrontEndConnections(Map(protocolName -> manager), endpointClient)
     val populator = new EndpointConnectionPopulatorAction(services)
-    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client)
+    val connectionContext = new EndpointConnectionSubscriptionFilter(frontEndConnections, populator, client.getInternal.getExecutor)
 
     // the manager does all the work of announcing the system, retrieving resources and starting/stopping
     // protocol masters in response to events
     new FrontEndManager(
       services,
-      services,
+      client.getInternal.getExecutor,
       connectionContext,
       appConfig,
-      protocols.map(_.name).toList ::: mgrs.keys.toList,
+      List(protocolName),
       5000)
   }
 }

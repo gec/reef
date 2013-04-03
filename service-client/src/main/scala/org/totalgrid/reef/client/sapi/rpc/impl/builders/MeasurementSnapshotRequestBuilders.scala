@@ -19,16 +19,20 @@
 package org.totalgrid.reef.client.sapi.rpc.impl.builders
 
 import scala.collection.JavaConversions._
-import org.totalgrid.reef.client.service.proto.Model.Point
+import org.totalgrid.reef.client.service.proto.Model.{ ReefUUID, Point }
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementSnapshot
 
 object MeasurementSnapshotRequestBuilders {
   def getByName(name: String) = MeasurementSnapshot.newBuilder.addPointNames(name).build
-  def getByPoint(point: Point) = MeasurementSnapshot.newBuilder.addPointNames(point.getName).build
+  def getByPoint(point: Point) = MeasurementSnapshot.newBuilder.addPoint(point).build
+  def getByUuid(uuid: ReefUUID) = MeasurementSnapshot.newBuilder.addPoint(Point.newBuilder.setUuid(uuid)).build
 
   def getByNames(names: List[String]): MeasurementSnapshot = getByNames(names: java.util.List[String])
   def getByNames(names: java.util.List[String]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(names).build
 
-  def getByPoints(points: List[Point]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPointNames(points.map { _.getName }).build
+  def getByPoints(points: List[Point]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPoint(points).build
   def getByPoints(points: java.util.List[Point]): MeasurementSnapshot = getByPoints(points.toList)
+
+  def getByUuids(uuids: List[ReefUUID]): MeasurementSnapshot = MeasurementSnapshot.newBuilder.addAllPoint(uuids.map { Point.newBuilder.setUuid(_).build }).build
+  def getByUuids(uuids: java.util.List[ReefUUID]): MeasurementSnapshot = getByUuids(uuids.toList)
 }

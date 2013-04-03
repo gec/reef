@@ -18,12 +18,11 @@
  */
 package org.totalgrid.reef.client.service.impl
 
-import org.totalgrid.reef.client.SubscriptionCreationListener
-
 import org.totalgrid.reef.client.service._
 import org.totalgrid.reef.client.sapi.rpc.{ AllScadaService => ScalaAllScadaService }
 import org.totalgrid.reef.client.sapi.rpc.impl.AllScadaServiceWrapper
-import org.totalgrid.reef.client.sapi.client.rest.{ RpcProvider, Client }
+import org.totalgrid.reef.client.sapi.rpc.util.RpcProvider
+import org.totalgrid.reef.client.{ Client, SubscriptionCreationListener }
 
 trait AllScadaServiceJavaShim
     extends AllScadaService
@@ -53,8 +52,8 @@ final class AllScadaServiceJavaShimWrapper(client: Client) extends AllScadaServi
 
   override def service = srv
 
-  override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = service.addSubscriptionCreationListener(listener)
-  override def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = service.removeSubscriptionCreationListener(listener)
+  override def addSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.addSubscriptionCreationListener(listener)
+  override def removeSubscriptionCreationListener(listener: SubscriptionCreationListener) = client.removeSubscriptionCreationListener(listener)
 }
 
 object AllScadaServiceJavaShimServiceList {

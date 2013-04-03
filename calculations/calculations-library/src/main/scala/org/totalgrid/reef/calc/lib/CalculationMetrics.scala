@@ -18,23 +18,23 @@
  */
 package org.totalgrid.reef.calc.lib
 
-import org.totalgrid.reef.metrics.{ StaticMetricsHooksBase, MetricsHookSource }
+import org.totalgrid.reef.jmx.{ MetricsSource, Metrics }
 
-class CalculationMetrics(source: MetricsHookSource, baseName: String) extends StaticMetricsHooksBase(source) {
+class CalculationMetrics(metrics: Metrics) {
 
-  val attempts = counterHook(baseName + "-Attempts")
+  val attempts = metrics.counter("Attempts")
 
-  val evals = counterHook(baseName + "-Evals")
+  val evals = metrics.counter("Evals")
 
-  val errors = counterHook(baseName + "-Errors")
+  val errors = metrics.counter("Errors")
 
-  val evalTime = timingHook(baseName + "-Time")
+  val evalTime = metrics.timer("Time")
 }
 
-class CalculationMetricsSource(source: MetricsHookSource, shared: Boolean = false) {
+class CalculationMetricsSource(source: MetricsSource, shared: Boolean = false) {
 
-  private lazy val sharedSink = new CalculationMetrics(source, "all")
+  private lazy val sharedSink = new CalculationMetrics(source.metrics("all"))
 
-  def getCalcMetrics(calcName: String) = if (shared) sharedSink else new CalculationMetrics(source, calcName)
+  def getCalcMetrics(calcName: String) = if (shared) sharedSink else new CalculationMetrics(source.metrics(calcName))
 
 }

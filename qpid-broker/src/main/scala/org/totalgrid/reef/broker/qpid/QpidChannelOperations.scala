@@ -98,12 +98,13 @@ object QpidChannelOperations extends Logging {
     }
   }
 
-  def publish(session: Session, exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[BrokerDestination]) = {
+  def publish(session: Session, exchange: String, key: String, b: Array[Byte], replyTo: ScalaOption[BrokerDestination], ttlMilliseconds: Int) = {
     rewrap("publishing to exchange: " + exchange + " key: " + key + " replyTo: " + replyTo) {
       if (session.isClosing) throw new ChannelClosedException
       val dev_props = new DeliveryProperties
       val msg_props = new MessageProperties
       dev_props.setRoutingKey(key)
+      if (ttlMilliseconds > 0) dev_props.setTtl(ttlMilliseconds)
       replyTo.foreach(r => msg_props.setReplyTo(new ReplyTo(r.exchange, r.key)))
       val hdr = new Header(dev_props, msg_props)
       session.messageTransfer(exchange, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, hdr, b)
@@ -132,11 +133,15 @@ object QpidChannelOperations extends Logging {
       fun
     } catch {
       case sse: SessionException =>
-        sse.getException.getErrorCode match {
-          case ExecutionErrorCode.NOT_FOUND =>
+        // getException can be null in some cases
+        ScalaOption(sse.getException).map(_.getErrorCode) match {
+          case Some(ExecutionErrorCode.NOT_FOUND) =>
             throw new ServiceIOException("Exchange not found. Usually indicates no services node is attached to the broker.", sse)
+          case Some(ExecutionErrorCode.UNAUTHORIZED_ACCESS) =>
+            throw new ServiceIOException("Broker denied action, check that you have authorization to perform low level actions: " + msg, sse)
+          case _ =>
+            throw new ServiceIOException("Qpid error during " + msg + " cause: " + sse.getMessage, sse)
         }
-        throw new ServiceIOException("Qpid error during " + msg + " cause: " + sse.getMessage, sse)
       case ex: Exception =>
         throw new ServiceIOException("Unexpected error during " + msg + " cause: " + ex.getMessage, ex)
     }

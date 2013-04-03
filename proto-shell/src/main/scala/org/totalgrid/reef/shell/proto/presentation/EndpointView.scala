@@ -18,10 +18,11 @@
  */
 package org.totalgrid.reef.shell.proto.presentation
 
-import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
+import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import org.totalgrid.reef.util.Table
+import org.totalgrid.reef.client.service.proto.FEP.{ FrontEndProcessor, EndpointConnection }
 
 object EndpointView {
   def printTable(endpoints: List[EndpointConnection]) = {
@@ -29,18 +30,40 @@ object EndpointView {
   }
 
   def header = {
-    "Endpoint" :: "Protocol" :: "State" :: "Enabled" :: "FrontEnd" :: "Port" :: "Port State" :: "MeasProc?" :: Nil
+    "Endpoint" :: "Protocol" :: "Auto?" :: "State" :: "Enabled" :: "FrontEnd" :: "Port" :: "Port State" :: "MeasProc?" :: Nil
   }
 
   def row(a: EndpointConnection) = {
     a.endpoint.name.getOrElse("unknown") ::
       a.endpoint.protocol.getOrElse("unknown") ::
+      a.endpoint.autoAssigned.map { _.toString }.getOrElse("-") ::
       a.getState.toString ::
       a.getEnabled.toString ::
       a.frontEnd.appConfig.instanceName.getOrElse("Unassigned") ::
       a.endpoint.channel.name.getOrElse("unknown") ::
       a.endpoint.channel.state.map { _.toString }.getOrElse("unknown") ::
       a.routing.serviceRoutingKey.map { s => true }.getOrElse(false).toString ::
+      Nil
+  }
+
+  def printProtocolAdapters(adapters: List[FrontEndProcessor]) = {
+    Table.printTable(headerAdapters, adapters.map(rowAdapter(_)))
+  }
+
+  private def headerAdapters = {
+    "Name" :: "Protocol" :: "Online" :: "TimesOutAt" :: "Location" :: "Networks" :: Nil
+  }
+
+  private def rowAdapter(f: FrontEndProcessor) = {
+
+    val a = f.getAppConfig
+
+    a.getInstanceName ::
+      f.getProtocolsList.toList.mkString(",") ::
+      a.getOnline.toString ::
+      EventView.timeString(Some(a.getTimesOutAt)) ::
+      a.getLocation ::
+      a.getNetworksList.toList.mkString(", ") ::
       Nil
   }
 }

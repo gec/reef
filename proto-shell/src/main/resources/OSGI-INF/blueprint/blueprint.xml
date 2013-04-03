@@ -147,6 +147,9 @@
         <command name="reef/unload">
             <action class="org.totalgrid.reef.shell.proto.UnloadConfigCommand"/>
         </command>
+        <command name="reef/unload-children">
+            <action class="org.totalgrid.reef.shell.proto.UnloadChildrenConfigCommand"/>
+        </command>
         <command name="trigger/trigger">
             <action class="org.totalgrid.reef.shell.proto.TriggerCommand"/>
         </command>
@@ -176,6 +179,12 @@
         </command>
         <command name="endpoint/changestate">
             <action class="org.totalgrid.reef.shell.proto.EndpointChangeStateCommand"/>
+        </command>
+        <command name="endpoint/assign">
+            <action class="org.totalgrid.reef.shell.proto.EndpointAssignCommand"/>
+        </command>
+        <command name="endpoint/adapters">
+            <action class="org.totalgrid.reef.shell.proto.EndpointAdaptersCommand"/>
         </command>
         <command name="application/list">
             <action class="org.totalgrid.reef.shell.proto.ApplicationListCommand"/>
@@ -224,27 +233,6 @@
         </command>
         <command name="agent/delete">
             <action class="org.totalgrid.reef.shell.proto.AgentDeleteCommand"/>
-        </command>
-        <command name="metrics/metrics">
-            <action class="org.totalgrid.reef.shell.proto.MetricsShow"/>
-        </command>
-        <command name="metrics/reset">
-            <action class="org.totalgrid.reef.shell.proto.MetricsReset"/>
-        </command>
-        <command name="metrics/outputs">
-            <action class="org.totalgrid.reef.shell.proto.MetricsOutputs"/>
-        </command>
-        <command name="metrics/rates">
-            <action class="org.totalgrid.reef.shell.proto.MetricsRates"/>
-        </command>
-        <command name="metrics/filters">
-            <action class="org.totalgrid.reef.shell.proto.MetricsFilter"/>
-        </command>
-        <command name="metrics/calcs">
-            <action class="org.totalgrid.reef.shell.proto.MetricsCalcs"/>
-        </command>
-        <command name="metrics/throughput">
-            <action class="org.totalgrid.reef.shell.proto.MetricsThroughput"/>
         </command>
         <command name="calculation/list">
             <action class="org.totalgrid.reef.shell.proto.CalculationListCommand"/>

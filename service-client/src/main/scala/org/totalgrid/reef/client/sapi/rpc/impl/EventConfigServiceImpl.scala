@@ -21,9 +21,10 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 import org.totalgrid.reef.client.service.proto.Alarms.{ Alarm, EventConfig }
 
 import org.totalgrid.reef.client.sapi.rpc.EventConfigService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
-trait EventConfigServiceImpl extends HasAnnotatedOperations with EventConfigService {
+trait EventConfigServiceImpl extends UsesServiceOperations with EventConfigService {
 
   override def getEventConfigurations = ops.operation("Couldn't get all event configs") {
     _.get(EventConfig.newBuilder.setEventType("*").build).map(_.many)
@@ -46,7 +47,7 @@ trait EventConfigServiceImpl extends HasAnnotatedOperations with EventConfigServ
   }
 
   override def setEventConfigAsAlarm(eventType: String, severity: Int, resourceString: String, audibleAlarm: Boolean) = {
-    setEventConfig(eventType, severity, EventConfig.Designation.ALARM, true, resourceString)
+    setEventConfig(eventType, severity, EventConfig.Designation.ALARM, audibleAlarm, resourceString)
   }
 
   override def setEventConfig(eventType: String, severity: Int, designation: EventConfig.Designation, audibleAlarm: Boolean, resourceString: String) = {

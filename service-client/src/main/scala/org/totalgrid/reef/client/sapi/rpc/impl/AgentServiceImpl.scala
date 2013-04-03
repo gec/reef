@@ -24,11 +24,12 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Auth._
 
 import org.totalgrid.reef.client.sapi.rpc.AgentService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, ReefUUID }
-import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.Promise
 
-trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
+trait AgentServiceImpl extends UsesServiceOperations with AgentService {
   override def getAgentByName(name: String) = ops.operation("Couldn't get agent with name: " + name) {
     _.get(Agent.newBuilder.setName(name).build).map(_.one)
   }
@@ -60,7 +61,9 @@ trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
   override def createNewAgent(name: String, password: String, permissionSets: List[String]) = {
     ops.operation("Couldn't create agent with name: " + name + " permission set names: " + permissionSets) { session =>
       val agent = Agent.newBuilder.setName(name).setPassword(password)
-      permissionSets.toList.foreach { pName => agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build) }
+      permissionSets.toList.foreach { pName =>
+        agent.addPermissionSets(PermissionSet.newBuilder.setName(pName).build)
+      }
       session.put(agent.build).map(_.one)
     }
   }
@@ -96,7 +99,7 @@ trait AgentServiceImpl extends HasAnnotatedOperations with AgentService {
     ops.operation("Couldn't lookup auth filters") {
       val request = AuthFilterRequest.newBuilder().addAllEntity(entities).setAction(action).setResource(resource).setPermissions(permissionSet).build()
       val proto = AuthFilter.newBuilder().setRequest(request).build
-      _.post(proto).map(_.one.map(_.getResultsList.toList))
+      _.post(proto).map(_.one).map(_.getResultsList.toList)
     }
   }
 }

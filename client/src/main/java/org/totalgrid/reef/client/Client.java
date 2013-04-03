@@ -18,8 +18,24 @@
  */
 package org.totalgrid.reef.client;
 
+import org.totalgrid.reef.client.operations.RequestListenerManager;
+import org.totalgrid.reef.client.operations.ServiceOperations;
+
 /**
  * A client represents an authenticated link with a Reef server.
+ *
+ * Each client is fundamentally a container of state:
+ *
+ * - reference to the underlying connection
+ * - authToken
+ * - common RequestHeaders sent with every request
+ * - a background thread that promises and subscription events are executed
+ * - the current batching state
+ * - RequestListener maps and managers
+ * - SubscriptionCreation listener
+ *
+ * If there are multiple threads (or contexts) in the application each thread should get its own client
+ * to control its own state. The only state copied over to a new client is the authToken.
  *
  * Clients are NOT thread-safe as they carry specific state such as the RequestHeaders
  * and SubscriptionCreationListener instances.
@@ -28,6 +44,7 @@ public interface Client
 {
 
     /**
+     * Get current common RequestHeaders object.
      * @return current immutable RequestHeaders for the Client
      */
     RequestHeaders getHeaders();
@@ -45,34 +62,56 @@ public interface Client
 
     /**
      * Add a listener that is called every time a subscription is created
-     * @param listener
      */
     void addSubscriptionCreationListener( SubscriptionCreationListener listener );
 
     /**
      * Remove a subscription creation listener
-     * @param listener
      */
     void removeSubscriptionCreationListener( SubscriptionCreationListener listener );
 
     /**
      * Get an active service interface by class.
      * @param klass The class of interface to return. Valid interfaces are found in org.totalgrid.reef.client.service
-     * @param <A>
-     * @return
      * @throws org.totalgrid.reef.client.exception.ReefServiceException If the interface can not be found
      */
     <A> A getService( Class<A> klass );
 
     /**
-     * adds a factory for an RpcClass
-     * @param info defines the impl and the interfaces it implements
-     */
-    void addServiceProvider( ServiceProviderInfo info );
-
-    /**
      * Delete the authToken associated with this client, all future requests will fail with an
-     * UnauthorizedException.
+     * UnauthorizedException. This will also logout all other clients created using the same authToken including
+     * all sibling clients generated with spawn.
      */
     void logout();
+
+    /**
+     * create a new client based on this one that has seperate state and subscription threading.
+     * @return a new client with just the headers and connection reference copied
+     */
+    Client spawn();
+
+    /**
+     * holder for client internals not meant for application use
+     */
+    ClientInternal getInternal();
+
+    /**
+     * interface for making low-level requests to the server when creating a new "service" class
+     */
+    ServiceOperations getServiceOperations();
+
+    /**
+     * a controller for the BatchMode of the client
+     */
+    Batching getBatching();
+
+    /**
+     * controller for adding/removing RequestListeners to this client
+     */
+    RequestListenerManager getRequestListenerManager();
+
+    /**
+     * shortcut to connection level service registry, shared by all clients on same connection
+     */
+    ServiceRegistry getServiceRegistry();
 }

@@ -151,6 +151,16 @@
                     <calc:formula>A + B</calc:formula>
                 </calc:calculation>
             </equip:counter>
+
+            <equip:counter name="BadCalculation" unit="count">
+                <calc:calculation>
+                    <calc:inputs>
+                        <calc:single pointName="Microgrid1.GroundFaults" variable="A" addParentNames="false"/>
+                    </calc:inputs>
+                    <!-- Intentionally add a badly configured calculation to show demonstrate what bad calc looks like -->
+                    <calc:formula>UNKNOWN_FUNCTION(A)</calc:formula>
+                </calc:calculation>
+            </equip:counter>
         </equip:equipment>
 
     <equip:equipment name="Calculator" addParentNames="false">
@@ -270,6 +280,7 @@
                 <comm:counter name="ControllableMicrogrids" unit="count"/>
                 <comm:status name="AllControllable" unit="status"/>
                 <comm:counter name="TotalGroundFaults" unit="count"/>
+                <comm:counter name="BadCalculation" unit="count"/>
             </comm:equipment>
         </comm:endpoint>
 

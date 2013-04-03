@@ -19,10 +19,8 @@
 package org.totalgrid.reef.httpbridge.servlets.helpers
 
 import com.google.protobuf.Message
-import org.totalgrid.reef.client.sapi.client.Promise
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.client.exception.BadRequestException
-import org.totalgrid.reef.client.SubscriptionResult
+import org.totalgrid.reef.client.{ Promise, Client, SubscriptionResult }
 
 /**
  * ApiCall and its implementations are used to encapsulate an action we can take with a Client
@@ -168,15 +166,15 @@ trait ApiCallLibrary[ServiceClass] extends ApiCallLookup {
    * and we convert to specific serviceClass
    */
   private def singleCall[A <: Message](executeFunction: (ServiceClass) => Promise[A]) = {
-    SingleResultApiCall(c => executeFunction(c.getRpcInterface(serviceClass)))
+    SingleResultApiCall(c => executeFunction(c.getService(serviceClass)))
   }
   private def optionalCall[A <: Message](executeFunction: (ServiceClass) => Promise[Option[A]]) = {
-    OptionalResultApiCall(c => executeFunction(c.getRpcInterface(serviceClass)))
+    OptionalResultApiCall(c => executeFunction(c.getService(serviceClass)))
   }
   private def multiCall[A <: Message](executeFunction: (ServiceClass) => Promise[List[A]]) = {
-    MultiResultApiCall(c => executeFunction(c.getRpcInterface(serviceClass)))
+    MultiResultApiCall(c => executeFunction(c.getService(serviceClass)))
   }
   private def subscriptionCall[A <: Message](executeFunction: (ServiceClass) => Promise[SubscriptionResult[List[A], A]]) = {
-    SubscriptionResultApiCall(c => executeFunction(c.getRpcInterface(serviceClass)))
+    SubscriptionResultApiCall(c => executeFunction(c.getService(serviceClass)))
   }
 }

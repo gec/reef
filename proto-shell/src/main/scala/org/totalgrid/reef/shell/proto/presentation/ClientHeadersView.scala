@@ -19,19 +19,20 @@
 package org.totalgrid.reef.shell.proto.presentation
 
 import org.totalgrid.reef.util.Table
-import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
+import org.totalgrid.reef.client.RequestHeaders
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
 
 object ClientHeadersView {
 
   private def headerRow = "Field" :: "Value" :: Nil
 
-  private def getRows(headers: BasicRequestHeaders) = {
+  private def getRows(headers: RequestHeaders) = {
     List("AuthToken", "xxxxxxxxxxxx") ::
-      List("Timeout", headers.getTimeout.map { _.toString }.getOrElse("default")) ::
-      List("ResultLimit", headers.getResultLimit().map { _.toString }.getOrElse("default")) :: Nil
+      List("Timeout", headers.timeout.map { _.toString }.getOrElse("default")) ::
+      List("ResultLimit", headers.resultLimit.map { _.toString }.getOrElse("default")) :: Nil
   }
 
-  def displayHeaders(headers: BasicRequestHeaders) = {
-    Table.printTable(headerRow, getRows(headers))
+  def displayHeaders(headers: RequestHeaders) = {
+    Table.printTable(headerRow, getRows(headers)) // TODO: HEADERS HACK
   }
 }

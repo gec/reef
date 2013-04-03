@@ -21,11 +21,12 @@ package org.totalgrid.reef.benchmarks.measurements
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, SubscriptionResult }
-import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.client.Client
+import org.totalgrid.reef.client.Promise
 import net.agileautomata.executor4s.{ Success, Result }
 import org.totalgrid.reef.util.Timing.Stopwatch
 import org.totalgrid.reef.benchmarks.FailedBenchmarkException
+import org.totalgrid.reef.client.operations.impl.FuturePromise
 
 /**
  * this utility class watches the measurment stream to time how long it takes for a list of measurements to be seen.
@@ -61,20 +62,25 @@ class ConcurrentRoundtripTimer(client: Client, result: SubscriptionResult[List[M
    * measurement was received and how long it took to receive the last one. All times in milliseconds.
    */
   def timeRoundtrip(measurements: List[Measurement]): Promise[RoundtripReading] = this.synchronized {
-    val future = client.future[Result[RoundtripReading]]
+    val exe = client.getInternal.getExecutor
+    //val future = exe.future[Result[RoundtripReading]]
+
+    val promise = FuturePromise.open[RoundtripReading](exe)
 
     var expected = measurements
     var firstMeas = Option.empty[Long]
-    val stopwatch = new Stopwatch()
+    val stopwatch = Stopwatch.start
 
-    def onMeas(m: Measurement): Boolean = {
+    def onMeas(measWithUuid: Measurement): Boolean = {
+      val m = measWithUuid.toBuilder.clearPointUuid().build
       if (expected.head == m) {
         if (firstMeas.isEmpty) firstMeas = Some(stopwatch.elapsed)
         expected = expected.tail
       }
       // when we are not waiting for any more measurements were done and make the lastMessage measurement
       if (expected.isEmpty) {
-        future.set(Success(new RoundtripReading(firstMeas.get, stopwatch.elapsed)))
+        promise.setSuccess(new RoundtripReading(firstMeas.get, stopwatch.elapsed))
+        //future.set(Success(new RoundtripReading(firstMeas.get, stopwatch.elapsed)))
         false
       } else {
         true
@@ -83,7 +89,8 @@ class ConcurrentRoundtripTimer(client: Client, result: SubscriptionResult[List[M
 
     onMeasurementCallbacks ::= onMeas _
 
-    Promise.from(future)
+    //Promise.from(future)
+    promise
   }
 
 }

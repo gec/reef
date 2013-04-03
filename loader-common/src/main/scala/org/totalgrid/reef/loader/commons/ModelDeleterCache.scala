@@ -20,9 +20,9 @@ package org.totalgrid.reef.loader.commons
 
 import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.FEP._
-import org.totalgrid.reef.client.sapi.client.rest.BatchOperations
 import com.google.protobuf.GeneratedMessage
 import org.totalgrid.reef.client.service.proto.Alarms.EventConfig
+import org.totalgrid.reef.client.operations.scl.ScalaBatchOperations
 
 class EquipmentRemoverCache extends ModelDeleterCache
 
@@ -39,11 +39,10 @@ trait ModelDeleterCache extends ModelCollector {
   var equipment = List.empty[Entity]
   var configFiles = List.empty[ConfigFile]
   var eventConfigs = List.empty[EventConfig]
+  var edges = List.empty[EntityEdge]
 
   def addPoint(obj: Point, entity: Entity) = {
-    // need to clear off the logicalNode because delete uses searchQuery
-    // TODO: fix services so they only first do unique query then search query on delete
-    points ::= obj.toBuilder.clearEndpoint.build
+    points ::= obj
   }
   def addCommand(obj: Command, entity: Entity) = {
     commands ::= obj.toBuilder.clearEndpoint.build
@@ -63,16 +62,27 @@ trait ModelDeleterCache extends ModelCollector {
   def addEventConfig(eventConfig: EventConfig) = {
     eventConfigs ::= eventConfig
   }
-  def addEdge(edge: EntityEdge) = {}
+  def addEdge(edge: EntityEdge) = {
+    // we need to delete "source" links manually to unhook endpoints from their points and commands
+    // other edges we can ignore, they will get implictly deleted when the entities are deleted
+    // we could delete all edges but it would be much slower
+    if (edge.getRelationship == "source") edges ::= edge
+  }
 
   def doDeletes(local: LoaderServices, batchSize: Int) {
     // we need to delete endpoints first because we can't delete points and commands that
     // are sourced by endpoints
     // NOTE: we need the List.empty[GeneratedMessage] to tell the compiler what the type is, when it tries to guess it can run forever
-    val toDelete: List[GeneratedMessage] = endpoints ::: channel ::: commands ::: points ::: equipment ::: configFiles ::: eventConfigs ::: List.empty[GeneratedMessage]
-    val toDeleteOps = toDelete.map { entry => (c: LoaderServices) => c.delete(entry) }
+    val toDelete: List[GeneratedMessage] = edges ::: endpoints ::: channel ::: commands ::: points ::: equipment ::: configFiles ::: eventConfigs ::: List.empty[GeneratedMessage]
 
-    BatchOperations.batchOperations(local, toDeleteOps, batchSize)
+    if (batchSize == 0) {
+      toDelete.foreach { local.delete(_).await() }
+    } else {
+      ScalaBatchOperations.batchOperations(local, batchSize) {
+        toDelete.foreach(local.delete(_))
+      }.await()
+    }
+
   }
 
   def size = endpoints.size + channel.size + commands.size + points.size + equipment.size + configFiles.size + eventConfigs.size

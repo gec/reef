@@ -19,10 +19,10 @@
 package org.totalgrid.reef.integration.authz
 
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
-import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import org.totalgrid.reef.client.exception.UnauthorizedException
+import org.totalgrid.reef.client.sapi.sync.{ ClientOperations, AllScadaService }
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import org.totalgrid.reef.client.settings.UserSettings
+import org.totalgrid.reef.client.exception.{ ExpectationException, BadRequestException, UnauthorizedException }
 
 class AuthTestBase extends ServiceClientSuite {
 
@@ -37,8 +37,8 @@ class AuthTestBase extends ServiceClientSuite {
     userConfig = Some(new UserSettings(props))
 
     // update all of the agents to have the same system password
-    client.getAgents().await.foreach { a =>
-      client.setAgentPassword(a, userConfig.get.getUserPassword).await
+    client.getAgents().foreach { a =>
+      client.setAgentPassword(a, userConfig.get.getUserPassword)
     }
   }
 
@@ -46,9 +46,21 @@ class AuthTestBase extends ServiceClientSuite {
    * get a new client as a particular user (assumes password == username)
    */
   def as[A](userName: String, logout: Boolean = true)(f: AllScadaService => A): A = {
-    val c = session.login(userName, userConfig.get.getUserPassword).await
-    val ret = f(c.getRpcInterface(classOf[AllScadaService]))
-    if (logout) c.logout().await
+    val c = connection.login(new UserSettings(userName, userConfig.get.getUserPassword))
+    c.setHeaders(c.getHeaders.setResultLimit(5000))
+    val ret = f(c.getService(classOf[AllScadaService]))
+    if (logout) c.logout()
+    ret
+  }
+
+  /**
+   * get a new client as a particular user (assumes password == username)
+   */
+  def asOps[A](userName: String, logout: Boolean = true)(f: ClientOperations => A): A = {
+    val c = connection.login(new UserSettings(userName, userConfig.get.getUserPassword))
+    c.setHeaders(c.getHeaders.setResultLimit(5000))
+    val ret = f(c.getService(classOf[ClientOperations]))
+    if (logout) c.logout()
     ret
   }
 
@@ -60,8 +72,35 @@ class AuthTestBase extends ServiceClientSuite {
       f
       fail(failureMessage)
     } catch {
-      case a: UnauthorizedException =>
       // were expecting the auth error, let others bubble
+      case a: UnauthorizedException =>
+      // if the record we cared about has been filtered off then we may get a different error than an explict
+      // unauthorized exception
+      case b: BadRequestException =>
+      case c: ExpectationException =>
+
+    }
+  }
+
+  def executeCommands(service: AllScadaService, cmds: List[String]) {
+    cmds.foreach { cmdName => executeCommand(service, cmdName) }
+  }
+
+  def cantExecuteCommands(service: AllScadaService, cmds: List[String]) {
+    cmds.foreach { cmdName =>
+      unAuthed("Expected executing command: " + cmdName + " to be unauthorized") {
+        executeCommand(service, cmdName)
+      }
+    }
+  }
+
+  private def executeCommand(service: AllScadaService, cmdName: String) {
+    val cmd = service.getCommandByName(cmdName)
+    val lock = service.createCommandExecutionLock(cmd)
+    try {
+      service.executeCommandAsControl(cmd)
+    } finally {
+      service.deleteCommandLock(lock)
     }
   }
 }

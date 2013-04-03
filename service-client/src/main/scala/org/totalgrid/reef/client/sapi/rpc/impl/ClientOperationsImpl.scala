@@ -19,9 +19,10 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc.ClientOperations
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.operations.scl.{ UsesServiceRegistry, UsesServiceOperations }
 
-trait ClientOperationsImpl extends HasAnnotatedOperations with ClientOperations {
+trait ClientOperationsImpl extends UsesServiceOperations with UsesServiceRegistry with ClientOperations {
   def getOne[T](request: T) = ops.operation("Cannot getOne with request: " + request) {
     _.get(request).map(_.one)
   }
@@ -36,9 +37,8 @@ trait ClientOperationsImpl extends HasAnnotatedOperations with ClientOperations 
 
   def subscribeMany[T](request: T) = {
     import org.totalgrid.reef.client.types.TypeDescriptor
-    import org.totalgrid.reef.client.sapi.client.Subscription._
 
-    val descriptor = client.getServiceInfo(request.asInstanceOf[AnyRef].getClass).getDescriptor
+    val descriptor = getServiceInfo(request.asInstanceOf[AnyRef].getClass).getDescriptor
     val typeDescriptor = descriptor.asInstanceOf[TypeDescriptor[T]]
     ops.subscription(typeDescriptor, "Cannot getMany with request: " + request) { (sub, c) =>
       c.get(request, sub).map(_.many)

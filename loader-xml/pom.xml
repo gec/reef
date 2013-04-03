@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.7</version>
+        <version>0.4.9</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-loader-xml</artifactId>
@@ -29,9 +29,18 @@
                         <Bundle-Name>Reef Xml Loader</Bundle-Name>
                         <Import-Package>org.slf4j;version="[1.5,2.0)",*</Import-Package>
                         <Export-Package>
-                            org.totalgrid.reef.loader.*;version="${reef.version}"
+                            org.totalgrid.reef.loader;version="${reef.version}",
+                            org.totalgrid.reef.loader.helpers;version="${reef.version}"
                         </Export-Package>
-                        <Private-Package>org.totalgrid.reef.xml.*</Private-Package>
+                        <Private-Package>
+                            org.totalgrid.reef.loader.authorization,
+                            org.totalgrid.reef.loader.calculations,
+                            org.totalgrid.reef.loader.common,
+                            org.totalgrid.reef.loader.communications,
+                            org.totalgrid.reef.loader.configuration,
+                            org.totalgrid.reef.loader.equipment,
+                            org.totalgrid.reef.loader.sx
+                        </Private-Package>
                         <_nouses>true</_nouses>
                     </instructions>
                 </configuration>

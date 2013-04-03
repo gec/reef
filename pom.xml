@@ -6,16 +6,16 @@
 	<groupId>org.totalgrid.reef</groupId>
 	<artifactId>reef</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4.7</version>
+	<version>0.4.9</version>
 
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.version>2.9.0-1</scala.version>
-        <slf4j-api.version>1.6.1</slf4j-api.version>
+        <slf4j-api.version>1.7.2</slf4j-api.version>
         <slf4s.version>1.0.6</slf4s.version>
         <scalamodules.version>2.0.3</scalamodules.version>
         <qpid.version>0.10</qpid.version>
-		<reef.version>0.4.7</reef.version>
+		<reef.version>0.4.9</reef.version>
         <squeryl.version>0.9.5-RC1</squeryl.version>
         <cglib.version>2.2</cglib.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
@@ -28,14 +28,14 @@
         <karaf.version>2.2.4</karaf.version>
         <karaf.console.version>${karaf.version}</karaf.console.version>
         <scalatest.version>1.6.1</scalatest.version>
-        <maven-scala-plugin.version>2.15.2</maven-scala-plugin.version>
-        <scalariform-maven-plugin.version>0.1.0</scalariform-maven-plugin.version>
+        <scala-maven-plugin.version>3.1.0</scala-maven-plugin.version>
+        <scalariform-maven-plugin.version>0.1.2</scalariform-maven-plugin.version>
         <mockito-core.version>1.8.5</mockito-core.version>
         <logback.version>0.9.27</logback.version>
         <maven-resources-plugin.version>2.3</maven-resources-plugin.version>
         <protobuf-java.version>2.3.0</protobuf-java.version>
-        <maven-javadoc-plugin.version>2.8</maven-javadoc-plugin.version>
-        <maven-protoc-plugin.version>0.1.9-GEC</maven-protoc-plugin.version>
+        <maven-javadoc-plugin.version>2.8.1</maven-javadoc-plugin.version>
+        <maven-protoc-plugin.version>0.1.10</maven-protoc-plugin.version>
         <build-helper-maven-plugin.version>1.1</build-helper-maven-plugin.version>
         <jaxb2-maven-plugin.version>1.3</jaxb2-maven-plugin.version>
         <maven-jar-plugin.version>2.2</maven-jar-plugin.version>
@@ -63,10 +63,8 @@
 		<module>integration-testing</module>
         <module>executor</module>
 		<module>util</module>
+        <module>util-jmx</module>
 		<module>util-osgi</module>
-		<module>metrics</module>
-        <module>metrics-client</module>
-        <module>metrics-service</module>
 		<module>broker</module>
         <module>qpid-broker</module>
 		<module>persistence-api</module>
@@ -87,13 +85,11 @@
 		<module>fep</module>
         <module>standalone-fep</module>
 		<module>protocol-api</module>
-		<module>protocol-simulator</module>
-        <module>protocol-simulator-shell-commands</module>
-		<module>default-simulator</module>
-		<module>example-simulator</module>
+		<module>simulator/protocol-simulator</module>
+        <module>simulator/protocol-simulator-shell-commands</module>
+		<module>simulator/default-simulator</module>
+		<module>simulator/example-simulator</module>
 		<module>protocol-dnp3</module>
-        <module>services-db-schema</module>
-        <module>services-authz</module>
 		<module>services</module>
 		<module>admin-shell</module>
         <module>standalone-node</module>

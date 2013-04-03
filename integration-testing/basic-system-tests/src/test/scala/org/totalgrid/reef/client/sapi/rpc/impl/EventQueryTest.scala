@@ -29,11 +29,11 @@ import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 class EventQueryTest extends ServiceClientSuite {
 
   test("Get all events (limit 2)") {
-    client.getRecentEvents(2).await
+    client.getRecentEvents(2)
   }
 
   test("Get all login/logout events") {
-    client.getRecentEvents(List("System.UserLogin", "System.UserLogout"), 2).await
+    client.getRecentEvents(List("System.UserLogin", "System.UserLogout"), 2)
   }
 
   test("Get events with multiple selects") {
@@ -41,7 +41,7 @@ class EventQueryTest extends ServiceClientSuite {
     val yesterday = nowPlus(Calendar.DATE, -1)
     val twoHoursFromNow = nowPlus(Calendar.HOUR, 2)
 
-    client.searchForEvents(EventListRequestBuilders.getByTimeRangeAndSubsystemSelector(yesterday, twoHoursFromNow, "Core", 2).build).await
+    client.searchForEvents(EventListRequestBuilders.getByTimeRangeAndSubsystemSelector(yesterday, twoHoursFromNow, "Core", 2).build)
   }
 
   // Get a time offset based on the well known NOW_MS

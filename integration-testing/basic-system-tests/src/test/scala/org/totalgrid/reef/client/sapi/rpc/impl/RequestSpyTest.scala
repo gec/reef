@@ -22,35 +22,40 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 import org.totalgrid.reef.client.proto.Envelope.Verb
-import net.agileautomata.executor4s.Future
-import org.totalgrid.reef.client.sapi.client.{ Response, RequestSpy }
 import org.totalgrid.reef.client.service.entity.EntityRelation
+import org.totalgrid.reef.client.Promise
+import org.totalgrid.reef.client.operations.{ Response, RequestListener }
 
 @RunWith(classOf[JUnitRunner])
 class RequestSpyTest extends ServiceClientSuite {
 
-  class CountingRequestSpy extends RequestSpy {
+  class CountingRequestListener extends RequestListener {
     var count = 0
-    def onRequestReply[A](verb: Verb, request: A, response: Future[Response[A]]) = count += 1
-    def reset() = count = 0
+    def onRequest[A](verb: Verb, request: A, response: Promise[Response[A]]) {
+      println("Request: " + verb + " " + request)
+      count += 1
+    }
+    def reset() {
+      count = 0
+    }
   }
 
   test("CountingRequestSpy") {
-    val spy = new CountingRequestSpy
-    client.addRequestSpy(spy)
+    val spy = new CountingRequestListener
+    session.getRequestListenerManager.addRequestListener(spy)
 
     val relations = List(new EntityRelation("feedback", "Point", false))
 
-    val fromRoots = client.getEntityRelationsFromTypeRoots("Command", relations).await
+    val fromRoots = client.getEntityRelationsFromTypeRoots("Command", relations)
 
     spy.count should equal(1)
     spy.reset()
 
-    val fromParents = client.getEntityRelationsForParents(fromRoots.map { _.getUuid }, relations).await
+    val fromParents = client.getEntityRelationsForParents(fromRoots.map { _.getUuid }, relations)
 
     fromParents should equal(fromRoots)
 
-    // N queries, one fore each command and another for the batch
+    // N queries, one for each command and another for the batch
     spy.count should equal(fromRoots.size + 1)
   }
 }

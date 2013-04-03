@@ -20,14 +20,15 @@ package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.ApplicationConfigBuilders
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import org.totalgrid.reef.client.settings.{ Version, NodeSettings }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 
-trait ApplicationServiceImpl extends HasAnnotatedOperations with ApplicationService {
+trait ApplicationServiceImpl extends UsesServiceOperations with ApplicationService {
 
   override def registerApplication(config: NodeSettings, instanceName: String, capabilities: List[String]) = {
     ops.operation("Failed registering application") {

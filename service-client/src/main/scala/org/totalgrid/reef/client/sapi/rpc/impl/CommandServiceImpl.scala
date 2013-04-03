@@ -23,12 +23,12 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID, Command
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders._
 import org.totalgrid.reef.client.sapi.rpc.CommandService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.{ MultiRequestHelper, HasAnnotatedOperations }
 import org.totalgrid.reef.client.service.command.CommandRequestHandler
-import org.totalgrid.reef.client.SubscriptionBinding
-import org.totalgrid.reef.client.sapi.client.rest.impl.BatchServiceRestOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.service.proto.Descriptors
 
-trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
+trait CommandServiceImpl extends UsesServiceOperations with CommandService {
 
   override def createCommandExecutionLock(id: Command) = createCommandExecutionLock(id :: Nil)
 
@@ -60,24 +60,24 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   }
 
   override def executeCommandAsControl(id: Command) = ops.operation("Couldn't execute control: " + id.getName) {
-    _.put(UserCommandRequestBuilders.executeControl(id)).map(_.one.map(_.getResult))
+    _.put(UserCommandRequestBuilders.executeControl(id)).map(_.one).map(_.getResult)
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Double) = {
     ops.operation("Couldn't execute setpoint: " + id.getName + " with double value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one).map(_.getResult)
     }
   }
 
   override def executeCommandAsSetpoint(id: Command, value: Int) = {
     ops.operation("Couldn't execute setpoint: " + id.getName + " with integer value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one).map(_.getResult)
     }
   }
 
   override def executeCommandAsSetpoint(id: Command, value: String) = {
     ops.operation("Couldn't execute setpoint: " + id.getName + " with string value: " + value) {
-      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one.map(_.getResult))
+      _.put(UserCommandRequestBuilders.executeSetpoint(id, value)).map(_.one).map(_.getResult)
     }
   }
 
@@ -131,12 +131,12 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
     _.get(CommandRequestBuilders.getByEntityId(uuid)).map(_.one)
   }
 
-  override def getCommandsByNames(names: List[String]) = ops.operation("Couldn't get commands with names: " + names) { _ =>
-    batchGets(names.map { CommandRequestBuilders.getByEntityName(_) })
+  override def getCommandsByNames(names: List[String]) = batchGets("Couldn't get commands with names: " + names) {
+    names.map { CommandRequestBuilders.getByEntityName(_) }
   }
 
-  override def getCommandsByUuids(uuids: List[ReefUUID]) = ops.operation("Couldn't get commands with uuids: " + uuids) { _ =>
-    batchGets(uuids.map { CommandRequestBuilders.getByEntityId(_) })
+  override def getCommandsByUuids(uuids: List[ReefUUID]) = batchGets("Couldn't get commands with uuids: " + uuids) {
+    uuids.map { CommandRequestBuilders.getByEntityId(_) }
   }
 
   override def getCommandsOwnedByEntity(parentUuid: ReefUUID) = {
@@ -154,33 +154,22 @@ trait CommandServiceImpl extends HasAnnotatedOperations with CommandService {
   override def getCommandsThatFeedbackToPoint(pointUuid: ReefUUID) = {
     ops.operation("Couldn't find commands that feedback to point: " + pointUuid.getValue) { session =>
 
-      val entity = EntityRequestBuilders.getPointsFeedbackCommands(pointUuid)
-      val entityList = session.get(entity).map { _.one.map { EntityRequestBuilders.extractChildrenUuids(_) } }
-
-      val batchClient = new BatchServiceRestOperations(client)
-      def getCommandWithUuid(uuid: ReefUUID) = batchClient.get(CommandRequestBuilders.getByEntityId(uuid)).map(_.one)
-      MultiRequestHelper.batchScatterGatherQuery(client, entityList, getCommandWithUuid _, batchClient.flush _)
+      val request = Command.newBuilder.setEntity(EntityRequestBuilders.getPointsFeedbackCommands(pointUuid)).build
+      session.get(request).map(_.many)
     }
   }
 
   override def bindCommandHandler(endpointUuid: ReefUUID, handler: CommandRequestHandler) = {
-    ops.operation("Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { session =>
-      import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
-      import org.totalgrid.reef.client.AddressableDestination
-      import net.agileautomata.executor4s._
 
-      val connectionFuture = session.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build)
+    val service = new EndpointCommandHandlerImpl(handler)
 
-      connectionFuture.flatMap {
-        _.one match {
-          case Success(connection) =>
-            val destination = new AddressableDestination(connection.getRouting.getServiceRoutingKey)
-            val service = new EndpointCommandHandlerImpl(handler)
-            connectionFuture.replicate[Result[SubscriptionBinding]](Success(client.bindService(service, client, destination, false)))
-          case fail: Failure =>
-            connectionFuture.asInstanceOf[Future[Result[SubscriptionBinding]]]
-        }
-      }
+    ops.clientSideService(service, Descriptors.userCommandRequest, "Couldn't find endpoint connection for endpoint: " + endpointUuid.getValue) { (binding, session) =>
+      import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection, CommandHandlerBinding }
+
+      val endpointConnection = EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid))
+      val bindingProto = CommandHandlerBinding.newBuilder.setEndpointConnection(endpointConnection).setCommandQueue(binding.getId).build
+
+      session.post(bindingProto).map { _.one }
     }
   }
 }

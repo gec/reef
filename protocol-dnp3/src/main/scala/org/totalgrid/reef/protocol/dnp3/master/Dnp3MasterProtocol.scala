@@ -24,7 +24,7 @@ import org.totalgrid.reef.protocol.api.{ Publisher, CommandHandler => ProtocolCo
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.protocol.dnp3.IStackObserver
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 
 case class MasterObjectsContainer(dataObserver: MeasAdapter, stackObserver: IStackObserver,

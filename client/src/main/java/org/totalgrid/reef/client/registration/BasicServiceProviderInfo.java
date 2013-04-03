@@ -20,7 +20,6 @@ package org.totalgrid.reef.client.registration;
 
 import org.totalgrid.reef.client.ServiceProviderFactory;
 import org.totalgrid.reef.client.ServiceProviderInfo;
-import org.totalgrid.reef.client.internal.ProviderFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +43,7 @@ public class BasicServiceProviderInfo implements ServiceProviderInfo
     }
 
     @Override
-    public ProviderFactory getFactory()
+    public ServiceProviderFactory getFactory()
     {
         return factory;
     }

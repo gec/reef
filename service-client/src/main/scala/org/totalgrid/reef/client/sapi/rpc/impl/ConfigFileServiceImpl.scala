@@ -27,7 +27,8 @@ import org.totalgrid.reef.client.service.proto.Model.{ ConfigFile, ReefUUID }
 import org.totalgrid.reef.client.sapi.rpc.ConfigFileService
 import org.totalgrid.reef.client.exception.ExpectationException
 
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 
 /**
  * implementation of the ConfigFileService Interface. The calls are implemented including the verbs and whatever
@@ -36,7 +37,7 @@ import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperation
  * disturbing client code (much). We can also add additional assertions on client behavior here to fail faster and
  * let people fall into the 'pit of the success' more often
  */
-trait ConfigFileServiceImpl extends HasAnnotatedOperations with ConfigFileService {
+trait ConfigFileServiceImpl extends UsesServiceOperations with ConfigFileService {
 
   override def getConfigFiles() = ops.operation("Couldn't get list of all config files") {
     _.get(ConfigFileRequestBuilders.getAll).map(_.many)

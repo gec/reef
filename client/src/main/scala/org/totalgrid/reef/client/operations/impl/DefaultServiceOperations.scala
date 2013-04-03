@@ -1,0 +1,120 @@
+/**
+ * Copyright 2011 Green Energy Corp.
+ *
+ * Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. Green Energy
+ * Corp licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.totalgrid.reef.client.operations.impl
+
+import org.totalgrid.reef.client.registration.Service
+import org.totalgrid.reef.client.types.TypeDescriptor
+import net.agileautomata.executor4s.Executor
+import org.totalgrid.reef.client.operations._
+import java.util.concurrent.RejectedExecutionException
+import org.totalgrid.reef.client.exception.{ ServiceIOException, InternalClientError, ReefServiceException }
+import org.totalgrid.reef.client._
+import scl.ScalaPromise._
+
+object DefaultServiceOperations {
+
+  /**
+   * since the error message is pass by value (and only generated on error) its possible that
+   * it will produce an exception when accessed. We catch this so we don't sheild the real error.
+   */
+  private def renderErrorMsg(errorMsg: => String): String = {
+    try {
+      val errorString = errorMsg
+      errorString.replaceAll("\n", " ").replaceAll("\r", "") + " - "
+    } catch {
+      case e: Exception => "Error rendering extra errorMsg - "
+    }
+  }
+
+  class CancelingListener[A](cancel: () => Unit) extends PromiseListener[A] {
+    def onComplete(promise: Promise[A]) {
+      try {
+        promise.await() // TODO: better way?
+      } catch {
+        case x: Exception => cancel()
+      }
+    }
+  }
+
+  class DefaultSubscriptionResult[A, B](result: A, sub: Subscription[B]) extends SubscriptionResult[A, B] {
+    def getResult: A = result
+    def getSubscription: Subscription[B] = sub
+  }
+
+  def safeOp[A](err: => String, exe: Executor)(op: => Promise[A]): Promise[A] = {
+
+    try {
+      op.mapError { rse => rse.addExtraInformation(renderErrorMsg(err)); rse }
+    } catch {
+      case npe: NullPointerException =>
+        FuturePromise.error[A](new InternalClientError("Null pointer error while making request. Check that all parameters are not null.", npe), exe)
+      case rje: RejectedExecutionException =>
+        FuturePromise.error[A](new ServiceIOException("Underlying connection executor has been closed or disconnected", rje), exe)
+      case rse: ReefServiceException => FuturePromise.error[A](rse, exe)
+      case ex: Exception => FuturePromise.error[A](new InternalClientError("Unexpected error: " + ex.getMessage, ex), exe)
+    }
+  }
+}
+
+class DefaultServiceOperations(restOperations: OptionallyBatchedRestOperations, bindOperations: BindOperations, batch: () => BatchRestOperations, exe: Executor) extends ServiceOperations {
+
+  import DefaultServiceOperations._
+
+  def request[A](request: BasicRequest[A]): Promise[A] = {
+    safeOp(request.errorMessage, exe) { request.execute(restOperations) }
+  }
+
+  def batchRequest[A](request: BasicRequest[A]): Promise[A] = {
+    restOperations.batched match {
+      case Some(_) => safeOp(request.errorMessage, exe) { request.execute(restOperations) }
+      case None =>
+        val batchOps = batch()
+        val result = safeOp(request.errorMessage, exe) { request.execute(batchOps) }
+        batchOps.flush()
+        result
+    }
+  }
+
+  def subscriptionRequest[A, B](descriptor: TypeDescriptor[B], request: SubscriptionBindingRequest[A]): Promise[SubscriptionResult[A, B]] = {
+    try {
+      val sub: Subscription[B] = bindOperations.subscribe(descriptor)
+      val promise: Promise[A] = safeOp(request.errorMessage, exe) { request.execute(sub, restOperations) }
+      promise.listen(new CancelingListener(sub.cancel _))
+      promise.map(v => new DefaultSubscriptionResult(v, sub))
+
+    } catch {
+      case ex: Exception => FuturePromise.error[SubscriptionResult[A, B]](new InternalClientError("Couldn't create subscribe queue." + ex.getMessage, ex), exe)
+    }
+  }
+
+  def clientServiceBinding[A, B](service: Service, descriptor: TypeDescriptor[B], request: SubscriptionBindingRequest[A]): Promise[SubscriptionBinding] = {
+    try {
+      val binding = bindOperations.lateBindService(service, descriptor)
+      val promise: Promise[A] = safeOp(request.errorMessage, exe) { request.execute(binding, restOperations) }
+      promise.listen(new CancelingListener(binding.cancel _))
+      promise.map(result => binding)
+
+    } catch {
+      case ex: Exception => FuturePromise.error[SubscriptionBinding](
+        new InternalClientError("Couldn't bind client service handler." + ex.getMessage, ex), exe)
+    }
+  }
+
+  def getBindOperations = bindOperations
+}

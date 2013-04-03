@@ -1,0 +1,950 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+
+    Copyright 2011 Green Energy Corp.
+
+    Licensed to Green Energy Corp (www.greenenergycorp.com) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. Green Energy
+    Corp licenses this file to you under the GNU Affero General Public License
+    Version 3.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+    http://www.gnu.org/licenses/agpl.html
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+    <changeSet author="diff" context="original" id="1327943117559-1">
+        <createTable tableName="AccessTable">
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="AccessTable_pkey"/>
+            </column>
+            <column name="value" type="int4">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-2">
+        <createTable tableName="Agent">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="digest" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="Agent_pkey"/>
+            </column>
+            <column name="salt" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-3">
+        <createTable tableName="AgentPermissionSetJoin">
+            <column name="agentId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permissionSetId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-4">
+        <createTable tableName="AlarmModel">
+            <column name="state" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="eventId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="AlarmModel_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-5">
+        <createTable tableName="ApplicationCapability">
+            <column name="applicationId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ApplicationCapability_pkey"/>
+            </column>
+            <column name="capability" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-6">
+        <createTable tableName="ApplicationInstance">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="network" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="location" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ApplicationInstance_pkey"/>
+            </column>
+            <column name="userName" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instanceName" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-7">
+        <createTable tableName="AuthPermission">
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="AuthPermission_pkey"/>
+            </column>
+            <column name="resource" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="allow" type="bool">
+                <constraints nullable="false"/>
+            </column>
+            <column name="verb" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-8">
+        <createTable tableName="AuthToken">
+            <column name="agentId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expirationTime" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="AuthToken_pkey"/>
+            </column>
+            <column name="token" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="loginLocation" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-9">
+        <createTable tableName="AuthTokenPermissionSetJoin">
+            <column name="authTokenId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permissionSetId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-10">
+        <createTable tableName="ChannelStatus">
+            <column name="name" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ChannelStatus_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-11">
+        <createTable tableName="Command">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="displayName" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lastSelectId" type="int8"/>
+            <column name="commandType" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="triggerId" type="int8"/>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="Command_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-12">
+        <createTable tableName="CommandBlockJoin">
+            <column name="accessId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CommandBlockJoin_pkey"/>
+            </column>
+            <column name="commandId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-13">
+        <createTable tableName="CommandLockModel">
+            <column name="expireTime" type="int8"/>
+            <column name="agent" type="VARCHAR(128)"/>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CommandLockModel_pkey"/>
+            </column>
+            <column name="access" type="int4">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-14">
+        <createTable tableName="CommunicationEndpoint">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="frontEndPortId" type="UUID"/>
+            <column name="dataSource" type="bool">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CommunicationEndpoint_pkey"/>
+            </column>
+            <column name="protocol" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-15">
+        <createTable tableName="CommunicationProtocolApplicationInstance">
+            <column name="applicationId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CommunicationProtocolApplicationInstance_pkey"/>
+            </column>
+            <column name="protocol" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-16">
+        <createTable tableName="ConfigFile">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mimeType" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ConfigFile_pkey"/>
+            </column>
+            <column name="file" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-17">
+        <createTable tableName="CurrentValue">
+            <column name="pointId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="proto" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CurrentValue_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-18">
+        <createTable tableName="Entity">
+            <column name="name" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="Entity_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-19">
+        <createTable tableName="EntityAttribute">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="byteVal" type="bytea"/>
+            <column name="doubleVal" type="FLOAT8(17)"/>
+            <column name="longVal" type="int8"/>
+            <column name="attrName" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stringVal" type="VARCHAR(128)"/>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="EntityAttribute_pkey"/>
+            </column>
+            <column name="boolVal" type="bool"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-20">
+        <createTable tableName="EntityDerivedEdge">
+            <column name="parentEdgeId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="edgeId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="EntityDerivedEdge_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-21">
+        <createTable tableName="EntityEdge">
+            <column name="childId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="relationship" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="EntityEdge_pkey"/>
+            </column>
+            <column name="parentId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="distance" type="int4">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-22">
+        <createTable tableName="EntityToTypeJoins">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entType" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-23">
+        <createTable tableName="EntityTypeMetaModel">
+            <column name="id" type="VARCHAR(128)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="EntityTypeMetaModel_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-24">
+        <createTable tableName="EventConfigStore">
+            <column name="builtIn" type="bool">
+                <constraints nullable="false"/>
+            </column>
+            <column name="eventType" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="designation" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="EventConfigStore_pkey"/>
+            </column>
+            <column name="alarmState" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="severity" type="int4">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-25">
+        <createTable tableName="EventStore">
+            <column name="entityId" type="UUID"/>
+            <column name="deviceTime" type="int8"/>
+            <column name="eventType" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="EventStore_pkey"/>
+            </column>
+            <column name="rendered" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="args" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+            <column name="severity" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="time" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="userId" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subsystem" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alarm" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-26">
+        <createTable tableName="Foo">
+            <column name="data" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="Foo_pkey"/>
+            </column>
+            <column name="value" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-27">
+        <createTable tableName="FrontEndAssignment">
+            <column name="serviceRoutingKey" type="VARCHAR(128)"/>
+            <column name="state" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="offlineTime" type="int8"/>
+            <column name="applicationId" type="int8"/>
+            <column name="endpointId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enabled" type="bool">
+                <constraints nullable="false"/>
+            </column>
+            <column name="onlineTime" type="int8"/>
+            <column name="assignedTime" type="int8"/>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="FrontEndAssignment_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-28">
+        <createTable tableName="FrontEndPort">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="network" type="VARCHAR(128)"/>
+            <column name="location" type="VARCHAR(128)"/>
+            <column name="state" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="proto" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="FrontEndPort_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-29">
+        <createTable tableName="HeartbeatStatus">
+            <column name="isOnline" type="bool">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applicationId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="HeartbeatStatus_pkey"/>
+            </column>
+            <column name="timeoutAt" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="periodMS" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processId" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-30">
+        <createTable tableName="MeasName">
+            <column name="name" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="MeasName_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-31">
+        <createTable tableName="MeasProcAssignment">
+            <column name="serviceRoutingKey" type="VARCHAR(128)"/>
+            <column name="applicationId" type="int8"/>
+            <column name="endpointId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assignedTime" type="int8"/>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="MeasProcAssignment_pkey"/>
+            </column>
+            <column name="readyTime" type="int8"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-32">
+        <createTable tableName="Measurement">
+            <column name="pointId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="proto" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="Measurement_pkey"/>
+            </column>
+            <column name="measTime" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-33">
+        <createTable tableName="OverrideConfig">
+            <column name="pointId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="OverrideConfig_pkey"/>
+            </column>
+            <column name="protoData" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-34">
+        <createTable tableName="PermissionSet">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PermissionSet_pkey"/>
+            </column>
+            <column name="defaultExpirationTime" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-35">
+        <createTable tableName="PermissionSetJoin">
+            <column name="permissionId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permissionSetId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-36">
+        <createTable tableName="Point">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="Point_pkey"/>
+            </column>
+            <column name="pointType" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="abnormal" type="bool">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-37">
+        <createTable tableName="TriggerSet">
+            <column name="pointId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="proto" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="TriggerSet_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-38">
+        <createTable tableName="UserCommandModel">
+            <column name="expireTime" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="errorMessage" type="TEXT"/>
+            <column name="agent" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="corrolationId" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="UserCommandModel_pkey"/>
+            </column>
+            <column name="status" type="int4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="commandId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="commandProto" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-39">
+        <createIndex indexName="idx409d06db" tableName="AlarmModel" unique="false">
+            <column name="eventId"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-40">
+        <createIndex indexName="idx19a7044c" tableName="Entity" unique="true">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-41">
+        <createIndex indexName="idxbd600c10" tableName="EntityEdge" unique="false">
+            <column name="childId"/>
+            <column name="relationship"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-42">
+        <createIndex indexName="idxcc200c96" tableName="EntityEdge" unique="false">
+            <column name="parentId"/>
+            <column name="relationship"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-43">
+        <createIndex indexName="idx81a709fc" tableName="EntityToTypeJoins" unique="false">
+            <column name="entType"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-44">
+        <createIndex indexName="idx8c3f0a5d" tableName="EntityToTypeJoins" unique="false">
+            <column name="entityId"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-45">
+        <createIndex indexName="idx2f4405ec" tableName="EventStore" unique="false">
+            <column name="time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-46">
+        <createIndex indexName="idx217504d6" tableName="MeasName" unique="true">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-47">
+        <createIndex indexName="idx9fab0aed" tableName="Measurement" unique="false">
+            <column name="pointId"/>
+            <column name="measTime"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-48">
+        <createSequence schemaName="public" sequenceName="s_AccessTable_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-49">
+        <createSequence schemaName="public" sequenceName="s_Agent_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-50">
+        <createSequence schemaName="public" sequenceName="s_AlarmModel_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-51">
+        <createSequence schemaName="public" sequenceName="s_ApplicationCapability_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-52">
+        <createSequence schemaName="public" sequenceName="s_ApplicationInstance_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-53">
+        <createSequence schemaName="public" sequenceName="s_AuthPermission_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-54">
+        <createSequence schemaName="public" sequenceName="s_AuthToken_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-55">
+        <createSequence schemaName="public" sequenceName="s_ChannelStatus_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-56">
+        <createSequence schemaName="public" sequenceName="s_CommandAccessModel_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-57">
+        <createSequence schemaName="public" sequenceName="s_CommandBlockJoin_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-58">
+        <createSequence schemaName="public" sequenceName="s_CommandLockModel_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-59">
+        <createSequence schemaName="public" sequenceName="s_Command_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-60">
+        <createSequence schemaName="public" sequenceName="s_CommunicationEndpoint_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-61">
+        <createSequence schemaName="public" sequenceName="s_CommunicationProtocolApplicationInstance_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-62">
+        <createSequence schemaName="public" sequenceName="s_ConfigFile_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-63">
+        <createSequence schemaName="public" sequenceName="s_CurrentValue_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-64">
+        <createSequence schemaName="public" sequenceName="s_EntityAttribute_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-65">
+        <createSequence schemaName="public" sequenceName="s_EntityDerivedEdge_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-66">
+        <createSequence schemaName="public" sequenceName="s_EntityEdge_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-67">
+        <createSequence schemaName="public" sequenceName="s_EventConfigStore_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-68">
+        <createSequence schemaName="public" sequenceName="s_EventStore_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-69">
+        <createSequence schemaName="public" sequenceName="s_Foo_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-70">
+        <createSequence schemaName="public" sequenceName="s_FrontEndAssignment_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-71">
+        <createSequence schemaName="public" sequenceName="s_FrontEndPort_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-72">
+        <createSequence schemaName="public" sequenceName="s_HeartbeatStatus_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-73">
+        <createSequence schemaName="public" sequenceName="s_MeasName_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-74">
+        <createSequence schemaName="public" sequenceName="s_MeasProcAssignment_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-75">
+        <createSequence schemaName="public" sequenceName="s_Measurement_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-76">
+        <createSequence schemaName="public" sequenceName="s_OverrideConfig_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-77">
+        <createSequence schemaName="public" sequenceName="s_PermissionSet_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-78">
+        <createSequence schemaName="public" sequenceName="s_Point_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-79">
+        <createSequence schemaName="public" sequenceName="s_TriggerSet_id"/>
+    </changeSet>
+    <changeSet author="diff" context="original" id="1327943117559-80">
+        <createSequence schemaName="public" sequenceName="s_UserCommandModel_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328109714935-1">
+        <createIndex indexName="idx2e6e05e2" tableName="AuthToken" unique="false">
+            <column name="token"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328109714935-2">
+        <createIndex indexName="idx76050993" tableName="AuthToken" unique="false">
+            <column name="expirationTime"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328117146325-1">
+        <dropSequence schemaName="public" sequenceName="s_CommandAccessModel_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639505560-1">
+        <createSequence schemaName="public" sequenceName="s_CommandAccessModel_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-1">
+        <dropSequence schemaName="public" sequenceName="s_AccessTable_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-2">
+        <dropSequence schemaName="public" sequenceName="s_CommandAccessModel_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-3">
+        <dropSequence schemaName="public" sequenceName="s_Foo_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-4">
+        <dropTable tableName="AccessTable"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1328639639036-5">
+        <dropTable tableName="Foo"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1330050395895-1">
+        <createTable tableName="CalculationConfig">
+            <column name="entityId" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CalculationConfig_pkey"/>
+            </column>
+            <column name="protoData" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+            <column name="outputPointId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1330050395895-2">
+        <createSequence schemaName="public" sequenceName="s_CalculationConfig_id"/>
+    </changeSet>
+    <!-- Everything before this was release in 0.4.6 -->
+    <changeSet author="incremental" context="original" id="1331138724917-1">
+        <addColumn tableName="AuthToken">
+            <column name="clientVersion" type="VARCHAR(128)" defaultValue="unknown">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-1">
+        <!-- remove the old permission sets because they are no longer accurate -->
+        <delete tableName="PermissionSet" />
+        <delete tableName="AgentPermissionSetJoin" />
+        <addColumn tableName="PermissionSet">
+            <column name="protoData" type="bytea">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-2">
+        <dropColumn columnName="defaultExpirationTime" tableName="PermissionSet"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-3">
+        <dropSequence schemaName="public" sequenceName="s_AuthPermission_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-4">
+        <dropTable tableName="AuthPermission"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331673009469-5">
+        <dropTable tableName="PermissionSetJoin"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331837983992-1">
+        <!-- When we upgrade the application table we need to get rid of all apps and all links to apps -->
+        <!-- This includes the endpoint/frontend assignments -->
+        <delete tableName="ApplicationInstance" />
+        <delete tableName="HeartbeatStatus" />
+        <update tableName="FrontEndAssignment">
+            <column name="applicationId" value="null" />
+        </update>
+        <update tableName="MeasProcAssignment" >
+            <column name="applicationId" value="null" />
+        </update>
+        <addColumn tableName="ApplicationInstance">
+            <column name="agentId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1331837983992-2">
+        <dropColumn columnName="userName" tableName="ApplicationInstance"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-1">
+        <!-- We delete all of the command locks and user command history because we are now using a foreign -->
+        <!-- key to the lock table in each request and "soft deleting" locks. -->
+        <delete tableName="CommandLockModel" />
+        <addColumn tableName="CommandLockModel">
+            <column name="agentId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-2">
+        <addColumn tableName="CommandLockModel">
+            <column name="deleted" type="bool">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-3">
+        <delete tableName="UserCommandModel" />
+        <addColumn tableName="UserCommandModel">
+            <column name="lockId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-4">
+        <dropColumn columnName="agent" tableName="CommandLockModel"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332380500619-5">
+        <dropColumn columnName="agent" tableName="UserCommandModel"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332519044036-1">
+        <addColumn tableName="AuthToken">
+            <column name="issueTime" type="int8" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1332519044036-2">
+        <addColumn tableName="AuthToken">
+            <column name="revoked" type="bool" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-1">
+        <createTable tableName="ApplicationNetworkAccess">
+            <column name="network" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applicationId" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="int8">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ApplicationNetworkAccess_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-2">
+        <dropColumn columnName="network" tableName="ApplicationInstance"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333563821868-3">
+        <createSequence schemaName="public" sequenceName="s_ApplicationNetworkAccess_id"/>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1333636303890-1">
+        <addColumn tableName="ApplicationInstance">
+            <column name="version" type="VARCHAR(128)" defaultValue="unknown">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <!-- Everything before this was release in 0.4.7 -->
+    <changeSet author="incremental" context="original" id="1334669398697-1">
+        <addColumn tableName="CommunicationEndpoint">
+            <column name="autoAssigned" type="bool" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="incremental" context="original" id="1334779573500-1">
+        <addColumn tableName="FrontEndAssignment">
+            <column name="active" type="bool" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <!-- Everything before this was release in 0.4.8 -->
+
+    <!-- These changeSets (once published) should never be changed! Migrations should be tested with live data -->
+    <!-- between multiple versions of the system. Remember to add a defaultValue if adding a column that can have -->
+    <!-- a sensible value. If not you must delete those entries and update/delete all linked objects to keep a -->
+    <!-- consistent database. -->
+
+</databaseChangeLog>

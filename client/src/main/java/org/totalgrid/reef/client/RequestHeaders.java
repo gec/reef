@@ -18,6 +18,8 @@
  */
 package org.totalgrid.reef.client;
 
+import org.totalgrid.reef.client.proto.Envelope;
+
 /**
  * <p>Headers that are sent along with each request to reef, very similar in usage and design to HTTP headers.</p>
  *
@@ -35,17 +37,22 @@ public interface RequestHeaders
     RequestHeaders setAuthToken( String token );
 
     /**
+     * Clears the auth token
+     * @return A new RequestHeaders with the auth token cleared
+     */
+    RequestHeaders clearAuthToken();
+
+    /**
+     * whether an authToken is attached to headers
+     */
+    boolean hasAuthToken();
+
+    /**
      * AuthToken associated with this client, can be used to create other clients that have
      * the same authorization. Must be protected as well as the username/password combo.
      * @return auth token string
      */
     String getAuthToken();
-
-    /**
-     * Clears the auth token
-     * @return A new RequestHeaders with the auth token cleared
-     */
-    RequestHeaders clearAuthToken();
 
     /**
      * overrides the system default for maximum # of results to return at a time
@@ -60,6 +67,15 @@ public interface RequestHeaders
      */
     RequestHeaders clearResultLimit();
 
+    /**
+     * whether a custom resultLimit is set
+     */
+    boolean hasResultLimit();
+
+    /**
+     * current result limit, a -1 indicates we will use server default
+     */
+    int getResultLimit();
 
     /**
      * Overrides the system default for the request timeout in milliseconds
@@ -74,6 +90,16 @@ public interface RequestHeaders
     RequestHeaders clearTimeout();
 
     /**
+     * whether a custom timeout is set
+     */
+    boolean hasTimeout();
+
+    /**
+     * current timeout, a -1 indicates we will use connection default
+     */
+    long getTimeout();
+
+    /**
      * Overrides the system default destination
      * @param key The Routable describing the destination
      * @return A new RequestHeaders with the specific destination set
@@ -86,4 +112,48 @@ public interface RequestHeaders
      */
     RequestHeaders clearDestination();
 
+    /**
+     * whether a custom destination is set
+     */
+    boolean hasDestination();
+
+    /**
+     * the current destination or AnyNodeDestination if unset
+     */
+    Routable getDestination();
+
+    /**
+     * This is the id of the subscription queue to use for this request, should only ever be set
+     * for a single request at a time.
+     * @param queueId id of the application owned queue
+     * @see SubscriptionBinding
+     */
+    RequestHeaders setSubscribeQueue( String queueId );
+
+    /**
+     * clear the subscription queue setting
+     */
+    RequestHeaders clearSubscribeQueue();
+
+    /**
+     * whether a subscription is set
+     */
+    boolean hasSubscribeQueue();
+
+    /**
+     * get the subscribe queue if one is set or an empty string if not set
+     */
+    String getSubscribeQueue();
+
+    /**
+     * merge two request headers togther, the settings in other overwrite this objects values on conflicts
+     * @param other another RequestHeaders object
+     * @return the merged RequestHeaders object
+     */
+    RequestHeaders merge( RequestHeaders other );
+
+    /**
+     * Get all of the headers we would attach to a service request envelope.
+     */
+    java.lang.Iterable<Envelope.RequestHeader> toEnvelopeRequestHeaders();
 }

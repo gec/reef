@@ -23,18 +23,17 @@ import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.service.AllScadaService
 import org.apache.felix.service.command.CommandSession
 import net.agileautomata.executor4s.Cancelable
-import org.totalgrid.reef.client.sapi.client.rest.{ Connection, Client }
-import org.totalgrid.reef.broker.qpid.QpidBrokerConnectionFactory
+import org.totalgrid.reef.client.{ Connection, Client }
 import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.{ UserSettings, AmqpSettings }
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
-import org.totalgrid.reef.metrics.client.MetricsServiceList
 import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, SubscriptionEvent, Subscription, ConnectionCloseListener }
+import org.totalgrid.reef.client.factory.ReefConnectionFactory
 
 object ReefCommandSupport extends Logging {
-  def setSessionVariables(session: CommandSession, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
+  def setSessionVariables(session: CommandSession, connection: Connection, client: Client, service: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) = {
     session.put("context", context)
+    session.put("connection", connection)
     session.put("client", client)
     session.put("reefSession", service)
     session.put("user", userName)
@@ -48,12 +47,12 @@ object ReefCommandSupport extends Logging {
 
   def getAuthenticatedClient(session: CommandSession, connection: Connection, context: String, cancelable: Cancelable, userSettings: UserSettings) {
     try {
-      val client = connection.login(userSettings).await
-      val services = client.getRpcInterface(classOf[AllScadaService])
+      val client = connection.login(userSettings)
+      val services = client.getService(classOf[AllScadaService])
 
       println("Logged into " + context + " as user: " + userSettings.getUserName + "\n\n")
 
-      setSessionVariables(session, client, services, context, cancelable, userSettings.getUserName, client.getHeaders.getAuthToken)
+      setSessionVariables(session, connection, client, services, context, cancelable, userSettings.getUserName, client.getHeaders.getAuthToken)
     } catch {
       case x: Exception =>
         cancelable.cancel()
@@ -64,13 +63,12 @@ object ReefCommandSupport extends Logging {
 
   def attemptLogin(session: CommandSession, amqpSettings: AmqpSettings, userSettings: UserSettings, unexpectedDisconnectCallback: () => Unit) = {
 
-    val factory = new ReefFactory(amqpSettings, new ReefServices)
-    val conn = factory.connect
-    conn.addServicesList(new MetricsServiceList)
+    val factory = ReefConnectionFactory.buildFactory(amqpSettings, new ReefServices)
+    val conn = factory.connect()
 
     val cancel = new Cancelable {
       def cancel() = {
-        factory.shutdown()
+        factory.terminate()
       }
     }
     conn.addConnectionListener(new ConnectionCloseListener {
@@ -128,6 +126,13 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     }
   }
 
+  protected def connection: Connection = {
+    this.session.get("connection") match {
+      case null => throw new Exception("No connection configured!")
+      case x => x.asInstanceOf[Connection]
+    }
+  }
+
   protected def reefClient: Client = {
     this.session.get("client") match {
       case null => throw new Exception("No client configured!")
@@ -149,12 +154,12 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
     case x => true
   }
 
-  def login(client: Client, services: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) {
-    ReefCommandSupport.setSessionVariables(this.session, client, services, context, cancelable, userName, authToken)
+  def login(connection: Connection, client: Client, services: AllScadaService, context: String, cancelable: Cancelable, userName: String, authToken: String) {
+    ReefCommandSupport.setSessionVariables(this.session, connection, client, services, context, cancelable, userName, authToken)
   }
 
   protected def logout() {
-    login(null, null, null, null, null, null)
+    login(null, null, null, null, null, null, null)
   }
 
   protected def get(name: String): Option[String] = {

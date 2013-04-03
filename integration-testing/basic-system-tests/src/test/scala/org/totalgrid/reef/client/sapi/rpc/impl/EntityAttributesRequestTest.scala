@@ -28,33 +28,33 @@ import org.totalgrid.reef.client.sapi.rpc.impl.util.ServiceClientSuite
 class EntityAttributesRequestTest extends ServiceClientSuite {
 
   test("Puts") {
-    val ent = client.getEntityByName("StaticSubstation").await
+    val ent = client.getEntityByName("StaticSubstation")
     val entUuid = ent.getUuid
 
-    val resp1 = client.setEntityAttribute(entUuid, "subName", "Apex").await
+    val resp1 = client.setEntityAttribute(entUuid, "subName", "Apex")
     resp1.getAttributesCount should equal(1)
 
-    val resp2 = client.setEntityAttribute(entUuid, "gisLat", 41.663).await
+    val resp2 = client.setEntityAttribute(entUuid, "gisLat", 41.663)
     resp2.getAttributesCount should equal(2)
 
-    val resp = client.getEntityAttributes(entUuid).await
+    val resp = client.getEntityAttributes(entUuid)
     resp.getAttributesCount should equal(2)
 
     client.clearEntityAttributes(entUuid)
   }
 
   test("API") {
-    val ent = client.getEntityByName("StaticSubstation").await
+    val ent = client.getEntityByName("StaticSubstation")
 
     val id = ent.getUuid
 
     {
-      val attr = client.getEntityAttributes(id).await
+      val attr = client.getEntityAttributes(id)
       attr.getAttributesCount should equal(0)
     }
 
     {
-      val attr = client.setEntityAttribute(id, "test01", "testString").await
+      val attr = client.setEntityAttribute(id, "test01", "testString")
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.STRING)
@@ -62,62 +62,62 @@ class EntityAttributesRequestTest extends ServiceClientSuite {
     }
 
     {
-      val attr = client.setEntityAttribute(id, "test02", true).await
+      val attr = client.setEntityAttribute(id, "test02", true)
       attr.getAttributesCount should equal(2)
     }
 
     {
-      val attr = client.removeEntityAttribute(id, "test01").await
+      val attr = client.removeEntityAttribute(id, "test01")
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0).getName should equal("test02")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.BOOL)
       attr.getAttributesList.get(0).getValueBool should equal(true)
     }
 
-    val attr = client.clearEntityAttributes(id).await
+    val attr = client.clearEntityAttributes(id)
     attr.map { _.getAttributesCount } should equal(Some(1))
 
   }
 
   test("Set types") {
-    val ent = client.getEntityByName("StaticSubstation").await
+    val ent = client.getEntityByName("StaticSubstation")
     val id = ent.getUuid
 
     {
-      val attr = client.setEntityAttribute(id, "test01", true).await
+      val attr = client.setEntityAttribute(id, "test01", true)
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.BOOL)
       attr.getAttributesList.get(0).getValueBool should equal(true)
-      client.removeEntityAttribute(id, "test01").await
+      client.removeEntityAttribute(id, "test01")
     }
     {
-      val attr = client.setEntityAttribute(id, "test01", 23432).await
+      val attr = client.setEntityAttribute(id, "test01", 23432)
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.SINT64)
       attr.getAttributesList.get(0).getValueSint64 should equal(23432)
-      client.removeEntityAttribute(id, "test01").await
+      client.removeEntityAttribute(id, "test01")
     }
     {
-      val attr = client.setEntityAttribute(id, "test01", 5.437).await
+      val attr = client.setEntityAttribute(id, "test01", 5.437)
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.DOUBLE)
       attr.getAttributesList.get(0).getValueDouble should equal(5.437)
-      client.removeEntityAttribute(id, "test01").await
+      client.removeEntityAttribute(id, "test01")
     }
     {
-      val attr = client.setEntityAttribute(id, "test01", "test").await
+      val attr = client.setEntityAttribute(id, "test01", "test")
       attr.getAttributesCount should equal(1)
       attr.getAttributesList.get(0)
       attr.getAttributesList.get(0).getName should equal("test01")
       attr.getAttributesList.get(0).getVtype should equal(Attribute.Type.STRING)
       attr.getAttributesList.get(0).getValueString should equal("test")
-      client.removeEntityAttribute(id, "test01").await
+      client.removeEntityAttribute(id, "test01")
     }
   }
 

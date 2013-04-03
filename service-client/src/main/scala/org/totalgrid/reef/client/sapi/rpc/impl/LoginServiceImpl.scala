@@ -19,11 +19,12 @@
 package org.totalgrid.reef.client.sapi.rpc.impl
 
 import org.totalgrid.reef.client.sapi.rpc.LoginService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.service.proto.Model.ReefID
 import org.totalgrid.reef.client.service.proto.Auth.{ Agent, AuthToken }
 
-trait LoginServiceImpl extends HasAnnotatedOperations with LoginService {
+trait LoginServiceImpl extends UsesServiceOperations with LoginService {
 
   private def builder(includeRevoked: Boolean) = {
     val b = AuthToken.newBuilder

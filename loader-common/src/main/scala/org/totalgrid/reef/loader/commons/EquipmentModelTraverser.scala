@@ -37,8 +37,10 @@ trait TraversalProgressNotifier {
  * commands. From each point and command it will backtrack up the "source" relationships looking for the source
  * endpoints and channels of those points/commands. Finally it looks at all of configFiles for those with "used"
  * relationship to any of our imported entities.
+ * @param forDelete if we are deleting elements we want to include only ConfigFiles and Endpoints that we have seen
+ *                  every user/linked object. If adding we want to include them if we have seen atleast one linked object
  */
-class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector, notifier: Option[TraversalProgressNotifier]) {
+class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector, forDelete: Boolean, notifier: Option[TraversalProgressNotifier]) {
   private val seenEntities = scala.collection.mutable.Map.empty[String, Entity]
 
   def collect(entity: Entity) {
@@ -47,66 +49,100 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
   }
 
   def finish() {
+    // more efficient to load all endpoints and only include endpoints that we have either
+    // seen every point (for deletion) or atleast one point (for addition)
+    client.getEndpoints().await.toList.foreach { e =>
+      val points = e.getOwnerships.getPointsList.toList
+      val traversedPoints = points.filter(pName => seenEntities.get(pName).isDefined)
+      val commands = e.getOwnerships.getCommandsList.toList
+      val traversedCommands = commands.filter(cName => seenEntities.get(cName).isDefined)
+
+      if ((forDelete && traversedPoints == points && traversedCommands == commands) ||
+        (!forDelete && (!traversedPoints.isEmpty || !traversedCommands.isEmpty))) {
+        handleConcreteObject(client.getEntityByUuid(e.getUuid).await, e, 1)
+      }
+    }
+
     // much more efficient to grab all config files and filter off ones we don't know
     // versus asking for a config file for every entity
     client.getConfigFiles.await.toList.foreach { cf =>
       val users = cf.getEntitiesList.toList
-      val knownUsers = users.filter(u => seenEntities.get(u.getUuid.getValue).isDefined)
-      if (!knownUsers.isEmpty) {
-        val cfEntity = client.getEntityByUuid(cf.getUuid).await
-        notifier.foreach { _.display(cfEntity, 0) }
-        collector.addConfigFile(cf, cfEntity)
-        knownUsers.foreach { collector.addEdge(_, cfEntity, "uses") }
+      // never add a "user-less" config file, if we want it we'll grab it specifically
+      if (!users.isEmpty) {
+        val traversedUsers = users.filter(u => seenEntities.get(u.getUuid.getValue).isDefined)
+        if ((forDelete && traversedUsers == users) || (!forDelete && !traversedUsers.isEmpty)) {
+          val cfEntity = client.getEntityByUuid(cf.getUuid).await
+          handleConcreteObject(cfEntity, cf, 1)
+          traversedUsers.foreach { collector.addEdge(_, cfEntity, "uses") }
+        }
       }
     }
   }
 
-  private def handleEntity(entity: Entity, depth: Int): Entity = {
-    seenEntities.put(entity.getUuid.getValue, entity)
-
-    notifier.foreach { _.display(entity, depth) }
-
-    getConcreteObject(client, entity) match {
-
-      case point: Point =>
-        collector.addPoint(point, entity)
-        val commands = client.getFeedbackCommands(entity.getUuid).await.toList
-        commands.foreach { c =>
-          getEntity(c.getUuid, depth + 1) // load commands so we can set the feedback relationship immediatley
-          collector.addEdge(entity, c, "feedback")
-        }
-        if (point.hasEndpoint) {
-          val endpoint = getEntity(point.getEndpoint.getUuid, depth + 1)
-          collector.addEdge(endpoint, entity, "source")
-        }
-
-      case command: Command =>
-        collector.addCommand(command, entity)
-        if (command.hasEndpoint) {
-          val endpoint = getEntity(command.getEndpoint.getUuid, depth + 1)
-          collector.addEdge(endpoint, entity, "source")
-        }
-
-      case endpoint: Endpoint =>
-        // add channel first, adding endpoint will automatically create channel with wrong uuid
-        if (endpoint.hasChannel) getEntity(endpoint.getChannel.getUuid, depth + 1)
-        collector.addEndpoint(endpoint, entity)
-
-      case channel: CommChannel =>
-        collector.addChannel(channel, entity)
-
-      case configFile: ConfigFile =>
-        collector.addConfigFile(configFile, entity)
-
-      case entity: Entity =>
-        collector.addEquipment(entity)
-        val relatedEntities = client.getEntityImmediateChildren(entity.getUuid, "owns").await
-        relatedEntities.foreach { child =>
-          traverseEquipment(child, depth + 1)
-          collector.addEdge(entity, child, "owns")
-        }
+  private def alreadyProcessed(entity: Entity, depth: Int) = {
+    seenEntities.get(entity.getName) match {
+      case None =>
+        notifier.foreach { _.display(entity, depth) }
+        seenEntities.put(entity.getUuid.getValue, entity)
+        seenEntities.put(entity.getName, entity)
+        false
+      case Some(_) =>
+        true
     }
 
+  }
+
+  private def handleEntity(entity: Entity, depth: Int): Entity = {
+    handleConcreteObject(entity, getConcreteObject(client, entity), depth)
+  }
+
+  private def handleConcreteObject(entity: Entity, concrete: GeneratedMessage, depth: Int): Entity = {
+    if (!alreadyProcessed(entity, depth)) {
+      concrete match {
+        case point: Point =>
+          collector.addPoint(point, entity)
+          val commands = client.getFeedbackCommands(entity.getUuid).await.toList
+          commands.foreach { c =>
+            getEntity(c.getUuid, depth + 1) // load commands so we can set the feedback relationship immediatley
+            collector.addEdge(entity, c, "feedback")
+          }
+          if (point.hasEndpoint) {
+            collector.addEdge(point.getEndpoint, entity, "source")
+          }
+
+        case command: Command =>
+          collector.addCommand(command, entity)
+          if (command.hasEndpoint) {
+            // we only add the edge to the source, deleting the endpoint
+            collector.addEdge(command.getEndpoint, entity, "source")
+          }
+
+        case endpoint: Endpoint =>
+          // add channel first, adding endpoint will automatically create channel with wrong uuid
+          if (endpoint.hasChannel) getEntity(endpoint.getChannel.getUuid, depth + 1)
+          collector.addEndpoint(endpoint, entity)
+          // normally we don't recurse into an endpoints children (since then we couldn't delete arbitraty
+          // equipment without taking all points/commands on the same endpoint.). However if an endpoint
+          // is our root we do want to delete all of the points and commands.
+          if (depth == 0) {
+            endpoint.getOwnerships.getPointsList.toList.foreach(getEntity(_, depth + 1))
+            endpoint.getOwnerships.getCommandsList.toList.foreach(getEntity(_, depth + 1))
+          }
+        case channel: CommChannel =>
+          collector.addChannel(channel, entity)
+
+        case configFile: ConfigFile =>
+          collector.addConfigFile(configFile, entity)
+
+        case entity: Entity =>
+          collector.addEquipment(entity)
+          val relatedEntities = client.getEntityImmediateChildren(entity.getUuid, "owns").await
+          relatedEntities.foreach { child =>
+            traverseEquipment(child, depth + 1)
+            collector.addEdge(entity, child, "owns")
+          }
+      }
+    }
     entity
   }
 
@@ -142,6 +178,11 @@ class EquipmentModelTraverser(client: LoaderServices, collector: ModelCollector,
   private def getEntity(logicalNode: ReefUUID, depth: Int) = {
     val cached = seenEntities.get(logicalNode.getValue)
     if (!cached.isDefined) traverseEquipment(client.getEntityByUuid(logicalNode).await, depth)
+    else cached.get
+  }
+  private def getEntity(logicalNodeName: String, depth: Int) = {
+    val cached = seenEntities.get(logicalNodeName)
+    if (!cached.isDefined) traverseEquipment(client.getEntityByName(logicalNodeName).await, depth)
     else cached.get
   }
 

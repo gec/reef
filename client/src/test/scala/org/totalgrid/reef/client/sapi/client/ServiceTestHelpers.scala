@@ -18,10 +18,9 @@
  */
 package org.totalgrid.reef.client.sapi.client
 
-import org.totalgrid.reef.client.{ Subscription => JavaSubscription }
-import org.totalgrid.reef.client.{ SubscriptionEventAcceptor, SubscriptionResult }
-import org.totalgrid.reef.client.sapi.client.impl.FixedPromise
 import net.agileautomata.executor4s._
+import org.totalgrid.reef.client.{ PromiseListener, PromiseTransform, PromiseErrorTransform, Subscription => JavaSubscription, SubscriptionEventAcceptor, SubscriptionResult, Promise => JPromise }
+import org.totalgrid.reef.client.exception.{ UnknownServiceException, ReefServiceException }
 
 object ServiceTestHelpers {
 
@@ -29,7 +28,7 @@ object ServiceTestHelpers {
     def getId = id
     var canceled = false
     var acceptor = Option.empty[SubscriptionEventAcceptor[A]]
-    def start(acc: SubscriptionEventAcceptor[A]) {
+    def start(acc: SubscriptionEventAcceptor[A]) = {
       acceptor = Some(acc)
       this
     }
@@ -46,11 +45,50 @@ object ServiceTestHelpers {
     def this(many: List[A]) = this(many, new MockSubscription[A]())
   }
 
-  def success[A](a: A) = new FixedPromise(Success(a))
-  def failure[A](ex: Exception) = new FixedPromise(Failure(ex))
-  def failure[A](msg: String) = new FixedPromise(Failure(msg))
+  // TODO: merge away these fixed promises
+  class FixedSuccessPromise[A](v: A) extends JPromise[A] {
+    def await(): A = v
+    def isComplete: Boolean = true
+    def listen(listener: PromiseListener[A]) {
+      listener.onComplete(this)
+    }
+    def transform[U](transform: PromiseTransform[A, U]): JPromise[U] = {
+      new FixedSuccessPromise(transform.transform(v))
+    }
+    def transformError(transform: PromiseErrorTransform): JPromise[A] = this
+  }
+  class FixedFailurePromise[A](ex: ReefServiceException) extends JPromise[A] {
+    def await(): A = throw ex
+    def isComplete: Boolean = true
+    def listen(listener: PromiseListener[A]) {
+      listener.onComplete(this)
+    }
+    def transform[U](transform: PromiseTransform[A, U]): JPromise[U] = {
+      new FixedFailurePromise[U](ex)
+    }
 
-  def subSuccess[A](a: A) = new FixedPromise(Success(new MockSubscriptionResult[A](a :: Nil)))
-  def subSuccess[A](a: List[A]) = new FixedPromise(Success(new MockSubscriptionResult[A](a)))
-  def subFailure[A](ex: Exception) = new FixedPromise(Failure(ex))
+    def transformError(transform: PromiseErrorTransform): JPromise[A] = {
+      new FixedFailurePromise[A](transform.transformError(ex))
+    }
+  }
+
+  def success[A](a: A) = new FixedSuccessPromise(a)
+  def failure[A](ex: ReefServiceException) = new FixedFailurePromise(ex)
+  def failure[A](msg: String) = new FixedFailurePromise(new UnknownServiceException(msg))
+
+  def subSuccess[A](a: A) = new FixedSuccessPromise(new MockSubscriptionResult[A](a :: Nil))
+  def subSuccess[A](a: List[A]) = new FixedSuccessPromise(new MockSubscriptionResult[A](a))
+  def subFailure[A](ex: ReefServiceException) = new FixedFailurePromise(ex)
+
+  // TODO: Figure out the right type hinting to make this unnecessary in FrontEndManagerTest
+  def subSuccessInterface[A](a: List[A]): JPromise[SubscriptionResult[List[A], A]] = new FixedSuccessPromise(new MockSubscriptionResult[A](a))
+  def subFailureInterface[A](ex: ReefServiceException): JPromise[SubscriptionResult[List[A], A]] = new FixedFailurePromise[SubscriptionResult[List[A], A]](ex)
+
+  /*def success[A](a: A) = new FixedPromise(Success(a))
+def failure[A](ex: Exception) = new FixedPromise(Failure(ex))
+def failure[A](msg: String) = new FixedPromise(Failure(msg))
+
+def subSuccess[A](a: A) = new FixedPromise(Success(new MockSubscriptionResult[A](a :: Nil)))
+def subSuccess[A](a: List[A]) = new FixedPromise(Success(new MockSubscriptionResult[A](a)))
+def subFailure[A](ex: Exception) = new FixedPromise(Failure(ex))*/
 }

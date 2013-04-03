@@ -27,6 +27,7 @@ import presentation.TriggerView
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.commons.{ ModelDeleter, LoaderServicesImpl }
 import org.totalgrid.reef.loader.LoadManager
+import org.totalgrid.reef.client.service.ClientOperations
 
 @Command(scope = "reef", name = "load", description = "Loads equipment and communication models")
 class LoadConfigCommand extends ReefCommandSupport {
@@ -60,13 +61,41 @@ class UnloadConfigCommand extends ReefCommandSupport {
   @GogoOption(name = "-batchSize", description = "Upload batch size, 0 disables all batching.", required = false, multiValued = false)
   var batchSize = 0
 
+  @GogoOption(name = "--force", description = "Force unloading even if endpoints are still marked as COMMS_UP", required = false, multiValued = false)
+  var force = false
+
   override def doCommand(): Unit = {
     val loaderServices = new LoaderServicesImpl(reefClient)
 
     reefClient.setHeaders(reefClient.getHeaders.setTimeout(30000))
-    ModelDeleter.deleteEverything(loaderServices, false, Some(Console.out), batchSize)
+    ModelDeleter.deleteEverything(loaderServices, false, force, Some(Console.out), batchSize)
   }
 
+}
+
+@Command(scope = "reef", name = "unload-children", description = "Delete a subset of the model starting with the indicated root nodes. The deleter will traverse the " +
+  "model starting at the root nodes and delete all child Equipment, Points and Commands. If the root node is an Endpoint then all of its \"sourced\" Points and Commands " +
+  "will be removed as well. If the root is a piece of Equipment all Points and Commands it \"owns\" will be delete. If all Points and Commands for an Endpoint are removed " +
+  "we will also remove the Endpoint itself.  We also check all of the ConfigFiles in the system, any that were \"uses\" only by removed entities will be deleted as well. " +
+  "If a Point is deleted all of the commands it is \"feedback\" for will also be deleted.")
+class UnloadChildrenConfigCommand extends ReefCommandSupport {
+
+  @GogoOption(name = "-batchSize", description = "Upload batch size, 0 disables all batching.", required = false, multiValued = false)
+  var batchSize = 0
+
+  @Argument(index = 0, name = "roots", description = "Names of parent nodes to delete", required = true, multiValued = true)
+  var roots: java.util.List[String] = null
+
+  override def doCommand(): Unit = {
+    val loaderServices = new LoaderServicesImpl(reefClient)
+    reefClient.setHeaders(reefClient.getHeaders.setTimeout(30000))
+
+    val rootEntities = roots.toList.map { loaderServices.getEntityByName(_) }
+
+    ModelDeleter.deleteChildren(loaderServices, roots.toList, false, false, Some(Console.out), batchSize) { (_, _) =>
+      // dont delete anything extra
+    }
+  }
 }
 
 @Command(scope = "trigger", name = "trigger", description = "Lists triggers")
@@ -76,20 +105,16 @@ class TriggerCommand extends ReefCommandSupport {
   var pointName: String = null
 
   def doCommand() = {
-    // TODO: re-enable trigger view commands
-    //    Option(pointName) match {
-    //      case Some(entId) =>
-    //        val point = services.getPointByName(pointName)
-    //        val trigger = interpretAs("Trigger set not found.") {
-    //          reefSession.get(TriggerSet.newBuilder.setPoint(point).build).await().expectOne
-    //        }
-    //        TriggerView.inspectTrigger(trigger)
-    //      case None =>
-    //        val triggers = interpretAs("No trigger sets found.") {
-    //          reefSession.get(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName("*")).build).await().expectMany()
-    //        }
-    //        TriggerView.printTable(triggers)
-    //    }
+    val ops = reefClient.getService(classOf[ClientOperations])
+    Option(pointName) match {
+      case Some(entId) =>
+        val point = services.getPointByName(pointName)
+        val trigger = ops.getOne(TriggerSet.newBuilder.setPoint(point).build)
+        TriggerView.inspectTrigger(trigger)
+      case None =>
+        val triggers = ops.getMany(TriggerSet.newBuilder.setPoint(Point.newBuilder.setName("*")).build)
+        TriggerView.printTable(triggers.toList)
+    }
   }
 
 }

@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
 import net.agileautomata.commons.testing.SynchronizedVariable
 import org.totalgrid.reef.app._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 
 import org.totalgrid.reef.app.impl.{ SimpleConnectedApplicationManager, ApplicationManagerSettings }
 import com.weiglewilczek.slf4s.Logging
@@ -42,7 +42,7 @@ class ApplicationManagerTest extends ServiceClientSuite with Logging {
 
   test("ApplicationConnectionManager integration test") {
     val connectionProvider = Mockito.mock(classOf[ConnectionProvider])
-    val appManager = new SimpleConnectedApplicationManager(client, connectionProvider, settings)
+    val appManager = new SimpleConnectedApplicationManager(session.getInternal.getExecutor, connectionProvider, settings)
 
     val connected = new SynchronizedVariable(false)
 
@@ -70,39 +70,39 @@ class ApplicationManagerTest extends ServiceClientSuite with Logging {
         connected shouldBecome (true) within 50000
 
         (0 to 5).foreach { i =>
-          val appConfig = client.getApplicationByName(instanceName).await
+          val appConfig = client.getApplicationByName(instanceName)
           appConfig.getOnline should equal(true)
 
           // remove the application offline (will cause a heartbeat error)
-          client.unregisterApplication(appConfig).await
+          client.unregisterApplication(appConfig)
 
           // application will be marked offline
           connected shouldBecome (false) within 50000
 
           // we should automatically retry, logging back in
           connected shouldBecome (true) within 50000
-          client.getApplicationByName(instanceName).await.getOnline should equal(true)
+          client.getApplicationByName(instanceName).getOnline should equal(true)
         }
         // now stop the manager like an application would, make sure our app gets cleaned up and we are
         // informed that we are going offline
         appManager.stop()
 
         connected shouldBecome (false) within 50000
-        client.getApplicationByName(instanceName).await.getOnline should equal(false)
+        client.getApplicationByName(instanceName).getOnline should equal(false)
       } finally {
         appManager.stop()
       }
 
-      client.unregisterApplication(client.getApplicationByName(instanceName).await).await
+      client.unregisterApplication(client.getApplicationByName(instanceName))
     }
   }
 
   private def withGuestUser(userSettings: UserSettings, permission: String = "read_only")(fun: => Unit) = {
-    val agent = client.createNewAgent(userSettings.getUserName, userSettings.getUserPassword, List(permission)).await
+    val agent = client.createNewAgent(userSettings.getUserName, userSettings.getUserPassword, List(permission))
     try {
       fun
     } finally {
-      client.deleteAgent(agent).await
+      client.deleteAgent(agent)
     }
   }
 

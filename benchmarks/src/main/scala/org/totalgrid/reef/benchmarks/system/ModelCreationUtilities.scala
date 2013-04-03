@@ -18,14 +18,16 @@
  */
 package org.totalgrid.reef.benchmarks.system
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.client.service.proto.Model.{ PointType, Point }
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointOwnership }
 import scala.collection.JavaConversions._
 import net.agileautomata.executor4s._
-import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.util.Timing.Stopwatch
+import org.totalgrid.reef.client.{ Promise, Client }
+import org.totalgrid.reef.client.operations.impl.{ OpenPromise, FuturePromise }
+import org.totalgrid.reef.client.exception.{ UnknownServiceException, ReefServiceException }
+import org.totalgrid.reef.client.operations.scl.ScalaPromise._
 
 object ModelCreationUtilities {
 
@@ -34,8 +36,8 @@ object ModelCreationUtilities {
   }
 
   def addEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
-    val loaderServices = client.getRpcInterface(classOf[LoaderServices])
-    loaderServices.startBatchRequests()
+    val loaderServices = client.getService(classOf[LoaderServices])
+    loaderServices.batching.start()
 
     val names = getPointNames(endpointName, pointsPerEndpoint)
 
@@ -45,21 +47,21 @@ object ModelCreationUtilities {
 
     val putEndpoint = Endpoint.newBuilder.setName(endpointName).setProtocol("null").setOwnerships(owner).build
     loaderServices.addEndpoint(putEndpoint)
-    () => loaderServices.batchedFlushBatchRequests(batchSize)
+    () => loaderServices.batching.flush(batchSize)
   }
 
   def deleteEndpoint(client: Client, endpointName: String, pointsPerEndpoint: Int, batchSize: Int) = {
-    val loaderServices = client.getRpcInterface(classOf[LoaderServices])
+    val loaderServices = client.getService(classOf[LoaderServices])
 
     val uuid = loaderServices.getEndpointByName(endpointName).await.getUuid
     loaderServices.disableEndpointConnection(uuid).await
-    loaderServices.startBatchRequests()
+    loaderServices.batching.start()
 
     val names = getPointNames(endpointName, pointsPerEndpoint)
 
     loaderServices.delete(Endpoint.newBuilder.setName(endpointName).build)
     names.map { n => loaderServices.delete(Point.newBuilder.setName(n).build) }
-    () => loaderServices.batchedFlushBatchRequests(batchSize)
+    () => loaderServices.batching.flush(batchSize)
   }
 
   /**
@@ -67,35 +69,42 @@ object ModelCreationUtilities {
    * timing information on how long each individual request takes. The batchSize parameter is used to change
    * how much work is done in each request to the server.
    */
-  def parallelExecutor[A](client: Client, numConcurrent: Int, batchableOperations: Seq[() => Promise[A]]) = {
+  def parallelExecutor[A](exe: Executor, numConcurrent: Int, batchableOperations: Seq[() => Promise[A]]) = {
     var inProgressOps = 0
     var remainingOps = batchableOperations
     var timingResults = List.empty[(Long, A)]
 
-    val f = client.future[Result[List[(Long, A)]]]
-    val prom = Promise.from(f)
+    val f = exe.future[Either[ReefServiceException, List[(Long, A)]]]
+    val prom: OpenPromise[List[(Long, A)]] = FuturePromise.open(f)
 
-    def completed(stopwatch: Stopwatch, a: Promise[A]): Unit = f.synchronized {
-      val result = a.extract
-      if (result.isSuccess) {
-        inProgressOps -= 1
-        timingResults ::= (stopwatch.elapsed, result.get)
-        if (timingResults.size == batchableOperations.size) f.set(Success(timingResults))
-        else startNext()
-      } else {
-        f.set(Failure(result.toString))
+    def completed(stopwatch: Stopwatch, a: Promise[A]) {
+      f.synchronized {
+        if (!prom.isComplete) {
+          try {
+            val result = a.await()
+            inProgressOps -= 1
+            timingResults ::= (stopwatch.elapsed, result)
+            if (timingResults.size == batchableOperations.size) prom.setSuccess(timingResults)
+            else startNext()
+          } catch {
+            case rse: ReefServiceException => prom.setFailure(rse)
+            case ex => prom.setFailure(new UnknownServiceException(ex.toString))
+          }
+        }
       }
     }
 
-    def startNext(): Unit = f.synchronized {
-      if (inProgressOps < numConcurrent) {
-        inProgressOps += 1
-        val stopwatch = new Stopwatch()
-        val nextOperationToStart = remainingOps.headOption
-        if (nextOperationToStart.isDefined) {
-          remainingOps = remainingOps.tail
-          nextOperationToStart.get().listen(completed(stopwatch, _))
-          startNext()
+    def startNext() {
+      f.synchronized {
+        if (inProgressOps < numConcurrent) {
+          inProgressOps += 1
+          val stopwatch = Stopwatch.start
+          val nextOperationToStart = remainingOps.headOption
+          if (nextOperationToStart.isDefined) {
+            remainingOps = remainingOps.tail
+            nextOperationToStart.get().listenFor(completed(stopwatch, _))
+            startNext()
+          }
         }
       }
     }

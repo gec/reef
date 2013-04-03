@@ -18,7 +18,6 @@
  */
 package org.totalgrid.reef.measproc
 
-import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.measurementstore.{ MeasurementStoreToMeasurementCacheAdapter, MeasurementStore }
 import org.totalgrid.reef.persistence.InMemoryObjectCache
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
@@ -26,7 +25,6 @@ import org.totalgrid.reef.client.service.proto.Processing.MeasurementProcessingC
 import net.agileautomata.executor4s.Cancelable
 
 class MeasStreamConnector(newClient: => MeasurementProcessorServices, measStore: MeasurementStore, instanceName: String) {
-  val metricsPublisher = MetricsSink.getInstance(instanceName)
 
   // caches used to store measurements and overrides
   val measCache = new MeasurementStoreToMeasurementCacheAdapter(measStore)
@@ -44,7 +42,6 @@ class MeasStreamConnector(newClient: => MeasurementProcessorServices, measStore:
     val client = newClient
 
     val streamHandler = new MeasurementStreamProcessingNode(client, caches, streamConfig)
-    streamHandler.setHookSource(metricsPublisher.getStore("measproc-" + streamConfig.getLogicalNode.getName))
     new Cancelable {
       def cancel() {
         streamHandler.cancel()

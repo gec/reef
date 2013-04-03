@@ -23,7 +23,7 @@ import org.apache.qpid.transport._
 import com.weiglewilczek.slf4s.Logging
 import org.totalgrid.reef.client.exception.ServiceIOException
 
-final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool with ConnectionListener with Logging {
+final class QpidBrokerConnection(conn: Connection, ttlMilliseconds: Int) extends QpidBrokerChannelPool with ConnectionListener with Logging {
 
   private var disconnected = false
   private var closed = false
@@ -33,7 +33,7 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
 
   override def isConnected() = !disconnected
 
-  override def newChannel() = new QpidWorkerChannel(getSession(), this)
+  override def newChannel() = new QpidWorkerChannel(getSession(), this, ttlMilliseconds)
 
   override def disconnect(): Boolean = mutex.synchronized {
     if (!disconnected) {
@@ -75,7 +75,12 @@ final class QpidBrokerConnection(conn: Connection) extends QpidBrokerChannelPool
       temp
     }
 
-    this.onDisconnect(expected)
+    try {
+      this.onDisconnect(expected)
+    } catch {
+      case ex: Exception =>
+        logger.error("unexpected error handling onDisconnect: " + ex.getMessage, ex)
+    }
 
     mutex.synchronized {
       mutex.notifyAll()

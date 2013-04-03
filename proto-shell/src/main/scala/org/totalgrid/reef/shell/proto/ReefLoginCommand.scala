@@ -40,12 +40,14 @@ class ReefLoginCommand extends ReefCommandSupport {
 
   def doCommand() {
 
+    val properties = OsgiConfigReader.load(getBundleContext, List("org.totalgrid.reef.user", "org.totalgrid.reef.amqp", "org.totalgrid.reef.cli"))
+
     if (isLoggedIn) {
       println(getLoginString)
       println("\nUse \"reef:logout\" first to logout")
     } else {
       val userSettings = if (userName == null) {
-        val user = new UserSettings(OsgiConfigReader.load(getBundleContext, List("org.totalgrid.reef.user", "org.totalgrid.reef.cli")))
+        val user = new UserSettings(properties)
         println("Attempting login with user specified in etc/org.totalgrid.reef.cli.cfg file.")
         user
       } else {
@@ -60,7 +62,7 @@ class ReefLoginCommand extends ReefCommandSupport {
         new UserSettings(userName, password)
       }
 
-      val connectionInfo = new AmqpSettings(OsgiConfigReader.load(getBundleContext, "org.totalgrid.reef.amqp"))
+      val connectionInfo = new AmqpSettings(properties)
 
       ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings, handleDisconnect)
     }
@@ -83,7 +85,7 @@ class ReefLogoutCommand extends ReefCommandSupport {
     try {
       this.get("authToken") match {
         case Some(token) =>
-          reefClient.logout().await
+          reefClient.logout()
         case None =>
       }
     } catch {
@@ -110,7 +112,7 @@ class ReefHeadersCommand extends ReefCommandSupport {
   @GogoOption(name = "-r", description = "Reset headers to default state.")
   var reset: Boolean = false
 
-  def doCommand() = {
+  def doCommand() {
     var headers = reefClient.getHeaders
 
     if (reset) headers = headers.clearResultLimit().clearTimeout()

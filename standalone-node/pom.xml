@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-scala-base</artifactId>
-        <version>0.4.7</version>
+        <version>0.4.9</version>
         <relativePath>../scala-base</relativePath>
     </parent>
     <artifactId>reef-standalone-node</artifactId>
@@ -32,7 +32,7 @@
     <dependencies>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-services</artifactId>
+            <artifactId>reef-services-activator</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -68,7 +68,7 @@
         </dependency>
         <dependency>
             <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-protocol-dnp3</artifactId>
+            <artifactId>reef-protocol-simulator</artifactId>
             <version>${reef.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -91,10 +91,10 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.totalgrid.reef</groupId>
-            <artifactId>reef-metrics-service</artifactId>
-            <version>${reef.version}</version>
-            <scope>compile</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.2</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 </project>

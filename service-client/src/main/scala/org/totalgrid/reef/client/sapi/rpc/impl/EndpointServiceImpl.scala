@@ -22,15 +22,16 @@ import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID }
 
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
-import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint, EndpointConnection }
-
 import net.agileautomata.executor4s.{ Failure, Success }
 import org.totalgrid.reef.client.sapi.rpc.EndpointService
-import org.totalgrid.reef.client.sapi.client.Promise
+import org.totalgrid.reef.client.Promise
 import org.totalgrid.reef.client.service.proto.Descriptors
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
+import org.totalgrid.reef.client.service.proto.FEP.{ FrontEndProcessor, Endpoint, EndpointConnection }
+import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 
-trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
+trait EndpointServiceImpl extends UsesServiceOperations with EndpointService {
 
   override def getEndpoints() = ops.operation("Couldn't get list of all endpoints") {
     _.get(Endpoint.newBuilder.setUuid(ReefUUID.newBuilder.setValue("*")).build).map(_.many)
@@ -44,12 +45,12 @@ trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
     _.get(Endpoint.newBuilder.setUuid(endpointUuid).build).map(_.one)
   }
 
-  override def getEndpointsByNames(names: List[String]) = ops.operation("Couldn't get endpoints with names: " + names) { _ =>
-    batchGets(names.map { Endpoint.newBuilder.setName(_).build })
+  override def getEndpointsByNames(names: List[String]) = batchGets("Couldn't get endpoints with names: " + names) {
+    names.map { Endpoint.newBuilder.setName(_).build }
   }
 
-  override def getEndpointsByUuids(endpointUuids: List[ReefUUID]) = ops.operation("Couldn't get endpoint with uuids: " + endpointUuids.map { _.getValue }) { _ =>
-    batchGets(endpointUuids.map { Endpoint.newBuilder.setUuid(_).build })
+  override def getEndpointsByUuids(endpointUuids: List[ReefUUID]) = batchGets("Couldn't get endpoint with uuids: " + endpointUuids.map { _.getValue }) {
+    endpointUuids.map { Endpoint.newBuilder.setUuid(_).build }
   }
 
   override def disableEndpointConnection(endpointUuid: ReefUUID) = alterEndpointEnabled(endpointUuid, false)
@@ -58,21 +59,45 @@ trait EndpointServiceImpl extends HasAnnotatedOperations with EndpointService {
 
   private def alterEndpointEnabled(endpointUuid: ReefUUID, enabled: Boolean): Promise[EndpointConnection] = {
     ops.operation("Couldn't alter endpoint: " + endpointUuid.getValue + " to enabled: " + enabled) { client =>
-      val f1 = client.get(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).build).map(_.one)
+      val proto = EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).setEnabled(enabled).build
 
-      // this tricky little SOB creates another future based on the result of the last one, either by
-      f1.flatMap { r =>
-        r match {
-          case Success(conn) => client.post(EndpointConnection.newBuilder.setId(conn.getId).setEnabled(enabled).build).map(_.one)
-          case Failure(ex) => f1
-        }
-      }
+      client.post(proto).map(_.one)
+    }
+  }
+
+  override def setEndpointAutoAssigned(endpointUuid: ReefUUID, autoAssigned: Boolean) = {
+    ops.operation("Couldn't set endpoint: " + endpointUuid.getValue + " to autoAssigned: " + autoAssigned) {
+      val endpoint = Endpoint.newBuilder.setUuid(endpointUuid).setAutoAssigned(autoAssigned)
+
+      _.put(endpoint.build).map { _.one }
+    }
+  }
+
+  override def setEndpointConnectionAssignedProtocolAdapter(endpointUuid: ReefUUID, applicationUuid: ReefUUID) = {
+    ops.operation("Couldn't assign endpoint: " + endpointUuid.getValue + " to application: " + applicationUuid.getValue) {
+      val app = ApplicationConfig.newBuilder.setUuid(applicationUuid)
+      val fep = FrontEndProcessor.newBuilder.setAppConfig(app)
+      val endpoint = Endpoint.newBuilder.setUuid(endpointUuid)
+
+      _.put(EndpointConnection.newBuilder.setEndpoint(endpoint).setFrontEnd(fep).build).map { _.one }
+    }
+  }
+
+  override def getProtocolAdapters() = {
+    ops.operation("Couldn't get all protocol adapters.") {
+      _.get(FrontEndProcessor.newBuilder.addProtocols("*").build).map { _.many }
     }
   }
 
   override def alterEndpointConnectionState(id: ReefID, state: EndpointConnection.State) = {
     ops.operation("Couldn't alter endpoint connection: " + id + " to : " + state) {
       _.post(EndpointConnection.newBuilder.setId(id).setState(state).build).map(_.one)
+    }
+  }
+
+  override def alterEndpointConnectionStateByEndpoint(endpointUuid: ReefUUID, state: EndpointConnection.State) = {
+    ops.operation("Couldn't alter endpoint: " + endpointUuid + " to : " + state) {
+      _.post(EndpointConnection.newBuilder.setEndpoint(Endpoint.newBuilder.setUuid(endpointUuid)).setState(state).build).map(_.one)
     }
   }
 

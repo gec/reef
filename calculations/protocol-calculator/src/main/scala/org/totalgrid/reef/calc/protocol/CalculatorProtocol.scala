@@ -18,23 +18,21 @@
  */
 package org.totalgrid.reef.calc.protocol
 
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.Model.ConfigFile
 import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement, MeasurementBatch }
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection }
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.protocol.api.{ NullCommandHandler, ChannelIgnoringProtocol, Publisher }
-import org.totalgrid.reef.metrics.MetricsSink
 import org.totalgrid.reef.calc.lib.eval.BasicOperations
 import org.totalgrid.reef.calc.lib._
+import org.totalgrid.reef.jmx.MetricsManager
 
 class CalculatorProtocol extends ChannelIgnoringProtocol {
   def name = "calculator"
 
-  val metrics = MetricsSink.getInstance("calculator")
-
-  var managers = Map.empty[String, (Cancelable, Publisher[EndpointConnection.State])]
+  var managers = Map.empty[String, (Cancelable, Publisher[EndpointConnection.State], MetricsManager)]
 
   def addEndpoint(endpointName: String,
     channelName: String,
@@ -42,9 +40,11 @@ class CalculatorProtocol extends ChannelIgnoringProtocol {
     batchPublisher: Publisher[MeasurementBatch],
     endpointPublisher: Publisher[EndpointConnection.State], client: Client) = {
 
-    val service = client.getRpcInterface(classOf[AllScadaService])
+    val service = client.getService(classOf[AllScadaService])
 
-    val metricsPublisher = new CalculationMetricsSource(metrics.getStore(endpointName), true)
+    val metricsMgr = MetricsManager("org.totalgrid.reef.calc.protocol", endpointName)
+
+    val metricsPublisher = new CalculationMetricsSource(metricsMgr, true)
 
     val measPublisher = new OutputPublisher {
       def publish(m: Measurement) = {
@@ -61,7 +61,7 @@ class CalculatorProtocol extends ChannelIgnoringProtocol {
 
     val manager = new CalculationManager(factory)
 
-    managers += endpointName -> (manager, endpointPublisher)
+    managers += endpointName -> (manager, endpointPublisher, metricsMgr)
 
     val endpoint = service.getEndpointByName(endpointName).await
 
@@ -71,15 +71,18 @@ class CalculatorProtocol extends ChannelIgnoringProtocol {
 
     endpointPublisher.publish(EndpointConnection.State.COMMS_UP)
 
+    metricsMgr.register()
+
     NullCommandHandler
   }
 
   def removeEndpoint(endpointName: String) {
     managers.get(endpointName).foreach {
-      case (manager, endpointPublisher) =>
+      case (manager, endpointPublisher, metricsMgr) =>
         manager.cancel()
         endpointPublisher.publish(EndpointConnection.State.COMMS_DOWN)
         managers -= endpointName
+        metricsMgr.unregister()
     }
   }
 

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client;
 
 /**
- * Interface to receive notifications when a subscription binging is created using a service
+ * Interface to receive notifications when a subscription binding is created using a service
  * wrapper. This makes it much easier to create leak-proof subscription handling, all
  * subscriptions should be eventually canceled.
  */
@@ -27,7 +27,7 @@ public interface SubscriptionCreationListener
 {
 
     /**
-     * Called when a subscription is created
+     * Called when a subscription or "client side service" is created
      * @param binding Newly created SubscriptionBinding
      */
     public void onSubscriptionCreated( SubscriptionBinding binding );

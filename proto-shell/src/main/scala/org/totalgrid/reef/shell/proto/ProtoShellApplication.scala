@@ -25,25 +25,25 @@ import org.apache.felix.gogo.runtime.CommandProcessorImpl
 import jline.Terminal
 import java.io.{ PrintStream, InputStream }
 import org.totalgrid.reef.client.settings.{ AmqpSettings, UserSettings }
-import org.totalgrid.reef.client.sapi.client.factory.ReefFactory
 import org.totalgrid.reef.client.service.AllScadaService
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
 import org.totalgrid.reef.client.settings.util.PropertyReader
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.client.service.list.ReefServices
 
 import scala.collection.JavaConversions._
+import org.totalgrid.reef.client.factory.ReefConnectionFactory
+import org.totalgrid.reef.client.{ ConnectionFactory, Client, Connection }
 
 object ProtoShellApplication {
   def main(args: Array[String]) = {
     System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
 
-    val properties = PropertyReader.readFromFiles(List("target.cfg"))
+    val properties = PropertyReader.readFromFiles(List("../standalone-node.cfg"))
 
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
 
-    val factory = new ReefFactory(connectionInfo, new ReefServices)
+    val factory = ReefConnectionFactory.buildFactory(connectionInfo, new ReefServices)
 
     val connection = factory.connect()
     val cancel = new Cancelable {
@@ -56,10 +56,10 @@ object ProtoShellApplication {
 
   def runTerminal(connection: Connection, userSettings: UserSettings, context: String, cancelable: Cancelable) {
     try {
-      val client = connection.login(userSettings).await
-      val services = client.getRpcInterface(classOf[AllScadaService])
+      val client = connection.login(userSettings)
+      val services = client.getService(classOf[AllScadaService])
 
-      val app = new ProtoShellApplication(client, services, cancelable, userSettings.getUserName, context, client.getHeaders.getAuthToken)
+      val app = new ProtoShellApplication(connection, client, services, cancelable, userSettings.getUserName, context, client.getHeaders.getAuthToken)
       app.run(Array[String]())
     } catch {
       case e: Exception =>
@@ -69,7 +69,7 @@ object ProtoShellApplication {
   }
 }
 
-class ProtoShellApplication(client: Client, services: AllScadaService, cancelable: Cancelable, userName: String, context: String, authToken: String) extends Main {
+class ProtoShellApplication(connection: Connection, client: Client, services: AllScadaService, cancelable: Cancelable, userName: String, context: String, authToken: String) extends Main {
 
   setUser(userName)
   setApplication(context)
@@ -79,7 +79,7 @@ class ProtoShellApplication(client: Client, services: AllScadaService, cancelabl
   protected override def createConsole(commandProcessor: CommandProcessorImpl, in: InputStream, out: PrintStream, err: PrintStream, terminal: Terminal) = {
     new Console(commandProcessor, in, out, err, terminal, null) {
       protected override def setSessionProperties = {
-        ReefCommandSupport.setSessionVariables(this.session, client, services, context, cancelable, userName, authToken)
+        ReefCommandSupport.setSessionVariables(this.session, connection, client, services, context, cancelable, userName, authToken)
       }
     }
   }

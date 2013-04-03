@@ -20,11 +20,11 @@ package org.totalgrid.reef.client.sapi.service
 
 import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.client.sapi.client.Response
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
 
 object RestResponses {
 
-  def noVerb[A](verb: Envelope.Verb) = Response[A](Envelope.Status.NOT_ALLOWED, error = "Unimplemented verb: " + verb)
+  def noVerb[A](verb: Envelope.Verb) = ScalaResponse.failure[A](Envelope.Status.NOT_ALLOWED, "Unimplemented verb: " + verb)
 
   def noPut[A] = noVerb[A](Envelope.Verb.PUT)
   def noGet[A] = noVerb[A](Envelope.Verb.GET)

@@ -18,12 +18,13 @@
  */
 package org.totalgrid.reef.app.impl
 
-import org.totalgrid.reef.client.sapi.client.rest.{ Client, Connection }
+import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.app.process._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.app.ConnectedApplication
 import net.agileautomata.executor4s._
+import com.weiglewilczek.slf4s.Logging
 
 /**
  * Handles the multi stage application login process.
@@ -64,16 +65,16 @@ class LoginProcessTree(connection: Connection,
 
     def setup(p: ProcessManager) {
 
-      client = Some(connection.login(managerSettings.userSettings).await)
+      client = Some(connection.login(managerSettings.userSettings))
 
-      val services = client.get.getRpcInterface(classOf[AllScadaService])
+      val services = client.get.getService(classOf[AllScadaService])
       childTask = Some(new AppRegistrationTask(client.get, services))
       p.addChildProcess(this, childTask.get)
     }
 
     def cleanup(p: ProcessManager) {
       childTask.foreach { p.removeProcess(_) }
-      client.foreach { _.logout().await }
+      client.foreach { _.logout() }
     }
   }
 
@@ -84,16 +85,19 @@ class LoginProcessTree(connection: Connection,
 
     def setup(p: ProcessManager) {
 
-      appConfig = Some(services.registerApplication(managerSettings.nodeSettings, instanceName, appSettings.capabilites.toList).await)
+      val newAppConfig = services.registerApplication(managerSettings.nodeSettings, instanceName, appSettings.capabilites.toList).await
 
       // send a single heartbeat just to verify we are correctly registered
-      services.sendHeartbeat(appConfig.get).await
+      services.sendHeartbeat(newAppConfig).await
+
+      // if heartbeat succeed we should try setting application offline on way out
+      appConfig = Some(newAppConfig)
 
       // we need to give the application a new client
       val appClient = client.spawn()
-      connectedApp.onApplicationStartup(appConfig.get, connection, appClient)
+      connectedApp.onApplicationStartup(newAppConfig, connection, appClient)
 
-      p.addChildProcess(this, new HeartbeatTask(services, appConfig.get))
+      p.addChildProcess(this, new HeartbeatTask(services, newAppConfig))
     }
 
     def cleanup(p: ProcessManager) {
@@ -107,7 +111,7 @@ class LoginProcessTree(connection: Connection,
   }
 
   class HeartbeatTask(services: AllScadaService, appConfig: ApplicationConfig)
-      extends OneShotProcess("Starting beartbeats for: " + instanceName) {
+      extends OneShotProcess("Starting beartbeats for: " + instanceName) with Logging {
 
     var timer = Option.empty[Timer]
 
@@ -116,6 +120,7 @@ class LoginProcessTree(connection: Connection,
       val period: Long = managerSettings.overrideHeartbeatPeriodMs.getOrElse(appConfig.getHeartbeatCfg.getPeriodMs)
       timer = Some(executor.scheduleWithFixedOffset(period.milliseconds, period.milliseconds) {
         try {
+          logger.info("Sending heartbeat from " + appConfig.getInstanceName)
           services.sendHeartbeat(appConfig).await
         } catch {
           case rse: Exception =>

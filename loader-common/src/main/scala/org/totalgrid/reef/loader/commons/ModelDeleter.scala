@@ -21,19 +21,18 @@ package org.totalgrid.reef.loader.commons
 import java.io.PrintStream
 
 import scala.collection.JavaConversions._
-
 import org.totalgrid.reef.loader.commons.ui.{ RequestViewer, SimpleTraversalProgressNotifier }
-import org.totalgrid.reef.client.sapi.client.RequestSpy
 import org.totalgrid.reef.client.service.proto.Model.Entity
+import org.totalgrid.reef.client.operations.scl.ScalaRequestListener._
 
 object ModelDeleter {
-  def deleteChildren(local: LoaderServices, roots: List[String], dryRun: Boolean, stream: Option[PrintStream], batchSize: Int = 25)(additionalDelete: (EquipmentModelTraverser, ModelCollector) => Unit): Long = {
+  def deleteChildren(local: LoaderServices, roots: List[String], dryRun: Boolean, forceOffline: Boolean, stream: Option[PrintStream], batchSize: Int = 25)(additionalDelete: (EquipmentModelTraverser, ModelCollector) => Unit): Long = {
 
     val cachingImporter = new EquipmentRemoverCache
 
     val traversalUi = stream.map { new SimpleTraversalProgressNotifier(_) }
 
-    val traverser = new EquipmentModelTraverser(local, cachingImporter, traversalUi)
+    val traverser = new EquipmentModelTraverser(local, cachingImporter, true, traversalUi)
 
     stream.foreach { _.println("Finding items to delete starting at nodes: " + roots.mkString(", ")) }
 
@@ -59,10 +58,10 @@ object ModelDeleter {
 
         // wait for all endpoints to be disabled and stopped before deleting
         val endpoints = cachingImporter.endpoints
-        if (!endpoints.isEmpty) EndpointStopper.stopEndpoints(local, endpoints, stream)
+        if (!endpoints.isEmpty) EndpointStopper.stopEndpoints(local, endpoints, stream, forceOffline)
 
         val viewer = stream.map { new RequestViewer(_, cachingImporter.size) }
-        RequestSpy.withRequestSpy(local, viewer) {
+        withRequestListener(local, viewer) {
           cachingImporter.doDeletes(local, batchSize)
         }
         viewer.foreach { _.finish }
@@ -75,23 +74,27 @@ object ModelDeleter {
     itemsToDelete
   }
 
-  def deleteEverything(local: LoaderServices, dryRun: Boolean, stream: Option[PrintStream], batchSize: Int = 25): Long = {
-    deleteChildren(local, Nil, dryRun, stream, batchSize) { (traverse, collector) =>
-      local.modifyHeaders(_.setResultLimit(50000))
-
-      // since we never look at entities when we are deleting we dont need to look them up
-      val fakeEntity = Entity.newBuilder.build
-
-      local.getEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
-      val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
-      local.getEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
-
-      local.getCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
-      local.getConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
-      local.getPoints().await.foreach { collector.addPoint(_, fakeEntity) }
-      local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
-      local.getEventConfigurations().await.foreach { collector.addEventConfig(_) }
+  def deleteEverything(local: LoaderServices, dryRun: Boolean, forceOffline: Boolean, stream: Option[PrintStream], batchSize: Int = 25): Long = {
+    deleteChildren(local, Nil, dryRun, forceOffline, stream, batchSize) { (traverse, collector) =>
+      collectEverything(local, collector)
     }
+  }
+
+  def collectEverything(local: LoaderServices, collector: ModelCollector) {
+    local.setHeaders(local.getHeaders.setResultLimit(50000))
+
+    // since we never look at entities when we are deleting we dont need to look them up
+    val fakeEntity = Entity.newBuilder.build
+
+    local.getEndpoints().await.foreach { collector.addEndpoint(_, fakeEntity) }
+    val types = "Site" :: "Root" :: "Region" :: "Equipment" :: "EquipmentGroup" :: Nil
+    local.getEntitiesWithTypes(types).await.foreach { collector.addEquipment(_) }
+
+    local.getCommunicationChannels().await.foreach { collector.addChannel(_, fakeEntity) }
+    local.getConfigFiles().await.foreach { collector.addConfigFile(_, fakeEntity) }
+    local.getPoints().await.foreach { collector.addPoint(_, fakeEntity) }
+    local.getCommands().await.foreach { collector.addCommand(_, fakeEntity) }
+    local.getEventConfigurations().await.foreach { collector.addEventConfig(_) }
   }
 
 }

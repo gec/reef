@@ -19,13 +19,12 @@
 package org.totalgrid.reef.measurementstore
 
 import org.totalgrid.reef.client.service.proto.Measurements.{ Measurement => Meas }
+import org.totalgrid.reef.jmx.Metrics
 
-import org.totalgrid.reef.metrics.{ MetricsHookSource, StaticMetricsHooksBase }
+class MeasSinkMetrics(sink: MeasSink, metrics: Metrics) extends MeasSink {
 
-class MeasSinkMetrics(sink: MeasSink, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with MeasSink {
-
-  val sets = counterHook("setOps")
-  val setTime = timingHook("setTime")
+  val sets = metrics.counter("setOps")
+  val setTime = metrics.timer("setTime")
 
   def set(meas: Seq[Meas]): Unit = {
     sets(1)
@@ -33,11 +32,11 @@ class MeasSinkMetrics(sink: MeasSink, source: MetricsHookSource) extends StaticM
   }
 }
 
-class RTDatabaseMetrics(db: RTDatabase, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with RTDatabase {
+class RTDatabaseMetrics(db: RTDatabase, metrics: Metrics) extends RTDatabase {
 
-  val gets = counterHook("getOps")
-  val keys = counterHook("keysRequested")
-  val getTime = timingHook("getTime")
+  val gets = metrics.counter("getOps")
+  val keys = metrics.counter("keysRequested")
+  val getTime = metrics.timer("getTime")
 
   def get(names: Seq[String]): Map[String, Meas] = {
     gets(1)
@@ -46,16 +45,16 @@ class RTDatabaseMetrics(db: RTDatabase, source: MetricsHookSource) extends Stati
   }
 }
 
-class HistorianMetrics(db: Historian, source: MetricsHookSource) extends StaticMetricsHooksBase(source) with Historian {
+class HistorianMetrics(db: Historian, metrics: Metrics) extends Historian {
 
-  val gets = counterHook("getOps")
-  val entriesRetrieved = counterHook("entriesRetrieved")
-  val getTime = timingHook("getTime")
+  val gets = metrics.counter("getOps")
+  val entriesRetrieved = metrics.counter("entriesRetrieved")
+  val getTime = metrics.timer("getTime")
 
-  val counts = counterHook("countOps")
-  val countTime = timingHook("countTime")
-  val removes = counterHook("removeOps")
-  val removeTime = timingHook("removeTime")
+  val counts = metrics.counter("countOps")
+  val countTime = metrics.timer("countTime")
+  val removes = metrics.counter("removeOps")
+  val removeTime = metrics.timer("removeTime")
 
   def getInRange(name: String, begin: Long, end: Long, max: Int, ascending: Boolean): Seq[Meas] = {
     gets(1)
@@ -69,7 +68,7 @@ class HistorianMetrics(db: Historian, source: MetricsHookSource) extends StaticM
     countTime(db.numValues(name))
   }
 
-  def remove(names: Seq[String]): Unit = {
+  def remove(names: Seq[String]) {
     removes(1)
     removeTime(db.remove(names))
   }

@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest
 import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.util.Unappliers
+import org.totalgrid.reef.client.RequestHeaders
 
 /**
  * base class for servlets that use clients to encapsulate common auth and connection specific functionality
@@ -39,7 +40,7 @@ class ClientUsingServletBase(connection: ManagedConnection) extends ServletBase 
     combinedOption.getOrElse(throw new UnauthorizedException("Must include " + AUTH_HEADER + " in headers or URL parameters. No default user available on bridge."))
   }
 
-  def getReefRequestHeaders(req: HttpServletRequest): BasicRequestHeaders = {
+  def getReefRequestHeaders(req: HttpServletRequest): RequestHeaders = {
     var requestHeaders = BasicRequestHeaders.empty
 
     // check to see if they want to change the underlying client headers

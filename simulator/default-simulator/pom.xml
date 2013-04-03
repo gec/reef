@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.totalgrid.reef</groupId>
+        <artifactId>reef-scala-base</artifactId>
+        <version>0.4.9</version>
+        <relativePath>../../scala-base</relativePath>
+    </parent>
+    <artifactId>reef-default-simulator</artifactId>
+    <packaging>bundle</packaging>
+
+    <licenses>
+        <license>
+            <name>AGPLv3</name>
+            <url>http://www.gnu.org/licenses/agpl-3.0.txt</url>
+        </license>
+    </licenses>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${maven-bundle.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>Reef Default Simulator</Bundle-Name>
+                        <Bundle-Activator>org.totalgrid.reef.simulator.random.Activator</Bundle-Activator>
+                        <Private-Package>org.totalgrid.reef.simulator.random.*</Private-Package>
+                        <Import-Package>!org.osgi.service.blueprint,org.slf4j;version="[1.5,2.0)",*</Import-Package>
+                        <_nouses>true</_nouses>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <header>../../AGPL_FILE_HEADER</header>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-protocol-api</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+	    <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-protocol-simulator</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>		
+        <dependency>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util-osgi</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+</project>

@@ -24,10 +24,11 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.sapi.rpc.impl.builders.MeasurementOverrideRequestBuilders._
 
 import org.totalgrid.reef.client.sapi.rpc.MeasurementOverrideService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.service.proto.Model.{ ReefID, ReefUUID, Point }
 
-trait MeasurementOverrideServiceImpl extends HasAnnotatedOperations with MeasurementOverrideService {
+trait MeasurementOverrideServiceImpl extends UsesServiceOperations with MeasurementOverrideService {
 
   override def setPointOutOfService(point: Point) = {
     ops.operation("Couldn't set point uuid:" + point.uuid + " name: " + point.name + " out of service") {

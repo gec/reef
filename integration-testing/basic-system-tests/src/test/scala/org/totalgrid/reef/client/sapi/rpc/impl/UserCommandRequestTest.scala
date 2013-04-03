@@ -31,11 +31,11 @@ class UserCommandRequestTest extends ServiceClientSuite {
   test("Issue command") {
 
     val cmdName = "StaticSubstation.Breaker02.Trip"
-    val cmd = client.getCommandByName(cmdName).await
+    val cmd = client.getCommandByName(cmdName)
 
-    val lock = client.createCommandExecutionLock(cmd).await
+    val lock = client.createCommandExecutionLock(cmd)
     try {
-      val commandStatus = client.executeCommandAsControl(cmd).await
+      val commandStatus = client.executeCommandAsControl(cmd)
 
       commandStatus.getStatus should equal(CommandStatus.SUCCESS)
     } finally {

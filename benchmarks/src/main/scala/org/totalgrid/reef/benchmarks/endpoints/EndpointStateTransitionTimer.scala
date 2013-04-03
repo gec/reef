@@ -29,7 +29,7 @@ class EndpointStateTransitionTimer(result: SubscriptionResult[List[EndpointConne
 
   case class TimingInfo(var stateTime: Option[Long], var enabledTime: Option[Long], var routingKeyTime: Option[Long])
 
-  val stopwatch = new Stopwatch()
+  private var stopwatch = Stopwatch.start
   val endpointStateMap = result.getResult.filter { e => endpointUuids.find(_ == e.getEndpoint.getUuid).isDefined }.map { e =>
     e.getEndpoint.getUuid -> (e, TimingInfo(None, None, None))
   }.toMap
@@ -54,7 +54,7 @@ class EndpointStateTransitionTimer(result: SubscriptionResult[List[EndpointConne
   }
 
   def start {
-    stopwatch.reset()
+    stopwatch = Stopwatch.start
   }
 
   def checkAllState(enabled: Boolean, state: EndpointConnection.State) {

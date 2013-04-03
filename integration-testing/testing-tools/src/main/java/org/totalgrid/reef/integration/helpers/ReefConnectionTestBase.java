@@ -75,14 +75,14 @@ public class ReefConnectionTestBase
             if ( System.getProperty( "remote-test" ) != null )
             {
                 AmqpSettings s = new AmqpSettings( PropertyReader.readFromFile( "../../org.totalgrid.reef.test.cfg" ) );
-                this.factory = new ReefConnectionFactory( s, new ReefServices() );
+                this.factory = ReefConnectionFactory.buildFactory( s, new ReefServices() );
 
             }
             else
             {
 
                 InMemoryNode.initialize( "../../standalone-node.cfg", true );
-                this.factory = InMemoryNode.javaConnectionFactory();
+                this.factory = InMemoryNode.connectionFactory();
             }
         }
         catch ( Exception ex )
@@ -122,12 +122,12 @@ public class ReefConnectionTestBase
         {
             client = connection.createClient( "" );
         }
-        connection.addServicesList( new LoaderServicesList() );
+        connection.getServiceRegistry().addServicesList( new LoaderServicesList() );
         client.addSubscriptionCreationListener( bindingListener );
         helpers = client.getService( AllScadaService.class );
 
         String fileName = "../../assemblies/assembly-common/filtered-resources/samples/integration/config.xml";
-        ModelPreparer.load( fileName, client );
+        ModelPreparer.load( fileName, client, true );
     }
 
     @After

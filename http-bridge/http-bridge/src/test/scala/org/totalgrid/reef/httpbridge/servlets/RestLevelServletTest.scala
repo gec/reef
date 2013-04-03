@@ -23,23 +23,26 @@ import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.totalgrid.reef.client.exception.{ UnauthorizedException, ServiceIOException }
-import org.totalgrid.reef.client.sapi.client.rest.Client
 import org.totalgrid.reef.test.MockitoStubbedOnly
-import net.agileautomata.executor4s.testing.MockFuture
 import org.totalgrid.reef.client.service.proto.Model.Entity
 import org.mockito.{ ArgumentCaptor, Matchers, Mockito }
 import org.totalgrid.reef.client.proto.Envelope.{ Status, Verb }
-import org.totalgrid.reef.client.sapi.client.{ BasicRequestHeaders, SuccessResponse, FailureResponse }
+import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
+import org.totalgrid.reef.client.operations.scl.ScalaResponse
+import org.totalgrid.reef.client.{ RequestHeaders, Client }
+import org.totalgrid.reef.client.operations.impl.TestPromises
 
 @RunWith(classOf[JUnitRunner])
 class RestLevelServletTest extends BaseServletTest {
 
   var service: RestLevelServlet = null
   var client: Client = null
+  var requestDelegate: ServiceRequestDelegate = null
 
   override def beforeEach() {
     super.beforeEach()
-    service = new RestLevelServlet(connection, builderLocator)
+    requestDelegate = Mockito.mock(classOf[ServiceRequestDelegate], new MockitoStubbedOnly())
+    service = new RestLevelServlet(connection, builderLocator, requestDelegate)
     client = Mockito.mock(classOf[Client], new MockitoStubbedOnly())
     Mockito.doReturn(client).when(connection).getAuthenticatedClient(fakeAuthToken)
     Mockito.doReturn(None).when(connection).getSharedBridgeAuthToken()
@@ -178,8 +181,8 @@ class RestLevelServletTest extends BaseServletTest {
 
     goodRequest()
 
-    val future = new MockFuture(Some(FailureResponse(status = Status.BAD_REQUEST, error = "entity not known")))
-    Mockito.doReturn(future).when(client).request(Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
+    val promise = TestPromises.fixed(ScalaResponse.failure(Status.BAD_REQUEST, "entity not known"))
+    Mockito.doReturn(promise).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
 
     service.doPost(request, response)
 
@@ -191,8 +194,8 @@ class RestLevelServletTest extends BaseServletTest {
 
     goodRequest()
 
-    val future = new MockFuture(Some(SuccessResponse(list = List(entityResult1Proto, entityResult2Proto))))
-    Mockito.doReturn(future).when(client).request(Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
+    val promise = TestPromises.fixed(ScalaResponse.success(Status.OK, List(entityResult1Proto, entityResult2Proto)))
+    Mockito.doReturn(promise).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), Matchers.anyObject())
 
     service.doPost(request, response)
 
@@ -201,15 +204,14 @@ class RestLevelServletTest extends BaseServletTest {
     response.getHeader(CONTENT_TYPE_HEADER) should equal(JSON_FORMAT)
   }
 
-  def captureHeaders() = {
-    // get the headers we called the client with, we throw an exception since we aren't checking the results
-    val argument = ArgumentCaptor.forClass(classOf[Option[BasicRequestHeaders]])
+  def captureHeaders(): RequestHeaders = {
+    val argument = ArgumentCaptor.forClass(classOf[RequestHeaders])
 
-    Mockito.doThrow(new RuntimeException("intentional io failure")).when(client).request(Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), argument.capture())
+    Mockito.doThrow(new RuntimeException("intentional io failure")).when(requestDelegate).makeRequest(Matchers.anyObject(), Matchers.eq(Verb.GET), Matchers.eq(entityRequestProto), argument.capture())
 
     service.doPost(request, response)
 
-    argument.getValue.get
+    argument.getValue
   }
 
   test("POST: Default Headers") {
@@ -217,8 +219,8 @@ class RestLevelServletTest extends BaseServletTest {
     goodRequest()
 
     val headers = captureHeaders()
-    headers.getResultLimit should equal(None)
-    headers.getTimeout should equal(None)
+    headers.resultLimit should equal(None)
+    headers.timeout should equal(None)
   }
 
   test("POST: Editted Header Timeout") {
@@ -228,8 +230,8 @@ class RestLevelServletTest extends BaseServletTest {
     request.addHeader(TIMEOUT_HEADER, "9999")
 
     val headers = captureHeaders()
-    headers.getResultLimit should equal(None)
-    headers.getTimeout should equal(Some(9999))
+    headers.resultLimit should equal(None)
+    headers.timeout should equal(Some(9999))
   }
 
   test("POST: Editted Header ResultLimit") {
@@ -239,8 +241,8 @@ class RestLevelServletTest extends BaseServletTest {
     request.addHeader(RESULT_LIMIT_HEADER, "8888")
 
     val headers = captureHeaders()
-    headers.getResultLimit should equal(Some(8888))
-    headers.getTimeout should equal(None)
+    headers.resultLimit should equal(Some(8888))
+    headers.timeout should equal(None)
   }
 
   test("POST: Editted Header ResultLimit and Timeout") {
@@ -251,8 +253,8 @@ class RestLevelServletTest extends BaseServletTest {
     request.addHeader(TIMEOUT_HEADER, "9999")
 
     val headers = captureHeaders()
-    headers.getResultLimit should equal(Some(8888))
-    headers.getTimeout should equal(Some(9999))
+    headers.resultLimit should equal(Some(8888))
+    headers.timeout should equal(Some(9999))
   }
 
   test("POST: Badly formatted ResultLimit") {

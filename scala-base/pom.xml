@@ -8,16 +8,46 @@
 	<parent>
 		<groupId>org.totalgrid.reef</groupId>
 		<artifactId>reef</artifactId>
-		<version>0.4.7</version>
+		<version>0.4.9</version>
 		<relativePath>../</relativePath>
 	</parent>
+
+    <profiles>
+        <profile>
+            <id>fsc</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>${scala-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>cc</id>
+                                <goals>
+                                    <goal>cc</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <useFsc>true</useFsc>
+                                    <once>true</once>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+    </profiles>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.scala-tools</groupId>
-				<artifactId>maven-scala-plugin</artifactId>
-				<version>${maven-scala-plugin.version}</version>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>${scala-maven-plugin.version}</version>
 
                 <executions>
 					<execution>

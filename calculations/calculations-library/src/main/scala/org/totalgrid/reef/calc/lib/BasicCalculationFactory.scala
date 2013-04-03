@@ -19,12 +19,13 @@
 package org.totalgrid.reef.calc.lib
 
 import org.totalgrid.reef.calc.lib.eval._
-import org.totalgrid.reef.client.sapi.client.rest.Client
+import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 import org.totalgrid.reef.client.service.proto.Calculations.{ Calculation }
 import net.agileautomata.executor4s.{ Cancelable }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
+import com.weiglewilczek.slf4s.Logging
 
 case class CalculationSettings(components: CalculationComponents,
   triggerStrategy: CalculationTriggerStrategy,
@@ -36,11 +37,25 @@ class BasicCalculationFactory(
     operations: OperationSource,
     metricsSource: CalculationMetricsSource,
     output: OutputPublisher,
-    timeSource: TimeSource) extends CalculationFactory {
+    timeSource: TimeSource) extends CalculationFactory with Logging {
 
   import BasicCalculationFactory._
 
   def build(config: Calculation): Cancelable = {
+    try {
+      setupCalculation(config)
+    } catch {
+      case e: Exception =>
+        val pointName = config.getOutputPoint.getName
+        logger.error("Error setting up calculation for point: " + pointName + " - " + e.getMessage, e)
+        output.publish(ErrorMeasurement.build(pointName))
+        new Cancelable {
+          def cancel() {}
+        }
+    }
+  }
+
+  private def setupCalculation(config: Calculation): Cancelable = {
 
     var settings = parseConfig(config, operations)
 
@@ -48,7 +63,7 @@ class BasicCalculationFactory(
 
     // get a new client (strand) for each calculation
     val client = rootClient.spawn()
-    val services = client.getRpcInterface(classOf[AllScadaService])
+    val services = client.getService(classOf[AllScadaService])
 
     val currentMeasurement = services.getMeasurementByName(settings.components.measSettings.name).await
 
@@ -76,7 +91,7 @@ class BasicCalculationFactory(
 
     inputDataManager.initialize(currentMeasurement, settings.inputs, eventedTrigger)
 
-    initiatingTrigger.foreach(_.start(client))
+    initiatingTrigger.foreach(_.start(client.getInternal.getExecutor))
 
     new MultiCancelable(List(Some(inputDataManager), initiatingTrigger).flatten)
   }

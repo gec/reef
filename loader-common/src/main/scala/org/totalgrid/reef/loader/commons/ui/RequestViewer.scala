@@ -19,12 +19,15 @@
 package org.totalgrid.reef.loader.commons.ui
 
 import java.io.PrintStream
-import org.totalgrid.reef.client.sapi.client.{ Response, RequestSpy }
-import net.agileautomata.executor4s.Future
+import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.proto.Envelope.{ BatchServiceRequest, Status, Verb }
 import org.totalgrid.reef.util.Timing.Stopwatch
+import org.totalgrid.reef.client.operations.RequestListener
+import org.totalgrid.reef.client.Promise
+import org.totalgrid.reef.client.operations.scl.ScalaPromise._
+import org.totalgrid.reef.client.exception.ReefServiceException
 
-class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends RequestSpy {
+class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends RequestListener {
 
   // TODO: remove explicit listen call counting when the futures await() call means listen calls have returned
   private var outstandingCalls = 0
@@ -34,11 +37,16 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
     if (outstandingCalls == 0) this.notify()
   }
 
-  def onRequestReply[A](verb: Verb, request: A, future: Future[Response[A]]) = {
+  def onRequest[A](verb: Verb, request: A, promise: Promise[Response[A]]) {
     if (request.asInstanceOf[AnyRef].getClass != classOf[BatchServiceRequest]) {
       this.synchronized { outstandingCalls += 1 }
-      future.listen { response =>
-        update(response.status, request.asInstanceOf[AnyRef])
+      promise.listenFor { response =>
+        try {
+          update(response.await().getStatus, request.asInstanceOf[AnyRef])
+        } catch {
+          case rse: ReefServiceException =>
+            update(rse.getStatus, request.asInstanceOf[AnyRef])
+        }
         onFutureCallback()
       }
     }
@@ -54,7 +62,7 @@ class RequestViewer(stream: PrintStream, total: Int, width: Int = 50) extends Re
   var counts = Map.empty[Status, Counter]
   var classCounts = Map.empty[Class[_], Counter]
   var handled: Int = 0
-  val stopwatch = new Stopwatch()
+  val stopwatch = Stopwatch.start
 
   def start = {
     handled = 0

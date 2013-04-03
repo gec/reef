@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import java.io.File
 
-import org.totalgrid.reef.loader.helpers.{ MockSyncOperations, CachingModelLoader }
+import org.totalgrid.reef.loader.helpers.CachingModelLoader
 
 @RunWith(classOf[JUnitRunner])
 class CommonsLoaderTest extends FunSuite with ShouldMatchers {
@@ -67,6 +67,8 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     cf.getName should equal("test.xml")
     //cf.isSetValue should equal(false) // BUG in JAXB equals true always
     cf.getValue.trim.size should equal(0)
+
+    cf.getMimeType should equal("text/xml")
 
     val loader = getLoader
     val cfProto = loader.loadConfigFile(cf)
@@ -116,5 +118,38 @@ class CommonsLoaderTest extends FunSuite with ShouldMatchers {
     cfProto.getFile.toStringUtf8 should include("ns2:Master")
 
     loader.getExceptionCollector.hasErrors should equal(false)
+  }
+
+  test("Capitalized names") {
+    val testSnip = """
+    <common:configFiles>
+      <common:configFile name="test.XML" mimeType="text/xml" fileName="pom.xml"/>
+    </common:configFiles>
+                   """
+    val cf = getConfigFile(testSnip)
+
+    cf.getName should equal("test.XML")
+    //cf.isSetValue should equal(false) // BUG in JAXB equals true always
+    cf.getValue.trim.size should equal(0)
+
+    cf.getMimeType should equal("text/xml")
+
+    val loader = getLoader
+    val cfProto = loader.loadConfigFile(cf)
+
+    cfProto.getFile.toStringUtf8 should include("</project>")
+    cfProto.getName should equal("test.XML")
+
+    loader.getExceptionCollector.hasErrors should equal(false)
+  }
+
+  test("Mime-type inference") {
+
+    CommonLoader.inferMimeType("blah.xml") should equal(Some("text/xml"))
+    CommonLoader.inferMimeType("blah.xMl") should equal(Some("text/xml"))
+    CommonLoader.inferMimeType("thing.blah.XML") should equal(Some("text/xml"))
+    CommonLoader.inferMimeType("blah") should equal(None)
+
+    CommonLoader.inferMimeType("blah.jpg") should equal(Some("image/jpeg"))
   }
 }

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.protocol.dnp3.common
 
-import org.osgi.framework.BundleContext
+import org.osgi.framework.{ ServiceRegistration, BundleContext }
 import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, Protocol }
 
 import com.weiglewilczek.scalamodules._
@@ -32,15 +32,18 @@ class Dnp3ProtocolActivator extends ExecutorBundleActivator {
   // to be used in the dynamic OSGi world, the library can't be loaded by the static class loader
   System.loadLibrary("dnp3java")
   System.setProperty("reef.api.protocol.dnp3.nostaticload", "")
-  val masterProtocol = new Dnp3MasterProtocol with AddRemoveValidation
-  val slaveProtocol = new Dnp3SlaveProtocol with AddRemoveValidation
+  private val masterProtocol = new Dnp3MasterProtocol with AddRemoveValidation
+  private val slaveProtocol = new Dnp3SlaveProtocol with AddRemoveValidation
+
+  private var registrations = List.empty[ServiceRegistration]
 
   override def start(context: BundleContext, exe: Executor) {
-    context.createService(masterProtocol, "protocol" -> masterProtocol.name, interface[Protocol])
-    context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol])
+    registrations ::= context.createService(masterProtocol, "protocol" -> masterProtocol.name, interface[Protocol])
+    registrations ::= context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol])
   }
 
   override def stop(context: BundleContext, executor: Executor) {
+    registrations.foreach(_.unregister())
     masterProtocol.Shutdown()
     slaveProtocol.Shutdown()
   }

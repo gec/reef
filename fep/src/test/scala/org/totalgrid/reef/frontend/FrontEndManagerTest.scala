@@ -32,11 +32,10 @@ import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.sapi.client.ServiceTestHelpers._
 import FrontEndTestHelpers._
-import org.totalgrid.reef.client.sapi.client.Promise
-import org.totalgrid.reef.client.SubscriptionResult
 
 import net.agileautomata.executor4s._
 import net.agileautomata.executor4s.testing.MockExecutor
+import org.totalgrid.reef.client.{ Promise, SubscriptionResult }
 
 @RunWith(classOf[JUnitRunner])
 class FrontEndManagerTest extends FunSuite with ShouldMatchers {
@@ -67,7 +66,7 @@ class FrontEndManagerTest extends FunSuite with ShouldMatchers {
 
   test("Announces on startup") {
     val fep = success(FrontEndProcessor.newBuilder.setUuid("someuid").build)
-    val sub = subSuccess[EndpointConnection](Nil)
+    val sub = subSuccessInterface[EndpointConnection](Nil)
     fixture(responses(fep, sub), false) { (services, exe, mp, fem) =>
       fem.start()
       mp.sub should equal(Some(sub.await))
@@ -79,7 +78,7 @@ class FrontEndManagerTest extends FunSuite with ShouldMatchers {
 
   test("Retries announces with executor delay") {
     val fep = success(FrontEndProcessor.newBuilder.setUuid("someuid").build)
-    val sub = subFailure(new BadRequestException("Intentional Failure"))
+    val sub = subFailureInterface(new BadRequestException("Intentional Failure")).asInstanceOf[Promise[SubscriptionResult[List[EndpointConnection], EndpointConnection]]] // TODO: fix type problems
     fixture(responses(fep, sub), false) { (services, exe, mp, fem) =>
       fem.start()
       mp.sub should equal(None)

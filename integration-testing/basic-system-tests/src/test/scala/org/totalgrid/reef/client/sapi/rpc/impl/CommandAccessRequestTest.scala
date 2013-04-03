@@ -32,57 +32,57 @@ class CommandAccessRequestTest extends ServiceClientSuite {
   test("Search") {
     val cmdNames = "SimulatedSubstation.Breaker01.Trip" :: "SimulatedSubstation.Breaker01.Close" :: Nil
 
-    val cmd0 = client.getCommandByName(cmdNames.get(0)).await
-    val cmd1 = client.getCommandByName(cmdNames.get(1)).await
+    val cmd0 = client.getCommandByName(cmdNames.get(0))
+    val cmd1 = client.getCommandByName(cmdNames.get(1))
 
-    val firstResp = client.createCommandExecutionLock(cmd0).await
-    val secondResp = client.createCommandExecutionLock(cmd1).await
-    val thirdResp = client.createCommandDenialLock(cmd0 :: cmd1 :: Nil).await
+    val firstResp = client.createCommandExecutionLock(cmd0)
+    val secondResp = client.createCommandExecutionLock(cmd1)
+    val thirdResp = client.createCommandDenialLock(cmd0 :: cmd1 :: Nil)
 
-    client.getCommandLockById(firstResp.getId).await
+    client.getCommandLockById(firstResp.getId)
 
-    client.getCommandLocks().await
+    client.getCommandLocks()
 
     // TODO: add getCommandLocksByUser call
     //recorder.addExplanation("Get for user", "Search for all access entries for the given user.")
-    //session.get(CommandLockRequestBuilders.getForUser(firstResp.getUser)).await.expectMany()
+    //session.get(CommandLockRequestBuilders.getForUser(firstResp.getUser)).expectMany()
 
-    client.deleteCommandLock(firstResp).await
-    client.deleteCommandLock(secondResp).await
-    client.deleteCommandLock(thirdResp).await
+    client.deleteCommandLock(firstResp)
+    client.deleteCommandLock(secondResp)
+    client.deleteCommandLock(thirdResp)
 
   }
 
   test("Allowed") {
 
-    val cmd = client.getCommandByName("StaticSubstation.Breaker02.Trip").await
+    val cmd = client.getCommandByName("StaticSubstation.Breaker02.Trip")
 
-    val createResp = client.createCommandExecutionLock(cmd).await
+    val createResp = client.createCommandExecutionLock(cmd)
 
-    client.deleteCommandLock(createResp).await
+    client.deleteCommandLock(createResp)
   }
 
   test("Block") {
 
     val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
-    val cmds = cmdNames.map { client.getCommandByName(_).await }
+    val cmds = cmdNames.map { client.getCommandByName(_) }
 
-    val createdResp = client.createCommandExecutionLock(cmds).await
+    val createdResp = client.createCommandExecutionLock(cmds)
 
-    client.deleteCommandLock(createdResp).await
+    client.deleteCommandLock(createdResp)
   }
 
   test("ReBlock") {
 
     val cmdNames = "StaticSubstation.Breaker02.Trip" :: "StaticSubstation.Breaker02.Close" :: Nil
-    val cmds = cmdNames.map { client.getCommandByName(_).await }
+    val cmds = cmdNames.map { client.getCommandByName(_) }
 
-    val createdResp = client.createCommandExecutionLock(cmds).await
+    val createdResp = client.createCommandExecutionLock(cmds)
 
     intercept[ReefServiceException] {
-      client.createCommandExecutionLock(cmds.get(0)).await
+      client.createCommandExecutionLock(cmds.get(0))
     }
 
-    client.deleteCommandLock(createdResp).await
+    client.deleteCommandLock(createdResp)
   }
 }

@@ -110,6 +110,7 @@
                   <xs:attribute name="DoClass3" type="xs:boolean" use="required" />
                   <xs:attribute name="PackDelayMS" type="xs:int" use="required" />
                   <xs:attribute name="RetryMS" type="xs:int" use="required" />
+                  <xs:attribute name="Enable" type="xs:boolean" use="optional" default="true" />
                 </xs:complexType>
               </xs:element>
             </xs:all>

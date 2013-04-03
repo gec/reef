@@ -20,9 +20,11 @@ package org.totalgrid.reef.benchmarks.system
 
 import org.totalgrid.reef.benchmarks.{ BenchmarkTest, BenchmarkReading }
 import java.io.PrintStream
-import org.totalgrid.reef.client.sapi.client.rest.Client
-import org.totalgrid.reef.client.sapi.client.Promise
 import org.totalgrid.reef.util.Timing.Stopwatch
+import org.totalgrid.reef.benchmarks.endpoints.EndpointStateTransitionTimer
+import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection.State
+import org.totalgrid.reef.client.sapi.sync.AllScadaService
+import org.totalgrid.reef.client.{ Promise, Client }
 
 case class EndpointLoadingReading(request: String, endpoints: Int, pointsPerEndpoint: Int,
     time: Long, parallelism: Int, batchSize: Int) extends BenchmarkReading {
@@ -44,8 +46,8 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
     var readings = List.empty[BenchmarkReading]
 
     def addReadings[A](operation: String, ops: Seq[() => Promise[A]]) {
-      val stopwatch = new Stopwatch()
-      val results = ModelCreationUtilities.parallelExecutor(client, parallelism, ops)
+      val stopwatch = Stopwatch.start
+      val results = ModelCreationUtilities.parallelExecutor(client.getInternal.getExecutor, parallelism, ops)
       val overallTime = stopwatch.elapsed
 
       readings ::= new EndpointLoadingReading("overall" + operation, endpoints, pointsPerEndpoint, overallTime, parallelism, batchSize)
@@ -57,13 +59,19 @@ class EndpointLoaderBenchmark(endpointNames: List[String], pointsPerEndpoint: In
     }
 
     if (add) {
-      val preparedLoaders = endpointNames.map { n => ModelCreationUtilities.addEndpoint(client, n, pointsPerEndpoint, batchSize) }
+      val preparedLoaders = endpointNames.map { n => ModelCreationUtilities.addEndpoint(client.spawn(), n, pointsPerEndpoint, batchSize) }
       stream.foreach { _.println("Adding " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points using " + parallelism + " writers.") }
       addReadings("addEndpoint", preparedLoaders)
     }
 
     if (delete) {
-      val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client, n, pointsPerEndpoint, batchSize) }
+      val services = client.getService(classOf[AllScadaService])
+      val endpointUuids = services.getEndpointsByNames(endpointNames).map { _.getUuid }
+      endpointUuids.foreach { services.disableEndpointConnection(_) }
+      val map = new EndpointStateTransitionTimer(services.subscribeToEndpointConnections(), endpointUuids)
+      map.checkAllState(false, State.COMMS_DOWN)
+
+      val preparedDeleters = endpointNames.map { n => ModelCreationUtilities.deleteEndpoint(client.spawn(), n, pointsPerEndpoint, batchSize) }
       stream.foreach { _.println("Deleting " + endpointNames.size + " endpoints with " + pointsPerEndpoint + " points using " + parallelism + " writers.") }
       addReadings("deleteEndpoint", preparedDeleters)
     }

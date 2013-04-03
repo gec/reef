@@ -25,11 +25,13 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import net.agileautomata.executor4s.{ Result, Future }
 import org.totalgrid.reef.client.sapi.rpc.EntityService
-import org.totalgrid.reef.client.sapi.client.rpc.framework.HasAnnotatedOperations
+import org.totalgrid.reef.client.operations.scl.UsesServiceOperations
+import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.service.entity.EntityRelation
 import org.totalgrid.reef.client.service.proto.Model._
+import org.totalgrid.reef.client.Promise
 
-trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
+trait EntityServiceImpl extends UsesServiceOperations with EntityService {
 
   override def getEntities() = ops.operation("Couldn't get list of all entities") {
     _.get(EntityRequestBuilders.getAll).map(_.many)
@@ -43,12 +45,12 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
     _.get(EntityRequestBuilders.getByName(name)).map(_.one)
   }
 
-  override def getEntitiesByUuids(uuids: List[ReefUUID]) = ops.operation("Couldn't get entities with uuids: " + uuids) { _ =>
-    batchGets(uuids.map { EntityRequestBuilders.getById(_) })
+  override def getEntitiesByUuids(uuids: List[ReefUUID]) = batchGets("Couldn't get entities with uuids: " + uuids) {
+    uuids.map { EntityRequestBuilders.getById(_) }
   }
 
-  override def getEntitiesByNames(names: List[String]) = ops.operation("Couldn't get entities with names: " + names) { _ =>
-    batchGets(names.map { EntityRequestBuilders.getByName(_) })
+  override def getEntitiesByNames(names: List[String]) = batchGets("Couldn't get entities with names: " + names) {
+    names.map { EntityRequestBuilders.getByName(_) }
   }
 
   override def findEntityByName(name: String) = ops.operation("Couldn't find entity with name: " + name) {
@@ -69,14 +71,14 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   override def getEntityRelatedChildrenOfType(parent: ReefUUID, relationship: String, typ: String) = {
     ops.operation("Couldn't get children of entity: " + parent.getValue + " relation: " + relationship + " type: " + typ) { session =>
 
-      val future = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootId(parent, relationship, typ)).map(_.one)
+      val promise = session.get(EntityRequestBuilders.getRelatedChildrenOfTypeFromRootId(parent, relationship, typ)).map(_.one)
 
-      flatEntities(future)
+      flatEntities(promise)
     }
   }
 
-  private def flatEntities(result: Future[Result[Entity]]): Future[Result[List[Entity]]] = {
-    result.map(_.map(_.getRelationsList.flatMap(_.getEntitiesList).toList))
+  private def flatEntities(result: Promise[Entity]): Promise[List[Entity]] = {
+    result.map(_.getRelationsList.flatMap(_.getEntitiesList).toList)
   }
 
   override def getEntityImmediateChildren(parent: ReefUUID, relationship: String) = {
@@ -130,14 +132,14 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
   }
 
   override def getEntityRelationsForParents(parents: List[ReefUUID], relations: List[EntityRelation]) = {
-    ops.operation("Couldn't get tree for parents: " + parents.size + " relations: " + relations.mkString(", ")) { _ =>
-      batchGets(parents.map { EntityRequestBuilders.getRelatedEntities(_, relations) })
+    batchGets("Couldn't get tree for parents: " + parents.size + " relations: " + relations.mkString(", ")) {
+      parents.map { EntityRequestBuilders.getRelatedEntities(_, relations) }
     }
   }
 
   override def getEntityRelationsForParentsByName(parents: List[String], relations: List[EntityRelation]) = {
-    ops.operation("Couldn't get relations for parentNames: " + parents.size + " relations: " + relations.mkString(", ")) { _ =>
-      batchGets(parents.map { EntityRequestBuilders.getRelatedEntitiesByName(_, relations) })
+    batchGets("Couldn't get relations for parentNames: " + parents.size + " relations: " + relations.mkString(", ")) {
+      parents.map { EntityRequestBuilders.getRelatedEntitiesByName(_, relations) }
     }
   }
 
@@ -208,7 +210,7 @@ trait EntityServiceImpl extends HasAnnotatedOperations with EntityService {
       results.await
 
       val delReq = EntityAttribute.newBuilder.setEntity(Entity.newBuilder.setUuid(id)).build
-      session.delete(delReq).map(_.oneOrNone).await
+      session.delete(delReq).map(_.many).await
 
       results
     }

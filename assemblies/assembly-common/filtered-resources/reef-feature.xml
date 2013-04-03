@@ -6,14 +6,15 @@
         <bundle start-level='50'>mvn:net.agile-automata.executor4s/executor4s_${scala.version}/${executor4s.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-dependencies/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util/${reef.version}</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-util-jmx/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util-osgi/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-broker/${reef.version}</bundle>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-qpid-broker/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-memory-broker/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-client-common/${reef.version}</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-loader-commons/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-client/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-service-client/${reef.version}</bundle>
-        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-metrics-client/${reef.version}</bundle>
 	</feature>
 
 	<feature name="reef-remote-shell" version="${reef.version}">
@@ -26,8 +27,6 @@
 	<feature name="reef-core" version="${reef.version}">
 		<feature>reef-api</feature>
 		<feature>reef-remote-shell</feature>
-        <!--<bundle start-level="60">mvn:org.totalgrid.reef/reef-executor/${reef.version}</bundle>-->
-		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-metrics/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-application-framework/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-api/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-persistence-postgresql/${reef.version}</bundle>
@@ -35,21 +34,32 @@
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-measurementstore-squeryl/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-protocol-api/${reef.version}</bundle>
 	</feature>
-
-	<feature name="reef" version="${reef.version}">
-		<feature>reef-core</feature>
-		<bundle start-level='89'>mvn:org.totalgrid.reef/reef-protocol-simulator/${reef.version}</bundle>
+    <feature name="reef-protocol-calculator" version="${reef.version}">
+        <feature>reef-core</feature>
         <bundle start-level='89'>mvn:org.totalgrid.reef/reef-calculations-library/${reef.version}</bundle>
         <bundle start-level='89'>mvn:org.totalgrid.reef/reef-protocol-calculator/${reef.version}</bundle>
+    </feature>
+	<feature name="reef-protocol-simulator" version="${reef.version}">
+		<feature>reef-core</feature>
+		<bundle start-level='89'>mvn:org.totalgrid.reef/reef-protocol-simulator/${reef.version}</bundle>
 		<bundle start-level='90'>mvn:org.totalgrid.reef/reef-default-simulator/${reef.version}</bundle>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-protocol-simulator-shell-commands/${reef.version}</bundle>
+    </feature>
+    <feature name="reef-service-provider" version="${reef.version}">
+        <feature>reef-core</feature>
         <bundle start-level='60'>mvn:org.liquibase/liquibase-osgi/${liquibase.version}</bundle>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-services-db-schema/${reef.version}</bundle>
         <bundle start-level='60'>mvn:org.totalgrid.reef/reef-services-authz/${reef.version}</bundle>
-		<bundle start-level='91'>mvn:org.totalgrid.reef/reef-services/${reef.version}</bundle>
-        <bundle start-level='92'>mvn:org.totalgrid.reef/reef-application-whiteboard/${reef.version}</bundle>
+		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-services-framework/${reef.version}</bundle>
+        <bundle start-level='60'>mvn:org.totalgrid.reef/reef-services-core/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-admin-shell/${reef.version}</bundle>
-        <bundle start-level='99'>mvn:org.totalgrid.reef/reef-metrics-service/${reef.version}</bundle>
+    </feature>
+    <feature name="reef" version="${reef.version}">
+        <feature>reef-service-provider</feature>
+        <feature>reef-protocol-calculator</feature>
+        <feature>reef-protocol-simulator</feature>
+        <bundle start-level='91'>mvn:org.totalgrid.reef/reef-services-activator/${reef.version}</bundle>
+        <bundle start-level='92'>mvn:org.totalgrid.reef/reef-application-whiteboard/${reef.version}</bundle>
 		<bundle start-level='99'>mvn:org.totalgrid.reef/reef-processing/${reef.version}</bundle>
 		<bundle start-level='100'>mvn:org.totalgrid.reef/reef-fep/${reef.version}</bundle>
 	</feature>

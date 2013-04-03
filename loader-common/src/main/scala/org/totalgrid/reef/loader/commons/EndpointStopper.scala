@@ -18,10 +18,8 @@
  */
 package org.totalgrid.reef.loader.commons
 
-import scala.collection.JavaConversions._
-
 import java.io.PrintStream
-import org.totalgrid.reef.client.service.proto.Model.ReefUUID
+import org.totalgrid.reef.client.service.proto.Model.ReefID
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, Endpoint }
 
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
@@ -34,21 +32,26 @@ object EndpointStopper extends Logging {
    * synchronous function that blocks until all passed in endpoints are stopped
    * TODO: use endpoint stopper before reef:unload
    */
-  def stopEndpoints(local: LoaderServices, endpoints: List[Endpoint], stream: Option[PrintStream]) {
-
-    val endpointUuids = endpoints.map { e => e.getUuid -> e.getName }.toMap
-
-    stream.foreach { _.println("Disabling endpoints: " + endpoints.map { _.getName }.mkString(", ")) }
+  def stopEndpoints(local: LoaderServices, targetEndpoints: List[Endpoint], stream: Option[PrintStream], forceStop: Boolean, timeout: Long = 20000) {
 
     // then subscribe to all of the connections
     val subResult = local.subscribeToEndpointConnections().await
 
+    // filter the subscription down to just the endpoints we care about
+    val targetUuids = targetEndpoints.map { _.getUuid }
+    val filteredEndpoints = subResult.getResult.toList.filter(p => targetUuids.contains(p.getEndpoint.getUuid))
+
+    def endpointNames(endpoints: Map[ReefID, EndpointConnection]) = endpoints.values.map { _.getEndpoint.getName }.mkString(", ")
+    val endpointUuids = filteredEndpoints.map { e => e.getId -> e }.toMap
+
+    stream.foreach { _.println("Disabling endpoints: " + endpointNames(endpointUuids)) }
+
     // first we disable all of the endpoints
-    endpointUuids.foreach { e => local.disableEndpointConnection(e._1).await }
+    targetEndpoints.foreach { e => local.disableEndpointConnection(e.getUuid).await }
 
     try {
       // we filter out all of the endpoints that are not COMMS_UP
-      val stillRunning = subResult.getResult.toList.foldLeft(endpointUuids)(filterEndpoints)
+      val stillRunning = filteredEndpoints.foldLeft(endpointUuids)(filterEndpoints)
 
       // if there are any still running we need to wait for them to go down
       if (endpointUuids.size > 0) {
@@ -71,17 +74,32 @@ object EndpointStopper extends Logging {
          * never return
          */
         @annotation.tailrec
-        def waitForEmptyList(endpointUuids: Map[ReefUUID, String], timeout: Int) {
+        def waitForEmptyList(endpointUuids: Map[ReefID, EndpointConnection], timeout: Long): Map[ReefID, EndpointConnection] = {
           if (!endpointUuids.isEmpty) {
-            stream.foreach { _.println("Waiting for " + endpointUuids.values.mkString(", ") + " to stop...") }
+            stream.foreach { _.println("Waiting for " + endpointNames(endpointUuids) + " to stop...") }
             val nextEvent = queue.poll(timeout, TimeUnit.MILLISECONDS)
-            if (nextEvent == null) throw new Exception("Couldn't stop all endpoints: " + endpointUuids.values.mkString(", "))
-            waitForEmptyList(filterEndpoints(endpointUuids, nextEvent), timeout)
+            if (nextEvent == null) endpointUuids
+            else waitForEmptyList(filterEndpoints(endpointUuids, nextEvent), timeout)
+          } else {
+            endpointUuids
           }
         }
 
-        // wait until all endpoints are COMMS_DOWN
-        waitForEmptyList(stillRunning, 20000)
+        // wait until all endpoints are not COMMS_UP
+        val stillOnline = waitForEmptyList(stillRunning, timeout)
+
+        if (!stillOnline.isEmpty) {
+          val msg = "Couldn't stop all endpoints: " + endpointNames(stillOnline)
+          if (!forceStop) throw new Exception(msg)
+          else {
+            println(msg)
+            println("Forcing endpoints offline.")
+            stillOnline.foreach {
+              case (id, name) =>
+                local.alterEndpointConnectionState(id, EndpointConnection.State.ERROR).await()
+            }
+          }
+        }
 
         stream.foreach { _.println("Endpoints stopped.") }
       }
@@ -90,9 +108,9 @@ object EndpointStopper extends Logging {
     }
   }
 
-  private def filterEndpoints(stillRunningEndpoints: Map[ReefUUID, String], connection: EndpointConnection) = {
+  private def filterEndpoints(stillRunningEndpoints: Map[ReefID, EndpointConnection], connection: EndpointConnection) = {
     if (connection.getState != EndpointConnection.State.COMMS_UP && !connection.hasFrontEnd) {
-      stillRunningEndpoints - connection.getEndpoint.getUuid
+      stillRunningEndpoints - connection.getId
     } else {
       stillRunningEndpoints
     }

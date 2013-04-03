@@ -33,6 +33,16 @@ import scala.collection.mutable
  */
 object ProtoUtils {
 
+  // safely try to get an enum value or throw a helpful error message
+  def safeValueOf[A](value: String, values: => Array[A], fun: String => A): A = {
+    try {
+      fun(value)
+    } catch {
+      case il: IllegalArgumentException =>
+        throw new LoadingException(value + " not one of the legal values: " + values.mkString("(", ",", ")"))
+    }
+  }
+
   def toTriggerSet(point: Point): TriggerSet = {
     val proto = TriggerSet.newBuilder
       .setPoint(point)
@@ -401,6 +411,7 @@ object ProtoUtils {
   def toActionLinearTransform(name: String, scale: Scale): Action.Builder = {
 
     val ltProto = LinearTransform.newBuilder
+    ltProto.setForceToDouble(scale.isForceToDouble)
 
     if (scale.isSetRawLow && scale.isSetRawHigh && scale.isSetEngLow && scale.isSetEngHigh) {
       val rawRange = scale.getRawHigh - scale.getRawLow
