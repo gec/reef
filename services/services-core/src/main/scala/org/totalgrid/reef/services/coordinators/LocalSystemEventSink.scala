@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.event.SystemEventSink
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.exception.ReefServiceException
 
 import org.totalgrid.reef.persistence.squeryl.DbConnection

@@ -22,7 +22,7 @@ import net.agileautomata.executor4s.Cancelable
 
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.{ SubscriptionResult, SubscriptionEvent, SubscriptionEventAcceptor }
 
 object ServiceContext {

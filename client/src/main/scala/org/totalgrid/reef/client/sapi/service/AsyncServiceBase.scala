@@ -19,7 +19,7 @@
 package org.totalgrid.reef.client.sapi.service
 
 import org.totalgrid.reef.client.proto.Envelope
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.registration.ServiceResponseCallback
 import org.totalgrid.reef.client.RequestHeaders

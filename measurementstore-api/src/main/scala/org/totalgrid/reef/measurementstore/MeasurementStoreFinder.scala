@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measurementstore
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.osgi.OsgiConfigReader

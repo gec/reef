@@ -22,7 +22,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.configuration._
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.util.XMLHelper
 import java.io.File
 import org.totalgrid.reef.loader.commons.LoaderServices

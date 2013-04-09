@@ -21,7 +21,7 @@ package org.totalgrid.reef.frontend
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.app.SubscriptionHandler
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.exception.ReefServiceException
 
 import net.agileautomata.executor4s._

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.loader
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 class LoadingException(msg: String) extends RuntimeException(msg)
 

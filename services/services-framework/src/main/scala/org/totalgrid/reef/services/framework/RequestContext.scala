@@ -25,7 +25,7 @@ import scala.collection.mutable
 import org.totalgrid.reef.models.Agent
 import org.totalgrid.reef.client.exception.UnauthorizedException
 import org.totalgrid.reef.client.registration.{ EventPublisher, ServiceRegistration }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  * the request context is handed through the service call chain. It allows us to make the services and models

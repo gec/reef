@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.impl
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.broker.{ BrokerMessage, BrokerMessageConsumer }
 import org.totalgrid.reef.client.proto.Envelope.ServiceResponse
 import java.util.UUID

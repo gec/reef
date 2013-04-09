@@ -22,7 +22,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FunSuite }
 import org.totalgrid.reef.persistence.squeryl.{ DbConnection, DbInfo, DbConnector }
 import org.totalgrid.reef.util.Timing
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 object ConnectionStorage {
   private var lastConnection = Option.empty[DbConnection]

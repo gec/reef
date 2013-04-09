@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.service.proto.Calculations.{ Calculation }
 import net.agileautomata.executor4s.{ Cancelable }
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 case class CalculationSettings(components: CalculationComponents,
   triggerStrategy: CalculationTriggerStrategy,

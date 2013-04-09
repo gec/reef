@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.util
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  * trait that makes it easy to wrap any call with an exception handling block

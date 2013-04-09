@@ -27,7 +27,7 @@ import collection.mutable
 import java.lang.IllegalStateException
 import org.totalgrid.reef.client.service.proto.Model
 import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.loader.LoadingException
 import org.totalgrid.reef.client.service.proto.Model._
 import org.totalgrid.reef.client.service.proto.Calculations.Calculation

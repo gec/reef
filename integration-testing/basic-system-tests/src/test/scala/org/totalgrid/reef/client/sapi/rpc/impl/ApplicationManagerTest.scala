@@ -29,7 +29,7 @@ import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.{ Client, Connection }
 
 import org.totalgrid.reef.app.impl.{ SimpleConnectedApplicationManager, ApplicationManagerSettings }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationManagerTest extends ServiceClientSuite with Logging {

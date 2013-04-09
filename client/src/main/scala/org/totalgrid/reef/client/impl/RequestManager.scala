@@ -21,7 +21,7 @@ package org.totalgrid.reef.client.impl
 import org.totalgrid.reef.client.proto.Envelope
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.operations.Response
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.proto.Envelope.Verb
 import org.totalgrid.reef.client.operations.impl.FuturePromise
 import org.totalgrid.reef.client.operations.scl.ScalaResponse

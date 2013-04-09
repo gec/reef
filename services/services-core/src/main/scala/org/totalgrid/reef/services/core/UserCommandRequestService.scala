@@ -27,7 +27,7 @@ import org.totalgrid.reef.services.framework._
 import ServiceBehaviors._
 import org.totalgrid.reef.models.{ Command, UserCommandModel }
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, UserCommandRequest }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.{ AddressableDestination, Routable }
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }

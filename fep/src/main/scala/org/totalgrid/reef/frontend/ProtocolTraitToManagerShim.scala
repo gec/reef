@@ -27,7 +27,7 @@ import org.totalgrid.reef.client.service.proto.Commands
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest }
 import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler, Publisher, ProtocolManager }
 import org.totalgrid.reef.client.{ Client, AddressableDestination }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import scala.collection.JavaConversions._
 

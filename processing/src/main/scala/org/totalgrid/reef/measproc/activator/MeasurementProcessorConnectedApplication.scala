@@ -23,7 +23,7 @@ import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.{ Client, Connection }
 import org.totalgrid.reef.measproc.{ ProcessingNodeMap, MeasStreamConnector, MeasurementProcessorServicesImpl, FullProcessor }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.registration.EventPublisher
 
 class MeasurementProcessorConnectedApplication(measStore: MeasurementStore) extends ConnectedApplication with Logging {

@@ -23,7 +23,7 @@ import com.google.protobuf.ByteString
 import org.totalgrid.reef.client.operations.Response
 import org.totalgrid.reef.client.exception.ReefServiceException
 import org.totalgrid.reef.client.types.TypeDescriptor
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.registration.ServiceResponseCallback
 
 object ServiceHelpers extends Logging {

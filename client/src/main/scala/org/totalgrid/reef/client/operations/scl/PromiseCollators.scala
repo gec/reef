@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.client.operations.scl
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.Promise
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.client.operations.impl.FuturePromise

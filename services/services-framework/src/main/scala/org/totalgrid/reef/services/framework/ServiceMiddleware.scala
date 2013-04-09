@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.framework
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.RequestHeaders
 import org.totalgrid.reef.client.sapi.service.{ ServiceHelpers, AsyncService }
 import org.totalgrid.reef.client.registration.ServiceResponseCallback

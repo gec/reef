@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.calc.lib
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.calc.lib.eval.{ EvalException, Formula }
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.metrics
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.services.framework.{ RequestContextSource, ServiceEntryPoint }
 import org.totalgrid.reef.client.operations.Response

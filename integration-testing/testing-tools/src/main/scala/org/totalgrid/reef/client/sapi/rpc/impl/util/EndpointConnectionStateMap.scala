@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.SubscriptionResult
 import org.totalgrid.reef.client.service.proto.FEP.EndpointConnection
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 class EndpointConnectionStateMap(result: SubscriptionResult[List[EndpointConnection], EndpointConnection], verbose: Boolean = false) extends Logging {

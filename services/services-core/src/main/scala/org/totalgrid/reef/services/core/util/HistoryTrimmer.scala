@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.services.core.util
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import org.totalgrid.reef.measurementstore.MeasurementStore
 import org.totalgrid.reef.services.framework.ServerSideProcess

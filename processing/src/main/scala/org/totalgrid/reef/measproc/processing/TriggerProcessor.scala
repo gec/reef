@@ -22,7 +22,7 @@ import collection.JavaConversions._
 import collection.immutable
 
 import org.totalgrid.reef.persistence.ObjectCache
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.measproc.MeasProcServiceContext
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement

@@ -25,7 +25,7 @@ import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, Endpoin
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor }
 
 import java.util.concurrent.{ TimeUnit, LinkedBlockingDeque }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 object EndpointStopper extends Logging {
   /**

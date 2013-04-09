@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.service.proto.Alarms._
 import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.client.service.proto.Processing._
 import org.totalgrid.reef.loader.ModelLoader
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import org.totalgrid.reef.loader.commons.LoaderServices
 import org.totalgrid.reef.loader.commons.ui.RequestViewer

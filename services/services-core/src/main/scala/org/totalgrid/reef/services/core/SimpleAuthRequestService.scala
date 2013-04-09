@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.service.proto.Auth.{ Agent, AuthToken }
 import org.totalgrid.reef.client.sapi.types.BuiltInDescriptors
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.ReefServiceException
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.services.settings.Version
 import org.totalgrid.reef.client.operations.scl.ScalaResponse
 

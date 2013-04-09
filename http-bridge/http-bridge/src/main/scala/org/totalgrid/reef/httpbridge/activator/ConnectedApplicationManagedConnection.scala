@@ -19,7 +19,7 @@
 package org.totalgrid.reef.httpbridge.activator
 
 import org.totalgrid.reef.httpbridge.ManagedConnection
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.{ Client, Connection }

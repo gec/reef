@@ -107,9 +107,9 @@
 		</dependency>
 
         <dependency>
-            <groupId>com.weiglewilczek.slf4s</groupId>
-            <artifactId>slf4s_${scala.version}</artifactId>
-            <version>${slf4s.version}</version>
+            <groupId>com.typesafe</groupId>
+            <artifactId>scalalogging-slf4j_${scala.annotation}</artifactId>
+            <version>${scalalogging.version}</version>
             <scope>compile</scope>
         </dependency>
 

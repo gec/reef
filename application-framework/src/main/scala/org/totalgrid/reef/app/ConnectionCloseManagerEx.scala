@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.app
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.broker.{ BrokerConnectionFactory }
 import org.totalgrid.reef.client.settings.AmqpSettings

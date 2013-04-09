@@ -21,7 +21,7 @@ package org.totalgrid.reef.procstatus
 import org.totalgrid.reef.client.service.proto.ProcessStatus.StatusSnapshot
 
 import org.totalgrid.reef.client.service.proto.Application.HeartbeatConfig
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import org.totalgrid.reef.client.sapi.rpc.ApplicationService
 import org.totalgrid.reef.client.exception.ReefServiceException

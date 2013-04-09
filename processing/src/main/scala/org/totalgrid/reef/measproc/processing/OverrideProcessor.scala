@@ -21,7 +21,7 @@ package org.totalgrid.reef.measproc.processing
 import org.totalgrid.reef.measproc.MeasProcServiceContext
 import org.totalgrid.reef.persistence.ObjectCache
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.service.proto.Processing.MeasOverride
 import org.totalgrid.reef.client.service.proto.Measurements.{ DetailQual, Quality, Measurement }
 import org.totalgrid.reef.jmx.Metrics

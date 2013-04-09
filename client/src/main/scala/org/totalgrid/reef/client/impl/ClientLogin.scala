@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.operations.impl.DefaultServiceOperations
 import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.settings.Version
 import org.totalgrid.reef.client.proto.SimpleAuth.AuthRequest
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.client.BasicRequestHeaders
 import org.totalgrid.reef.client.{ RequestHeaders, Promise }

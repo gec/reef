@@ -23,7 +23,7 @@ import org.squeryl.Query
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast._
 import org.totalgrid.reef.models.ApplicationSchema
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 class VisibilityMapImpl(permissions: List[Permission]) extends VisibilityMap with Logging {
   def selector(resourceId: String)(fun: (Query[UUID]) => LogicalBoolean) = {

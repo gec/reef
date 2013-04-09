@@ -19,7 +19,7 @@
 package org.totalgrid.reef.shell.proto
 
 import org.apache.karaf.shell.console.OsgiCommandSupport
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.service.AllScadaService
 import org.apache.felix.service.command.CommandSession
 import net.agileautomata.executor4s.Cancelable

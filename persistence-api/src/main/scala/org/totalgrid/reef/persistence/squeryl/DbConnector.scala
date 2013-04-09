@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.persistence.squeryl
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.osgi.framework.BundleContext
 import com.weiglewilczek.scalamodules._
 import java.lang.Exception

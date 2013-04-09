@@ -20,7 +20,7 @@ package org.totalgrid.reef.services
 
 import org.totalgrid.reef.client.sapi.service.AsyncService
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.services.framework.{ ServiceContainer, ServerSideProcess }
 import net.agileautomata.executor4s.Executor
