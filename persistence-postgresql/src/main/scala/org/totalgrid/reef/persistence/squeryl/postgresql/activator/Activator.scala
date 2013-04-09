@@ -19,7 +19,7 @@
 package org.totalgrid.reef.persistence.squeryl.postgresql.activator
 
 import org.osgi.framework.{ BundleContext, BundleActivator }
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 import org.totalgrid.reef.persistence.squeryl.postgresql.Connector
 import org.totalgrid.reef.persistence.squeryl.DbConnector
 
@@ -30,7 +30,7 @@ class Activator extends BundleActivator {
     ctx = Some(context)
 
     val postgres = new Connector
-    context.createService(postgres, "org.totalgrid.reef.sql.type" -> "postgresql", interface[DbConnector])
+    context.createService(postgres, Map("org.totalgrid.reef.sql.type" -> "postgresql"), classOf[DbConnector])
   }
 
   def stop(context: BundleContext) {

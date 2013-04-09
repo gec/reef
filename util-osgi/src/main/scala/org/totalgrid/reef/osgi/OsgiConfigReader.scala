@@ -21,7 +21,7 @@ package org.totalgrid.reef.osgi
 import org.osgi.framework._
 import org.osgi.service.cm.{ Configuration, ConfigurationAdmin }
 
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 
 import java.util.{ Dictionary, Hashtable }
 
@@ -29,7 +29,7 @@ object OsgiConfigReader {
   import scala.collection.JavaConversions._
 
   def tryLoadingConfig(context: BundleContext, pid: String): Option[Dictionary[AnyRef, AnyRef]] = {
-    val config: Option[Configuration] = context findService withInterface[ConfigurationAdmin] andApply { (service: ConfigurationAdmin) =>
+    val config: Option[Configuration] = context.useService(classOf[ConfigurationAdmin]) { (service: ConfigurationAdmin) =>
       service.getConfiguration(pid)
     } match {
       case Some(x) => Some(x)

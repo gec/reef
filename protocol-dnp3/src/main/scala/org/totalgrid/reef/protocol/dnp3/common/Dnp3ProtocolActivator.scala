@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.dnp3.common
 import org.osgi.framework.{ ServiceRegistration, BundleContext }
 import org.totalgrid.reef.protocol.api.{ AddRemoveValidation, Protocol }
 
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 import org.totalgrid.reef.protocol.dnp3.master.Dnp3MasterProtocol
 import org.totalgrid.reef.protocol.dnp3.slave.Dnp3SlaveProtocol
 import org.totalgrid.reef.osgi.ExecutorBundleActivator
@@ -38,8 +38,8 @@ class Dnp3ProtocolActivator extends ExecutorBundleActivator {
   private var registrations = List.empty[ServiceRegistration]
 
   override def start(context: BundleContext, exe: Executor) {
-    registrations ::= context.createService(masterProtocol, "protocol" -> masterProtocol.name, interface[Protocol])
-    registrations ::= context.createService(slaveProtocol, "protocol" -> slaveProtocol.name, interface[Protocol])
+    registrations ::= context.createService(masterProtocol, Map("protocol" -> masterProtocol.name), classOf[Protocol])
+    registrations ::= context.createService(slaveProtocol, Map("protocol" -> slaveProtocol.name), classOf[Protocol])
   }
 
   override def stop(context: BundleContext, executor: Executor) {
