@@ -115,14 +115,14 @@
 
 		<dependency>
 			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_${scala.version}</artifactId>
+			<artifactId>scalatest_${scala.annotation}</artifactId>
 			<version>${scalatest.version}</version>
 			<scope>test</scope>
 		</dependency>
 
         <dependency>
             <groupId>net.agile-automata.nio4s</groupId>
-            <artifactId>commons_${scala.version}</artifactId>
+            <artifactId>commons_${scala.annotation}</artifactId>
             <version>${executor4s.version}</version>
             <scope>test</scope>
         </dependency>

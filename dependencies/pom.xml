@@ -89,7 +89,7 @@
         </dependency>
         <dependency>
             <groupId>org.squeryl</groupId>
-            <artifactId>squeryl_${scala.version}</artifactId>
+            <artifactId>squeryl_${scala.annotation}</artifactId>
             <version>${squeryl.version}</version>
         </dependency>
         <dependency>

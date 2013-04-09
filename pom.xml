@@ -25,7 +25,7 @@
         <maven-assembly-plugin.version>2.2.2</maven-assembly-plugin.version>
 		<maven-bundle.version>2.1.0</maven-bundle.version>
 		<felix-core.version>1.4.0</felix-core.version>
-        <executor4s.version>0.1.10</executor4s.version>
+        <executor4s.version>0.1.11</executor4s.version>
         <karaf.version>2.2.4</karaf.version>
         <karaf.console.version>${karaf.version}</karaf.console.version>
         <scalatest.version>1.6.1</scalatest.version>

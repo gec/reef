@@ -48,7 +48,7 @@
     <dependencies>
         <dependency>
             <groupId>com.weiglewilczek.scalamodules</groupId>
-            <artifactId>scalamodules-core_${scala.version}</artifactId>
+            <artifactId>scalamodules-core_${scala.annotation}</artifactId>
             <version>${scalamodules.version}</version>
         </dependency>
         <dependency>
@@ -64,7 +64,7 @@
         </dependency>
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>
-            <artifactId>executor4s_${scala.version}</artifactId>
+            <artifactId>executor4s_${scala.annotation}</artifactId>
             <version>${executor4s.version}</version>
         </dependency>
     </dependencies>
