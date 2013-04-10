@@ -38,7 +38,10 @@ trait ResponseCorrelator extends BrokerMessageConsumer {
 
 object ResponseCorrelator {
 
-  case class Failure(status: Envelope.Status, msg: String)
+  object Failure {
+    def apply(status: Envelope.Status, msg: String) = new Failure(status, msg)
+  }
+  class Failure(val status: Envelope.Status, val msg: String)
   case object DisconnectFailure extends Failure(Envelope.Status.BUS_UNAVAILABLE, "Graceful close")
   case class TimeoutFailure(interval: TimeInterval) extends Failure(Envelope.Status.RESPONSE_TIMEOUT, "Timed out waiting for response after: " + interval)
 

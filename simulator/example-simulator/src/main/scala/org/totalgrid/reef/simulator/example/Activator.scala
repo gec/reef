@@ -27,7 +27,7 @@ class Activator extends BundleActivator with Logging {
 
   final override def start(context: BundleContext) = {
     logger.info("Starting ExampleSimulator")
-    context.createService(ExampleSimulatorFactory, interface1 = interface[SimulatorPluginFactory])
+    context.createService(ExampleSimulatorFactory, classOf[SimulatorPluginFactory])
   }
 
   final override def stop(context: BundleContext) = {

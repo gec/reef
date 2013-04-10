@@ -34,7 +34,7 @@ import org.totalgrid.reef.client.operations.scl.ScalaServiceOperations._
 import org.totalgrid.reef.client.exception.{ ReefServiceException, BadRequestException }
 import org.totalgrid.reef.client.proto.Envelope
 
-import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
+//import org.totalgrid.reef.client.operations.scl.ScalaRequestHeaders._
 import org.totalgrid.reef.client.operations.scl.{ ScalaResponse, PromiseCollators }
 import org.totalgrid.reef.client.operations.Response
 

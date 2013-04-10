@@ -22,9 +22,9 @@ import org.osgi.framework.{ BundleContext }
 import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
 import org.totalgrid.reef.osgi.Helpers._
-import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.osgi.ExecutorBundleActivator
+import com.typesafe.scalalogging.slf4j.Logging
 
 final class SimulatorActivator extends ExecutorBundleActivator with Logging {
 
@@ -32,10 +32,10 @@ final class SimulatorActivator extends ExecutorBundleActivator with Logging {
 
     val protocol = new SimulatedProtocol(exe) with EndpointAlwaysOnline with ChannelAlwaysOnline
 
-    context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
+    context.createService(protocol, Map("protocol" -> protocol.name), classOf[Protocol])
 
-    context watchServices withInterface[SimulatorPluginFactory] andHandle {
-      case AddingService(plugin, properties) =>
+    context.watchServices(classOf[SimulatorPluginFactory]) {
+      case ServiceAdded(plugin, properties) =>
         logger.info("Adding a new SimulatorPlugin: " + plugin.getClass.getName)
         protocol.addPluginFactory(plugin)
       case ServiceRemoved(plugin, properties) =>

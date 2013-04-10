@@ -37,7 +37,7 @@ class VisibilityMapImpl(permissions: List[Permission]) extends VisibilityMap wit
     }
   }
 
-  private sealed case class EntityQuery(allowAll: Option[Boolean], query: Option[Query[UUID]])
+  private sealed abstract class EntityQuery(allowAll: Option[Boolean], query: Option[Query[UUID]])
   private object DenyAll extends EntityQuery(Some(false), None)
   private object AllowAll extends EntityQuery(Some(true), None)
   private case class Select(q: Query[UUID]) extends EntityQuery(None, Some(q))

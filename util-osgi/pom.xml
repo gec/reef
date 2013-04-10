@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>
-            <artifactId>executor4s_${scala.version}</artifactId>
+            <artifactId>executor4s_${scala.annotation}</artifactId>
             <version>${executor4s.version}</version>
         </dependency>
     </dependencies>
