@@ -61,7 +61,7 @@ trait AddRemoveValidation extends Protocol with Logging {
     }
   }
 
-  abstract override def removeChannel(channel: String): Unit = {
+  abstract override def removeChannel(channel: String) {
     channels.get(channel) match {
       case Some(Channel(_, listener)) =>
         // if a channel is removed, check to see that all of the endpoints using the channel have been removed
@@ -75,19 +75,17 @@ trait AddRemoveValidation extends Protocol with Logging {
           channels -= channel
           super.removeChannel(channel)
         }
-        listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown channel " + channel)
     }
   }
 
   /// remove the device from the map and its channel's device list
-  abstract override def removeEndpoint(endpoint: String): Unit = {
+  abstract override def removeEndpoint(endpoint: String) {
     endpoints.get(endpoint) match {
       case Some(Endpoint(_, _, _, listener)) =>
         endpoints -= endpoint
         super.removeEndpoint(endpoint)
-        listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown endpoint " + endpoint)
     }

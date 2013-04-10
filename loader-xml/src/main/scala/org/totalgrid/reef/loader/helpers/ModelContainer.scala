@@ -88,7 +88,6 @@ class ModelContainer extends Logging {
 
   def add(eventConfig: EventConfig) {
     addModel(eventConfig)
-    eventConfig
   }
 
   def add(endpointConfig: Endpoint): Endpoint =

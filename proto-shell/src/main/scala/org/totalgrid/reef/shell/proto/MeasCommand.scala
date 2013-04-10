@@ -149,7 +149,7 @@ class MeasOverrideCommand extends ReefCommandSupport {
     } catch {
       case ex: NumberFormatException =>
         Console.println("ERROR: Expected measurement value of type " + typ.toString + ", but found '" + value + "' instead.")
-      case ex => throw ex
+      case ex: Throwable => throw ex
     }
   }
 }

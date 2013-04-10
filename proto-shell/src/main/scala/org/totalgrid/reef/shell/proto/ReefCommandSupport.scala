@@ -188,7 +188,7 @@ abstract class ReefCommandSupport extends OsgiCommandSupport with Logging {
           ReefCommandSupport.attemptLogin(this.session, connectionInfo, userSettings, handleDisconnect)
           doCommand()
         } catch {
-          case _ =>
+          case _: Throwable =>
             println("Cannot auto-login see \"reef:login --help\"")
         }
       } else doCommand()

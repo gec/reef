@@ -68,7 +68,7 @@ object LoadManager extends Logging {
 
       (loader, valid)
     } catch {
-      case ex =>
+      case ex: Throwable =>
         println("Error loading configuration file '" + filename + "' " + ex.getMessage)
         throw ex
     }

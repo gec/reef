@@ -87,7 +87,7 @@ object AllBenchmarksEntryPoint {
         args = args drop 1
       }
     } catch {
-      case ex =>
+      case ex: Throwable =>
         printf("Exception: " + ex.toString)
         usage
     }

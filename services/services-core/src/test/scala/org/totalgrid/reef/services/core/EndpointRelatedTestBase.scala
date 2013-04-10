@@ -189,8 +189,6 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
       conns.foreach(c => mockMeas.onMeasProcAssign(Event(Envelope.SubscriptionEventType.ADDED, c)))
 
       measProcMap += (name -> mockMeas)
-
-      meas
     }
 
     def addDevice(name: String, pname: String = "test_point", autoAssigned: Boolean = true): Endpoint = {
