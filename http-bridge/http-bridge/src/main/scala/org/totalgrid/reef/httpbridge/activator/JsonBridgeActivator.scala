@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.httpbridge.activator
 
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 import javax.servlet.Servlet
 import org.osgi.framework.{ ServiceRegistration, BundleContext }
 import org.totalgrid.reef.osgi.OsgiConfigReader
@@ -59,11 +59,11 @@ class JsonBridgeActivator extends ConnectedApplicationBundleActivator {
     val apiBridge = new ApiServlet(managedConnection, new AllScadaServiceApiCallLibrary, subscriptionHandler)
     val subHandler = new SubscriptionServlet(subscriptionHandler)
 
-    registrations ::= context.createService(bridge, List("alias" -> "/rest").toMap, interface[Servlet])
-    registrations ::= context.createService(login, List("alias" -> "/login").toMap, interface[Servlet])
-    registrations ::= context.createService(converter, List("alias" -> "/convert").toMap, interface[Servlet])
-    registrations ::= context.createService(apiBridge, List("alias" -> "/api").toMap, interface[Servlet])
-    registrations ::= context.createService(subHandler, List("alias" -> "/subscribe").toMap, interface[Servlet])
+    registrations ::= context.createService(bridge, List("alias" -> "/rest").toMap, classOf[Servlet])
+    registrations ::= context.createService(login, List("alias" -> "/login").toMap, classOf[Servlet])
+    registrations ::= context.createService(converter, List("alias" -> "/convert").toMap, classOf[Servlet])
+    registrations ::= context.createService(apiBridge, List("alias" -> "/api").toMap, classOf[Servlet])
+    registrations ::= context.createService(subHandler, List("alias" -> "/subscribe").toMap, classOf[Servlet])
   }
 
   override def stopApplication() = {

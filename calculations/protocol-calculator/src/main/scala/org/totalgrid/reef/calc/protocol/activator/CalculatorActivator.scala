@@ -24,7 +24,7 @@ import org.osgi.framework.BundleContext
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.protocol.api.Protocol
 
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 import org.totalgrid.reef.calc.protocol.CalculatorProtocol
 
 class CalculatorActivator extends ExecutorBundleActivator with Logging {
@@ -33,7 +33,7 @@ class CalculatorActivator extends ExecutorBundleActivator with Logging {
 
     val protocol = new CalculatorProtocol()
 
-    context.createService(protocol, "protocol" -> protocol.name, interface[Protocol])
+    context.createService(protocol, Map("protocol" -> protocol.name), classOf[Protocol])
   }
 
   def stop(context: BundleContext, exe: Executor) {}

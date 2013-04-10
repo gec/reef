@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.simulator.shellcommands
 import org.apache.karaf.shell.console.OsgiCommandSupport
 import org.apache.felix.gogo.commands.{ Argument, Command, Option => GogoOption }
 
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 import org.totalgrid.reef.util.Table
 import org.totalgrid.reef.protocol.simulator.ControllableSimulator
 
@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
 trait SimulatorControlCommands { self: OsgiCommandSupport =>
 
   def getSimulators(): Seq[ControllableSimulator] = {
-    getBundleContext findServices withInterface[ControllableSimulator] andApply { x: ControllableSimulator => x }
+    getBundleContext.useServices(classOf[ControllableSimulator]) { x: ControllableSimulator => x }
   }
 
   def displaySimulators(sims: Seq[ControllableSimulator]) = {

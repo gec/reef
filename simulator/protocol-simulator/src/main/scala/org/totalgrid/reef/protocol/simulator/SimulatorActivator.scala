@@ -21,8 +21,8 @@ package org.totalgrid.reef.protocol.simulator
 import org.osgi.framework.{ BundleContext }
 import org.totalgrid.reef.protocol.api.{ ChannelAlwaysOnline, EndpointAlwaysOnline, Protocol }
 
-import com.weiglewilczek.scalamodules._
-import com.typesafe.scalalogging.slf4j.Logging
+import org.totalgrid.reef.osgi.Helpers._
+import com.weiglewilczek.slf4s.Logging
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.osgi.ExecutorBundleActivator
 

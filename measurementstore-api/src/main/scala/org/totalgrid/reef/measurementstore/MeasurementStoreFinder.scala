@@ -20,10 +20,10 @@ package org.totalgrid.reef.measurementstore
 
 import com.typesafe.scalalogging.slf4j.Logging
 import org.osgi.framework.BundleContext
-import com.weiglewilczek.scalamodules._
 import org.totalgrid.reef.osgi.OsgiConfigReader
 import org.totalgrid.reef.client.settings.util.PropertyLoading
 import net.agileautomata.executor4s._
+import org.totalgrid.reef.osgi.Helpers._
 
 object MeasurementStoreFinder extends Logging {
 
@@ -73,14 +73,14 @@ object MeasurementStoreFinder extends Logging {
    */
   private def getImplementation(context: BundleContext, implementation: String, historian: Option[Boolean], realtime: Option[Boolean]): Option[MeasurementStore] = {
 
-    val serviceOptions = context findServices withInterface[MeasurementStoreProvider] withFilter
-      "impl" === implementation andApply { (service, properties) =>
-        // filtering doesn't work as expected, seems to do an "or" rather than an "and"
-        if (properties.get("impl").get != implementation) None
-        else if (historian.isDefined && properties.get("historian").get != historian.get) None
-        else if (realtime.isDefined && properties.get("realtime").get != realtime.get) None
-        else Some(service)
-      }
+    val serviceOptions = context.useServicesWithProperties(classOf[MeasurementStoreProvider], "(impl=" + implementation + ")") { (service, properties) =>
+      // filtering doesn't work as expected, seems to do an "or" rather than an "and"
+      if (properties.get("impl").get != implementation) None
+      else if (historian.isDefined && properties.get("historian").get != historian.get) None
+      else if (realtime.isDefined && properties.get("realtime").get != realtime.get) None
+      else Some(service)
+    }
+
     serviceOptions.flatten.headOption.map { _.createStore }
   }
 }

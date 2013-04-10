@@ -19,7 +19,7 @@
 package org.totalgrid.reef.simulator.example
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.protocol.simulator.SimulatorPluginFactory
 

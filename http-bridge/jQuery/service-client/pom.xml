@@ -55,9 +55,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.weiglewilczek.scalamodules</groupId>
-            <artifactId>scalamodules-core_${scala.annotation}</artifactId>
-            <version>${scalamodules.version}</version>
+            <groupId>org.totalgrid.reef</groupId>
+            <artifactId>reef-util-osgi</artifactId>
+            <version>${reef.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>

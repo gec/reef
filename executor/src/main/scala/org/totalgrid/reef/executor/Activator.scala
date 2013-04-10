@@ -19,14 +19,14 @@
 package org.totalgrid.reef.executor
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 import net.agileautomata.executor4s._
 
 final class Activator extends BundleActivator {
 
   val exe = Executors.newResizingThreadPool(5.minutes)
 
-  def start(context: BundleContext) = context.createService(exe, interface1 = interface[Executor])
+  def start(context: BundleContext) = context.createService(exe, classOf[Executor])
 
   def stop(context: BundleContext) = exe.terminate()
 }

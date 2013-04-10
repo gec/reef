@@ -47,11 +47,6 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.weiglewilczek.scalamodules</groupId>
-            <artifactId>scalamodules-core_${scala.annotation}</artifactId>
-            <version>${scalamodules.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.configadmin</artifactId>
             <version>${org.apache.felix.configadmin.version}</version>
@@ -64,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>
-            <artifactId>executor4s_${scala.annotation}</artifactId>
+            <artifactId>executor4s_${scala.version}</artifactId>
             <version>${executor4s.version}</version>
         </dependency>
     </dependencies>
