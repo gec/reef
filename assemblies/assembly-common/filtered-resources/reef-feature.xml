@@ -1,7 +1,6 @@
 <features>
 
 	<feature name="reef-api" version="${reef.version}">
-		<bundle start-level='50'>mvn:com.weiglewilczek.slf4s/slf4s_${scala.annotation}/${slf4s.version}</bundle>
         <bundle start-level='50'>mvn:net.agile-automata.executor4s/executor4s_${scala.annotation}/${executor4s.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-dependencies/${reef.version}</bundle>
 		<bundle start-level='60'>mvn:org.totalgrid.reef/reef-util/${reef.version}</bundle>
