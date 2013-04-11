@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.totalgrid.reef</groupId>
         <artifactId>reef-services</artifactId>
-        <version>0.4.10-SNAPSHOT</version>
+        <version>0.5.0-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
     <artifactId>reef-services-authz</artifactId>
