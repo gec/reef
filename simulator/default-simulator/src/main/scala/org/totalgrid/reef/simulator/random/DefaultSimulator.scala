@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.simulator.random
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import net.agileautomata.executor4s._
 

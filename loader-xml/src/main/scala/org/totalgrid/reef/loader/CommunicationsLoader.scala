@@ -24,7 +24,7 @@ import org.totalgrid.reef.loader.communications._
 //import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint => EndpointProto, _ }
 import org.totalgrid.reef.client.service.proto.Processing._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import java.io.File
 import org.totalgrid.reef.client.service.proto._
 

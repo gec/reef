@@ -22,7 +22,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import collection.immutable.Map
 import collection.immutable.Range.Inclusive
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 

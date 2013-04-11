@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.api
 import org.totalgrid.reef.client.service.proto.{ FEP, Commands, Measurements, Model }
 import Measurements.MeasurementBatch
 import org.totalgrid.reef.client.service.proto.Model.ConfigFile
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }
 

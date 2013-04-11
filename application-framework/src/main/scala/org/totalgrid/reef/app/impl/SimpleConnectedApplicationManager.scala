@@ -19,7 +19,7 @@
 package org.totalgrid.reef.app.impl
 
 import org.totalgrid.reef.client.settings.{ NodeSettings, UserSettings }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.Connection
 import org.totalgrid.reef.app.{ ConnectedApplication, ConnectionConsumer, ConnectedApplicationManager, ConnectionProvider }
 import net.agileautomata.executor4s.{ Cancelable, Executor }

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.authz
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import java.util.UUID
 
 object AuthzFilter extends AuthzFiltering(ResourceSpecificFilter)

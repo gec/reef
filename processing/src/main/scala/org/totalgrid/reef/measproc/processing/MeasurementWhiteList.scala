@@ -19,7 +19,7 @@
 package org.totalgrid.reef.measproc.processing
 
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.service.proto.Model.Point
 import org.totalgrid.reef.jmx.Metrics
 

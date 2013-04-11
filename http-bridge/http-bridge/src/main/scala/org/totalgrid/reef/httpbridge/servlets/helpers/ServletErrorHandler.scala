@@ -20,7 +20,7 @@ package org.totalgrid.reef.httpbridge.servlets.helpers
 
 import javax.servlet.http.HttpServletResponse
 import org.totalgrid.reef.client.exception.ReefServiceException
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import org.totalgrid.reef.httpbridge.JsonBridgeConstants._
 

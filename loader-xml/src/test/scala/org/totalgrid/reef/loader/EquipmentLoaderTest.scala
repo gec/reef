@@ -28,7 +28,7 @@ import org.junit.runner.RunWith
 import org.totalgrid.reef.loader.sx.equipment._
 import org.scalatest.mock.MockitoSugar
 import collection.mutable.{ Seq, Queue, HashMap }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.junit.Assert
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, ConfigFile }
 import sx.communications.CommunicationsModel

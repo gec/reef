@@ -21,7 +21,7 @@ package org.totalgrid.reef.measproc
 import scala.collection.immutable
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.persistence.{ ObjectCache, InMemoryObjectCache }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 object LastMeasurementCacheManager {
   class ResettableInMemoryObjectCache[A] extends InMemoryObjectCache[A] {

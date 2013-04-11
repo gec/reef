@@ -21,7 +21,7 @@ package org.totalgrid.reef.calc.protocol
 import org.totalgrid.reef.client.service.proto.Calculations.Calculation
 import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import net.agileautomata.executor4s.Cancelable
 import org.totalgrid.reef.calc.lib.CalculationFactory
 

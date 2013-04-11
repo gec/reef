@@ -20,7 +20,7 @@ package org.totalgrid.reef.frontend
 
 import org.totalgrid.reef.app.{ ApplicationSettings, ConnectedApplication }
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.settings.UserSettings
 import org.totalgrid.reef.protocol.api.ProtocolManager
 import org.totalgrid.reef.client.{ ServiceProviderInfo, ServicesList, Client, Connection }

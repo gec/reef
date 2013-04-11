@@ -47,6 +47,7 @@ class NullMeasEncoder extends MeasEncoder {
       case Meas.Type.BOOL => ret.setBoolVal(m.getBoolVal)
       case Meas.Type.DOUBLE => ret.setDoubleVal(JDouble.longBitsToDouble(m.getDoubleVal))
       case Meas.Type.STRING => ret.setStringVal(m.getStringVal)
+      case Meas.Type.NONE =>
     }
     ret.build
   }
@@ -59,6 +60,7 @@ class NullMeasEncoder extends MeasEncoder {
       case Meas.Type.BOOL => ret.setBoolVal(m.getBoolVal)
       case Meas.Type.DOUBLE => ret.setDoubleVal(JDouble.doubleToLongBits(m.getDoubleVal))
       case Meas.Type.STRING => ret.setStringVal(m.getStringVal)
+      case Meas.Type.NONE =>
     }
     ret.build
   }

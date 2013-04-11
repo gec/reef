@@ -22,7 +22,7 @@ import org.totalgrid.reef.client.service.proto.Model.ReefUUID
 import processing.MeasurementWhiteList
 import org.totalgrid.reef.client.operations.scl.Event
 import scala.collection.JavaConversions._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType
 
 class EndpointConnectionWatcher(client: MeasurementProcessorServices, endpointUuid: ReefUUID, cache: LastMeasurementCacheManager, whiteList: MeasurementWhiteList) extends Logging {

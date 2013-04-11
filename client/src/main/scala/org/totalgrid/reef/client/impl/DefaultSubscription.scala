@@ -23,7 +23,7 @@ import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.broker.{ BrokerMessageConsumer, BrokerMessage, BrokerSubscription }
 import org.totalgrid.reef.client.proto.Envelope
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.operations.scl.Event
 
 /**

@@ -38,7 +38,7 @@ class MeasInputManagerTest extends FunSuite with ShouldMatchers {
 
   class MockInputBucket(val variable: String, val getSnapshot: Option[List[Measurement]]) extends InputBucket {
 
-    def onReceived(m: Measurement) = null
+    def onReceived(m: Measurement) {}
 
     def getMeasRequest = null
   }

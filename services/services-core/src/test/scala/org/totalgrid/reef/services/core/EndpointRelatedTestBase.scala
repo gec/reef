@@ -31,7 +31,7 @@ import collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import org.totalgrid.reef.measurementstore.{ MeasSink, InMemoryMeasurementStore }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.util.SyncVar
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi._
@@ -189,8 +189,6 @@ abstract class EndpointRelatedTestBase extends DatabaseUsingTestNotTransactionSa
       conns.foreach(c => mockMeas.onMeasProcAssign(Event(Envelope.SubscriptionEventType.ADDED, c)))
 
       measProcMap += (name -> mockMeas)
-
-      meas
     }
 
     def addDevice(name: String, pname: String = "test_point", autoAssigned: Boolean = true): Endpoint = {

@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.measproc
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.app.{ SubscriptionHandlerBase, ServiceContext }
 
 // Tailored for some of the measproc classes

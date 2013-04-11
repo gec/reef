@@ -49,12 +49,12 @@
     <dependencies>
         <dependency>
             <groupId>net.agile-automata.executor4s</groupId>
-            <artifactId>executor4s_${scala.version}</artifactId>
+            <artifactId>executor4s_${scala.annotation}</artifactId>
             <version>${executor4s.version}</version>
         </dependency>
         <dependency>
             <groupId>net.agile-automata.nio4s</groupId>
-            <artifactId>commons_${scala.version}</artifactId>
+            <artifactId>commons_${scala.annotation}</artifactId>
             <version>${executor4s.version}</version>
             <scope>test</scope>
         </dependency>

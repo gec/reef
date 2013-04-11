@@ -27,7 +27,7 @@ import org.totalgrid.reef.client.service.proto.Commands
 import org.totalgrid.reef.client.service.proto.Commands.{ CommandStatus, CommandRequest }
 import org.totalgrid.reef.protocol.api.{ Protocol, CommandHandler, Publisher, ProtocolManager }
 import org.totalgrid.reef.client.{ Client, AddressableDestination }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import scala.collection.JavaConversions._
 
@@ -72,7 +72,7 @@ class ProtocolTraitToManagerShim(protocol: Protocol) extends ProtocolManager wit
         services.publishMeasurements(value, new AddressableDestination(routingKey)).await()
         logger.info("Published a measurement batch of size: " + value.getMeasCount + " to " + routingKey + " " + " in " + (System.currentTimeMillis() - startTime) + " ms")
       } catch {
-        case ex => logger.error("Couldn't publish measurements: " + ex.getMessage)
+        case ex: Throwable => logger.error("Couldn't publish measurements: " + ex.getMessage)
       }
     }
   }
@@ -83,7 +83,7 @@ class ProtocolTraitToManagerShim(protocol: Protocol) extends ProtocolManager wit
         val result = services.alterEndpointConnectionState(connectionId, state).await()
         logger.info("Updated endpoint state: " + endpointName + " state: " + result.getState)
       } catch {
-        case ex => logger.error("Couldn't update endpointState: " + ex.getMessage)
+        case ex: Throwable => logger.error("Couldn't update endpointState: " + ex.getMessage)
       }
     }
   }
@@ -94,7 +94,7 @@ class ProtocolTraitToManagerShim(protocol: Protocol) extends ProtocolManager wit
         val result = services.alterCommunicationChannelState(channelUuid, state).await()
         logger.info("Updated channel state: " + result.getName + " state: " + result.getState)
       } catch {
-        case ex => logger.error("Couldn't update channelState: " + ex.getMessage)
+        case ex: Throwable => logger.error("Couldn't update channelState: " + ex.getMessage)
       }
     }
   }

@@ -22,7 +22,7 @@ import org.totalgrid.reef.services.framework._
 
 import org.totalgrid.reef.models._
 import org.squeryl.PrimitiveTypeMode._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import net.agileautomata.executor4s._
 
 class ProcessStatusCoordinator(model: ProcessStatusServiceModel, contextSource: RequestContextSource) extends ServerSideProcess with Logging {

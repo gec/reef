@@ -20,7 +20,7 @@ package org.totalgrid.reef.broker.qpid
 
 import org.totalgrid.reef.broker._
 import org.apache.qpid.transport._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.exception.ServiceIOException
 
 final class QpidBrokerConnection(conn: Connection, ttlMilliseconds: Int) extends QpidBrokerChannelPool with ConnectionListener with Logging {

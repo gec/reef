@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.framework
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.sapi.service.HasComponentId
 import org.totalgrid.reef.authz.FilteredResult
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.exception.InternalServiceException
 
 trait HasCreate extends HasAllTypes with HasComponentId {

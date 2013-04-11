@@ -20,7 +20,7 @@ package org.totalgrid.reef.services.framework
 
 import org.squeryl.PrimitiveTypeMode._
 import com.google.protobuf.GeneratedMessage
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.persistence.squeryl.ExclusiveAccess._
 import org.squeryl.Table
 import org.totalgrid.reef.models.ModelWithIdBase

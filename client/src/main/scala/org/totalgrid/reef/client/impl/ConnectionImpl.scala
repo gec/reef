@@ -26,7 +26,7 @@ import settings.UserSettings
 import org.totalgrid.reef.broker.{ BrokerConnectionListener, BrokerConnection }
 import net.agileautomata.executor4s.{ Strand, Executor }
 import types.TypeDescriptor
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 class ConnectionImpl(broker: BrokerConnection, executor: Executor, timeoutMs: Long)
     extends Connection with ConnectionListening with Logging { self =>

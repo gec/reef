@@ -103,7 +103,7 @@ class SimulatedProtocolTest extends FunSuite with ShouldMatchers {
 
       def name = "mock"
       def factory: SimulatorPluginFactory = parent
-      def simLevel: Int = simLevel
+      def simLevel: Int = 0
       def issue(cr: Commands.CommandRequest): Commands.CommandStatus = response
       def shutdown() = map.find(x => x._2.equals(this)) match {
         case Some((name, plugin)) =>

@@ -100,7 +100,7 @@ class ResetDatabaseCommand extends ReefCommandSupport {
         }
       }
     } catch {
-      case ex => println("Reset failed: " + ex.toString)
+      case ex: Throwable => println("Reset failed: " + ex.toString)
     }
 
     mstore.disconnect()

@@ -28,7 +28,7 @@ import com.google.protobuf.ByteString
 import org.totalgrid.reef.client.service.proto.{ Model, FEP }
 
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.util.{ EmptySyncVar, XMLHelper }
 import org.totalgrid.reef.protocol.api.{ CommandHandler, Publisher }
 import org.scalatest.{ BeforeAndAfterAll, FunSuite }

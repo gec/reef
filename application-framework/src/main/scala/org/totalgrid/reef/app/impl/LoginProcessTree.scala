@@ -24,7 +24,7 @@ import org.totalgrid.reef.app.process._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.app.ConnectedApplication
 import net.agileautomata.executor4s._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  * Handles the multi stage application login process.

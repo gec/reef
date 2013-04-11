@@ -19,7 +19,7 @@
 package org.totalgrid.reef.loader
 
 import scala.collection.JavaConversions._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.client.service.proto.Alarms._
 

@@ -20,7 +20,7 @@ package org.totalgrid.reef.persistence.squeryl
 
 import java.util.Dictionary
 import org.totalgrid.reef.client.settings.util.{ PropertyReader, PropertyLoading }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 object DbInfo extends Logging {
 

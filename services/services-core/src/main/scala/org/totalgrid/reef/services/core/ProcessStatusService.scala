@@ -23,7 +23,7 @@ import org.totalgrid.reef.services.framework._
 import org.totalgrid.reef.client.service.proto.Application.ApplicationConfig
 import org.totalgrid.reef.client.service.proto.ProcessStatus._
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.exception.BadRequestException
 
 import org.totalgrid.reef.client.service.proto.Descriptors
@@ -105,7 +105,7 @@ class ProcessStatusServiceModel(
 
     val existing = table.where(h => h.applicationId === app.id)
 
-    val ret = if (existing.size == 1) {
+    if (existing.size == 1) {
       logger.info("App " + hbSql.instanceName.value + ": is being marked back online at " + now + " id: " + processId)
       update(context, hbSql, existing.head)
     } else {
@@ -114,8 +114,6 @@ class ProcessStatusServiceModel(
     }
 
     notifyModels(context, app, true, capabilities)
-
-    ret
   }
 
   def handleOfflineHeartbeat(context: RequestContext, hbeat: HeartbeatStatus, now: Long = System.currentTimeMillis) = {

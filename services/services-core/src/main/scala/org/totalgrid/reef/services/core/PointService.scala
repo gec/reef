@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.core
 import org.totalgrid.reef.services.framework._
 
 import org.squeryl.PrimitiveTypeMode._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.service.proto.Descriptors
 
 import org.totalgrid.reef.services.framework.ProtoSerializer._

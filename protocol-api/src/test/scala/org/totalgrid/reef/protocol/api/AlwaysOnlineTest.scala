@@ -37,8 +37,8 @@ class AlwaysOnlineTest extends FunSuite with ShouldMatchers {
 
   class MockPublisher[A] extends Publisher[A] {
     var queue = Queue.empty[A]
-    def publish(state: A) = {
-      queue += state
+    def publish(state: A) {
+      queue = queue enqueue state
     }
   }
 

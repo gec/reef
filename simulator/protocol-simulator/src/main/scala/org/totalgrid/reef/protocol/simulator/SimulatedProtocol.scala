@@ -23,7 +23,7 @@ import org.totalgrid.reef.client.service.proto.{ SimMapping, Model, Commands }
 import org.totalgrid.reef.protocol.api._
 import net.agileautomata.executor4s._
 import org.totalgrid.reef.client.service.proto.SimMapping.SimulatorMapping
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.client.service.proto.FEP.{ EndpointConnection, CommChannel }

@@ -22,7 +22,7 @@ import org.osgi.framework._
 import org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping
 import org.ops4j.pax.web.extender.whiteboard.ResourceMapping
 
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 
 class JQueryClientActivator extends BundleActivator {
 
@@ -33,7 +33,7 @@ class JQueryClientActivator extends BundleActivator {
     mapping.setAlias("/jquery-libs")
     mapping.setPath("/")
 
-    registrations ::= context.createService(mapping, Map.empty[String, String], interface[ResourceMapping])
+    registrations ::= context.createService(mapping, classOf[ResourceMapping])
   }
 
   def stop(context: BundleContext) {

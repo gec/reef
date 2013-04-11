@@ -22,7 +22,7 @@ import scala.{ Option => ScalaOption }
 
 import org.apache.qpid.transport._
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import org.totalgrid.reef.broker._
 

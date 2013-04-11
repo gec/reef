@@ -26,7 +26,7 @@ import org.totalgrid.reef.client.service.proto.OptionalProtos._
 
 import UUIDConversions._
 import java.util.UUID
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 object EntityQuery extends Logging {
 

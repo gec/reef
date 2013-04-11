@@ -35,6 +35,8 @@ object RandomValues {
       case Type.BOOL => BooleanValue(config.getInitial.toInt == 0, config.getChangeChance)
       case Type.DOUBLE => DoubleValue(config.getInitial, config.getMin, config.getMax, config.getMaxDelta, config.getChangeChance)
       case Type.INT => IntValue(config.getInitial.toInt, config.getMin.toInt, config.getMax.toInt, config.getMaxDelta.toInt, config.getChangeChance)
+      case Type.STRING => throw new Exception("Can't generate random value for type string")
+      case Type.NONE => throw new Exception("Can't generate random value for type none")
     }
   }
 

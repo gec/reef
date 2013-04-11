@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.util
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 object Lifecycle {
 

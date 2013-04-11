@@ -21,7 +21,7 @@ package org.totalgrid.reef.frontend.entry
 
 import org.osgi.framework._
 
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 
 import org.totalgrid.reef.app._
 
@@ -48,13 +48,13 @@ final class FepActivator extends ConnectedApplicationBundleActivator {
 
   def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) = {
 
-    context watchServices withInterface[Protocol] andHandle {
-      case AddingService(p, _) => addProtocol(context, p.name, new ProtocolTraitToManagerShim(p), appManager)
+    context.watchServices(classOf[Protocol]) {
+      case ServiceAdded(p, _) => addProtocol(context, p.name, new ProtocolTraitToManagerShim(p), appManager)
       case ServiceRemoved(p, _) => removeProtocol(p.name, appManager)
     }
 
-    context watchServices withInterface[ProtocolManager] andHandle {
-      case AddingService(p, props) => getProtocolName(props).foreach(name => addProtocol(context, name, p, appManager))
+    context.watchServices(classOf[ProtocolManager]) {
+      case ServiceAdded(p, props) => getProtocolName(props).foreach(name => addProtocol(context, name, p, appManager))
       case ServiceRemoved(p, props) => getProtocolName(props).foreach(name => removeProtocol(name, appManager))
     }
   }

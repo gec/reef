@@ -20,7 +20,7 @@ package org.totalgrid.reef.app.whiteboard
 
 import org.osgi.framework.BundleContext
 import net.agileautomata.executor4s.Executor
-import com.weiglewilczek.scalamodules._
+import org.totalgrid.reef.osgi.Helpers._
 import org.totalgrid.reef.app._
 
 /**
@@ -31,13 +31,13 @@ import org.totalgrid.reef.app._
 class AppWhiteboardActivator extends ConnectedApplicationBundleActivator {
 
   def addApplication(context: BundleContext, connectionManager: ConnectionProvider, appManager: ConnectedApplicationManager, executor: Executor) {
-    context watchServices withInterface[ConnectionConsumer] andHandle {
-      case AddingService(p, _) => connectionManager.addConsumer(p)
+    context.watchServices(classOf[ConnectionConsumer]) {
+      case ServiceAdded(p, _) => connectionManager.addConsumer(p)
       case ServiceRemoved(p, _) => connectionManager.removeConsumer(p)
     }
 
-    context watchServices withInterface[ConnectedApplication] andHandle {
-      case AddingService(p, _) => appManager.addConnectedApplication(p)
+    context.watchServices(classOf[ConnectedApplication]) {
+      case ServiceAdded(p, _) => appManager.addConnectedApplication(p)
       case ServiceRemoved(p, _) => appManager.removeConnectedApplication(p)
     }
   }

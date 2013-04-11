@@ -19,15 +19,15 @@
 package org.totalgrid.reef.simulator.example
 
 import org.osgi.framework.{ BundleActivator, BundleContext }
-import com.weiglewilczek.scalamodules._
-import com.weiglewilczek.slf4s.Logging
+import org.totalgrid.reef.osgi.Helpers._
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.protocol.simulator.SimulatorPluginFactory
 
 class Activator extends BundleActivator with Logging {
 
   final override def start(context: BundleContext) = {
     logger.info("Starting ExampleSimulator")
-    context.createService(ExampleSimulatorFactory, interface1 = interface[SimulatorPluginFactory])
+    context.createService(ExampleSimulatorFactory, classOf[SimulatorPluginFactory])
   }
 
   final override def stop(context: BundleContext) = {

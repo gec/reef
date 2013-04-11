@@ -19,7 +19,7 @@
 package org.totalgrid.reef.services.coordinators
 
 import org.totalgrid.reef.models.{ CommunicationEndpoint, Point }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import org.totalgrid.reef.measurementstore.MeasurementStore
 

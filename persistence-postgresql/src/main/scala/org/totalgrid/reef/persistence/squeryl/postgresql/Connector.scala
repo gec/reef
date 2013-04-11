@@ -21,7 +21,7 @@ package org.totalgrid.reef.persistence.squeryl.postgresql
 import org.squeryl.Session
 import org.squeryl.adapters.PostgreSqlAdapter
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.persistence.squeryl._
 
 class Connector extends DbConnectorBase with Logging {

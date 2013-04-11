@@ -21,7 +21,7 @@ package org.totalgrid.reef.protocol.api
 import org.totalgrid.reef.client.service.proto.{ FEP, Model }
 import scala.collection.immutable
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.client.Client
 import org.totalgrid.reef.client.service.proto.Measurements.MeasurementBatch
 import org.totalgrid.reef.client.service.proto.FEP.{ CommChannel, EndpointConnection }
@@ -61,7 +61,7 @@ trait AddRemoveValidation extends Protocol with Logging {
     }
   }
 
-  abstract override def removeChannel(channel: String): Unit = {
+  abstract override def removeChannel(channel: String) {
     channels.get(channel) match {
       case Some(Channel(_, listener)) =>
         // if a channel is removed, check to see that all of the endpoints using the channel have been removed
@@ -75,19 +75,17 @@ trait AddRemoveValidation extends Protocol with Logging {
           channels -= channel
           super.removeChannel(channel)
         }
-        listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown channel " + channel)
     }
   }
 
   /// remove the device from the map and its channel's device list
-  abstract override def removeEndpoint(endpoint: String): Unit = {
+  abstract override def removeEndpoint(endpoint: String) {
     endpoints.get(endpoint) match {
       case Some(Endpoint(_, _, _, listener)) =>
         endpoints -= endpoint
         super.removeEndpoint(endpoint)
-        listener
       case None =>
         throw new IllegalArgumentException("Cannot remove unknown endpoint " + endpoint)
     }

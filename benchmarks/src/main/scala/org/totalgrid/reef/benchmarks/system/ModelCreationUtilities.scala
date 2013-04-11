@@ -88,7 +88,7 @@ object ModelCreationUtilities {
             else startNext()
           } catch {
             case rse: ReefServiceException => prom.setFailure(rse)
-            case ex => prom.setFailure(new UnknownServiceException(ex.toString))
+            case ex: Throwable => prom.setFailure(new UnknownServiceException(ex.toString))
           }
         }
       }

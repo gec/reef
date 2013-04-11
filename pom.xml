@@ -10,13 +10,14 @@
 
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.9.0-1</scala.version>
+        <scala.version>2.10.0</scala.version>
+        <scala.annotation>2.10</scala.annotation>
         <slf4j-api.version>1.7.2</slf4j-api.version>
-        <slf4s.version>1.0.6</slf4s.version>
+        <scalalogging.version>1.0.1</scalalogging.version>
         <scalamodules.version>2.0.3</scalamodules.version>
         <qpid.version>0.10</qpid.version>
 		<reef.version>0.5.0-SNAPSHOT</reef.version>
-        <squeryl.version>0.9.5-RC1</squeryl.version>
+        <squeryl.version>0.9.5-6</squeryl.version>
         <cglib.version>2.2</cglib.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <commons-pool.version>1.5.4</commons-pool.version>
@@ -24,10 +25,10 @@
         <maven-assembly-plugin.version>2.2.2</maven-assembly-plugin.version>
 		<maven-bundle.version>2.1.0</maven-bundle.version>
 		<felix-core.version>1.4.0</felix-core.version>
-        <executor4s.version>0.1.10</executor4s.version>
+        <executor4s.version>0.1.11</executor4s.version>
         <karaf.version>2.2.4</karaf.version>
         <karaf.console.version>${karaf.version}</karaf.console.version>
-        <scalatest.version>1.6.1</scalatest.version>
+        <scalatest.version>1.9.1</scalatest.version>
         <scala-maven-plugin.version>3.1.0</scala-maven-plugin.version>
         <scalariform-maven-plugin.version>0.1.2</scalariform-maven-plugin.version>
         <mockito-core.version>1.8.5</mockito-core.version>

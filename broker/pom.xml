@@ -63,7 +63,7 @@
     <dependencies>
 		<dependency>
             <groupId>net.agile-automata.nio4s</groupId>
-            <artifactId>commons_${scala.version}</artifactId>
+            <artifactId>commons_${scala.annotation}</artifactId>
             <version>${executor4s.version}</version>
             <scope>test</scope>
         </dependency>

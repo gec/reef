@@ -75,6 +75,7 @@ class SimpleMeasEncoder extends MeasEncoder {
       case Meas.Type.BOOL => ret.setBoolVal(ei.meas.getBoolVal)
       case Meas.Type.DOUBLE => ret.setDoubleVal(JDouble.longBitsToDouble(dblVal))
       case Meas.Type.STRING => ret.setStringVal(ei.meas.getStringVal)
+      case Meas.Type.NONE =>
     }
     EncInfo(ret.build, Last(time, quality, intVal, dblVal))
   }
@@ -95,6 +96,7 @@ class SimpleMeasEncoder extends MeasEncoder {
       case Meas.Type.BOOL => ret.setBoolVal(ei.meas.getBoolVal)
       case Meas.Type.DOUBLE => ret.setDoubleVal(dblVal - ei.last.dblVal)
       case Meas.Type.STRING => ret.setStringVal(ei.meas.getStringVal)
+      case Meas.Type.NONE =>
     }
 
     EncInfo(ret.build, Last(ei.meas.getTime, ei.meas.getQuality, intVal, dblVal))

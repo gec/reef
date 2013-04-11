@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 import org.totalgrid.reef.client.service.proto.Mapping.{ IndexMapping }
 import org.totalgrid.reef.client.service.proto.Measurements.Measurement
 import org.totalgrid.reef.protocol.dnp3._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import org.totalgrid.reef.client.sapi.rpc.AllScadaService
 import org.totalgrid.reef.client.proto.Envelope.SubscriptionEventType

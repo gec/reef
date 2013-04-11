@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 
 import org.totalgrid.reef.loader.sx.communications._
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.scalatest.{ Assertions, BeforeAndAfterAll }
 import collection.mutable.{ HashMap }
 

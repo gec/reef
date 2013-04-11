@@ -90,7 +90,7 @@ object StandaloneLoader {
       }
 
     } catch {
-      case ex =>
+      case ex: Throwable =>
         printf("Exception: " + ex.toString)
         usage
     }

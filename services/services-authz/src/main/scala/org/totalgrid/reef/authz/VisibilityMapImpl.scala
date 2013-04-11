@@ -23,7 +23,7 @@ import org.squeryl.Query
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast._
 import org.totalgrid.reef.models.ApplicationSchema
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 class VisibilityMapImpl(permissions: List[Permission]) extends VisibilityMap with Logging {
   def selector(resourceId: String)(fun: (Query[UUID]) => LogicalBoolean) = {
@@ -37,7 +37,7 @@ class VisibilityMapImpl(permissions: List[Permission]) extends VisibilityMap wit
     }
   }
 
-  private sealed case class EntityQuery(allowAll: Option[Boolean], query: Option[Query[UUID]])
+  private sealed abstract class EntityQuery(allowAll: Option[Boolean], query: Option[Query[UUID]])
   private object DenyAll extends EntityQuery(Some(false), None)
   private object AllowAll extends EntityQuery(Some(true), None)
   private case class Select(q: Query[UUID]) extends EntityQuery(None, Some(q))

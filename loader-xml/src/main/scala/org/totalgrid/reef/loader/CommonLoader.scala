@@ -25,7 +25,7 @@ import org.totalgrid.reef.loader.common.{ Info, Attribute, ConfigFile, ConfigFil
 
 import scala.collection.JavaConversions._
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.util.IOHelpers
 import org.totalgrid.reef.client.service.proto.Processing.TriggerSet
 

@@ -19,7 +19,7 @@
 package org.totalgrid.reef.app.whiteboard
 
 import org.totalgrid.reef.osgi.ExecutorBundleActivator
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.osgi.framework.BundleContext
 import net.agileautomata.executor4s.Executor
 import org.totalgrid.reef.osgi.OsgiConfigReader

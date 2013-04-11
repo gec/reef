@@ -21,7 +21,7 @@ package org.totalgrid.reef.services.authz
 import org.totalgrid.reef.services.framework.RequestContext
 import org.totalgrid.reef.authz._
 import org.totalgrid.reef.client.exception.UnauthorizedException
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import java.util.UUID
 import org.totalgrid.reef.models.{ Agent, ApplicationSchema }

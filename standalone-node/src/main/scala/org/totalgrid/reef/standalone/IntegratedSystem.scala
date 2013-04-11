@@ -28,7 +28,7 @@ import org.totalgrid.reef.client.service.list.ReefServices
 import org.totalgrid.reef.loader.LoadManager
 import org.totalgrid.reef.loader.commons.{ LoaderServices, LoaderServicesList }
 import org.totalgrid.reef.client.settings.util.{ PropertyLoading, PropertyReader }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import org.totalgrid.reef.models.CoreServicesSchema
 import org.totalgrid.reef.app.impl.{ ApplicationManagerSettings, SimpleConnectedApplicationManager }
 import org.totalgrid.reef.measproc.activator.MeasurementProcessorConnectedApplication

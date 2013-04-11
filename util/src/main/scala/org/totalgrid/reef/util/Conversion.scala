@@ -50,7 +50,7 @@ object Unappliers {
     def unapply(s: String): Option[Boolean] = try {
       Some(s.toBoolean)
     } catch {
-      case _: java.lang.NumberFormatException => None
+      case _: java.lang.IllegalArgumentException => None
     }
   }
   object Double {

@@ -124,11 +124,6 @@
             <version>${reef.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.weiglewilczek.scalamodules</groupId>
-            <artifactId>scalamodules-core_${scala.version}</artifactId>
-            <version>${scalamodules.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
             <version>${felix-core.version}</version>

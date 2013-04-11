@@ -40,7 +40,7 @@ class MeasurementStatisticsService(cm: Historian)
 
   override def doGet(context: RequestContext, req: MeasurementStatistics): MeasurementStatistics = {
 
-    if (req.point.name == None && req.point.uuid == None) {
+    if (req.point.name == None && req.point.uuid.getOption == None) {
       throw new ReefServiceException("Must include point name or UUID", Status.BAD_REQUEST)
     }
 

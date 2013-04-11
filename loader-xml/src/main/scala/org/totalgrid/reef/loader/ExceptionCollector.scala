@@ -18,7 +18,7 @@
  */
 package org.totalgrid.reef.loader
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 class LoadingException(msg: String) extends RuntimeException(msg)
 
@@ -61,7 +61,7 @@ class LoadingExceptionCollector extends ExceptionCollector with Logging {
         val nameString = try {
           name
         } catch {
-          case _ => "<unknown>"
+          case _: Throwable => "<unknown>"
         }
         logger.info("exception encountered during loading: " + nameString + ": " + ex.getMessage)
         //        logger.debug("DEBUG: exception encountered during loading: " + nameString + ": " + ex.getMessage + ": ", ex)

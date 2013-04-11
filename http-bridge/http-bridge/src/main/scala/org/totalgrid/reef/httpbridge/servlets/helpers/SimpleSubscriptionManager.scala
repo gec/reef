@@ -23,7 +23,7 @@ import scala.collection.mutable
 import org.totalgrid.reef.client.proto.Envelope
 import org.totalgrid.reef.client.exception.BadRequestException
 import org.totalgrid.reef.client.{ SubscriptionEvent, SubscriptionEventAcceptor, Subscription }
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  * simplest possible SubscriptionHandler that just stores all the subscription events in a buffer

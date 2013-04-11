@@ -156,9 +156,8 @@ class SlaveCommandProxyTest extends FunSuite with ShouldMatchers {
         called = true
       }
     }
-    val ret = func(response)
+    func(response)
     called should equal(true)
-    ret
   }
 
   def getWorkingCommandService(commandName: String, _result: ProtoCommandStatus, cmdType: ModelCommandType) = {

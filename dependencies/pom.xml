@@ -82,6 +82,11 @@
 			<version>${scala.version}</version>
 		</dependency>
         <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>jline</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+        <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
             <version>${cglib.version}</version>
@@ -89,7 +94,7 @@
         </dependency>
         <dependency>
             <groupId>org.squeryl</groupId>
-            <artifactId>squeryl_${scala.version}</artifactId>
+            <artifactId>squeryl_${scala.annotation}</artifactId>
             <version>${squeryl.version}</version>
         </dependency>
         <dependency>
