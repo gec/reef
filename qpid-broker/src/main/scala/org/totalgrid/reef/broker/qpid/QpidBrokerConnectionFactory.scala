@@ -23,6 +23,10 @@ import org.apache.qpid.transport.{ ConnectionSettings, Connection }
 import org.totalgrid.reef.client.settings.AmqpSettings
 import java.io.File
 import org.totalgrid.reef.client.exception.ServiceIOException
+import org.apache.qpid.client.transport.ClientConnectionDelegate
+import org.apache.qpid.jms.{ BrokerDetails, ConnectionURL }
+import org.apache.qpid.framing.AMQShortString
+import java.util
 
 object QpidBrokerConnectionFactory {
 
@@ -53,6 +57,32 @@ object QpidBrokerConnectionFactory {
     }
   }
 
+  // This is a hack to not have to rewrite the entire ClientConnectionDelegate
+  class SimpleUrl(user: String, pass: String) extends ConnectionURL {
+    def getURL: String = ""
+    def getFailoverMethod: String = ""
+    def getFailoverOption(key: String): String = ""
+    def getBrokerCount: Int = 0
+    def getBrokerDetails(index: Int): BrokerDetails = null
+    def addBrokerDetails(broker: BrokerDetails) {}
+    def setBrokerDetails(brokers: util.List[BrokerDetails]) {}
+    def getAllBrokerDetails: util.List[BrokerDetails] = null
+    def getClientName: String = ""
+    def setClientName(clientName: String) {}
+    def getUsername: String = user
+    def setUsername(username: String) {}
+    def getPassword: String = pass
+    def setPassword(password: String) {}
+    def getVirtualHost: String = ""
+    def setVirtualHost(virtualHost: String) {}
+    def getOption(key: String): String = ""
+    def setOption(key: String, value: String) {}
+    def getDefaultQueueExchangeName: AMQShortString = null
+    def getDefaultTopicExchangeName: AMQShortString = null
+    def getTemporaryQueueExchangeName: AMQShortString = null
+    def getTemporaryTopicExchangeName: AMQShortString = null
+  }
+
 }
 
 class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnectionFactory {
@@ -78,6 +108,7 @@ class QpidBrokerConnectionFactory(config: AmqpSettings) extends BrokerConnection
       val settings = makeSettings
       QpidBrokerConnectionFactory.loadssl(config, settings)
       val conn = new Connection
+      conn.setConnectionDelegate(new ClientConnectionDelegate(settings, new QpidBrokerConnectionFactory.SimpleUrl(settings.getUsername, settings.getPassword)))
       val broker = new QpidBrokerConnection(conn, config.getTtlMilliseconds())
       conn.connect(settings)
       broker

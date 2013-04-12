@@ -77,7 +77,7 @@ class ProtoShellApplication(connection: Connection, client: Client, services: Al
   override def getDiscoveryResource = "OSGI-INF/blueprint/commands.index"
 
   protected override def createConsole(commandProcessor: CommandProcessorImpl, in: InputStream, out: PrintStream, err: PrintStream, terminal: Terminal) = {
-    new Console(commandProcessor, in, out, err, terminal, null) {
+    new Console(commandProcessor, in, out, err, terminal, "UTF-8", null) {
       protected override def setSessionProperties = {
         ReefCommandSupport.setSessionVariables(this.session, connection, client, services, context, cancelable, userName, authToken)
       }
