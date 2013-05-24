@@ -17,7 +17,22 @@
         </license>
     </licenses>
 
+    <properties>
+        <app.name>Reef</app.name>
+        <app.fullname>Totalgrid.org Reef</app.fullname>
+        <app.blurb>Dedicated to enabling the smart grid.</app.blurb>
+    </properties>
+
     <build>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.felix</groupId>

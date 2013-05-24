@@ -38,7 +38,7 @@ object ProtoShellApplication {
   def main(args: Array[String]) = {
     System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
 
-    val properties = PropertyReader.readFromFiles(List("../standalone-node.cfg"))
+    val properties = PropertyReader.readFromFiles(List("standalone-node.cfg"))
 
     val userSettings = new UserSettings(properties)
     val connectionInfo = new AmqpSettings(properties)
