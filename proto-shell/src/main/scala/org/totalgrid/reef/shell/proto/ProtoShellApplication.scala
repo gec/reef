@@ -36,7 +36,9 @@ import org.totalgrid.reef.client.{ ConnectionFactory, Client, Connection }
 
 object ProtoShellApplication {
   def main(args: Array[String]) = {
-    System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
+    if (System.getProperty("jline.terminal") == null) {
+      System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
+    }
 
     val properties = PropertyReader.readFromFiles(List("standalone-node.cfg"))
 
