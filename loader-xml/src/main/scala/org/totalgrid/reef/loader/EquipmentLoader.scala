@@ -26,6 +26,7 @@ import org.totalgrid.reef.client.service.proto.Processing.{ Filter => FilterProt
 import org.totalgrid.reef.client.service.proto.Model.{ Entity, EntityEdge, Command => CommandProto }
 import org.totalgrid.reef.client.service.proto.Model.{ PointType => PointTypeProto, CommandType => CommandTypeProto }
 import org.totalgrid.reef.loader.equipment._
+import org.totalgrid.reef.loader.equipment.{ Filter => FilterXml }
 
 import org.totalgrid.reef.loader.EnhancedXmlClasses._
 import org.totalgrid.reef.loader.calculations.Calculation
@@ -103,7 +104,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
    */
   private def loadEquipment(equipment: Equipment, namePrefix: Option[String], actionModel: HashMap[String, ActionSet]): Entity = {
     val name = getChildName(namePrefix, equipment.getName)
-    val childPrefix = if (equipment.isAddParentNames) Some(name + ".") else None
+    val childPrefix = if (equipment.getAddParentNames) Some(name + ".") else None
 
     // IMPORTANT: profiles is a list of profiles plus this equipment (as the last "profile" in the list)
     // TODO: We don't see profiles within profiles. Could go recursive and map each profile name to a list of profiles.
@@ -257,7 +258,7 @@ class EquipmentLoader(modelLoader: ModelLoader, loadCache: LoadCacheEquipment, e
     val convertValues = getElements[Transform](name, pointType, _.getTransform.toList)
     triggers = triggers ::: convertValues.map { transform => toTrigger(name, transform, unit) }
 
-    val filterValues = getElements[Filter](name, pointType, _.getFilter.toList)
+    val filterValues = getElements[FilterXml](name, pointType, _.getFilter.toList)
     if (filterValues.isEmpty) triggers :::= List(filterDefault(name))
     else triggers :::= filterValues.flatMap { filter => toTrigger(name, filter, pointProtoType) }
 

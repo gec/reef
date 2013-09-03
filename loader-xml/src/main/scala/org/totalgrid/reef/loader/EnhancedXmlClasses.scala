@@ -170,7 +170,7 @@ object EnhancedInfoElements {
   class EnhancedAttribute(c: Attribute) {
     def doubleValue = if (c.isSetDoubleValue) Some(c.getDoubleValue) else None
     def intValue = if (c.isSetIntValue) Some(c.getIntValue) else None
-    def booleanValue = if (c.isSetBooleanValue) Some(c.isBooleanValue) else None
+    def booleanValue = if (c.isSetBooleanValue) Some(c.isSetBooleanValue) else None
     def stringValue = if (c.isSetStringValue) Some(c.getStringValue) else None
   }
 }

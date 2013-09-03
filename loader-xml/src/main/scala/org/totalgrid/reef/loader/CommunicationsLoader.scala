@@ -21,6 +21,7 @@ package org.totalgrid.reef.loader
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.totalgrid.reef.loader.communications._
+import org.totalgrid.reef.loader.communications.{ Endpoint => EndpointXml }
 //import org.totalgrid.reef.client.service.proto.FEP._
 import org.totalgrid.reef.client.service.proto.FEP.{ Endpoint => EndpointProto, _ }
 import org.totalgrid.reef.client.service.proto.Processing._
@@ -140,7 +141,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
   /**
    * Load this endpoint node and all children. Create edges to connect the children.
    */
-  def loadEndpoint(endpoint: Endpoint, equipmentPointUnits: HashMap[String, String], benchmark: Boolean): Unit = {
+  def loadEndpoint(endpoint: EndpointXml, equipmentPointUnits: HashMap[String, String], benchmark: Boolean): Unit = {
     import CommunicationsLoader._
 
     val endpointName = endpoint.getName
@@ -176,7 +177,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     logger.trace("loadEndpoint: " + endpointName + " with analogs: " + analogs.keys.mkString(", "))
     logger.trace("loadEndpoint: " + endpointName + " with counters: " + counters.keys.mkString(", "))
 
-    if (endpoint.isDataSource) {
+    if (endpoint.getDataSource) {
       for ((name, c) <- controls) loadCache.addControl(endpointName, name, if (c.isSetIndex) c.getIndex else -1)
       for ((name, s) <- setpoints) loadCache.addControl(endpointName, name, if (s.isSetIndex) s.getIndex else -1)
     }
@@ -200,7 +201,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     for ((name, p) <- counters) addUniquePoint(points, name, p, errorMsg + "counter")
     logger.trace("loadEndpoint: " + endpointName + " with all points: " + points.keys.mkString(", "))
 
-    processPointScaling(endpointName, points, equipmentPointUnits, endpoint.isDataSource)
+    processPointScaling(endpointName, points, equipmentPointUnits, endpoint.getDataSource)
 
     // TODO should the communications loader really have knowledge of all the protocols?
     overriddenProtocolName match {
@@ -221,7 +222,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
 
     // Now we have a list of all the controls and points for this Endpoint
     val endpointCfg = toCommunicationEndpointConfig(endpointName, overriddenProtocolName, configFiles, commChannel, controls, setpoints,
-      points, endpoint.isDataSource, endpoint.isAutoAssigned).build
+      points, endpoint.getDataSource, endpoint.getAutoAssigned).build
     modelLoader.putOrThrow(endpointCfg)
 
     val endpointEntity = ProtoUtils.toEntityType(endpointName, "CommunicationEndpoint" :: Nil)
@@ -348,7 +349,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
       // interface. The endpoint's interface can override individual properties
       // of the reference interface
 
-      val server = getAttributeDefault[Boolean](interface, reference, _.isSetServerSocket, _.isServerSocket, false)
+      val server = getAttributeDefault[Boolean](interface, reference, _.isSetServerSocket, _.getServerSocket, false)
 
       val ip = if (!server) getAttribute[String](interface, reference, _.isSetIp, _.getIp, endpointName, "ip")
       else getAttributeDefault[String](interface, reference, _.isSetIp, _.getIp, "0.0.0.0")
@@ -512,7 +513,7 @@ class CommunicationsLoader(modelLoader: ModelLoader, loadCache: LoadCacheCommuni
     counters: HashMap[String, PointType]): Unit = {
 
     val name = getChildName(namePrefix, equipment.getName)
-    val childPrefix = if (equipment.isAddParentNames) Some(name + ".") else None
+    val childPrefix = if (equipment.getAddParentNames) Some(name + ".") else None
     logger.trace("findControlAndPoints: " + name)
 
     // IMPORTANT:  profiles is a list of profiles plus this equipment (as the last "profile" in the list)

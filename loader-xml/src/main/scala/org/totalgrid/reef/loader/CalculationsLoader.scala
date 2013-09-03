@@ -57,7 +57,7 @@ object CalculationsLoader {
     builder.setTimeOutput(parseTimeOutput(calc))
     builder.setQualityOutput(parseOutputQuality(calc))
 
-    builder.setAccumulate(calc.isSetOutput && calc.getOutput.isAccumulate)
+    builder.setAccumulate(calc.isSetOutput && calc.getOutput.isSetAccumulate && calc.getOutput.getAccumulate)
 
     if (!calc.isSetFormula || !calc.getFormula.isSetValue) throw new LoadingException("Formula must not be blank.")
     val formula = calc.getFormula.getValue
@@ -107,7 +107,7 @@ object CalculationsLoader {
       if (options.filter(_ == true).size > 1) throw new LoadingException("Must only specify one trigger type.")
       trigger match {
         case t if (t.isSetUpdateEveryPeriodMS) => triggerSettings.setPeriodMs(t.getUpdateEveryPeriodMS)
-        case t if (t.isSetUpdateOnAnyChange) => triggerSettings.setUpdateAny(t.isUpdateOnAnyChange)
+        case t if (t.isSetUpdateOnAnyChange) => triggerSettings.setUpdateAny(t.isSetUpdateOnAnyChange && t.getUpdateOnAnyChange)
         case _ => triggerSettings.setUpdateAny(true)
       }
     } else {
@@ -125,7 +125,7 @@ object CalculationsLoader {
 
       input.setVariableName(node.getVariable)
 
-      val inputName = if (node.isAddParentNames) basePointName + node.getPointName
+      val inputName = if (node.getAddParentNames) basePointName + node.getPointName
       else node.getPointName
 
       input.setPoint(Point.newBuilder.setName(inputName))
@@ -136,19 +136,19 @@ object CalculationsLoader {
           input.setSingle(SingleMeasurement.newBuilder.setStrategy(strategy))
         case m: Multi if (m.isSetSampleRange) =>
           val range = MeasurementRange.newBuilder.setLimit(m.getSampleRange.getLimit.toInt)
-          if (m.isSinceLastPublish) range.setSinceLast(true)
+          if (m.isSetSinceLastPublish && m.getSinceLastPublish) range.setSinceLast(true)
           input.setRange(range)
         case m: Multi if (m.isSetTimeRange) =>
           val range = MeasurementRange.newBuilder
           val rangeNode = m.getTimeRange
-          if (m.isSinceLastPublish) throw new LoadingException("Cannot use both timeRange and sinceLastPublish on same variable")
+          if (m.isSetSinceLastPublish && m.getSinceLastPublish) throw new LoadingException("Cannot use both timeRange and sinceLastPublish on same variable")
           if (!rangeNode.isSetFrom && !rangeNode.isSetTo && !rangeNode.isSetLimit) throw new LoadingException("Must set atleast one of from,to,limit in TimeRange")
           if (rangeNode.isSetFrom) range.setFromMs(rangeNode.getFrom)
           if (rangeNode.isSetTo) range.setToMs(rangeNode.getTo)
           if (rangeNode.isSetLimit) range.setLimit(rangeNode.getLimit.toInt)
           input.setRange(range)
         case m: Multi if (m.isSetSinceLastPublish) =>
-          if (!m.isSinceLastPublish) throw new LoadingException("Must include sampleRange or timeRange if disabling sinceLastPublish")
+          if (!m.isSetSinceLastPublish || !m.getSinceLastPublish) throw new LoadingException("Must include sampleRange or timeRange if disabling sinceLastPublish")
           input.setRange(MeasurementRange.newBuilder.setSinceLast(true))
       }
 

@@ -24,6 +24,7 @@ import scala.collection.mutable.HashMap
 import org.totalgrid.reef.client.service.proto.Processing.{ Filter => FilterProto, _ }
 import org.totalgrid.reef.loader.configuration._
 import org.totalgrid.reef.loader.communications._
+import org.totalgrid.reef.loader.equipment.{ Filter => FilterXml }
 
 import org.totalgrid.reef.client.service.proto.Model.{ EntityEdge, Point, Entity, PointType => PointTypeProto }
 import scala.collection.mutable
@@ -167,9 +168,9 @@ object ProtoUtils {
       .setPriority(DefaultPriorities.FILTER)
   }
 
-  def toTrigger(pointName: String, filter: Filter, pointType: PointTypeProto): Option[Trigger.Builder] = {
+  def toTrigger(pointName: String, filter: FilterXml, pointType: PointTypeProto): Option[Trigger.Builder] = {
 
-    if (filter.isAllowDuplicates) {
+    if (filter.isSetAllowDuplicates && filter.getAllowDuplicates) {
       if (filter.isSetDeadband) {
         throw new Exception("Filter for point: '" + pointName + "' cannot allow duplicates and have deadband")
       }
@@ -270,7 +271,7 @@ object ProtoUtils {
     val proto = Trigger.newBuilder.setTriggerName(name)
 
     if (unexpected.isSetBooleanValue)
-      proto.setBoolValue(unexpected.isBooleanValue)
+      proto.setBoolValue(unexpected.getBooleanValue)
     if (unexpected.isSetStringValue)
       proto.setStringValue(unexpected.getStringValue)
     if (unexpected.isSetIntValue)
@@ -287,7 +288,7 @@ object ProtoUtils {
    */
   def processTriggerType(trigger: Trigger.Builder, name: String, actions: TriggerType, aType: ActivationType): Unit = {
 
-    if (!actions.isMoreActions)
+    if (!actions.isSetMoreActions)
       trigger.setStopProcessingWhen(aType)
 
     if (actions.isSetMessage)
@@ -411,7 +412,7 @@ object ProtoUtils {
   def toActionLinearTransform(name: String, scale: Scale): Action.Builder = {
 
     val ltProto = LinearTransform.newBuilder
-    ltProto.setForceToDouble(scale.isForceToDouble)
+    ltProto.setForceToDouble(scale.isSetForceToDouble && scale.getForceToDouble)
 
     if (scale.isSetRawLow && scale.isSetRawHigh && scale.isSetEngLow && scale.isSetEngHigh) {
       val rawRange = scale.getRawHigh - scale.getRawLow
