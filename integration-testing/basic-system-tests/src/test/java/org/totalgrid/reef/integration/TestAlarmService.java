@@ -38,75 +38,71 @@ import java.util.List;
 public class TestAlarmService extends ReefConnectionTestBase
 {
 
-    /**
-     * insert an event config and post an event of that type to generate the alarm
-     */
     @Test
-    public void prepareAlarms() throws ReefServiceException
+    public void testAlarms() throws ReefServiceException
     {
-        EventConfigService configService = helpers;
-        EventPublishingService pub = helpers;
-
-        configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
-
-        EntityService entityService = helpers;
-        Entity e = entityService.getEntityByName( "StaticSubstation.Line02.Current" );
-
-        // add an alarm for a point we know is not changing
-        pub.publishEvent( "Test.Alarm", "Tests", e.getUuid() );
-    }
-
-    /** Test that some alarms are returned from the AlarmQuery service */
-    @Test
-    public void simpleQueries() throws ReefServiceException
-    {
-        AlarmService as = helpers;
-        // Get all alarms that are not removed.
-        List<Alarm> alarms = as.getActiveAlarms( 10 );
-        assertTrue( alarms.size() > 0 );
-
-    }
-
-    /** Test getting alarms for a whole substation or individual device */
-    @Test
-    public void entityQueries() throws ReefServiceException
-    {
-        EntityService entityService = helpers;
-        AlarmService as = helpers;
-
-        // Get the first substation
-        Entity substation = entityService.getEntityByName( "StaticSubstation" );
-
-        // Get all the points in the substation. Alarms are associated with individual points.
-        Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootId( substation, "Point" );
-
-        // Get the alarms on both the substation and devices under the substation.
-        List<String> alarmTypes = new LinkedList<String>();
-        alarmTypes.add( "Test.Alarm" );
-
-        List<Alarm> alarms = as.getActiveAlarmsByEntity( eqRequest, alarmTypes, 10 );
-        assertTrue( alarms.size() > 0 );
-    }
-
-    /** Test alarm state update. */
-    @Test
-    public void updateAlarms() throws ReefServiceException
-    {
-        AlarmService as = helpers;
-        // Get unacknowledged alarms.
-        List<Alarm> alarms = as.getActiveAlarms( 50 );
-        assertTrue( alarms.size() > 0 );
-
-        // Grab the first unacknowledged alarm and acknowledge it.
-        for ( Alarm alarm : alarms )
+        /**
+         * insert an event config and post an event of that type to generate the alarm
+         */
         {
-            if ( alarm.getState() == Alarm.State.UNACK_AUDIBLE || alarm.getState() == Alarm.State.UNACK_SILENT )
+            EventConfigService configService = helpers;
+            EventPublishingService pub = helpers;
+
+            configService.setEventConfigAsAlarm( "Test.Alarm", 1, "Alarm", true );
+
+            EntityService entityService = helpers;
+            Entity e = entityService.getEntityByName( "StaticSubstation.Line02.Current" );
+
+            // add an alarm for a point we know is not changing
+            pub.publishEvent( "Test.Alarm", "Tests", e.getUuid() );
+        }
+
+        /** Test that some alarms are returned from the AlarmQuery service */
+        {
+            AlarmService as = helpers;
+            // Get all alarms that are not removed.
+            List<Alarm> alarms = as.getActiveAlarms( 10 );
+            assertTrue( alarms.size() > 0 );
+        }
+
+        /** Test getting alarms for a whole substation or individual device */
+        {
+            EntityService entityService = helpers;
+            AlarmService as = helpers;
+
+            // Get the first substation
+            Entity substation = entityService.getEntityByName( "StaticSubstation" );
+
+            // Get all the points in the substation. Alarms are associated with individual points.
+            Entity eqRequest = EntityRequestBuilders.getOwnedChildrenOfTypeFromRootId( substation, "Point" );
+
+            // Get the alarms on both the substation and devices under the substation.
+            List<String> alarmTypes = new LinkedList<String>();
+            alarmTypes.add( "Test.Alarm" );
+
+            List<Alarm> alarms = as.getActiveAlarmsByEntity( eqRequest, alarmTypes, 10 );
+            assertTrue( alarms.size() > 0 );
+        }
+
+        /** Test alarm state update. */
+        {
+            AlarmService as = helpers;
+            // Get unacknowledged alarms.
+            List<Alarm> alarms = as.getActiveAlarms( 50 );
+            assertTrue( alarms.size() > 0 );
+
+            // Grab the first unacknowledged alarm and acknowledge it.
+            for ( Alarm alarm : alarms )
             {
-                Alarm result = as.acknowledgeAlarm( alarm );
-                assertTrue( result.getState() == Alarm.State.ACKNOWLEDGED );
-                break;
+                if ( alarm.getState() == Alarm.State.UNACK_AUDIBLE || alarm.getState() == Alarm.State.UNACK_SILENT )
+                {
+                    Alarm result = as.acknowledgeAlarm( alarm );
+                    assertTrue( result.getState() == Alarm.State.ACKNOWLEDGED );
+                    break;
+                }
             }
         }
+
     }
 
 }
