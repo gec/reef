@@ -51,6 +51,19 @@ public class TestEventService extends ReefConnectionTestBase
     private final String entityForEvents = "StaticSubstation.Line02.Current";
 
     @Test
+    public void runAll() throws ReefServiceException, InterruptedException
+    {
+        validateLongEventConfigStrings();
+        prepareEvents();
+        getRecentEvents();
+        subscribeEvents();
+        prepareAlarms();
+        subscribeAlarms();
+        subscriptionCreationCallback();
+        cleanupEventConfigs();
+    }
+
+    //@Test
     public void validateLongEventConfigStrings() throws ReefServiceException
     {
         EventConfigService configService = helpers;
@@ -75,7 +88,7 @@ public class TestEventService extends ReefConnectionTestBase
         configService.deleteEventConfig( config );
     }
 
-    @Test
+    //@Test
     public void prepareEvents() throws ReefServiceException
     {
         EventPublishingService es = helpers;
@@ -107,7 +120,7 @@ public class TestEventService extends ReefConnectionTestBase
         }
     }
 
-    @Test
+    //@Test
     public void getRecentEvents() throws ReefServiceException
     {
         EventService es = helpers;
@@ -115,7 +128,7 @@ public class TestEventService extends ReefConnectionTestBase
         assertEquals( events.size(), 10 );
     }
 
-    @Test
+    //@Test
     public void subscribeEvents() throws ReefServiceException, InterruptedException
     {
 
@@ -149,7 +162,7 @@ public class TestEventService extends ReefConnectionTestBase
         return e.getUuid();
     }
 
-    @Test
+    //@Test
     public void prepareAlarms() throws ReefServiceException
     {
 
@@ -166,7 +179,7 @@ public class TestEventService extends ReefConnectionTestBase
         }
     }
 
-    @Test
+    //@Test
     public void subscribeAlarms() throws ReefServiceException, InterruptedException
     {
 
@@ -186,7 +199,7 @@ public class TestEventService extends ReefConnectionTestBase
         mock.pop( 1000 );
     }
 
-    @Test
+    //@Test
     public void subscriptionCreationCallback() throws ReefServiceException, InterruptedException
     {
 
@@ -210,7 +223,7 @@ public class TestEventService extends ReefConnectionTestBase
     }
 
 
-    @Test
+    //@Test
     public void cleanupEventConfigs() throws ReefServiceException
     {
         EventConfigService configService = helpers;
